@@ -1,0 +1,307 @@
+@import "tailwindcss";
+
+/* Miraitu Brand Color Variables */
+:root {
+  /* Primary Brand Colors */
+  --miraitu-primary-green: #2c5926;
+  --miraitu-primary-dark-green: #1e3d1a;
+  --miraitu-primary-light-green: #4a7d42;
+  
+  /* Accent Colors */
+  --miraitu-accent-lime: #B0EA3C;
+  --miraitu-warm-orange: #FF9F1C;
+  --miraitu-warm-yellow: #FFD700;
+  
+  /* Background Colors */
+  --miraitu-background-light: #fbfaf9;
+  --miraitu-background-dark: #191c17;
+  
+  /* Default theme (light) */
+  --background: var(--miraitu-background-light);
+  --foreground: #171717;
+}
+
+@theme inline {
+  /* Brand Colors */
+  --color-primary: var(--miraitu-primary-green);
+  --color-primary-dark: var(--miraitu-primary-dark-green);
+  --color-primary-light: var(--miraitu-primary-light-green);
+  --color-accent-lime: var(--miraitu-accent-lime);
+  --color-warm-orange: var(--miraitu-warm-orange);
+  --color-warm-yellow: var(--miraitu-warm-yellow);
+  --color-background-light: var(--miraitu-background-light);
+  --color-background-dark: var(--miraitu-background-dark);
+  
+  /* System Colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-display: "Plus Jakarta Sans", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: var(--miraitu-background-dark);
+    --foreground: #ededed;
+  }
+}
+
+/* Base Styles */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Plus Jakarta Sans", Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Utility Classes */
+.miraitu-text-shadow-small {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.miraitu-text-shadow-large {
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Glassmorphism Panel Effect - optimized for abstract light backgrounds */
+.miraitu-glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-top: 1px solid rgba(255, 255, 255, 1);
+  border-left: 1px solid rgba(255, 255, 255, 1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Tactile Button Effect */
+.miraitu-button-tactile {
+  box-shadow: 0 6px 0 var(--miraitu-primary-dark-green), 
+              0 12px 16px rgba(0, 0, 0, 0.3);
+  transition: all 0.1s ease-in-out;
+}
+
+.miraitu-button-tactile:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 var(--miraitu-primary-dark-green), 
+              0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Gradient Highlights */
+.miraitu-gradient-highlight-overlay {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent);
+}
+
+/* Icon Container with Glow */
+.miraitu-icon-container-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 159, 28, 0.4);
+  filter: blur(20px);
+  border-radius: 9999px;
+  transform: translateY(8px);
+  z-index: -1;
+}
+
+/* ==========================================
+   SKEUOMORPHIC FORM STYLES
+   ========================================== */
+
+/* Skeuomorphic Card */
+.skeuo-card {
+  background: #ffffff;
+  box-shadow: 
+    0 10px 25px -5px rgba(0, 0, 0, 0.05),
+    0 8px 10px -6px rgba(0, 0, 0, 0.05),
+    inset 0 1px 1px rgba(255, 255, 255, 1);
+  border: 1px solid #e5e7eb;
+}
+
+/* Skeuomorphic Input */
+.skeuo-input {
+  box-shadow: inset 2px 2px 4px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+}
+
+.skeuo-input:focus {
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.05), 0 0 0 3px rgba(34, 195, 61, 0.2);
+}
+
+/* Skeuomorphic Button */
+.skeuo-button {
+  box-shadow: 
+    0 4px 0 0 #1a942e,
+    0 8px 15px rgba(34, 195, 61, 0.3);
+  transform: translateY(-2px);
+  transition: all 0.1s ease;
+}
+
+.skeuo-button:active {
+  transform: translateY(2px);
+  box-shadow: 
+    0 0px 0 0 #1a942e,
+    0 2px 5px rgba(34, 195, 61, 0.2);
+}
+
+.skeuo-button:disabled {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Leaf Checkbox */
+.leaf-checkbox {
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  background: #e8f2ea;
+  border-radius: 6px 12px 6px 12px;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.leaf-checkbox:checked {
+  background: #8CDA4F;
+}
+
+.leaf-checkbox:checked::after {
+  content: 'eco';
+  font-family: 'Material Symbols Outlined';
+  font-size: 16px;
+  color: white;
+  font-variation-settings: 'FILL' 1;
+}
+
+/* ==========================================
+   SPLASH SCREEN ANIMATIONS
+   ========================================== */
+
+/* Background fade-in and subtle zoom animation */
+@keyframes backgroundFadeInWithZoom {
+  0% {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-background-entrance {
+  animation: backgroundFadeInWithZoom 1.2s ease-out forwards;
+}
+
+/* Logo bounce-in animation */
+@keyframes logoBounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(-50px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05) translateY(0);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-logo-entrance {
+  animation: logoBounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+
+/* Glass panel slide-up and fade animation */
+@keyframes panelSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-panel-entrance {
+  animation: panelSlideUp 0.6s ease-out forwards;
+  animation-delay: 0.2s;
+  opacity: 0;
+}
+
+/* Button slide-up animation with delay */
+@keyframes buttonSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-button-entrance {
+  animation: buttonSlideUp 0.5s ease-out forwards;
+  animation-delay: 0.8s;
+  opacity: 0;
+}
+
+/* Footer fade-in animation */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-footer-entrance {
+  animation: fadeInUp 0.5s ease-out forwards;
+  animation-delay: 1s;
+  opacity: 0;
+}
+
+/* Floating animation for decorative elements */
+@keyframes floatGently {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: floatGently 3s ease-in-out infinite;
+}
+
+/* Pulse glow animation for logo background */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.75);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
