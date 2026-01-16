@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect, useState } from 'react';
+import MiraituLogo from '@/components/MiraituLogo';
 
 /**
  * UserLoginPage - Login page with Google SSO
@@ -40,16 +41,93 @@ export default function UserLoginPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[var(--miraitu-background-light)] font-display">
-            {/* Responsive Background */}
-            <div className="fixed inset-0 z-0">
+        <div className="relative min-h-screen bg-[var(--miraitu-background-light)] font-display">
+            {/* Scalable CSS Background */}
+            <div className="fixed inset-0 z-0 overflow-hidden">
+                {/* Base Gradient */}
                 <div
-                    className="absolute inset-0 bg-cover bg-center bg-no-repeat md:hidden"
-                    style={{ backgroundImage: 'url("/miraitu-hero-mobile.png")' }}
+                    className="absolute inset-0"
+                    style={{
+                        background: 'linear-gradient(135deg, #e8f0e5 0%, #d4e5cf 50%, #c5dbbe 100%)'
+                    }}
                 />
+
+                {/* Bottom Wave Decoration */}
+                <svg
+                    className="absolute bottom-0 left-0 w-full"
+                    style={{ height: '40%', minHeight: '200px' }}
+                    viewBox="0 0 1440 400"
+                    preserveAspectRatio="none"
+                    fill="none"
+                >
+                    <path
+                        d="M0,200 C280,350 400,100 720,200 C1040,300 1160,150 1440,200 L1440,400 L0,400 Z"
+                        fill="rgba(83, 147, 93, 0.15)"
+                    />
+                    <path
+                        d="M0,280 C360,380 480,200 720,280 C960,360 1080,220 1440,280 L1440,400 L0,400 Z"
+                        fill="rgba(83, 147, 93, 0.2)"
+                    />
+                    <path
+                        d="M0,340 C240,400 480,300 720,340 C960,380 1200,320 1440,360 L1440,400 L0,400 Z"
+                        fill="rgba(83, 147, 93, 0.25)"
+                    />
+                </svg>
+
+                {/* Left Decorative Leaf */}
+                <svg
+                    className="absolute bottom-0 left-0 h-[50%] md:h-[60%]"
+                    style={{ maxHeight: '500px', minHeight: '200px' }}
+                    viewBox="0 0 200 400"
+                    fill="none"
+                >
+                    <ellipse cx="30" cy="320" rx="80" ry="160" fill="rgba(83, 147, 93, 0.3)" transform="rotate(-20 30 320)" />
+                    <ellipse cx="60" cy="350" rx="60" ry="120" fill="rgba(107, 171, 111, 0.35)" transform="rotate(-15 60 350)" />
+                    <ellipse cx="80" cy="380" rx="40" ry="80" fill="rgba(131, 195, 135, 0.4)" transform="rotate(-10 80 380)" />
+                </svg>
+
+                {/* Right Wheat/Grass Decoration */}
+                <svg
+                    className="absolute bottom-0 right-0 h-[60%] md:h-[70%]"
+                    style={{ maxHeight: '600px', minHeight: '250px' }}
+                    viewBox="0 0 150 500"
+                    fill="none"
+                >
+                    {/* Wheat stalks */}
+                    <g opacity="0.6">
+                        {/* Stalk 1 */}
+                        <path d="M120,500 Q115,400 130,300" stroke="#6bab6f" strokeWidth="3" fill="none" />
+                        <ellipse cx="132" cy="290" rx="8" ry="20" fill="#7cb880" transform="rotate(-10 132 290)" />
+                        <ellipse cx="128" cy="260" rx="7" ry="18" fill="#7cb880" transform="rotate(-5 128 260)" />
+                        <ellipse cx="133" cy="230" rx="6" ry="16" fill="#7cb880" transform="rotate(-12 133 230)" />
+                        <ellipse cx="130" cy="205" rx="5" ry="14" fill="#7cb880" transform="rotate(-8 130 205)" />
+                        <ellipse cx="132" cy="182" rx="4" ry="12" fill="#7cb880" transform="rotate(-6 132 182)" />
+
+                        {/* Stalk 2 */}
+                        <path d="M100,500 Q95,380 105,250" stroke="#5a9f5e" strokeWidth="3" fill="none" />
+                        <ellipse cx="107" cy="240" rx="7" ry="18" fill="#6bab6f" transform="rotate(-8 107 240)" />
+                        <ellipse cx="104" cy="212" rx="6" ry="16" fill="#6bab6f" transform="rotate(-3 104 212)" />
+                        <ellipse cx="108" cy="185" rx="5" ry="14" fill="#6bab6f" transform="rotate(-10 108 185)" />
+                        <ellipse cx="106" cy="162" rx="4" ry="12" fill="#6bab6f" transform="rotate(-6 106 162)" />
+
+                        {/* Stalk 3 */}
+                        <path d="M80,500 Q78,420 85,320" stroke="#4a8f4e" strokeWidth="2.5" fill="none" />
+                        <ellipse cx="87" cy="310" rx="6" ry="16" fill="#5a9f5e" transform="rotate(-5 87 310)" />
+                        <ellipse cx="85" cy="285" rx="5" ry="14" fill="#5a9f5e" transform="rotate(-2 85 285)" />
+                        <ellipse cx="88" cy="262" rx="4" ry="12" fill="#5a9f5e" transform="rotate(-8 88 262)" />
+                    </g>
+
+                    {/* Additional grass blades */}
+                    <path d="M60,500 Q55,450 70,380" stroke="rgba(83, 147, 93, 0.4)" strokeWidth="2" fill="none" />
+                    <path d="M140,500 Q145,430 135,350" stroke="rgba(83, 147, 93, 0.35)" strokeWidth="2" fill="none" />
+                </svg>
+
+                {/* Top Right Accent */}
                 <div
-                    className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden md:block"
-                    style={{ backgroundImage: 'url("/miraitu-hero-desktop.png")' }}
+                    className="absolute -top-20 -right-20 w-64 h-64 md:w-96 md:h-96 rounded-full opacity-30"
+                    style={{
+                        background: 'radial-gradient(circle, rgba(107, 171, 111, 0.4) 0%, transparent 70%)'
+                    }}
                 />
             </div>
 
@@ -58,9 +136,7 @@ export default function UserLoginPage() {
                 {/* Header */}
                 <header className="flex items-center justify-between px-6 md:px-10 py-4 bg-white/80 backdrop-blur-md border-b border-[var(--miraitu-primary-green)]/10">
                     <Link href="/" className="flex items-center gap-3 text-[var(--miraitu-primary-green)]">
-                        <div className="w-8 h-8 flex items-center justify-center bg-[var(--miraitu-primary-green)] rounded-lg text-white">
-                            <span className="material-symbols-outlined text-2xl">agriculture</span>
-                        </div>
+                        <MiraituLogo size={40} />
                         <h2 className="text-[#0f1a11] text-xl font-extrabold leading-tight tracking-[-0.015em]">Miraitu</h2>
                     </Link>
                 </header>
@@ -133,14 +209,14 @@ export default function UserLoginPage() {
                         </div>
 
                         {/* Footer */}
-                        <div className="mt-8 flex justify-center gap-6 text-xs text-[#53935d]/70 font-medium animate-footer-entrance">
+                        <div className="mt-8 flex justify-center gap-6 text-xs text-[#1a3d21] font-medium animate-footer-entrance">
                             <div className="flex items-center gap-1">
                                 <span className="material-symbols-outlined text-sm">verified_user</span>
-                                <span>Secure</span>
+                                <span className="drop-shadow-sm">Secure</span>
                             </div>
                             <div className="flex items-center gap-1">
                                 <span className="material-symbols-outlined text-sm">eco</span>
-                                <span>Eco-Certified</span>
+                                <span className="drop-shadow-sm">Eco-Certified</span>
                             </div>
                         </div>
                     </div>

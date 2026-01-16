@@ -2,8 +2,8 @@
 // You need to replace these with your actual Firebase project credentials
 // Get these from: https://console.firebase.google.com > Your Project > Project Settings > Web App
 
-import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from 'firebase/auth';
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "YOUR_API_KEY",
@@ -14,13 +14,27 @@ const firebaseConfig = {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "YOUR_APP_ID"
 };
 
-// Initialize Firebase (prevent re-initialization in development)
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+// Initialize Firebase (singleton pattern - prevent re-initialization)
+function initializeFirebaseApp() {
+    if (getApps().length === 0) {
+        return initializeApp(firebaseConfig);
+    }
+    return getApp();
+}
 
-// Initialize Firebase Authentication
+const app = initializeFirebaseApp();
+
+// Initialize Firebase Authentication with persistence
 export const auth = getAuth(app);
 
-// Google Auth Provider
+// Set persistence to local storage (only runs client-side)
+if (typeof window !== 'undefined') {
+    setPersistence(auth, browserLocalPersistence).catch((error) => {
+        console.error('Firebase persistence error:', error);
+    });
+}
+
+// Google Auth Provider (initialize once)
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({
     prompt: 'select_account'

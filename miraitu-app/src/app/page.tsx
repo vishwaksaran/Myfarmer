@@ -53,9 +53,6 @@ function MainContentGlassPanel() {
       {/* Get Started Call-to-Action Button */}
       <GetStartedCallToActionButton />
 
-      {/* Sign In Link for Existing Users */}
-      <SignInLinkForExistingUsers />
-
       {/* Decorative Floating Orbs */}
       <DecorativeFloatingOrbs />
     </div>

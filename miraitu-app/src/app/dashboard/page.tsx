@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect } from 'react';
+import MiraituLogo from '@/components/MiraituLogo';
 
 /**
  * DashboardPage - Protected page shown after login
@@ -42,9 +43,7 @@ export default function DashboardPage() {
             {/* Header */}
             <header className="flex items-center justify-between px-6 md:px-10 py-4 bg-white/80 backdrop-blur-md border-b border-[var(--miraitu-primary-green)]/10">
                 <div className="flex items-center gap-3 text-[var(--miraitu-primary-green)]">
-                    <div className="w-8 h-8 flex items-center justify-center bg-[var(--miraitu-primary-green)] rounded-lg text-white">
-                        <span className="material-symbols-outlined text-2xl">agriculture</span>
-                    </div>
+                    <MiraituLogo size={40} />
                     <h2 className="text-[#0f1a11] text-xl font-extrabold leading-tight tracking-[-0.015em]">Miraitu</h2>
                 </div>
 

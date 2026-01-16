@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import MiraituLogo from '@/components/MiraituLogo';
 
 /**
  * UserRegisterPage - Multi-step registration form
@@ -33,9 +34,7 @@ export default function UserRegisterPage() {
             {/* Navigation Header */}
             <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-[var(--miraitu-primary-green)]/10 bg-white/80 backdrop-blur-md px-6 md:px-10 py-4 sticky top-0 z-50">
                 <Link href="/" className="flex items-center gap-3 text-[var(--miraitu-primary-green)]">
-                    <div className="w-8 h-8 flex items-center justify-center bg-[var(--miraitu-primary-green)] rounded-lg text-white">
-                        <span className="material-symbols-outlined text-2xl">agriculture</span>
-                    </div>
+                    <MiraituLogo size={40} />
                     <h2 className="text-[#0f1a11] text-xl font-extrabold leading-tight tracking-[-0.015em]">Miraitu</h2>
                 </Link>
                 <div className="flex flex-1 justify-end gap-4 md:gap-8">
