@@ -13,6 +13,7 @@ interface AuthContextType {
     user: User | null;
     loading: boolean;
     signInWithGoogle: () => Promise<void>;
+    loginAsGuest: () => Promise<void>;
     signOut: () => Promise<void>;
 }
 
@@ -43,6 +44,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const loginAsGuest = async () => {
+        setLoading(true);
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        // Create a dummy user object conforming to Firebase User interface (partially)
+        const dummyUser = {
+            uid: 'guest-123',
+            displayName: 'Guest Farmer',
+            email: 'guest@miraitu.com',
+            photoURL: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB5_v_lniQz4XLFLkx3O3SeXzO_Vd6OB9PUYPojmux-I3GoGRPWmi8nSbcJqB7cWKvHsKMk0AyD1USWoxF7YsfgQyVHkGQjeNmdw0PR0Qi1wzn-frtFtoHACNhJiXyo8I7REszNvu-udHFbxLRDwTECoRY9bnVSKvnZhHpj2mU4s0rgVqHajBCUdg3GmLxAFMWSCgJF50CnNSZKZWHta7Ba7QWXeau-ssvkjFJMzWM1nN6JbYkzrl4ek9rB58CtkfVSOFTgTDHzGTFO',
+            emailVerified: true,
+            isAnonymous: true,
+            metadata: {},
+            providerData: [],
+            refreshToken: '',
+            tenantId: null,
+            delete: async () => { },
+            getIdToken: async () => 'dummy-token',
+            getIdTokenResult: async () => ({
+                token: 'dummy',
+                signInProvider: 'custom',
+                claims: {},
+                authTime: Date.now(),
+                issuedAtTime: Date.now(),
+                expirationTime: Date.now(),
+            }),
+            reload: async () => { },
+            toJSON: () => ({}),
+            phoneNumber: null,
+        } as unknown as User;
+
+        setUser(dummyUser);
+        setLoading(false);
+    };
+
     const signOut = async () => {
         try {
             await firebaseSignOut(auth);
@@ -53,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, signInWithGoogle, signOut }}>
+        <AuthContext.Provider value={{ user, loading, signInWithGoogle, loginAsGuest, signOut }}>
             {children}
         </AuthContext.Provider>
     );

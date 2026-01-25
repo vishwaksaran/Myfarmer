@@ -123,7 +123,7 @@ function BrandNameAndTaglineSection() {
 function GetStartedCallToActionButton() {
   return (
     <Link
-      href="/user-login"
+      href="/language-selection"
       className="group relative w-full max-w-xs miraitu-button-tactile h-16 bg-gradient-to-b from-[#417a3a] to-[var(--miraitu-primary-green)] text-white rounded-xl font-bold text-lg tracking-wide border-t border-[var(--miraitu-warm-yellow)]/50 transition-all flex items-center justify-center gap-3 overflow-hidden hover:brightness-110 animate-button-entrance"
     >
       {/* Button Glossy Highlight */}

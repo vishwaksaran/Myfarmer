@@ -2,19 +2,31 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import MiraituLogo from '@/components/MiraituLogo';
 
 /**
  * UserRegisterPage - Multi-step registration form
  */
 export default function UserRegisterPage() {
+    const router = useRouter();
+    const [currentStep, setCurrentStep] = useState(1);
+    const [loading, setLoading] = useState(false);
+
+    // Form State
     const [formData, setFormData] = useState({
         fullName: '',
         mobileNumber: '',
         farmLocation: '',
+        role: 'Farmer',
+        crops: ['Rice'],
+        password: '',
+        confirmPassword: '',
+        referralCode: '',
         termsAccepted: false,
     });
 
+    // Handle Input Changes
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
         setFormData(prev => ({
@@ -23,189 +35,333 @@ export default function UserRegisterPage() {
         }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    // Handle Role Selection
+    const handleRoleSelect = (role: string) => {
+        setFormData(prev => ({ ...prev, role }));
+    };
+
+    // Handle Crop Selection
+    const toggleCrop = (crop: string) => {
+        setFormData(prev => {
+            const currentCrops = [...prev.crops];
+            if (currentCrops.includes(crop)) {
+                return { ...prev, crops: currentCrops.filter(c => c !== crop) };
+            } else {
+                return { ...prev, crops: [...currentCrops, crop] };
+            }
+        });
+    };
+
+    // Navigation Handlers
+    const nextStep = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setCurrentStep(prev => prev + 1);
+    };
+
+    const prevStep = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setCurrentStep(prev => prev - 1);
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: Implement registration logic
+        setLoading(true);
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 2000));
         console.log('Registration data:', formData);
+        router.push('/dashboard'); // Or login
+        setLoading(false);
     };
 
     return (
-        <div className="min-h-screen bg-[var(--miraitu-background-light)] font-display text-[#0f1a11]">
-            {/* Navigation Header */}
+        <div className="min-h-screen bg-[var(--miraitu-background-light)] dark:bg-background-dark font-display text-[#0f1a11] flex flex-col">
+            {/* Header */}
             <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-[var(--miraitu-primary-green)]/10 bg-white/80 backdrop-blur-md px-6 md:px-10 py-4 sticky top-0 z-50">
                 <Link href="/" className="flex items-center gap-3 text-[var(--miraitu-primary-green)]">
-                    <MiraituLogo size={40} />
-                    <h2 className="text-[#0f1a11] text-xl font-extrabold leading-tight tracking-[-0.015em]">Miraitu</h2>
-                </Link>
-                <div className="flex flex-1 justify-end gap-4 md:gap-8">
-                    <div className="hidden md:flex items-center gap-9">
-                        <Link className="text-[#0f1a11] text-sm font-semibold hover:text-[var(--miraitu-primary-green)] transition-colors" href="/">Home</Link>
-                        <Link className="text-[#0f1a11] text-sm font-semibold hover:text-[var(--miraitu-primary-green)] transition-colors" href="#">Marketplace</Link>
-                        <Link className="text-[#0f1a11] text-sm font-semibold hover:text-[var(--miraitu-primary-green)] transition-colors" href="#">Weather</Link>
+                    <div className='w-10 h-10'>
+                        <MiraituLogo className="w-full h-full object-contain" />
                     </div>
-                    <Link
-                        href="/user-login"
-                        className="flex min-w-[80px] md:min-w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 border-2 border-[var(--miraitu-primary-green)] text-[var(--miraitu-primary-green)] text-sm font-bold transition-all hover:bg-[var(--miraitu-primary-green)]/5"
-                    >
-                        <span className="truncate">Log in</span>
-                    </Link>
-                </div>
+                    <h2 className="text-[#0f1a11] dark:text-white text-xl font-extrabold leading-tight tracking-[-0.015em]">Miraitu</h2>
+                </Link>
             </header>
 
-            <main className="flex-1 flex flex-col items-center py-8 md:py-12 px-4">
-                {/* Page Heading Section */}
-                <div className="max-w-[800px] w-full text-center mb-8 md:mb-10 animate-logo-entrance">
-                    <h1 className="text-[#0f1a11] text-3xl md:text-5xl font-black leading-tight tracking-[-0.033em] mb-3">
-                        Cultivate Your <span className="text-[var(--miraitu-primary-green)]">Digital Garden</span>
+            <main className="flex-1 flex flex-col items-center py-12 px-4">
+                {/* Heading */}
+                <div className="max-w-[800px] w-full text-center mb-10 animate-fade-in">
+                    <h1 className="text-[#0f1a11] dark:text-white text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em] mb-3">
+                        {currentStep === 1 && <>Cultivate Your <span className="text-[var(--miraitu-primary-green)]">Digital Garden</span></>}
+                        {currentStep === 2 && <>Define Your <span className="text-[var(--miraitu-primary-green)]">Role</span></>}
+                        {currentStep === 3 && <>Secure Your <span className="text-[var(--miraitu-primary-green)]">Account</span></>}
                     </h1>
-                    <p className="text-[#53935d] text-base md:text-lg font-medium">
-                        Join the digital ecosystem designed for modern farmers and stakeholders.
+                    <p className="text-[#53935d] dark:text-gray-400 text-lg font-medium">
+                        {currentStep === 1 && "Join the digital ecosystem designed for modern farmers."}
+                        {currentStep === 2 && "Help us personalize your experience by selecting your primary function."}
+                        {currentStep === 3 && "Create a secure password to protect your farm data."}
                     </p>
                 </div>
 
-                {/* Registration Card */}
-                <div className="max-w-[720px] w-full skeuo-card rounded-xl overflow-hidden p-6 md:p-10 relative animate-panel-entrance">
+                {/* Card */}
+                <div className="max-w-[860px] w-full skeuo-card rounded-2xl overflow-hidden p-6 md:p-10 relative animate-panel-entrance">
                     {/* Background Decoration */}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--miraitu-lime-green)]/10 rounded-full blur-3xl -mr-10 -mt-10" />
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-[var(--miraitu-lush-leaf)]/5 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-[var(--miraitu-harvest-gold)]/5 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
                     {/* Progress Header */}
-                    <div className="flex flex-col gap-4 mb-8">
+                    <div className="flex flex-col gap-4 mb-12 relative z-10">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <span className="flex items-center justify-center w-6 h-6 bg-[var(--miraitu-primary-green)] text-white text-[10px] font-bold rounded-full">1</span>
-                                <p className="text-[#0f1a11] text-sm md:text-base font-bold">Identity & Region</p>
+                                <span className="flex items-center justify-center w-6 h-6 bg-[var(--miraitu-primary-green)] text-white text-[10px] font-bold rounded-full">
+                                    {currentStep}
+                                </span>
+                                <p className="text-[#0f1a11] text-base font-bold">
+                                    {currentStep === 1 && "Identity & Region"}
+                                    {currentStep === 2 && "Role & Interests"}
+                                    {currentStep === 3 && "Security & Confirmation"}
+                                </p>
                             </div>
-                            <p className="text-[#53935d] text-xs md:text-sm font-bold uppercase tracking-wider">Step 1 of 3</p>
+                            <p className="text-[#53935d] text-sm font-bold uppercase tracking-wider">Step {currentStep} of 3</p>
                         </div>
-                        <div className="h-2.5 w-full bg-[#e8f2ea] rounded-full overflow-hidden flex">
-                            <div className="h-full bg-[var(--miraitu-primary-green)] rounded-full w-1/3 shadow-[0_0_10px_rgba(34,195,61,0.4)]" />
-                            <div className="h-full bg-[var(--miraitu-harvest-gold)]/30 w-1/3" />
-                            <div className="h-full bg-gray-100 w-1/3" />
+                        <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden flex p-0.5 border border-gray-200">
+                            <div
+                                className="h-full bg-[var(--miraitu-primary-green)] rounded-full shadow-[0_0_12px_rgba(34,195,61,0.5)] transition-all duration-500 ease-in-out"
+                                style={{ width: `${(currentStep / 3) * 100}%` }}
+                            />
                         </div>
                     </div>
 
-                    <form className="flex flex-col gap-6 md:gap-8" onSubmit={handleSubmit}>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                            {/* Full Name */}
-                            <div className="col-span-1">
-                                <label className="flex flex-col gap-2">
-                                    <span className="text-[#0f1a11] text-xs md:text-sm font-bold uppercase tracking-wide ml-1">Full Name</span>
+                    {/* STEP 1 CONTENTS */}
+                    {currentStep === 1 && (
+                        <div className="flex flex-col gap-8 animate-fade-in relative z-10">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="col-span-1">
+                                    <label className="flex flex-col gap-2">
+                                        <span className="text-[#0f1a11] text-sm font-bold uppercase tracking-wide ml-1">Full Name</span>
+                                        <div className="relative">
+                                            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">person</span>
+                                            <input
+                                                name="fullName"
+                                                value={formData.fullName}
+                                                onChange={handleInputChange}
+                                                className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none"
+                                                placeholder="John Doe"
+                                                type="text"
+                                            />
+                                        </div>
+                                    </label>
+                                </div>
+                                <div className="col-span-1">
+                                    <label className="flex flex-col gap-2">
+                                        <span className="text-[#0f1a11] text-sm font-bold uppercase tracking-wide ml-1">Mobile Number</span>
+                                        <div className="relative">
+                                            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">call</span>
+                                            <input
+                                                name="mobileNumber"
+                                                value={formData.mobileNumber}
+                                                onChange={handleInputChange}
+                                                className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none"
+                                                placeholder="+91 98765 43210"
+                                                type="tel"
+                                            />
+                                        </div>
+                                    </label>
+                                </div>
+                                <div className="col-span-1 md:col-span-2">
+                                    <label className="flex flex-col gap-2">
+                                        <span className="text-[#0f1a11] text-sm font-bold uppercase tracking-wide ml-1">Farm Location</span>
+                                        <div className="relative">
+                                            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">distance</span>
+                                            <select
+                                                name="farmLocation"
+                                                value={formData.farmLocation}
+                                                onChange={handleInputChange}
+                                                className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] text-[#0f1a11] appearance-none"
+                                            >
+                                                <option disabled value="">Select your district / region</option>
+                                                <option value="north">North Valley Region</option>
+                                                <option value="south">Southern Highlands</option>
+                                                <option value="east">Eastern Delta Plains</option>
+                                                <option value="west">Western Foothills</option>
+                                            </select>
+                                            <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end pt-4">
+                                <button onClick={nextStep} className="skeuo-button-next px-8 py-4 w-full md:w-auto text-sm uppercase tracking-widest">
+                                    Continue to Role
+                                    <span className="material-symbols-outlined">arrow_forward</span>
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* STEP 2 CONTENTS */}
+                    {currentStep === 2 && (
+                        <div className="space-y-12 animate-fade-in relative z-10">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                                {['Farmer', 'Owner', 'Provider', 'Dealer'].map((r) => (
+                                    <div
+                                        key={r}
+                                        onClick={() => handleRoleSelect(r)}
+                                        className={`skeuo-role-card group ${formData.role === r ? 'selected' : ''}`}
+                                    >
+                                        <div className="icon-3d">
+                                            <span className="material-symbols-outlined text-4xl" style={formData.role === r ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                                                {r === 'Farmer' && 'potted_plant'}
+                                                {r === 'Owner' && 'tram'}
+                                                {r === 'Provider' && 'hail'}
+                                                {r === 'Dealer' && 'store'}
+                                            </span>
+                                        </div>
+                                        <h3 className="font-bold text-[#0f1a11]">{r}</h3>
+                                        <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">
+                                            {r === 'Farmer' && 'Cultivator'}
+                                            {r === 'Owner' && 'Machinery'}
+                                            {r === 'Provider' && 'Expert Services'}
+                                            {r === 'Dealer' && 'Market Supplies'}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <span className="material-symbols-outlined text-[var(--miraitu-harvest-gold)]">stars</span>
+                                    <h4 className="text-sm font-black uppercase tracking-[0.15em] text-[#0f1a11]">Primary Crop / Focus</h4>
+                                </div>
+                                <div className="flex flex-wrap gap-3">
+                                    {['Rice', 'Wheat', 'Corn', 'Livestock', 'Soybeans', 'Fruit & Nuts', 'Vegetables', 'Sugarcane'].map(crop => (
+                                        <div
+                                            key={crop}
+                                            onClick={() => toggleCrop(crop)}
+                                            className={`skeuo-pill ${formData.crops.includes(crop) ? 'selected' : ''}`}
+                                        >
+                                            {crop}
+                                        </div>
+                                    ))}
+                                    <div className="skeuo-pill flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-xs">add</span> Other
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-6 pt-4">
+                                <button onClick={prevStep} className="skeuo-button-back flex-1 uppercase tracking-widest text-xs h-14">
+                                    <span className="material-symbols-outlined text-xl">arrow_back</span>
+                                    Back
+                                </button>
+                                <button onClick={nextStep} className="skeuo-button-next flex-[2] uppercase tracking-widest text-sm h-14">
+                                    Continue to Final Step
+                                    <span className="material-symbols-outlined text-xl">arrow_forward</span>
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* STEP 3 CONTENTS */}
+                    {currentStep === 3 && (
+                        <div className="flex flex-col gap-8 animate-fade-in relative z-10">
+                            <div className="max-w-md mx-auto w-full flex flex-col gap-6">
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-[#0f1a11] text-sm font-bold uppercase tracking-wide ml-1">Password</label>
                                     <div className="relative">
-                                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60">person</span>
+                                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">lock</span>
                                         <input
-                                            name="fullName"
-                                            value={formData.fullName}
+                                            name="password"
+                                            value={formData.password}
                                             onChange={handleInputChange}
-                                            className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-[var(--miraitu-primary-green)]/20 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none transition-all placeholder:text-gray-400"
-                                            placeholder="John Doe"
+                                            className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none"
+                                            placeholder="••••••••"
+                                            type="password"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-[#0f1a11] text-sm font-bold uppercase tracking-wide ml-1">Confirm Password</label>
+                                    <div className="relative">
+                                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">lock_reset</span>
+                                        <input
+                                            name="confirmPassword"
+                                            value={formData.confirmPassword}
+                                            onChange={handleInputChange}
+                                            className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none"
+                                            placeholder="••••••••"
+                                            type="password"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-[#0f1a11] text-sm font-bold uppercase tracking-wide ml-1">Referral Code (Optional)</label>
+                                    <div className="relative">
+                                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">confirmation_number</span>
+                                        <input
+                                            name="referralCode"
+                                            value={formData.referralCode}
+                                            onChange={handleInputChange}
+                                            className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none"
+                                            placeholder="REF-12345"
                                             type="text"
                                         />
                                     </div>
-                                </label>
+                                </div>
+
+                                <div className="flex items-start gap-3 mt-4 p-4 rounded-xl bg-[var(--miraitu-lime-green)]/10 border border-[var(--miraitu-lime-green)]/30">
+                                    <input
+                                        type="checkbox"
+                                        id="terms"
+                                        name="termsAccepted"
+                                        checked={formData.termsAccepted}
+                                        onChange={handleInputChange}
+                                        className="leaf-checkbox mt-1"
+                                    />
+                                    <label className="text-[#0f1a11] text-xs font-medium leading-relaxed cursor-pointer select-none" htmlFor="terms">
+                                        I agree to the <a className="text-[var(--miraitu-primary-green)] font-bold underline" href="#">Terms</a> and <a className="text-[var(--miraitu-primary-green)] font-bold underline" href="#">Privacy Policy</a>.
+                                    </label>
+                                </div>
                             </div>
 
-                            {/* Mobile Number */}
-                            <div className="col-span-1">
-                                <label className="flex flex-col gap-2">
-                                    <span className="text-[#0f1a11] text-xs md:text-sm font-bold uppercase tracking-wide ml-1">Mobile Number</span>
-                                    <div className="relative">
-                                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60">call</span>
-                                        <input
-                                            name="mobileNumber"
-                                            value={formData.mobileNumber}
-                                            onChange={handleInputChange}
-                                            className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-[var(--miraitu-primary-green)]/20 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none transition-all placeholder:text-gray-400"
-                                            placeholder="+91 98765 43210"
-                                            type="tel"
-                                        />
-                                    </div>
-                                </label>
-                            </div>
-
-                            {/* Location Select */}
-                            <div className="col-span-1 md:col-span-2">
-                                <label className="flex flex-col gap-2">
-                                    <span className="text-[#0f1a11] text-xs md:text-sm font-bold uppercase tracking-wide ml-1">Farm Location</span>
-                                    <div className="relative">
-                                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60">distance</span>
-                                        <select
-                                            name="farmLocation"
-                                            value={formData.farmLocation}
-                                            onChange={handleInputChange}
-                                            className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-[var(--miraitu-primary-green)]/20 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-[#0f1a11] appearance-none cursor-pointer"
-                                        >
-                                            <option disabled value="">Select your district / region</option>
-                                            <option value="north">North Valley Region</option>
-                                            <option value="south">Southern Highlands</option>
-                                            <option value="east">Eastern Delta Plains</option>
-                                            <option value="west">Western Foothills</option>
-                                        </select>
-                                        <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
-                                    </div>
-                                </label>
+                            <div className="flex items-center gap-6 pt-6">
+                                <button onClick={prevStep} className="skeuo-button-back flex-1 uppercase tracking-widest text-xs h-14">
+                                    <span className="material-symbols-outlined text-xl">arrow_back</span>
+                                    Back
+                                </button>
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={!formData.termsAccepted || loading}
+                                    className="skeuo-button-next flex-[2] uppercase tracking-widest text-sm h-14 disabled:opacity-50 disabled:shadow-none disabled:transform-none"
+                                >
+                                    {loading ? (
+                                        <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                                    ) : (
+                                        <>
+                                            Complete Registration
+                                            <span className="material-symbols-outlined text-xl">check_circle</span>
+                                        </>
+                                    )}
+                                </button>
                             </div>
                         </div>
-
-                        {/* Map/Illustration placeholder */}
-                        <div className="w-full h-28 md:h-32 rounded-xl bg-[var(--miraitu-primary-green)]/5 border-2 border-dashed border-[var(--miraitu-primary-green)]/20 flex items-center justify-center group cursor-pointer hover:bg-[var(--miraitu-primary-green)]/10 transition-colors">
-                            <div className="flex flex-col items-center gap-1">
-                                <span className="material-symbols-outlined text-[var(--miraitu-primary-green)] text-3xl">map</span>
-                                <p className="text-xs font-bold text-[var(--miraitu-primary-green)]">Pin your farm on the map</p>
-                            </div>
-                        </div>
-
-                        {/* Terms & Conditions */}
-                        <div className="flex items-start gap-3 md:gap-4 p-4 rounded-xl bg-[var(--miraitu-lime-green)]/5 border border-[var(--miraitu-lime-green)]/20">
-                            <input
-                                type="checkbox"
-                                id="terms"
-                                name="termsAccepted"
-                                checked={formData.termsAccepted}
-                                onChange={handleInputChange}
-                                className="leaf-checkbox mt-1"
-                            />
-                            <label className="text-[#0f1a11] text-xs md:text-sm font-medium leading-relaxed cursor-pointer select-none" htmlFor="terms">
-                                I agree to the <a className="text-[var(--miraitu-primary-green)] font-bold underline decoration-[var(--miraitu-primary-green)]/30 underline-offset-2" href="#">Terms of Service</a> and <a className="text-[var(--miraitu-primary-green)] font-bold underline decoration-[var(--miraitu-primary-green)]/30 underline-offset-2" href="#">Privacy Policy</a>. I understand that Miraitu uses my location for harvest optimization.
-                            </label>
-                        </div>
-
-                        {/* CTA Button */}
-                        <div className="flex flex-col gap-4 items-center animate-button-entrance">
-                            <button
-                                type="submit"
-                                disabled={!formData.termsAccepted}
-                                className="skeuo-button w-full h-14 md:h-16 bg-[var(--miraitu-primary-green)] rounded-xl flex items-center justify-center gap-2 text-white font-extrabold text-base md:text-lg uppercase tracking-widest hover:bg-[#1fb337] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none transition-all"
-                            >
-                                <span className="material-symbols-outlined">eco</span>
-                                Register & Start Planting
-                            </button>
-                            <p className="text-sm text-[#53935d] font-medium">
-                                Already have an account?{' '}
-                                <Link className="text-[var(--miraitu-primary-green)] font-bold hover:underline" href="/user-login">Log in here</Link>
-                            </p>
-                        </div>
-                    </form>
+                    )}
                 </div>
 
-                {/* Footer Icons */}
-                <div className="mt-8 md:mt-12 flex flex-wrap justify-center gap-4 md:gap-8 grayscale opacity-50 animate-footer-entrance">
+                {/* Footer Elements */}
+                <div className="mt-16 flex flex-wrap justify-center gap-12 grayscale opacity-40 animate-footer-entrance">
                     <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-sm md:text-base">verified_user</span>
-                        <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">Secure Data</span>
+                        <span className="material-symbols-outlined">shield</span>
+                        <span className="text-xs font-bold uppercase tracking-[0.1em]">Privacy Guaranteed</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-sm md:text-base">eco</span>
-                        <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">Eco-Certified</span>
+                        <span className="material-symbols-outlined">psychology</span>
+                        <span className="text-xs font-bold uppercase tracking-[0.1em]">Smart Matching</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-sm md:text-base">support_agent</span>
-                        <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">24/7 Expert Support</span>
+                        <span className="material-symbols-outlined">group</span>
+                        <span className="text-xs font-bold uppercase tracking-[0.1em]">50k+ Members</span>
                     </div>
                 </div>
             </main>
-
-            <footer className="py-8 md:py-10 border-t border-[var(--miraitu-primary-green)]/10 bg-white/50 text-center">
-                <p className="text-xs md:text-sm text-[#53935d]">© 2026 Miraitu Agriculture Tech. All rights reserved.</p>
+            <footer className="py-10 border-t border-[var(--miraitu-primary-green)]/10 bg-white/50 text-center">
+                <p className="text-sm text-[#53935d]">© 2026 Miraitu Agriculture Tech. Empowering farmers globally.</p>
             </footer>
         </div>
     );

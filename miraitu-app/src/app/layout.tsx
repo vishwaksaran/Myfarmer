@@ -1,12 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Noto_Sans } from "next/font/google";
 import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
 
-const plusJakartaSansFont = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta-sans",
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
   weight: ["400", "500", "700", "800"],
+  display: "swap",
+});
+
+const notoSans = Noto_Sans({
+  variable: "--font-noto",
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
   display: "swap",
 });
 
@@ -46,7 +53,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         />
       </head>
       <body
-        className={`${plusJakartaSansFont.variable} font-[family-name:var(--font-plus-jakarta-sans)] antialiased`}
+        className={`${plusJakartaSans.variable} ${notoSans.variable} font-display antialiased`}
       >
         <AuthProvider>
           {children}

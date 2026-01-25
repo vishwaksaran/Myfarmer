@@ -7,13 +7,19 @@ import { useEffect, useState } from 'react';
 import MiraituLogo from '@/components/MiraituLogo';
 
 /**
- * UserLoginPage - Login page with Google SSO
+ * UserLoginPage - Login page with Google SSO and Phone Auth
  */
 export default function UserLoginPage() {
-    const { user, loading, signInWithGoogle } = useAuth();
+    const { user, loading, signInWithGoogle, loginAsGuest } = useAuth();
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [isSigningIn, setIsSigningIn] = useState(false);
+
+    // Auth Method State
+    const [authMethod, setAuthMethod] = useState<'default' | 'phone'>('default');
+    const [phoneState, setPhoneState] = useState<'input' | 'otp'>('input');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [otp, setOtp] = useState('');
 
     // Redirect to dashboard if already logged in
     useEffect(() => {
@@ -34,6 +40,54 @@ export default function UserLoginPage() {
         } finally {
             setIsSigningIn(false);
         }
+    };
+
+    const handleGuestLogin = async () => {
+        try {
+            setIsSigningIn(true);
+            await loginAsGuest();
+            router.push('/dashboard');
+        } catch (err) {
+            setError('Failed to continue as guest.');
+        } finally {
+            setIsSigningIn(false);
+        }
+    };
+
+    const handleSendOtp = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (phoneNumber.length < 10) {
+            setError("Please enter a valid phone number");
+            return;
+        }
+        setError(null);
+        setIsSigningIn(true);
+        // Simulate API call
+        setTimeout(() => {
+            setIsSigningIn(false);
+            setPhoneState('otp');
+        }, 1000);
+    };
+
+    const handleVerifyOtp = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (otp.length < 4) {
+            setError("Please enter a valid OTP");
+            return;
+        }
+        setError(null);
+        setIsSigningIn(true);
+        // Simulate API call / verification
+        setTimeout(() => {
+            setIsSigningIn(false);
+            router.push('/dashboard');
+        }, 1500);
+    };
+
+    const handleBackToSelection = () => {
+        setAuthMethod('default');
+        setPhoneState('input');
+        setError(null);
     };
 
     if (loading) {
@@ -149,13 +203,27 @@ export default function UserLoginPage() {
                             {/* Background Decoration */}
                             <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--miraitu-lime-green)]/10 rounded-full blur-3xl -mr-10 -mt-10" />
 
+                            {/* Back Button (Only for Phone Auth) */}
+                            {authMethod === 'phone' && (
+                                <button
+                                    onClick={handleBackToSelection}
+                                    className="absolute top-6 left-6 text-gray-400 hover:text-[var(--miraitu-primary-green)] transition-colors flex items-center gap-1 text-sm font-bold uppercase tracking-widest"
+                                >
+                                    <span className="material-symbols-outlined text-lg">arrow_back</span>
+                                    Back
+                                </button>
+                            )}
+
                             {/* Header */}
-                            <div className="text-center mb-8 animate-logo-entrance">
-                                <h1 className="text-[#0f1a11] text-3xl md:text-4xl font-black leading-tight tracking-[-0.02em] mb-2">
-                                    Welcome Back
+                            <div className="text-center mb-8 animate-logo-entrance mt-4">
+                                <h1 className="text-[#0f1a11] text-3xl md:text-3xl font-black leading-tight tracking-[-0.02em] mb-2">
+                                    {authMethod === 'default' && "Welcome Back"}
+                                    {authMethod === 'phone' && "Phone Login"}
                                 </h1>
                                 <p className="text-[#53935d] text-base font-medium">
-                                    Sign in to access your Miraitu dashboard
+                                    {authMethod === 'default' && "Sign in to access your Miraitu dashboard"}
+                                    {authMethod === 'phone' && phoneState === 'input' && "Enter your mobile number to continue"}
+                                    {authMethod === 'phone' && phoneState === 'otp' && "Enter the verification code sent to your phone"}
                                 </p>
                             </div>
 
@@ -166,46 +234,118 @@ export default function UserLoginPage() {
                                 </div>
                             )}
 
-                            {/* Google Sign In Button */}
-                            <div className="space-y-4 animate-button-entrance">
-                                <button
-                                    onClick={handleGoogleSignIn}
-                                    disabled={isSigningIn}
-                                    className="w-full h-14 flex items-center justify-center gap-3 bg-white border-2 border-gray-200 rounded-xl font-bold text-[#0f1a11] hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                                >
-                                    {isSigningIn ? (
-                                        <span className="material-symbols-outlined animate-spin">progress_activity</span>
-                                    ) : (
-                                        <>
-                                            <GoogleIcon />
-                                            <span>Continue with Google</span>
-                                        </>
-                                    )}
-                                </button>
+                            {/* DEFAULT SELECTION VIEW */}
+                            {authMethod === 'default' && (
+                                <div className="space-y-4 animate-button-entrance">
+                                    <button
+                                        onClick={handleGoogleSignIn}
+                                        disabled={isSigningIn}
+                                        className="w-full h-14 flex items-center justify-center gap-3 bg-white border-2 border-gray-200 rounded-xl font-bold text-[#0f1a11] hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                                    >
+                                        {isSigningIn ? (
+                                            <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                                        ) : (
+                                            <>
+                                                <GoogleIcon />
+                                                <span>Continue with Google</span>
+                                            </>
+                                        )}
+                                    </button>
 
-                                {/* Divider */}
-                                <div className="flex items-center gap-4 my-6">
-                                    <div className="flex-1 h-px bg-gray-200" />
-                                    <span className="text-sm text-gray-400 font-medium">or</span>
-                                    <div className="flex-1 h-px bg-gray-200" />
+                                    {/* Divider */}
+                                    <div className="flex items-center gap-4 my-6">
+                                        <div className="flex-1 h-px bg-gray-200" />
+                                        <span className="text-sm text-gray-400 font-medium">or</span>
+                                        <div className="flex-1 h-px bg-gray-200" />
+                                    </div>
+
+                                    {/* Phone Login Button */}
+                                    <button
+                                        onClick={() => setAuthMethod('phone')}
+                                        className="w-full h-14 flex items-center justify-center gap-3 bg-[var(--miraitu-background-light)] border-2 border-[var(--miraitu-primary-green)]/20 rounded-xl font-bold text-[#0f1a11] hover:bg-[var(--miraitu-primary-green)]/5 hover:border-[var(--miraitu-primary-green)]/40 transition-all"
+                                    >
+                                        <span className="material-symbols-outlined text-[var(--miraitu-primary-green)]">smartphone</span>
+                                        <span>Continue with Phone</span>
+                                    </button>
+
+                                    <button
+                                        onClick={handleGuestLogin}
+                                        className="w-full py-3 text-sm font-semibold text-gray-500 hover:text-[var(--miraitu-primary-green)] transition-colors underline decoration-dotted underline-offset-4"
+                                    >
+                                        Skip & Continue as Guest (Demo)
+                                    </button>
                                 </div>
+                            )}
 
-                                {/* Phone Login Option (placeholder) */}
-                                <button
-                                    className="w-full h-14 flex items-center justify-center gap-3 bg-[var(--miraitu-background-light)] border-2 border-[var(--miraitu-primary-green)]/20 rounded-xl font-bold text-[#0f1a11] hover:bg-[var(--miraitu-primary-green)]/5 hover:border-[var(--miraitu-primary-green)]/40 transition-all"
-                                >
-                                    <span className="material-symbols-outlined text-[var(--miraitu-primary-green)]">smartphone</span>
-                                    <span>Continue with Phone</span>
-                                </button>
-                            </div>
+                            {/* PHONE LOGIN UI */}
+                            {authMethod === 'phone' && (
+                                <form onSubmit={phoneState === 'input' ? handleSendOtp : handleVerifyOtp} className="space-y-6 animate-fade-in">
+                                    {phoneState === 'input' && (
+                                        <div className="space-y-2">
+                                            <div className="relative">
+                                                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60">call</span>
+                                                <input
+                                                    type="tel"
+                                                    value={phoneNumber}
+                                                    onChange={(e) => setPhoneNumber(e.target.value)}
+                                                    className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-[var(--miraitu-primary-green)]/20 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none transition-all placeholder:text-gray-400 text-lg font-medium"
+                                                    placeholder="Mobile Number"
+                                                    autoFocus
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
 
-                            {/* Create Account Link */}
-                            <p className="text-center mt-8 text-sm text-[#53935d] font-medium animate-footer-entrance">
-                                Don't have an account?{' '}
-                                <Link href="/user-register" className="text-[var(--miraitu-primary-green)] font-bold hover:underline">
-                                    Create one here
-                                </Link>
-                            </p>
+                                    {phoneState === 'otp' && (
+                                        <div className="space-y-4">
+                                            <div className="text-center">
+                                                <span className="text-sm text-gray-500">Sent to {phoneNumber}</span>
+                                                <button type="button" onClick={() => setPhoneState('input')} className="ml-2 text-[var(--miraitu-primary-green)] font-bold text-xs hover:underline">Edit</button>
+                                            </div>
+                                            <div className="relative">
+                                                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60">lock</span>
+                                                <input
+                                                    type="text"
+                                                    value={otp}
+                                                    onChange={(e) => setOtp(e.target.value)}
+                                                    className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-[var(--miraitu-primary-green)]/20 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none transition-all placeholder:text-gray-400 text-lg font-medium tracking-widest text-center"
+                                                    placeholder="OTP Code"
+                                                    autoFocus
+                                                    maxLength={6}
+                                                />
+                                            </div>
+                                            <div className="text-center">
+                                                <button type="button" className="text-xs text-gray-400 font-bold uppercase tracking-wider hover:text-[var(--miraitu-primary-green)]">Resend Code</button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <button
+                                        type="submit"
+                                        disabled={isSigningIn}
+                                        className="skeuo-button w-full h-14 flex items-center justify-center gap-3 bg-[var(--miraitu-primary-green)] text-white rounded-xl font-bold uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[var(--miraitu-primary-green)]/30"
+                                    >
+                                        {isSigningIn ? (
+                                            <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                                        ) : (
+                                            <>
+                                                {phoneState === 'input' ? 'Get OTP' : 'Verify & Login'}
+                                                <span className="material-symbols-outlined">arrow_forward</span>
+                                            </>
+                                        )}
+                                    </button>
+                                </form>
+                            )}
+
+                            {/* Create Account Link (Only on selection screen or simple text on phone screen?) */}
+                            {authMethod === 'default' && (
+                                <p className="text-center mt-8 text-sm text-[#53935d] font-medium animate-footer-entrance">
+                                    Don't have an account?{' '}
+                                    <Link href="/user-register" className="text-[var(--miraitu-primary-green)] font-bold hover:underline">
+                                        Create one here
+                                    </Link>
+                                </p>
+                            )}
                         </div>
 
                         {/* Footer */}
