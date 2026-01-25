@@ -8,3 +8,6 @@
 # Ignore OS files
 .DS_Store
 Thumbs.db
+
+# Ignore AI agent configuration
+.agent/
