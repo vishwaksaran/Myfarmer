@@ -1,6 +1,6 @@
 export default function MandiPrices() {
     return (
-        <div className="col-span-1 lg:col-span-12 rounded-2xl bg-harvest-loam p-1 shadow-soft-raised border border-[#e0e5df]">
+        <div className="col-span-1 rounded-2xl bg-harvest-loam p-1 shadow-soft-raised border border-[#e0e5df]">
             <div className="bg-[#fbfbf7] rounded-xl p-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                     <h3 className="text-xl font-bold text-primary-dark flex items-center gap-2">

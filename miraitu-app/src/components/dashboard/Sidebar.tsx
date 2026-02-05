@@ -15,7 +15,7 @@ export default function Sidebar() {
 
     const menuItems = [
         { name: 'Dashboard', icon: 'dashboard', href: '/dashboard' },
-        { name: 'Marketplace', icon: 'storefront', href: '#' },
+        { name: 'Marketplace', icon: 'storefront', href: '/marketplace' },
         { name: 'My Farm', icon: 'potted_plant', href: '#' },
         { name: 'Community', icon: 'groups', href: '#' },
     ];

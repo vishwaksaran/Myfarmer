@@ -1,6 +1,6 @@
 export default function WeatherCard() {
     return (
-        <div className="col-span-1 lg:col-span-8 group relative overflow-hidden rounded-2xl bg-harvest-loam p-1 shadow-soft-raised border border-[#e0e5df]">
+        <div className="col-span-1 group relative overflow-hidden rounded-2xl bg-harvest-loam p-1 shadow-soft-raised border border-[#e0e5df]">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent pointer-events-none"></div>
             <div className="relative flex flex-col h-full bg-[#fbfbf7] rounded-xl p-6 lg:p-8">
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">

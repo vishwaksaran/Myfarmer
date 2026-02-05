@@ -14,10 +14,12 @@ const config: Config = {
                 "primary": "#2c5926", // Updated to match user request
                 "primary-dark": "#1F3A1D", // Updated
                 "lush-leaf": "#28a745",
+                "lush-green": "#2D5A27", // V2 color
                 "lime-green": "#8CDA4F",
                 "lime-accent": "#B0EA3C", // New
-                "background-light": "#fbfaf9",
-                "background-dark": "#191c17",
+                "accent": "#DAA520", // V2 Harvest Gold
+                "background-light": "#f6f7f6", // V2 updated
+                "background-dark": "#161d15", // V2 updated
                 "harvest-loam": "#f5f3ed", // New
                 "harvest-gold": "#E0C040",
                 "fresh-cream": "#FBFAF5",

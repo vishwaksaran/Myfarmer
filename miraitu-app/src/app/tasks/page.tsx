@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import AddTaskModal from '@/components/dashboard/AddTaskModal';
+import WhatsAppButton from '@/components/WhatsAppButton';
 
 interface Task {
     id: number;
@@ -297,12 +298,9 @@ export default function TasksPage() {
                 </div>
             </main>
 
-            {/* Floating Voice Button */}
+            {/* Floating WhatsApp Button */}
             <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50">
-                <button className="relative flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-full bg-gradient-to-b from-primary to-primary-dark text-white shadow-floating transition-transform active:scale-95 border-4 border-lime-accent/30">
-                    <div className="absolute inset-x-3 md:inset-x-4 top-1.5 md:top-2 h-1/2 rounded-full bg-white/20"></div>
-                    <span className="material-symbols-outlined text-3xl md:text-4xl drop-shadow-md z-10">mic</span>
-                </button>
+                <WhatsAppButton size="md" />
             </div>
 
             {/* Add Task Modal */}

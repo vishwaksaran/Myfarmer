@@ -103,6 +103,24 @@ body {
   z-index: -1;
 }
 
+/* Hide Scrollbar Utility */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Emoji Clean Rendering */
+.emoji-clean,
+[class*="emoji"] {
+  -webkit-text-stroke: 0px;
+  text-rendering: optimizeLegibility;
+  font-variant-emoji: emoji;
+}
+
 /* ==========================================
    SKEUOMORPHIC FORM STYLES
    ========================================== */

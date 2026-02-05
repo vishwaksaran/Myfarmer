@@ -1,0 +1,250 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+/* Custom Tailwind Colors */
+:root {
+    --primary: #2c5926;
+    --accent: #DAA520;
+    --lush-green: #2D5A27;
+    --background-light: #f6f7f6;
+    --background-dark: #161d15;
+}
+
+/* Hide scrollbar utility */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* Remove ALL default browser outlines from inputs */
+input,
+input:focus,
+input:focus-visible,
+input:focus-within,
+input:active,
+textarea,
+textarea:focus,
+textarea:focus-visible,
+select,
+select:focus,
+select:focus-visible {
+    outline: none !important;
+    outline-width: 0 !important;
+    outline-style: none !important;
+    outline-color: transparent !important;
+    box-shadow: none;
+}
+
+/* Override any Tailwind focus rings */
+*:focus {
+    outline: none !important;
+}
+
+*:focus-visible {
+    outline: none !important;
+}
+
+/* Skeuomorphic Card Styles */
+.skeuo-card {
+    background: linear-gradient(145deg, #ffffff, #f0f2f0);
+    box-shadow: 6px 6px 12px #e1e3e1, -6px -6px 12px #ffffff;
+}
+
+.dark .skeuo-card {
+    background: linear-gradient(145deg, #1c251b, #121811);
+    box-shadow: 6px 6px 12px #0a0d0a, -2px -2px 12px #222d21;
+}
+
+/* Inset Shadow Effect - Enhanced for Visibility */
+.skeuo-inset {
+    background-color: #e8ede7 !important;
+    border: 1px solid #d4d8d3 !important;
+    box-shadow: 
+        inset 4px 4px 10px #b8bdb7, 
+        inset -4px -4px 10px #ffffff !important;
+    transition: all 0.2s ease;
+    outline: none !important;
+}
+
+.skeuo-inset:focus, 
+.skeuo-inset:focus-visible {
+    outline: none !important;
+    border-color: #d4d8d3 !important; /* Keep same as default */
+    background-color: #e8ede7 !important; /* Keep same as default */
+    box-shadow: 
+        inset 4px 4px 10px #b8bdb7, 
+        inset -4px -4px 10px #ffffff !important;
+}
+
+/* Specific class for Alt-focus or development inspection */
+.skeuo-alt-outline {
+    outline: 2px solid #2c5926 !important;
+    outline-offset: 2px;
+    box-shadow: 
+        inset 4px 4px 10px #b8bdb7, 
+        inset -4px -4px 10px #ffffff, 
+        0 0 0 6px rgba(44, 89, 38, 0.15) !important;
+}
+
+.dark .skeuo-inset {
+    background-color: #181d17 !important;
+    border: 1px solid #252d24 !important;
+    box-shadow: 
+        inset 4px 4px 10px #0a0d0a, 
+        inset -4px -4px 10px #262f25 !important;
+}
+
+.dark .skeuo-inset:focus,
+.dark .skeuo-inset:focus-visible {
+    outline: none !important;
+    border-color: #252d24 !important; /* Keep same as default */
+    background-color: #181d17 !important; /* Keep same as default */
+    box-shadow: 
+        inset 4px 4px 10px #0a0d0a, 
+        inset -4px -4px 10px #262f25 !important;
+}
+
+.dark .skeuo-alt-outline {
+    outline: 2px solid #4a8c42 !important;
+    outline-offset: 2px;
+    box-shadow: 
+        inset 4px 4px 10px #0a0d0a, 
+        inset -4px -4px 10px #262f25, 
+        0 0 0 6px rgba(74, 140, 66, 0.2) !important;
+}
+
+/* Remove number input spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+    display: none !important;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+
+/* Select Dropdown Styling */
+select.skeuo-inset {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    accent-color: #2c5926 !important; /* Changes highlight color in some browsers */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23444' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 1rem center !important;
+    background-size: 12px !important;
+    padding-right: 3rem !important;
+}
+
+select.skeuo-inset::-ms-expand {
+    display: none !important;
+}
+
+.dark select.skeuo-inset {
+    accent-color: #4a8c42 !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23aaa' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+}
+
+select.skeuo-inset:focus {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232c5926' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+}
+
+.dark select.skeuo-inset:focus {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a8c42' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+}
+
+/* Option Styling (limited browser support) */
+select.skeuo-inset option {
+    background-color: #f5f8f4;
+    color: #2c5926;
+    padding: 0.75rem 0.5rem;
+    font-weight: 500;
+}
+
+select.skeuo-inset option:checked {
+    background: linear-gradient(0deg, #e8f5e0 0%, #f0f9ea 100%);
+    color: #2c5926;
+    font-weight: 700;
+}
+
+.dark select.skeuo-inset option {
+    background-color: #1a231a;
+    color: #a8c5a4;
+}
+
+.dark select.skeuo-inset option:checked {
+    background: linear-gradient(0deg, #243524 0%, #2a3f2a 100%);
+    color: #c5e4c1;
+    font-weight: 700;
+}
+
+/* Vibrant Gradient */
+.vibrant-gradient {
+    background: linear-gradient(135deg, #2c5926 0%, #4a8c42 100%);
+}
+
+/* 3D Button Effect */
+.skeuo-button-3d {
+    background: linear-gradient(145deg, #ffffff, #e6e9e6);
+    box-shadow: 4px 4px 8px #d1d4d1, -4px -4px 8px #ffffff, inset 0px 1px 0px rgba(255,255,255,0.8);
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+}
+
+.dark .skeuo-button-3d {
+    background: linear-gradient(145deg, #222d21, #1a231a);
+    box-shadow: 4px 4px 8px #0a0d0a, -2px -2px 8px #2d3b2c, inset 0px 1px 0px rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.skeuo-button-3d:active {
+    box-shadow: inset 2px 2px 5px #d1d4d1, inset -2px -2px 5px #ffffff;
+    transform: translateY(1px);
+}
+
+.dark .skeuo-button-3d:active {
+    box-shadow: inset 2px 2px 5px #0a0d0a, inset -2px -2px 5px #2d3b2c;
+}
+
+/* Glossy Button */
+.glossy-button {
+    background: linear-gradient(180deg, #3d7936 0%, #2D5A27 100%);
+    box-shadow: 0 4px 0 #1b3817, 0 8px 15px rgba(0,0,0,0.2);
+    transition: all 0.1s ease;
+}
+
+.glossy-button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #1b3817, 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Tactile Icon */
+.tactile-icon {
+    background: linear-gradient(145deg, #f0f0f0, #ffffff);
+    box-shadow: 4px 4px 8px #d1d1d1, -4px -4px 8px #ffffff;
+}
+
+.dark .tactile-icon {
+    background: linear-gradient(145deg, #1a231a, #2d3b2c);
+    box-shadow: 4px 4px 8px #0a0d0a, -4px -4px 8px #222d21;
+}
+
+/* Service Card Hover Effect */
+.service-card-hover:hover {
+    box-shadow: 0 0 25px rgba(218, 165, 32, 0.3);
+    border-color: rgba(218, 165, 32, 0.4);
+}
+
+/* Material Symbols Font */
+.material-symbols-outlined {
+    font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24
+}
