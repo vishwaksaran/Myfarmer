@@ -10,10 +10,12 @@ interface MachineryItem {
     price: string;
     image: string;
     brand: string;
-    hp: string;
+    hp?: string;
+    warranty?: string;
     year?: string;
     location?: string;
     condition?: string;
+    [key: string]: string | number | boolean | undefined;
 }
 
 interface MachineryListingProps {
@@ -79,10 +81,18 @@ export default function MachineryListing({ items, type, onCompare, selectedForCo
 
                                 {/* Details Grid */}
                                 <div className="grid grid-cols-2 gap-2 text-xs mb-4">
-                                    <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                                        <span className="material-symbols-outlined text-sm">speed</span>
-                                        {item.hp} HP
-                                    </div>
+                                    {item.hp && (
+                                        <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                                            <span className="material-symbols-outlined text-sm">speed</span>
+                                            {item.hp} HP
+                                        </div>
+                                    )}
+                                    {item.warranty && (
+                                        <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                                            <span className="material-symbols-outlined text-sm">verified</span>
+                                            {item.warranty}
+                                        </div>
+                                    )}
                                     {item.year && (
                                         <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
                                             <span className="material-symbols-outlined text-sm">calendar_month</span>
@@ -164,8 +174,10 @@ export default function MachineryListing({ items, type, onCompare, selectedForCo
                                     <p className="text-xl font-bold text-primary">{selectedItem.price}</p>
                                 </div>
                                 <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
-                                    <span className="text-sm text-gray-500">Horsepower</span>
-                                    <p className="text-xl font-bold text-gray-900 dark:text-white">{selectedItem.hp} HP</p>
+                                    <span className="text-sm text-gray-500">{selectedItem.hp ? 'Horsepower' : 'Warranty'}</span>
+                                    <p className="text-xl font-bold text-gray-900 dark:text-white">
+                                        {selectedItem.hp ? `${selectedItem.hp} HP` : selectedItem.warranty || 'N/A'}
+                                    </p>
                                 </div>
                             </div>
 

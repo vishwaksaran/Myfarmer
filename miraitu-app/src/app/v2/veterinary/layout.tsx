@@ -1,4 +1,3 @@
-import VeterinaryNav from '@/components/v2/veterinary/VeterinaryNav';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import '../globals-v2.css';
@@ -13,7 +12,6 @@ export default function VeterinaryLayout({
             {/* Sticky header wrapper */}
             <div className="sticky top-0 z-50 [&>header]:static [&>header]:z-auto overflow-visible">
                 <Header />
-                <VeterinaryNav />
             </div>
             <main className="py-8 relative z-10">
                 {children}

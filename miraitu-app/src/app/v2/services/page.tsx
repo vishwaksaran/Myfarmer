@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import NearbyLocation from '@/components/v2/NearbyLocation';
 
 const services = [
     {

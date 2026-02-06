@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import NearbyLocation from '@/components/v2/NearbyLocation';
 
 const services = [
     {
@@ -8,42 +9,36 @@ const services = [
         icon: 'medical_services',
         href: '/v2/veterinary/treatment',
         description: 'Get expert veterinary treatment for your livestock',
-        color: 'bg-primary',
     },
     {
         name: 'Vaccination',
         icon: 'vaccines',
         href: '/v2/veterinary/vaccination',
         description: 'Schedule vaccinations to protect your animals',
-        color: 'bg-emerald-600',
     },
     {
         name: 'Deworming',
         icon: 'medication',
         href: '/v2/veterinary/deworming',
         description: 'Regular deworming for healthy livestock',
-        color: 'bg-teal-600',
     },
     {
         name: 'Mastitis Test',
         icon: 'science',
         href: '/v2/veterinary/mastitis-test',
         description: 'Early detection and treatment of mastitis',
-        color: 'bg-cyan-600',
     },
     {
         name: 'Grooming',
         icon: 'content_cut',
         href: '/v2/veterinary/grooming',
         description: 'Professional grooming services for your animals',
-        color: 'bg-green-600',
     },
     {
         name: 'Nutritional Advice',
         icon: 'nutrition',
         href: '/v2/veterinary/nutritional-advice',
         description: 'Expert dietary guidance for optimal health',
-        color: 'bg-lime-600',
     },
 ];
 
@@ -94,7 +89,7 @@ export default function VeterinaryPage() {
                                 href={service.href}
                                 className="group p-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all hover:-translate-y-1"
                             >
-                                <div className={`w-16 h-16 ${service.color} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                                <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                     <span className="material-symbols-outlined text-white text-3xl">{service.icon}</span>
                                 </div>
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{service.name}</h3>

@@ -11,7 +11,9 @@ const navItems = [
     { name: 'Livestock', path: '/v2/livestock' },
     { name: 'Veterinary', path: '/v2/veterinary' },
     { name: 'Services', path: '/v2/services' },
+    { name: 'Shop', path: '/v2/shop' },
     { name: 'Toolbox', path: '/v2/toolbox' },
+    { name: 'Community', path: '/v2/community' },
 ];
 
 export default function Header() {
@@ -41,15 +43,19 @@ export default function Header() {
     return (
         <>
             <header className="sticky top-0 z-50 w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
-                <div className="mx-auto flex max-w-[1280px] items-center justify-between px-6 py-4">
-                    <div className="flex items-center gap-8">
-                        <Link href="/v2" className="flex items-center gap-2">
-                            <MiraituLogo size={40} />
-                            <h2 className="text-2xl font-bold tracking-tight text-[#121811] dark:text-[#f9fbf9]">Miraitu</h2>
+                <div className="mx-auto max-w-[1400px] px-4 py-3">
+                    {/* Main Header Row */}
+                    <div className="flex items-center justify-between gap-4">
+                        {/* Logo */}
+                        <Link href="/v2" className="flex items-center gap-2 shrink-0">
+                            <MiraituLogo size={36} />
+                            <h2 className="text-xl font-bold tracking-tight text-[#121811] dark:text-[#f9fbf9]">Miraitu</h2>
                         </Link>
-                        <div className="relative hidden lg:block w-80">
-                            <div className="skeuo-inset flex h-11 w-full items-center rounded-xl bg-[#ebf0ea] dark:bg-[#222d21] px-4">
-                                <span className="material-symbols-outlined text-primary/60">search</span>
+
+                        {/* Search Bar */}
+                        <div className="hidden md:block flex-1 max-w-md mx-4">
+                            <div className="skeuo-inset flex h-10 w-full items-center rounded-xl bg-[#ebf0ea] dark:bg-[#222d21] px-4">
+                                <span className="material-symbols-outlined text-primary/60 text-lg">search</span>
                                 <input
                                     className="w-full border-none bg-transparent px-3 text-sm focus:ring-0 placeholder:text-gray-500"
                                     placeholder="Search livestock, tools, services..."
@@ -57,33 +63,36 @@ export default function Header() {
                                 />
                             </div>
                         </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <nav className="hidden xl:flex items-center gap-6">
+
+                        {/* Navigation Menu */}
+                        <nav className="hidden xl:flex items-center gap-1">
                             {navItems.map((item) => (
                                 <Link
                                     key={item.name}
                                     href={item.path}
-                                    className={`text-sm font-semibold transition-colors ${isActive(item.path)
-                                            ? 'text-primary'
-                                            : 'text-gray-700 dark:text-gray-200 hover:text-primary'
+                                    className={`px-3 py-2 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${isActive(item.path)
+                                        ? 'text-primary bg-primary/5'
+                                        : 'text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-primary/5'
                                         }`}
                                 >
                                     {item.name}
                                 </Link>
                             ))}
                         </nav>
-                        <div className="h-6 w-[1px] bg-gray-300 dark:bg-gray-700 mx-2"></div>
-                        <button
-                            onClick={() => setIsLanguageModalOpen(true)}
-                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold skeuo-card transition-transform hover:scale-105"
-                        >
-                            <span className="material-symbols-outlined text-primary">language</span>
-                            <span>{allLanguages.find(lang => lang.code === selectedLang)?.name || 'English'}</span>
-                        </button>
-                        <button className="flex items-center justify-center rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-white shadow-lg hover:brightness-110 active:scale-95 transition-all">
-                            Login
-                        </button>
+
+                        {/* Right Actions */}
+                        <div className="flex items-center gap-2 shrink-0">
+                            <button
+                                onClick={() => setIsLanguageModalOpen(true)}
+                                className="hidden sm:flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold skeuo-card transition-transform hover:scale-105"
+                            >
+                                <span className="material-symbols-outlined text-primary text-lg">language</span>
+                                <span className="hidden lg:inline">{allLanguages.find(lang => lang.code === selectedLang)?.name || 'English'}</span>
+                            </button>
+                            <button className="flex items-center justify-center rounded-xl bg-primary px-5 py-2 text-sm font-bold text-white shadow-lg hover:brightness-110 active:scale-95 transition-all">
+                                Login
+                            </button>
+                        </div>
                     </div>
                 </div>
             </header>

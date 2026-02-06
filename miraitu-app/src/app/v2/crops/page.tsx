@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import NearbyLocation from '@/components/v2/NearbyLocation';
 
 const marketHighlights = [
     { crop: 'Wheat', price: '₹2,450/qtl', change: '+2.3%', trend: 'up' },
@@ -36,12 +37,17 @@ export default function CropsPage() {
             <div className="mx-auto max-w-[1280px]">
                 {/* Hero Section */}
                 <div className="mb-10">
-                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
-                        Crops <span className="text-primary">Market</span>
-                    </h1>
-                    <p className="text-lg text-gray-500 max-w-2xl">
-                        Get live mandi prices, buy directly from farmers, or sell your produce at the best rates.
-                    </p>
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                        <div>
+                            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
+                                Crops <span className="text-primary">Market</span>
+                            </h1>
+                            <p className="text-lg text-gray-500 max-w-2xl">
+                                Get live mandi prices, buy directly from farmers, or sell your produce at the best rates.
+                            </p>
+                        </div>
+                        <NearbyLocation />
+                    </div>
                 </div>
 
                 {/* Quick Actions */}
