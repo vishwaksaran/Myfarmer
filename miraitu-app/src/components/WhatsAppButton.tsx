@@ -8,7 +8,7 @@ interface WhatsAppButtonProps {
 }
 
 export default function WhatsAppButton({
-    phoneNumber = '919876543210',
+    phoneNumber = '917448410198',
     message = 'Hello, I need assistance',
     size = 'lg',
     showLabel = false,

@@ -1,3 +1,5 @@
+import FloatingActionButtons from '@/components/FloatingActionButtons';
+import { LanguageProvider } from '@/i18n/LanguageContext';
 import './globals-v2.css';
 
 export default function V2Layout({
@@ -5,5 +7,10 @@ export default function V2Layout({
 }: {
     children: React.ReactNode;
 }) {
-    return <>{children}</>;
+    return (
+        <LanguageProvider>
+            {children}
+            <FloatingActionButtons />
+        </LanguageProvider>
+    );
 }

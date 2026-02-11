@@ -23,6 +23,9 @@ const nextConfig: NextConfig = {
   // Production optimizations
   poweredByHeader: false,
 
+  // Disable dev toolbar
+  devIndicators: false,
+
   // Reduce bundle size
   productionBrowserSourceMaps: false,
 };

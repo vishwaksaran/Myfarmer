@@ -245,7 +245,7 @@ export default function MachineryListing({ items, type, onCompare, selectedForCo
                                 <input
                                     type="tel"
                                     className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none transition-colors"
-                                    placeholder="+91 9876543210"
+                                    placeholder="+91 7448410198"
                                 />
                             </div>
 

@@ -55,9 +55,12 @@ export default function VeterinaryPage() {
             <div className="mx-auto max-w-[1280px]">
                 {/* Hero Section */}
                 <div className="mb-10">
-                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
-                        Veterinary <span className="text-primary">Services</span>
-                    </h1>
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-3">
+                        <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+                            Veterinary <span className="text-primary">Services</span>
+                        </h1>
+                        <NearbyLocation />
+                    </div>
                     <p className="text-lg text-gray-500 max-w-2xl">
                         Expert veterinary care for your livestock. Book consultations, vaccinations, and treatments from verified professionals.
                     </p>
@@ -77,6 +80,30 @@ export default function VeterinaryPage() {
                             <p className="text-sm text-gray-500">{stat.label}</p>
                         </div>
                     ))}
+                </div>
+
+                {/* Semen Finder Banner */}
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 mb-10 shadow-lg shadow-blue-500/20 text-white relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:bg-white/20 transition-colors"></div>
+
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                        <div className="flex items-center gap-6">
+                            <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-inner border border-white/20">
+                                <span className="material-symbols-outlined text-white text-4xl">science</span>
+                            </div>
+                            <div>
+                                <h2 className="text-3xl font-black mb-2 tracking-tight">Want to find a semen for your breed?</h2>
+                                <p className="text-blue-100 font-medium text-lg">Access elite genetics for superior milk yield and disease resistance.</p>
+                            </div>
+                        </div>
+                        <Link
+                            href="/v2/veterinary/semen-finder"
+                            className="shrink-0 px-8 py-4 bg-white text-blue-700 rounded-xl font-bold hover:bg-blue-50 transition-all shadow-lg hover:-translate-y-1 active:scale-95 flex items-center gap-2"
+                        >
+                            Find Semen Now
+                            <span className="material-symbols-outlined font-bold">arrow_forward</span>
+                        </Link>
+                    </div>
                 </div>
 
                 {/* Services Grid */}

@@ -143,7 +143,7 @@ export default function LivestockMarketPage() {
     const filteredProducts = products.filter(p => p.category === selectedCategory);
 
     const handleWhatsApp = () => {
-        window.open('https://wa.me/919876543210', '_blank');
+        window.open('https://wa.me/917448410198', '_blank');
     };
 
     return (

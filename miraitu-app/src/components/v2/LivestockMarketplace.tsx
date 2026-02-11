@@ -1,8 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 
-const categories = ['Cows', 'Buffaloes', 'Goats', 'Others'];
+const categoryKeys = [
+    { key: 'livestock.cows', value: 'Cows' },
+    { key: 'livestock.buffaloes', value: 'Buffaloes' },
+    { key: 'livestock.goats', value: 'Goats' },
+    { key: 'livestock.others', value: 'Others' },
+];
 
 const livestockData = [
     {
@@ -50,6 +56,7 @@ const livestockData = [
 ];
 
 export default function LivestockMarketplace() {
+    const { t } = useLanguage();
     const [activeCategory, setActiveCategory] = useState('Cows');
 
     const filteredLivestock = livestockData.filter(item => item.category === activeCategory);
@@ -60,28 +67,28 @@ export default function LivestockMarketplace() {
                 <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div className="flex-1">
                         <div className="flex items-center justify-between w-full mb-2">
-                            <h2 className="text-3xl font-bold tracking-tight">Livestock Marketplace</h2>
+                            <h2 className="text-3xl font-bold tracking-tight">{t('livestock.title')}</h2>
                             <button className="skeuo-button-3d flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-primary transition-all">
-                                View All Marketplace
+                                {t('livestock.viewAll')}
                                 <span className="material-symbols-outlined text-lg">arrow_forward_ios</span>
                             </button>
                         </div>
-                        <p className="text-gray-500 dark:text-gray-400">Buy and sell verified healthy livestock with secure logistics.</p>
+                        <p className="text-gray-500 dark:text-gray-400">{t('livestock.subtitle')}</p>
                     </div>
                 </div>
 
                 {/* Category Tabs */}
                 <div className="mb-8 flex gap-2 rounded-2xl skeuo-inset bg-gray-100/50 dark:bg-[#222d21] p-1.5 w-fit">
-                    {categories.map((category) => (
+                    {categoryKeys.map((cat) => (
                         <button
-                            key={category}
-                            onClick={() => setActiveCategory(category)}
-                            className={`rounded-xl px-6 py-2 text-sm font-bold transition-all ${activeCategory === category
+                            key={cat.value}
+                            onClick={() => setActiveCategory(cat.value)}
+                            className={`rounded-xl px-6 py-2 text-sm font-bold transition-all ${activeCategory === cat.value
                                 ? 'bg-white dark:bg-primary shadow-sm'
                                 : 'text-gray-500 hover:text-primary'
                                 }`}
                         >
-                            {category}
+                            {t(cat.key)}
                         </button>
                     ))}
                 </div>
@@ -107,11 +114,11 @@ export default function LivestockMarketplace() {
                                     <span className="text-sm font-bold text-primary">{item.price}</span>
                                 </div>
                                 <p className="mb-4 text-sm text-gray-500">
-                                    Breed: <span className="font-semibold text-gray-800 dark:text-gray-200">{item.breed}</span>
+                                    {t('livestock.breed')}: <span className="font-semibold text-gray-800 dark:text-gray-200">{item.breed}</span>
                                 </p>
                                 <div className="mb-4 space-y-2">
                                     <div className="flex items-center justify-between text-xs">
-                                        <span className="font-medium">Health Status</span>
+                                        <span className="font-medium">{t('livestock.healthStatus')}</span>
                                         <span className="font-bold text-primary">{item.health}%</span>
                                     </div>
                                     <div className="h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
@@ -125,7 +132,7 @@ export default function LivestockMarketplace() {
                                 <div className="flex gap-2">
                                     <button className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-xs font-bold text-white transition-transform active:scale-95">
                                         <span className="material-symbols-outlined text-sm">call</span>
-                                        Call
+                                        {t('livestock.call')}
                                     </button>
                                     <button className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary/5 py-2.5 text-xs font-bold text-primary hover:bg-primary/10 transition-transform active:scale-95">
                                         <svg className="size-4" fill="currentColor" viewBox="0 0 24 24">

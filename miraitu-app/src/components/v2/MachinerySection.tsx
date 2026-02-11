@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import CompareModal from '@/components/v2/machinery/CompareModal';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const machineryData = [
     {
@@ -41,30 +42,27 @@ const machineryData = [
 ];
 
 export default function MachinerySection() {
+    const { t } = useLanguage();
     const [selectedItems, setSelectedItems] = useState<number[]>([2]);
     const [showCompareModal, setShowCompareModal] = useState(false);
 
     const toggleSelection = (id: number) => {
         setSelectedItems(prev => {
-            // If already selected, allow deselection
             if (prev.includes(id)) {
                 return prev.filter(i => i !== id);
             }
-            // If not selected, check if we've reached the limit
             if (prev.length >= 2) {
-                // Don't allow selecting more than 2
                 return prev;
             }
-            // Add the new selection
             return [...prev, id];
         });
     };
 
     return (
-        <section className="bg-[#ebf0ea]/50 dark:bg-background-dark/30 px-6 py-16 relative">
+        <section className="bg-[#ebf0ea]/50 dark:bg-background-dark/30 px-6 py-16 relative hidden">
             {/* WhatsApp Button */}
             <a
-                href="https://wa.me/919876543210?text=Hi,%20I'm%20interested%20in%20machinery"
+                href="https://wa.me/917448410198?text=Hi,%20I'm%20interested%20in%20machinery"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="fixed bottom-8 right-8 z-50 flex items-center justify-center size-16 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white shadow-2xl hover:shadow-3xl hover:scale-110 transition-all duration-300"
@@ -77,8 +75,8 @@ export default function MachinerySection() {
             <div className="mx-auto max-w-[1280px]">
                 <div className="mb-10 flex items-start justify-between">
                     <div>
-                        <h2 className="text-3xl font-bold tracking-tight">Machinery & Equipment</h2>
-                        <p className="text-gray-500">Rent or purchase the latest agricultural technology.</p>
+                        <h2 className="text-3xl font-bold tracking-tight">{t('machinery.title')}</h2>
+                        <p className="text-gray-500">{t('machinery.subtitle')}</p>
                     </div>
                     <div className="flex items-center gap-4">
                         <button
@@ -90,13 +88,13 @@ export default function MachinerySection() {
                                 }`}
                         >
                             <span className="material-symbols-outlined">compare_arrows</span>
-                            Compare ({selectedItems.length})
+                            {t('machinery.compare')} ({selectedItems.length})
                         </button>
                         <Link
                             href="/v2/machinery"
                             className="skeuo-button-3d flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-primary hover:bg-primary/5 transition-colors"
                         >
-                            See More Machinery
+                            {t('machinery.seeMore')}
                             <span className="material-symbols-outlined text-lg">arrow_forward_ios</span>
                         </Link>
                     </div>
@@ -137,7 +135,7 @@ export default function MachinerySection() {
                                     <div className="mt-4 flex items-center justify-between">
                                         <span className="text-sm font-bold text-primary">{item.price}</span>
                                         <button className="rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary/20 transition-colors">
-                                            View Details
+                                            {t('machinery.viewDetails')}
                                         </button>
                                     </div>
                                 </div>

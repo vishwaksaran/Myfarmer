@@ -8,7 +8,7 @@ import MiraituLogo from '@/components/MiraituLogo';
 import SearchBar from '@/components/dashboard/SearchBar';
 import HeroBanner from '@/components/dashboard/HeroBanner';
 import ServiceCard from '@/components/dashboard/ServiceCard';
-import WhatsAppButton from '@/components/WhatsAppButton';
+import FloatingActionButtons from '@/components/FloatingActionButtons';
 
 export default function DashboardPage() {
     const { user, loading } = useAuth();
@@ -82,10 +82,7 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* Floating WhatsApp Button */}
-                <div className="fixed bottom-6 right-6 lg:bottom-12 lg:right-12 z-50">
-                    <WhatsAppButton size="lg" showLabel={true} />
-                </div>
+                <FloatingActionButtons />
             </main>
         </div>
     );
