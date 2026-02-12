@@ -4,6 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
+import { useCart } from '@/context/CartContext';
+import { featuredProducts } from '../data';
 
 export default function CheckoutPage() {
     const [form, setForm] = useState({
@@ -24,6 +26,28 @@ export default function CheckoutPage() {
     const [cardCvv, setCardCvv] = useState('');
     const [cardName, setCardName] = useState('');
     const [orderPlaced, setOrderPlaced] = useState(false);
+
+    const { quantities, deleteItem, clearCart } = useCart();
+
+    // Compute cart items from quantities and product data
+    const cartItems = Object.entries(quantities).map(([idStr, qty]) => {
+        const id = parseInt(idStr);
+        const product = featuredProducts.find(p => p.id === id);
+        if (!product) return null;
+
+        // Parse price to number (remove currency symbol and commas)
+        const priceNum = parseInt(product.price.replace(/[^\d]/g, ''));
+
+        return {
+            ...product,
+            qty,
+            totalPrice: priceNum * qty
+        };
+    }).filter(item => item !== null) as (typeof featuredProducts[0] & { qty: number, totalPrice: number })[];
+
+    const subtotal = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
+    const discount = 200; // Flat discount for now
+    const total = Math.max(0, subtotal - discount);
 
     const updateField = (field: string, value: string) => {
         setForm(prev => ({ ...prev, [field]: value }));
@@ -55,14 +79,9 @@ export default function CheckoutPage() {
     const handlePlaceOrder = () => {
         if (validate()) {
             setOrderPlaced(true);
+            setTimeout(clearCart, 500); // Clear cart after order placement
         }
     };
-
-    // Sample cart items for display
-    const cartItems = [
-        { name: 'Hybrid Tomato Seeds - 500g', price: '₹1,250', qty: 1, image: 'https://images.unsplash.com/photo-1592921870789-04563d55041c?w=80&h=80&fit=crop' },
-        { name: 'NPK Fertilizer 50kg', price: '₹1,800', qty: 1, image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=80&h=80&fit=crop' },
-    ];
 
     const InputField = ({ label, field, placeholder, type = 'text', required = true, maxLength }: { label: string; field: string; placeholder: string; type?: string; required?: boolean; maxLength?: number }) => (
         <div>
@@ -328,47 +347,67 @@ export default function CheckoutPage() {
                                 </h3>
 
                                 {/* Cart Items */}
-                                <div className="space-y-3 mb-5 pb-5 border-b border-gray-100 dark:border-gray-800">
-                                    {cartItems.map((item, i) => (
-                                        <div key={i} className="flex gap-3">
-                                            <div className="w-14 h-14 rounded-xl bg-gray-100 dark:bg-gray-800 overflow-hidden shrink-0">
-                                                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                <div className="space-y-4 mb-5 pb-5 border-b border-gray-100 dark:border-gray-800">
+                                    {cartItems.length === 0 ? (
+                                        <p className="text-sm text-gray-500 text-center py-4">Your cart is empty.</p>
+                                    ) : (
+                                        cartItems.map((item) => (
+                                            <div key={item.id} className="relative flex gap-3 group">
+                                                <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-gray-800 overflow-hidden shrink-0 border border-gray-200 dark:border-gray-700">
+                                                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                                </div>
+                                                <div className="flex-1 min-w-0 pr-6">
+                                                    <p className="text-sm font-bold text-gray-900 dark:text-white truncate leading-tight mb-1" title={item.name}>{item.name}</p>
+                                                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                                                        <span>Qty: {item.qty}</span>
+                                                        <span className="text-gray-300">|</span>
+                                                        <span>{item.price} each</span>
+                                                    </div>
+                                                    <div className="mt-1 font-bold text-primary text-sm">₹{item.totalPrice.toLocaleString('en-IN')}</div>
+                                                </div>
+
+                                                {/* Remove Button */}
+                                                <button
+                                                    onClick={() => deleteItem(item.id)}
+                                                    className="absolute top-0 right-0 p-1 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                                    title="Remove item"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">delete</span>
+                                                </button>
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{item.name}</p>
-                                                <p className="text-xs text-gray-500">Qty: {item.qty}</p>
-                                            </div>
-                                            <span className="font-bold text-sm text-primary shrink-0">{item.price}</span>
-                                        </div>
-                                    ))}
+                                        ))
+                                    )}
                                 </div>
 
                                 {/* Price Breakdown */}
                                 <div className="space-y-2 mb-5 pb-5 border-b border-gray-100 dark:border-gray-800 text-sm">
                                     <div className="flex justify-between">
                                         <span className="text-gray-500">Subtotal</span>
-                                        <span className="font-bold text-gray-900 dark:text-white">₹3,050</span>
+                                        <span className="font-bold text-gray-900 dark:text-white">₹{subtotal.toLocaleString('en-IN')}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-gray-500">Delivery</span>
                                         <span className="font-bold text-green-600">FREE</span>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-500">Discount</span>
-                                        <span className="font-bold text-red-500">-₹200</span>
-                                    </div>
+                                    {subtotal > 0 && (
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500">Discount</span>
+                                            <span className="font-bold text-red-500">-₹{discount.toLocaleString('en-IN')}</span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Total */}
                                 <div className="flex justify-between items-center mb-6">
                                     <span className="text-lg font-black text-gray-900 dark:text-white">Total</span>
-                                    <span className="text-2xl font-black text-primary">₹2,850</span>
+                                    <span className="text-2xl font-black text-primary">₹{total.toLocaleString('en-IN')}</span>
                                 </div>
 
                                 {/* Place Order */}
                                 <button
                                     onClick={handlePlaceOrder}
-                                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-green-500 text-white font-black text-base tracking-wide flex items-center justify-center gap-2 group hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/25"
+                                    disabled={cartItems.length === 0}
+                                    className={`w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-green-500 text-white font-black text-base tracking-wide flex items-center justify-center gap-2 group transition-all shadow-lg shadow-primary/25 ${cartItems.length === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:brightness-110 active:scale-[0.98]'}`}
                                 >
                                     <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">lock</span>
                                     Place Order
