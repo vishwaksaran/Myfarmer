@@ -84,6 +84,7 @@ export const translations: Record<LangCode, Record<string, string>> = {
         'hero.catLivestock': 'Livestock',
         'hero.catAgriProducts': 'Agricultural Products',
         'hero.catFarmersLand': 'Farmers Land',
+        'hero.catCrops': 'Crops',
         // Quick Services
         'qs.title': 'Quick Services',
         'qs.subtitle': 'Instant access to our most requested agricultural support tools and services.',
@@ -316,6 +317,7 @@ export const translations: Record<LangCode, Record<string, string>> = {
         'hero.catLivestock': 'पशुधन',
         'hero.catAgriProducts': 'कृषि उत्पाद',
         'hero.catFarmersLand': 'किसान भूमि',
+        'hero.catCrops': 'फसलें',
         'qs.title': 'त्वरित सेवाएं',
         'qs.subtitle': 'हमारे सबसे अनुरोधित कृषि सहायता उपकरणों और सेवाओं तक तत्काल पहुंच।',
         'qs.farmServices': 'कृषि सेवाएं',

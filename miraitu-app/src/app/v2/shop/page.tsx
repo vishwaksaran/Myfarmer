@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
+import { useCart } from '@/context/CartContext';
 
 // Shop categories with icons matching the reference
 const shopCategories = [
@@ -165,11 +165,7 @@ const dealsOfTheDay = [
 ];
 
 export default function ShopPage() {
-    const [cartCount, setCartCount] = useState(0);
-
-    const addToCart = () => {
-        setCartCount(prev => prev + 1);
-    };
+    const { quantities, addItem, removeItem } = useCart();
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-[#0d110d]">
@@ -333,12 +329,30 @@ export default function ShopPage() {
                                                 <span className="text-xs text-gray-400 line-through ml-1">{product.originalPrice}</span>
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={addToCart}
-                                            className="w-full mt-3 py-2 rounded-lg bg-primary/10 text-primary text-sm font-semibold hover:bg-primary hover:text-white transition-colors"
-                                        >
-                                            Add to Cart
-                                        </button>
+                                        {(quantities[product.id] || 0) > 0 ? (
+                                            <div className="w-full mt-3 flex items-center justify-between rounded-lg bg-primary text-white overflow-hidden">
+                                                <button
+                                                    onClick={() => removeItem(product.id)}
+                                                    className="px-4 py-2 hover:bg-primary-dark transition-colors font-bold text-lg"
+                                                >
+                                                    −
+                                                </button>
+                                                <span className="font-black text-sm">{quantities[product.id]}</span>
+                                                <button
+                                                    onClick={() => addItem(product.id)}
+                                                    className="px-4 py-2 hover:bg-primary-dark transition-colors font-bold text-lg"
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => addItem(product.id)}
+                                                className="w-full mt-3 py-2 rounded-lg bg-primary/10 text-primary text-sm font-semibold hover:bg-primary hover:text-white transition-colors"
+                                            >
+                                                Add to Cart
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -425,13 +439,6 @@ export default function ShopPage() {
 
             <Footer />
 
-            {/* Floating Cart Button */}
-            {cartCount > 0 && (
-                <button className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-full shadow-2xl hover:brightness-110 transition-all">
-                    <span className="material-symbols-outlined">shopping_cart</span>
-                    <span>Cart ({cartCount})</span>
-                </button>
-            )}
         </div>
     );
 }
