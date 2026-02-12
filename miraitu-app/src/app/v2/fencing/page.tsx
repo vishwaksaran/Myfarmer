@@ -76,8 +76,8 @@ export default function FencingInfrastructurePage() {
                         <MiraituLogo size={40} />
                         <h2 className="text-2xl font-bold tracking-tight text-[#121811] dark:text-[#f9fbf9]">Miraitu</h2>
                     </div>
-                    <a href="/v2" className="text-sm font-semibold hover:text-primary transition-colors">
-                        ← Back to Home
+                    <a href="/v2/services" className="text-sm font-semibold hover:text-primary transition-colors">
+                        ← Back to Services
                     </a>
                 </div>
             </header>
@@ -106,10 +106,10 @@ export default function FencingInfrastructurePage() {
                             <div
                                 key={fence.id}
                                 className={`skeuo-card rounded-3xl p-8 border-4 transition-all ${selectedFencingType === fence.id
-                                        ? 'border-primary shadow-2xl shadow-primary/30'
-                                        : fence.popular
-                                            ? 'border-orange-500/30'
-                                            : 'border-white'
+                                    ? 'border-primary shadow-2xl shadow-primary/30'
+                                    : fence.popular
+                                        ? 'border-orange-500/30'
+                                        : 'border-white'
                                     } ${fence.popular ? 'lg:scale-105' : ''}`}
                             >
                                 {fence.popular && (
@@ -138,8 +138,8 @@ export default function FencingInfrastructurePage() {
                                         <button
                                             onClick={() => setSelectedFencingType(fence.id)}
                                             className={`w-full rounded-xl py-3 font-bold transition-all ${selectedFencingType === fence.id
-                                                    ? 'glossy-button text-white'
-                                                    : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                                                ? 'glossy-button text-white'
+                                                : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                                                 }`}
                                         >
                                             {selectedFencingType === fence.id ? '✓ SELECTED' : 'GET QUOTE'}

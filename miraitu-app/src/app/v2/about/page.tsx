@@ -65,11 +65,12 @@ const impactStats = [
 
 export default function AboutPage() {
     return (
-        <>
+        <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-[#121811] dark:text-[#f9fbf9] transition-colors duration-300">
+
             {/* ═══════════════════════════════════════════════════════ */}
             {/* Hero Banner — "Bringing Nature & Innovation"          */}
             {/* ═══════════════════════════════════════════════════════ */}
-            <section className="relative overflow-hidden -mt-8">
+            <section className="relative overflow-hidden">
                 {/* Background Image + Overlay */}
                 <div className="absolute inset-0">
                     <div
@@ -325,6 +326,6 @@ export default function AboutPage() {
                     </div>
                 </div>
             </section>
-        </>
+        </div>
     );
 }

@@ -123,9 +123,18 @@ export default function GenericServicePage() {
     return (
         <div className="min-h-screen bg-background-light dark:bg-background-dark">
             {/* Hero */}
-            <section className={`px-6 py-12 ${colors.bgLight} dark:bg-opacity-10`}>
+            <section className={`relative px-6 py-12 ${colors.bgLight} dark:bg-opacity-10`}>
                 <div className="mx-auto max-w-[1280px]">
-                    <div className="flex flex-col md:flex-row items-center gap-8">
+                    <div className="absolute top-6 left-6 md:left-12">
+                        <Link
+                            href="/v2/services"
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/50 dark:bg-black/20 backdrop-blur-sm text-sm font-bold hover:bg-white/80 dark:hover:bg-black/40 transition-all text-gray-700 dark:text-gray-200"
+                        >
+                            <span className="material-symbols-outlined text-lg">arrow_back</span>
+                            Back to Services
+                        </Link>
+                    </div>
+                    <div className="flex flex-col md:flex-row items-center gap-8 pt-10">
                         <div className={`size-24 rounded-[2rem] ${colors.bg} flex items-center justify-center text-white shadow-2xl`}>
                             <span className="material-symbols-outlined text-5xl">{service.icon}</span>
                         </div>

@@ -46,8 +46,8 @@ export default function BorewellServicesPage() {
                         <MiraituLogo size={40} />
                         <h2 className="text-2xl font-bold tracking-tight text-[#121811] dark:text-[#f9fbf9]">Miraitu</h2>
                     </div>
-                    <a href="/v2" className="text-sm font-semibold hover:text-primary transition-colors">
-                        ← Back to Home
+                    <a href="/v2/services" className="text-sm font-semibold hover:text-primary transition-colors">
+                        ← Back to Services
                     </a>
                 </div>
             </header>

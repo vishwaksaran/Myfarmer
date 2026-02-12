@@ -16,16 +16,18 @@ export const metadata = {
 
 export default function V2Page() {
     return (
-        <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-[#121811] dark:text-[#f9fbf9] transition-colors duration-300">
+        <div className="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark text-[#121811] dark:text-[#f9fbf9] transition-colors duration-300">
             <Header />
-            <HeroSection />
-            <QuickServices />
-            <LivestockMarketplace />
-            <MachinerySection />
-            <ServicesSection />
-            <WaterEnergySection />
-            <ToolboxSection />
-            <Footer />
+            <main className="flex-1 w-full flex flex-col overflow-x-hidden">
+                <HeroSection />
+                <QuickServices />
+                <LivestockMarketplace />
+                <MachinerySection />
+                <ServicesSection />
+                <WaterEnergySection />
+                <ToolboxSection />
+                <Footer />
+            </main>
         </div>
     );
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 
 export default function SoilTestingPage() {
@@ -44,9 +45,18 @@ export default function SoilTestingPage() {
     return (
         <div className="min-h-screen bg-background-light dark:bg-background-dark">
             {/* Hero Section */}
-            <section className="px-6 py-12 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20">
+            <section className="relative px-6 py-12 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20">
                 <div className="mx-auto max-w-[1280px]">
-                    <div className="text-center mb-12">
+                    <div className="absolute top-6 left-6 md:left-12">
+                        <Link
+                            href="/v2/services"
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/50 dark:bg-black/20 backdrop-blur-sm text-sm font-bold hover:bg-white/80 dark:hover:bg-black/40 transition-all text-gray-700 dark:text-gray-200"
+                        >
+                            <span className="material-symbols-outlined text-lg">arrow_back</span>
+                            Back to Services
+                        </Link>
+                    </div>
+                    <div className="text-center mb-12 pt-10">
                         <div className="inline-flex items-center justify-center size-20 rounded-[2rem] bg-gradient-to-br from-amber-500 to-orange-600 text-white mb-6 shadow-2xl">
                             <span className="material-symbols-outlined text-4xl">science</span>
                         </div>

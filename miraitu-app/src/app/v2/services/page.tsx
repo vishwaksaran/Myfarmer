@@ -16,7 +16,7 @@ const services = [
     {
         name: 'Rent Machinery',
         icon: 'agriculture',
-        href: '/v2/machinery',
+        href: '/v2/services/rent-machinery',
         description: 'Rent tractors, harvesters, and other farm equipment',
         available: '200+ machines',
         color: 'bg-primary',
@@ -78,11 +78,11 @@ const services = [
         color: 'bg-primary',
     },
     {
-        name: 'Technician',
-        icon: 'engineering',
-        href: '/v2/services/technician',
-        description: 'Expert repair & maintenance for farm systems',
-        available: '50+ experts',
+        name: 'Storage and Godown',
+        icon: 'warehouse',
+        href: '/v2/services/storage-godown',
+        description: 'Secure storage & godown facilities for produce',
+        available: '20+ facilities',
         color: 'bg-primary',
     },
     {

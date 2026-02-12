@@ -88,8 +88,8 @@ export default function CCTVSurveillancePage() {
                         <MiraituLogo size={40} />
                         <h2 className="text-2xl font-bold tracking-tight text-[#121811] dark:text-[#f9fbf9]">Miraitu</h2>
                     </div>
-                    <a href="/v2" className="text-sm font-semibold hover:text-primary transition-colors">
-                        ← Back to Home
+                    <a href="/v2/services" className="text-sm font-semibold hover:text-primary transition-colors">
+                        ← Back to Services
                     </a>
                 </div>
             </header>
@@ -139,10 +139,10 @@ export default function CCTVSurveillancePage() {
                             <div
                                 key={pkg.id}
                                 className={`skeuo-card rounded-3xl p-8 border-4 transition-all ${selectedPackage === pkg.id
-                                        ? 'border-orange-500 shadow-2xl shadow-orange-500/30'
-                                        : pkg.popular
-                                            ? 'border-primary/30'
-                                            : 'border-white'
+                                    ? 'border-orange-500 shadow-2xl shadow-orange-500/30'
+                                    : pkg.popular
+                                        ? 'border-primary/30'
+                                        : 'border-white'
                                     } ${pkg.popular ? 'lg:scale-105' : ''}`}
                             >
                                 {pkg.popular && (
@@ -168,10 +168,10 @@ export default function CCTVSurveillancePage() {
                                 <button
                                     onClick={() => setSelectedPackage(pkg.id)}
                                     className={`w-full rounded-xl py-4 font-black text-lg transition-all ${selectedPackage === pkg.id
-                                            ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-2xl'
-                                            : pkg.popular
-                                                ? 'glossy-button text-white'
-                                                : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                                        ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-2xl'
+                                        : pkg.popular
+                                            ? 'glossy-button text-white'
+                                            : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                                         }`}
                                 >
                                     {selectedPackage === pkg.id ? '✓ SELECTED' : 'SELECT PACKAGE'}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+
 import NearbyLocation from '@/components/v2/NearbyLocation';
 
 type TabType = 'browse' | 'buy' | 'sell';
@@ -103,253 +104,255 @@ export default function LivestockPage() {
     );
 
     return (
-        <div className="px-6 pb-12">
-            <div className="mx-auto max-w-[1280px]">
-                {/* Header */}
-                <div className="mb-8">
-                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                                Livestock Marketplace
-                            </h1>
-                            <p className="text-gray-500 dark:text-gray-400">
-                                Buy and sell cattle, poultry, goats, and more from verified sellers
-                            </p>
+        <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-[#121811] dark:text-[#f9fbf9] transition-colors duration-300">
+            <div className="px-6 pb-12 py-8">
+                <div className="mx-auto max-w-[1280px]">
+                    {/* Header */}
+                    <div className="mb-8">
+                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                            <div>
+                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                                    Livestock Marketplace
+                                </h1>
+                                <p className="text-gray-500 dark:text-gray-400">
+                                    Buy and sell cattle, poultry, goats, and more from verified sellers
+                                </p>
+                            </div>
+                            <NearbyLocation />
                         </div>
-                        <NearbyLocation />
                     </div>
-                </div>
 
-                {/* Tabs */}
-                <div className="grid grid-cols-3 gap-3 mb-8">
-                    {tabs.map((tab) => (
-                        <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                            className={`relative flex items-center gap-3 p-4 rounded-2xl border-2 transition-all duration-300 ${activeTab === tab.id ? 'border-primary bg-primary/5 shadow-lg' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a231a] hover:border-primary/30'}`}>
-                            {activeTab === tab.id && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-full" />}
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${activeTab === tab.id ? tab.bgColor : 'bg-gray-100 dark:bg-gray-800'}`}>
-                                <span className={`material-symbols-outlined text-xl ${activeTab === tab.id ? 'text-white' : 'text-gray-500'}`}>{tab.icon}</span>
-                            </div>
-                            <p className={`font-bold text-sm ${activeTab === tab.id ? 'text-primary' : 'text-gray-700 dark:text-gray-200'}`}>{tab.title}</p>
-                        </button>
-                    ))}
-                </div>
+                    {/* Tabs */}
+                    <div className="grid grid-cols-3 gap-3 mb-8">
+                        {tabs.map((tab) => (
+                            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                                className={`relative flex items-center gap-3 p-4 rounded-2xl border-2 transition-all duration-300 ${activeTab === tab.id ? 'border-primary bg-primary/5 shadow-lg' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a231a] hover:border-primary/30'}`}>
+                                {activeTab === tab.id && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-full" />}
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${activeTab === tab.id ? tab.bgColor : 'bg-gray-100 dark:bg-gray-800'}`}>
+                                    <span className={`material-symbols-outlined text-xl ${activeTab === tab.id ? 'text-white' : 'text-gray-500'}`}>{tab.icon}</span>
+                                </div>
+                                <p className={`font-bold text-sm ${activeTab === tab.id ? 'text-primary' : 'text-gray-700 dark:text-gray-200'}`}>{tab.title}</p>
+                            </button>
+                        ))}
+                    </div>
 
-                {/* Content */}
-                <div className="min-h-[500px]">
-                    {/* Browse Categories Tab */}
-                    {activeTab === 'browse' && (
-                        <div className="animate-fadeIn">
-                            {/* Categories */}
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
-                                {categories.map((category) => (
-                                    <Link key={category.id} href={category.path}
-                                        className="group relative rounded-2xl p-4 border border-gray-100 dark:border-gray-800 hover:border-primary/30 hover:shadow-xl transition-all duration-300 overflow-hidden bg-[#d4edda] dark:bg-emerald-900/30">
-                                        <div className="flex flex-col items-center">
-                                            <div className="w-20 h-20 rounded-2xl bg-[#c8e6c9] dark:bg-emerald-800/50 flex items-center justify-center mb-3 overflow-hidden group-hover:scale-105 transition-transform duration-300">
-                                                <img src={category.image} alt={category.name} className="w-full h-full object-cover rounded-xl" />
+                    {/* Content */}
+                    <div className="min-h-[500px]">
+                        {/* Browse Categories Tab */}
+                        {activeTab === 'browse' && (
+                            <div className="animate-fadeIn">
+                                {/* Categories */}
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
+                                    {categories.map((category) => (
+                                        <Link key={category.id} href={category.path}
+                                            className="group relative rounded-2xl p-4 border border-gray-100 dark:border-gray-800 hover:border-primary/30 hover:shadow-xl transition-all duration-300 overflow-hidden bg-[#d4edda] dark:bg-emerald-900/30">
+                                            <div className="flex flex-col items-center">
+                                                <div className="w-20 h-20 rounded-2xl bg-[#c8e6c9] dark:bg-emerald-800/50 flex items-center justify-center mb-3 overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                                                    <img src={category.image} alt={category.name} className="w-full h-full object-cover rounded-xl" />
+                                                </div>
+                                                <h3 className="font-bold text-gray-900 dark:text-white text-center text-sm mb-1">{category.name}</h3>
+                                                <p className="text-xs text-gray-600 dark:text-gray-400 text-center">{category.count} listings</p>
                                             </div>
-                                            <h3 className="font-bold text-gray-900 dark:text-white text-center text-sm mb-1">{category.name}</h3>
-                                            <p className="text-xs text-gray-600 dark:text-gray-400 text-center">{category.count} listings</p>
-                                        </div>
-                                        <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <span className="material-symbols-outlined text-primary text-lg">arrow_forward</span>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-
-                            {/* Featured Listings */}
-                            <div className="mb-10">
-                                <div className="flex items-center gap-2 mb-6">
-                                    <span className="material-symbols-outlined text-amber-500">star</span>
-                                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Featured Listings</h2>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    {featuredListings.map((listing) => (
-                                        <ListingCard key={listing.id} listing={listing} showFeaturedBadge={true} />
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Stats */}
-                            <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-8 border border-gray-100 dark:border-gray-800">
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-                                    <div>
-                                        <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-primary/10 flex items-center justify-center">
-                                            <span className="material-symbols-outlined text-primary text-2xl">verified_user</span>
-                                        </div>
-                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">5,000+</p>
-                                        <p className="text-sm text-gray-500">Verified Sellers</p>
-                                    </div>
-                                    <div>
-                                        <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-primary/10 flex items-center justify-center">
-                                            <span className="material-symbols-outlined text-primary text-2xl">pets</span>
-                                        </div>
-                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">25,000+</p>
-                                        <p className="text-sm text-gray-500">Animals Listed</p>
-                                    </div>
-                                    <div>
-                                        <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-primary/10 flex items-center justify-center">
-                                            <span className="material-symbols-outlined text-primary text-2xl">handshake</span>
-                                        </div>
-                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">10,000+</p>
-                                        <p className="text-sm text-gray-500">Successful Trades</p>
-                                    </div>
-                                    <div>
-                                        <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-primary/10 flex items-center justify-center">
-                                            <span className="material-symbols-outlined text-primary text-2xl">location_on</span>
-                                        </div>
-                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">500+</p>
-                                        <p className="text-sm text-gray-500">Districts Covered</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Buy Tab */}
-                    {activeTab === 'buy' && (
-                        <div className="animate-fadeIn">
-                            {/* Featured Section */}
-                            <div className="mb-8">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <span className="material-symbols-outlined text-amber-500">star</span>
-                                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">Featured Listings</h2>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    {featuredListings.map((listing) => (
-                                        <ListingCard key={listing.id} listing={listing} showFeaturedBadge={true} />
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* All Listings */}
-                            <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
-                                <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">All Listings</h2>
-
-                                {/* Category Filters */}
-                                <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
-                                    {categoryFilters.map((cat) => (
-                                        <button key={cat} onClick={() => setSelectedCategory(cat)}
-                                            className={`px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap transition-all ${selectedCategory === cat ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:border-primary'}`}>
-                                            {cat}
-                                        </button>
+                                            <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <span className="material-symbols-outlined text-primary text-lg">arrow_forward</span>
+                                            </div>
+                                        </Link>
                                     ))}
                                 </div>
 
-                                <div className="mb-6">
-                                    <p className="text-gray-600 dark:text-gray-400">
-                                        Showing <span className="font-semibold text-gray-900 dark:text-white">{filteredListings.length}</span> listings
-                                    </p>
-                                </div>
-
-                                {/* Listings Grid */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                    {filteredListings.map((listing) => (
-                                        <ListingCard key={listing.id} listing={listing} />
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Sell Tab */}
-                    {activeTab === 'sell' && (
-                        <div className="animate-fadeIn max-w-3xl mx-auto">
-                            <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-8 border border-gray-100 dark:border-gray-800">
-                                <h2 className="text-2xl font-bold text-primary text-center mb-2">Sell Your Livestock</h2>
-                                <p className="text-gray-500 text-center mb-8">List your animals and reach thousands of buyers</p>
-
-                                {/* Category Selection */}
-                                <div className="mb-8">
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Select Category</label>
-                                    <div className="grid grid-cols-5 gap-3">
-                                        {sellCategories.map((cat) => (
-                                            <button key={cat.id} onClick={() => setSelectedSellCategory(cat.id)}
-                                                className={`p-4 rounded-xl border-2 text-center transition-all ${selectedSellCategory === cat.id ? 'border-primary bg-primary/5' : 'border-gray-200 dark:border-gray-700 hover:border-primary/30'}`}>
-                                                <span className="text-2xl mb-1 block">{cat.icon}</span>
-                                                <span className={`text-xs font-semibold ${selectedSellCategory === cat.id ? 'text-primary' : 'text-gray-600'}`}>{cat.name}</span>
-                                            </button>
+                                {/* Featured Listings */}
+                                <div className="mb-10">
+                                    <div className="flex items-center gap-2 mb-6">
+                                        <span className="material-symbols-outlined text-amber-500">star</span>
+                                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Featured Listings</h2>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        {featuredListings.map((listing) => (
+                                            <ListingCard key={listing.id} listing={listing} showFeaturedBadge={true} />
                                         ))}
                                     </div>
                                 </div>
 
-                                {/* Form Fields */}
-                                <div className="space-y-5">
-                                    <div className="grid grid-cols-2 gap-4">
+                                {/* Stats */}
+                                <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-8 border border-gray-100 dark:border-gray-800">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Title</label>
-                                            <input type="text" placeholder="e.g. Pure Gir Cow" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Breed</label>
-                                            <input type="text" placeholder="e.g. Gir, Sahiwal" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none" />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Age</label>
-                                            <input type="text" placeholder="e.g. 3 Years" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none" />
+                                            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-primary/10 flex items-center justify-center">
+                                                <span className="material-symbols-outlined text-primary text-2xl">verified_user</span>
+                                            </div>
+                                            <p className="text-2xl font-bold text-gray-900 dark:text-white">5,000+</p>
+                                            <p className="text-sm text-gray-500">Verified Sellers</p>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Price (₹)</label>
-                                            <input type="text" placeholder="e.g. 85000" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none" />
+                                            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-primary/10 flex items-center justify-center">
+                                                <span className="material-symbols-outlined text-primary text-2xl">pets</span>
+                                            </div>
+                                            <p className="text-2xl font-bold text-gray-900 dark:text-white">25,000+</p>
+                                            <p className="text-sm text-gray-500">Animals Listed</p>
+                                        </div>
+                                        <div>
+                                            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-primary/10 flex items-center justify-center">
+                                                <span className="material-symbols-outlined text-primary text-2xl">handshake</span>
+                                            </div>
+                                            <p className="text-2xl font-bold text-gray-900 dark:text-white">10,000+</p>
+                                            <p className="text-sm text-gray-500">Successful Trades</p>
+                                        </div>
+                                        <div>
+                                            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-primary/10 flex items-center justify-center">
+                                                <span className="material-symbols-outlined text-primary text-2xl">location_on</span>
+                                            </div>
+                                            <p className="text-2xl font-bold text-gray-900 dark:text-white">500+</p>
+                                            <p className="text-sm text-gray-500">Districts Covered</p>
                                         </div>
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Location</label>
-                                        <input type="text" placeholder="e.g. Rajkot, Gujarat" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none" />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Buy Tab */}
+                        {activeTab === 'buy' && (
+                            <div className="animate-fadeIn">
+                                {/* Featured Section */}
+                                <div className="mb-8">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <span className="material-symbols-outlined text-amber-500">star</span>
+                                        <h2 className="text-lg font-bold text-gray-900 dark:text-white">Featured Listings</h2>
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Description</label>
-                                        <textarea placeholder="Describe your animal in detail..." rows={4} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none resize-none" />
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        {featuredListings.map((listing) => (
+                                            <ListingCard key={listing.id} listing={listing} showFeaturedBadge={true} />
+                                        ))}
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Photos</label>
-                                        <div className="p-8 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 text-center cursor-pointer hover:border-primary/50 transition-all">
-                                            <span className="material-symbols-outlined text-4xl text-primary mb-2">add_photo_alternate</span>
-                                            <p className="text-sm text-gray-500">Click to upload photos (max 5)</p>
+                                </div>
+
+                                {/* All Listings */}
+                                <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                                    <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">All Listings</h2>
+
+                                    {/* Category Filters */}
+                                    <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
+                                        {categoryFilters.map((cat) => (
+                                            <button key={cat} onClick={() => setSelectedCategory(cat)}
+                                                className={`px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap transition-all ${selectedCategory === cat ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:border-primary'}`}>
+                                                {cat}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <div className="mb-6">
+                                        <p className="text-gray-600 dark:text-gray-400">
+                                            Showing <span className="font-semibold text-gray-900 dark:text-white">{filteredListings.length}</span> listings
+                                        </p>
+                                    </div>
+
+                                    {/* Listings Grid */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                        {filteredListings.map((listing) => (
+                                            <ListingCard key={listing.id} listing={listing} />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Sell Tab */}
+                        {activeTab === 'sell' && (
+                            <div className="animate-fadeIn max-w-3xl mx-auto">
+                                <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-8 border border-gray-100 dark:border-gray-800">
+                                    <h2 className="text-2xl font-bold text-primary text-center mb-2">Sell Your Livestock</h2>
+                                    <p className="text-gray-500 text-center mb-8">List your animals and reach thousands of buyers</p>
+
+                                    {/* Category Selection */}
+                                    <div className="mb-8">
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Select Category</label>
+                                        <div className="grid grid-cols-5 gap-3">
+                                            {sellCategories.map((cat) => (
+                                                <button key={cat.id} onClick={() => setSelectedSellCategory(cat.id)}
+                                                    className={`p-4 rounded-xl border-2 text-center transition-all ${selectedSellCategory === cat.id ? 'border-primary bg-primary/5' : 'border-gray-200 dark:border-gray-700 hover:border-primary/30'}`}>
+                                                    <span className="text-2xl mb-1 block">{cat.icon}</span>
+                                                    <span className={`text-xs font-semibold ${selectedSellCategory === cat.id ? 'text-primary' : 'text-gray-600'}`}>{cat.name}</span>
+                                                </button>
+                                            ))}
                                         </div>
                                     </div>
-                                    <button className="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-emerald-600 text-white font-bold text-lg hover:shadow-lg hover:scale-[1.01] transition-all flex items-center justify-center gap-2">
-                                        <span className="material-symbols-outlined">publish</span>
-                                        Publish Listing
-                                    </button>
+
+                                    {/* Form Fields */}
+                                    <div className="space-y-5">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Title</label>
+                                                <input type="text" placeholder="e.g. Pure Gir Cow" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Breed</label>
+                                                <input type="text" placeholder="e.g. Gir, Sahiwal" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none" />
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Age</label>
+                                                <input type="text" placeholder="e.g. 3 Years" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Price (₹)</label>
+                                                <input type="text" placeholder="e.g. 85000" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Location</label>
+                                            <input type="text" placeholder="e.g. Rajkot, Gujarat" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                                            <textarea placeholder="Describe your animal in detail..." rows={4} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none resize-none" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Photos</label>
+                                            <div className="p-8 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 text-center cursor-pointer hover:border-primary/50 transition-all">
+                                                <span className="material-symbols-outlined text-4xl text-primary mb-2">add_photo_alternate</span>
+                                                <p className="text-sm text-gray-500">Click to upload photos (max 5)</p>
+                                            </div>
+                                        </div>
+                                        <button className="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-emerald-600 text-white font-bold text-lg hover:shadow-lg hover:scale-[1.01] transition-all flex items-center justify-center gap-2">
+                                            <span className="material-symbols-outlined">publish</span>
+                                            Publish Listing
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Contact Modal */}
+                    {contactModal?.open && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setContactModal(null)}>
+                            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                            <div className="relative bg-white dark:bg-[#1a231a] rounded-2xl p-8 max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                                <button onClick={() => setContactModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                                    <span className="material-symbols-outlined">close</span>
+                                </button>
+                                <div className="text-center">
+                                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                                        <span className="material-symbols-outlined text-primary text-3xl">call</span>
+                                    </div>
+                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Contact Seller</h3>
+                                    <p className="text-gray-500 mb-4">{contactModal.seller}</p>
+                                    <a href={`tel:${contactModal.phone}`} className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-emerald-600 text-white font-bold rounded-xl hover:shadow-lg transition-all">
+                                        <span className="material-symbols-outlined">call</span>
+                                        {contactModal.phone}
+                                    </a>
+                                    <p className="text-xs text-gray-400 mt-4">Click to call the seller directly</p>
                                 </div>
                             </div>
                         </div>
                     )}
                 </div>
 
-                {/* Contact Modal */}
-                {contactModal?.open && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setContactModal(null)}>
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-                        <div className="relative bg-white dark:bg-[#1a231a] rounded-2xl p-8 max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                            <button onClick={() => setContactModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                                <span className="material-symbols-outlined">close</span>
-                            </button>
-                            <div className="text-center">
-                                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-primary text-3xl">call</span>
-                                </div>
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Contact Seller</h3>
-                                <p className="text-gray-500 mb-4">{contactModal.seller}</p>
-                                <a href={`tel:${contactModal.phone}`} className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-emerald-600 text-white font-bold rounded-xl hover:shadow-lg transition-all">
-                                    <span className="material-symbols-outlined">call</span>
-                                    {contactModal.phone}
-                                </a>
-                                <p className="text-xs text-gray-400 mt-4">Click to call the seller directly</p>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            <style jsx>{`
+                <style jsx>{`
                 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
                 .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
             `}</style>
+            </div>
         </div>
     );
 }

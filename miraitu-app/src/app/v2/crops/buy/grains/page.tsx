@@ -19,6 +19,15 @@ export default function BuyGrainsPage() {
     return (
         <div className="px-6">
             <div className="mx-auto max-w-[1280px]">
+                <div className="py-6">
+                    <Link
+                        href="/v2/crops"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-sm font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all text-gray-700 dark:text-gray-200"
+                    >
+                        <span className="material-symbols-outlined text-lg">arrow_back</span>
+                        Back to Crops
+                    </Link>
+                </div>
                 {/* Page Header */}
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Buy Grains & Cereals</h1>
