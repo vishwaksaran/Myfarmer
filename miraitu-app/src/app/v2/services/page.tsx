@@ -281,15 +281,15 @@ export default function ServicesPage() {
                                 Select the type of service you need for your farm.
                             </p>
                         </div>
-                        <div className="p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-                            <div className="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-bold text-xl mb-4">2</div>
+                        <div className="p-6 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-xl mb-4">2</div>
                             <h3 className="font-bold text-gray-900 dark:text-white mb-2">Book & Schedule</h3>
                             <p className="text-sm text-gray-600 dark:text-gray-300">
                                 Select a provider and book for your preferred date and time.
                             </p>
                         </div>
-                        <div className="p-6 rounded-2xl bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800">
-                            <div className="w-12 h-12 bg-teal-600 rounded-xl flex items-center justify-center text-white font-bold text-xl mb-4">3</div>
+                        <div className="p-6 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-xl mb-4">3</div>
                             <h3 className="font-bold text-gray-900 dark:text-white mb-2">Get It Done</h3>
                             <p className="text-sm text-gray-600 dark:text-gray-300">
                                 The provider arrives at your farm and completes the service.
