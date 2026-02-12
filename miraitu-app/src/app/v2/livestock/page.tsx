@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-
+import { useAuth } from '@/context/AuthContext';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 
 type TabType = 'browse' | 'buy' | 'sell';
@@ -55,8 +55,47 @@ export default function LivestockPage() {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [selectedSellCategory, setSelectedSellCategory] = useState('');
     const [contactModal, setContactModal] = useState<{ open: boolean; seller: string; phone: string } | null>(null);
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [pendingContact, setPendingContact] = useState<{ seller: string; phone: string } | null>(null);
+
+    // Auth context
+    const { user, signInWithGoogle, loginAsGuest, loading: authLoading } = useAuth();
+
+    // Effect to handle post-login action
+    useEffect(() => {
+        if (user && pendingContact) {
+            setContactModal({ open: true, ...pendingContact });
+            setPendingContact(null);
+            setShowLoginModal(false);
+        }
+    }, [user, pendingContact]);
 
     const filteredListings = selectedCategory === 'All' ? allListings : allListings.filter(l => l.category === selectedCategory);
+
+    const handleContactClick = (seller: string, phone: string) => {
+        if (user) {
+            setContactModal({ open: true, seller, phone });
+        } else {
+            setPendingContact({ seller, phone });
+            setShowLoginModal(true);
+        }
+    };
+
+    const handleGoogleLogin = async () => {
+        try {
+            await signInWithGoogle();
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleGuestLogin = async () => {
+        try {
+            await loginAsGuest();
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
     // Listing Card Component
     const ListingCard = ({ listing, showFeaturedBadge = false }: { listing: typeof allListings[0], showFeaturedBadge?: boolean }) => (
@@ -93,7 +132,7 @@ export default function LivestockPage() {
                 </div>
                 {/* Contact Button */}
                 <button
-                    onClick={() => setContactModal({ open: true, seller: listing.seller, phone: listing.phone })}
+                    onClick={() => handleContactClick(listing.seller, listing.phone)}
                     className="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-primary to-emerald-600 text-white font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg hover:scale-[1.02] transition-all"
                 >
                     <span className="material-symbols-outlined text-lg">call</span>
@@ -323,9 +362,9 @@ export default function LivestockPage() {
                         )}
                     </div>
 
-                    {/* Contact Modal */}
+                    {/* Contact Modal (only shows if logged in) */}
                     {contactModal?.open && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setContactModal(null)}>
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn" onClick={() => setContactModal(null)}>
                             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
                             <div className="relative bg-white dark:bg-[#1a231a] rounded-2xl p-8 max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
                                 <button onClick={() => setContactModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
@@ -342,6 +381,49 @@ export default function LivestockPage() {
                                         {contactModal.phone}
                                     </a>
                                     <p className="text-xs text-gray-400 mt-4">Click to call the seller directly</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Login Modal */}
+                    {showLoginModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn" onClick={() => setShowLoginModal(false)}>
+                            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                            <div className="relative bg-white dark:bg-[#1a231a] rounded-2xl p-8 max-w-sm w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                                <button onClick={() => setShowLoginModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                                    <span className="material-symbols-outlined">close</span>
+                                </button>
+                                <div className="text-center">
+                                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                                        <span className="material-symbols-outlined text-primary text-3xl">lock</span>
+                                    </div>
+                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Login Required</h3>
+                                    <p className="text-gray-500 mb-6 text-sm">You need to log in to view seller contact details.</p>
+
+                                    <div className="space-y-3">
+                                        <button
+                                            onClick={handleGoogleLogin}
+                                            disabled={authLoading}
+                                            className="w-full py-3 rounded-xl bg-white border-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-bold text-sm flex items-center justify-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+                                        >
+                                            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
+                                            Sign in with Google
+                                        </button>
+
+                                        <button
+                                            onClick={handleGuestLogin}
+                                            disabled={authLoading}
+                                            className="w-full py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+                                        >
+                                            <span className="material-symbols-outlined text-lg">person</span>
+                                            Continue as Guest
+                                        </button>
+
+                                        <div className="text-xs text-gray-400 pt-2">
+                                            By logging in, you agree to our Terms & Policy
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
