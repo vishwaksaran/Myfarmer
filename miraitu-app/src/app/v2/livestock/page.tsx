@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import NearbyLocation from '@/components/v2/NearbyLocation';
+import MiraituLogo from '@/components/MiraituLogo';
 
 type TabType = 'browse' | 'buy' | 'sell';
 
@@ -386,44 +387,75 @@ export default function LivestockPage() {
                         </div>
                     )}
 
-                    {/* Login Modal */}
+                    {/* New "Welcome Back" Login Modal */}
                     {showLoginModal && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn" onClick={() => setShowLoginModal(false)}>
                             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-                            <div className="relative bg-white dark:bg-[#1a231a] rounded-2xl p-8 max-w-sm w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                            <div className="relative bg-white dark:bg-[#1a231a] rounded-3xl p-8 max-w-[420px] w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
                                 <button onClick={() => setShowLoginModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
                                     <span className="material-symbols-outlined">close</span>
                                 </button>
-                                <div className="text-center">
-                                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-primary text-3xl">lock</span>
+                                <div className="flex flex-col items-center">
+                                    <div className="mb-4">
+                                        <MiraituLogo size={60} />
                                     </div>
-                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Login Required</h3>
-                                    <p className="text-gray-500 mb-6 text-sm">You need to log in to view seller contact details.</p>
+                                    <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-1">Welcome Back!</h3>
+                                    <p className="text-gray-500 text-sm mb-6">Log in to connect with fellow farmers</p>
 
-                                    <div className="space-y-3">
+                                    {/* Inputs */}
+                                    <div className="w-full space-y-4 mb-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 ml-1">Phone Number or Email</label>
+                                            <input className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary focus:bg-white dark:focus:bg-gray-900 transition-all outline-none font-medium" placeholder="Enter phone or email" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 ml-1">Password</label>
+                                            <input type="password" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary focus:bg-white dark:focus:bg-gray-900 transition-all outline-none font-medium" placeholder="Enter password" />
+                                        </div>
+                                        <div className="flex justify-end">
+                                            <button className="text-xs font-bold text-primary hover:underline">Forgot Password?</button>
+                                        </div>
+                                    </div>
+
+                                    {/* Login Button - calling guest login as demo */}
+                                    <button
+                                        onClick={handleGuestLogin}
+                                        disabled={authLoading}
+                                        className="w-full py-3.5 rounded-xl bg-primary text-white font-bold text-lg shadow-lg shadow-primary/30 hover:brightness-110 active:scale-[0.98] transition-all mb-6"
+                                    >
+                                        Log In
+                                    </button>
+
+                                    {/* Divider */}
+                                    <div className="relative w-full text-center mb-6">
+                                        <div className="absolute top-1/2 w-full h-px bg-gray-200 dark:bg-gray-700"></div>
+                                        <span className="relative bg-white dark:bg-[#1a231a] px-3 text-xs font-bold text-gray-400">or continue with</span>
+                                    </div>
+
+                                    {/* Social Buttons */}
+                                    <div className="flex gap-3 w-full">
                                         <button
                                             onClick={handleGoogleLogin}
                                             disabled={authLoading}
-                                            className="w-full py-3 rounded-xl bg-white border-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-bold text-sm flex items-center justify-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+                                            className="flex-1 py-2.5 rounded-xl border-2 border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center justify-center gap-2"
                                         >
-                                            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
-                                            Sign in with Google
+                                            <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" />
+                                            <span className="font-bold text-sm text-gray-700 dark:text-gray-200">Google</span>
                                         </button>
-
                                         <button
                                             onClick={handleGuestLogin}
                                             disabled={authLoading}
-                                            className="w-full py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+                                            className="flex-1 py-2.5 rounded-xl border-2 border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center justify-center gap-2"
                                         >
-                                            <span className="material-symbols-outlined text-lg">person</span>
-                                            Continue as Guest
+                                            <span className="material-symbols-outlined text-gray-700 dark:text-gray-200">smartphone</span>
+                                            <span className="font-bold text-sm text-gray-700 dark:text-gray-200">OTP</span>
                                         </button>
-
-                                        <div className="text-xs text-gray-400 pt-2">
-                                            By logging in, you agree to our Terms & Policy
-                                        </div>
                                     </div>
+
+                                    {/* Footer */}
+                                    <p className="mt-8 text-xs text-gray-400 font-medium">
+                                        Don't have an account? <span className="text-primary font-bold cursor-pointer hover:underline">Sign Up</span>
+                                    </p>
                                 </div>
                             </div>
                         </div>
