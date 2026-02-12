@@ -396,8 +396,8 @@ export default function LivestockPage() {
                                     <span className="material-symbols-outlined">close</span>
                                 </button>
                                 <div className="flex flex-col items-center">
-                                    <div className="mb-4">
-                                        <MiraituLogo size={60} />
+                                    <div className="mb-6">
+                                        <MiraituLogo size={80} />
                                     </div>
                                     <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-1">Welcome Back!</h3>
                                     <p className="text-gray-500 text-sm mb-6">Log in to connect with fellow farmers</p>
