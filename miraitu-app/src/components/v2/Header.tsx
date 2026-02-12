@@ -7,6 +7,8 @@ import MiraituLogo from '@/components/MiraituLogo';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { LangCode } from '@/i18n/translations';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
+import LoginModal from '@/components/auth/LoginModal';
 
 const primaryNavItems = [
     { tKey: 'nav.about', path: '/v2/about' },
@@ -29,7 +31,9 @@ export default function Header() {
     const pathname = usePathname();
     const { lang, setLang, t } = useLanguage();
     const { totalItems } = useCart();
+    const { user, signOut } = useAuth();
     const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
+    const [showLoginModal, setShowLoginModal] = useState(false);
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [selectedLang, setSelectedLang] = useState<LangCode>(lang);
@@ -195,9 +199,31 @@ export default function Header() {
                                 )}
                             </Link>
 
-                            <button className="flex items-center justify-center rounded-xl bg-primary px-5 py-2 text-sm font-bold text-white shadow-lg hover:brightness-110 active:scale-95 transition-all">
-                                {t('header.login')}
-                            </button>
+                            {user ? (
+                                <div className="relative group">
+                                    <button className="flex items-center gap-2 rounded-xl bg-gray-100 dark:bg-gray-800 px-3 py-2 text-sm font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                                        {user.photoURL ? (
+                                            <img src={user.photoURL} alt="User" className="size-8 rounded-full" />
+                                        ) : (
+                                            <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                                <span className="material-symbols-outlined">person</span>
+                                            </div>
+                                        )}
+                                        <span className="hidden sm:inline max-w-[100px] truncate">{user.displayName || 'User'}</span>
+                                    </button>
+                                    {/* Dropdown for Logout */}
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-[#1e2a1c] rounded-xl shadow-xl border border-black/5 dark:border-white/10 overflow-hidden hidden group-hover:block z-50">
+                                        <button onClick={() => signOut()} className="w-full text-left px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-lg">logout</span>
+                                            Logout
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <button onClick={() => setShowLoginModal(true)} className="flex items-center justify-center rounded-xl bg-primary px-5 py-2 text-sm font-bold text-white shadow-lg hover:brightness-110 active:scale-95 transition-all">
+                                    {t('header.login')}
+                                </button>
+                            )}
                             {/* Mobile Hamburger */}
                             <button
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -306,6 +332,8 @@ export default function Header() {
                     </div>
                 </div>
             )}
+
+            <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
         </>
     );
 }
