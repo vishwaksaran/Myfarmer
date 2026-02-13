@@ -34,7 +34,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fadeIn" onClick={onClose}>
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-            <div className="relative bg-white dark:bg-[#1a231a] rounded-3xl p-8 max-w-[420px] w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="relative bg-white dark:bg-[#1a231a] rounded-3xl px-8 pb-8 pt-16 max-w-[420px] w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
                     <span className="material-symbols-outlined">close</span>
                 </button>

@@ -5,15 +5,19 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect, useState } from 'react';
 import MiraituLogo from '@/components/MiraituLogo';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { LangCode } from '@/i18n/translations';
 
 /**
  * UserLoginPage - Login page with Google SSO and Phone Auth
  */
 export default function UserLoginPage() {
     const { user, loading, signInWithGoogle, loginAsGuest } = useAuth();
+    const { lang, setLang, t } = useLanguage();
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [isSigningIn, setIsSigningIn] = useState(false);
+    const [isLangOpen, setIsLangOpen] = useState(false);
 
     // Auth Method State
     const [authMethod, setAuthMethod] = useState<'default' | 'phone'>('default');
@@ -21,10 +25,23 @@ export default function UserLoginPage() {
     const [phoneNumber, setPhoneNumber] = useState('');
     const [otp, setOtp] = useState('');
 
-    // Redirect to dashboard if already logged in
+    const allLanguages: { name: string; sub: string; code: LangCode }[] = [
+        { name: 'English', sub: 'EN', code: 'en' },
+        { name: 'हिंदी', sub: 'HI', code: 'hi' },
+        { name: 'मराठी', sub: 'MR', code: 'mr' },
+        { name: 'ગુજરાતી', sub: 'GU', code: 'gu' },
+        { name: 'తెలుగు', sub: 'TE', code: 'te' },
+        { name: 'தமிழ்', sub: 'TA', code: 'ta' },
+        { name: 'ಕನ್ನಡ', sub: 'KN', code: 'kn' },
+        { name: 'ਪੰਜਾਬੀ', sub: 'PA', code: 'pa' },
+        { name: 'বাংলা', sub: 'BN', code: 'bn' },
+        { name: 'മലയാളം', sub: 'ML', code: 'ml' },
+    ];
+
+    // Redirect to home if already logged in
     useEffect(() => {
         if (user && !loading) {
-            router.push('/dashboard');
+            router.push('/home');
         }
     }, [user, loading, router]);
 
@@ -33,7 +50,7 @@ export default function UserLoginPage() {
             setIsSigningIn(true);
             setError(null);
             await signInWithGoogle();
-            router.push('/dashboard');
+            router.push('/home');
         } catch (err) {
             setError('Failed to sign in with Google. Please try again.');
             console.error(err);
@@ -46,7 +63,7 @@ export default function UserLoginPage() {
         try {
             setIsSigningIn(true);
             await loginAsGuest();
-            router.push('/dashboard');
+            router.push('/home');
         } catch (err) {
             setError('Failed to continue as guest.');
         } finally {
@@ -80,7 +97,7 @@ export default function UserLoginPage() {
         // Simulate API call / verification
         setTimeout(() => {
             setIsSigningIn(false);
-            router.push('/dashboard');
+            router.push('/home');
         }, 1500);
     };
 
@@ -189,10 +206,49 @@ export default function UserLoginPage() {
             <div className="relative z-10 min-h-screen flex flex-col">
                 {/* Header */}
                 <header className="flex items-center justify-between px-6 md:px-10 py-4 bg-white/80 backdrop-blur-md border-b border-[var(--miraitu-primary-green)]/10">
-                    <Link href="/" className="flex items-center gap-3 text-[var(--miraitu-primary-green)]">
+                    <Link href="/home" className="flex items-center gap-3 text-[var(--miraitu-primary-green)]">
                         <MiraituLogo size={40} />
                         <h2 className="text-[#0f1a11] text-xl font-extrabold leading-tight tracking-[-0.015em]">Miraitu</h2>
                     </Link>
+
+                    {/* Language Selector */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setIsLangOpen(!isLangOpen)}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm"
+                        >
+                            <span className="material-symbols-outlined text-[var(--miraitu-primary-green)] text-lg">language</span>
+                            <span>{allLanguages.find(l => l.code === lang)?.name || 'English'}</span>
+                            <span className={`material-symbols-outlined text-sm text-gray-400 transition-transform ${isLangOpen ? 'rotate-180' : ''}`}>expand_more</span>
+                        </button>
+
+                        {isLangOpen && (
+                            <>
+                                <div className="fixed inset-0 z-40" onClick={() => setIsLangOpen(false)} />
+                                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="p-2 max-h-80 overflow-y-auto">
+                                        <p className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('login.selectLanguage')}</p>
+                                        {allLanguages.map((l) => (
+                                            <button
+                                                key={l.code}
+                                                onClick={() => { setLang(l.code); setIsLangOpen(false); }}
+                                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${lang === l.code
+                                                    ? 'bg-[var(--miraitu-primary-green)]/10 text-[var(--miraitu-primary-green)]'
+                                                    : 'text-gray-700 hover:bg-gray-50'
+                                                    }`}
+                                            >
+                                                <span>{l.name}</span>
+                                                <span className="text-xs text-gray-400 font-bold">{l.sub}</span>
+                                                {lang === l.code && (
+                                                    <span className="material-symbols-outlined text-[var(--miraitu-primary-green)] text-base">check_circle</span>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </header>
 
                 {/* Login Card */}
@@ -210,20 +266,20 @@ export default function UserLoginPage() {
                                     className="absolute top-6 left-6 text-gray-400 hover:text-[var(--miraitu-primary-green)] transition-colors flex items-center gap-1 text-sm font-bold uppercase tracking-widest"
                                 >
                                     <span className="material-symbols-outlined text-lg">arrow_back</span>
-                                    Back
+                                    {t('login.back')}
                                 </button>
                             )}
 
                             {/* Header */}
                             <div className="text-center mb-8 animate-logo-entrance mt-4">
                                 <h1 className="text-[#0f1a11] text-3xl md:text-3xl font-black leading-tight tracking-[-0.02em] mb-2">
-                                    {authMethod === 'default' && "Welcome Back"}
-                                    {authMethod === 'phone' && "Phone Login"}
+                                    {authMethod === 'default' && t('login.welcomeBack')}
+                                    {authMethod === 'phone' && t('login.phoneLogin')}
                                 </h1>
                                 <p className="text-[#53935d] text-base font-medium">
-                                    {authMethod === 'default' && "Sign in to access your Miraitu dashboard"}
-                                    {authMethod === 'phone' && phoneState === 'input' && "Enter your mobile number to continue"}
-                                    {authMethod === 'phone' && phoneState === 'otp' && "Enter the verification code sent to your phone"}
+                                    {authMethod === 'default' && t('login.signInSubtitle')}
+                                    {authMethod === 'phone' && phoneState === 'input' && t('login.enterMobile')}
+                                    {authMethod === 'phone' && phoneState === 'otp' && t('login.enterOtp')}
                                 </p>
                             </div>
 
@@ -247,7 +303,7 @@ export default function UserLoginPage() {
                                         ) : (
                                             <>
                                                 <GoogleIcon />
-                                                <span>Continue with Google</span>
+                                                <span>{t('login.continueGoogle')}</span>
                                             </>
                                         )}
                                     </button>
@@ -255,7 +311,7 @@ export default function UserLoginPage() {
                                     {/* Divider */}
                                     <div className="flex items-center gap-4 my-6">
                                         <div className="flex-1 h-px bg-gray-200" />
-                                        <span className="text-sm text-gray-400 font-medium">or</span>
+                                        <span className="text-sm text-gray-400 font-medium">{t('login.or')}</span>
                                         <div className="flex-1 h-px bg-gray-200" />
                                     </div>
 
@@ -265,14 +321,14 @@ export default function UserLoginPage() {
                                         className="w-full h-14 flex items-center justify-center gap-3 bg-[var(--miraitu-background-light)] border-2 border-[var(--miraitu-primary-green)]/20 rounded-xl font-bold text-[#0f1a11] hover:bg-[var(--miraitu-primary-green)]/5 hover:border-[var(--miraitu-primary-green)]/40 transition-all"
                                     >
                                         <span className="material-symbols-outlined text-[var(--miraitu-primary-green)]">smartphone</span>
-                                        <span>Continue with Phone</span>
+                                        <span>{t('login.continuePhone')}</span>
                                     </button>
 
                                     <button
                                         onClick={handleGuestLogin}
                                         className="w-full py-3 text-sm font-semibold text-gray-500 hover:text-[var(--miraitu-primary-green)] transition-colors underline decoration-dotted underline-offset-4"
                                     >
-                                        Skip & Continue as Guest (Demo)
+                                        {t('login.skipGuest')}
                                     </button>
                                 </div>
                             )}
@@ -289,8 +345,10 @@ export default function UserLoginPage() {
                                                     value={phoneNumber}
                                                     onChange={(e) => setPhoneNumber(e.target.value)}
                                                     className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-[var(--miraitu-primary-green)]/20 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none transition-all placeholder:text-gray-400 text-lg font-medium"
-                                                    placeholder="Mobile Number"
+                                                    placeholder={t('login.mobilePlaceholder')}
                                                     autoFocus
+                                                    required
+                                                    minLength={10}
                                                 />
                                             </div>
                                         </div>
@@ -299,8 +357,8 @@ export default function UserLoginPage() {
                                     {phoneState === 'otp' && (
                                         <div className="space-y-4">
                                             <div className="text-center">
-                                                <span className="text-sm text-gray-500">Sent to {phoneNumber}</span>
-                                                <button type="button" onClick={() => setPhoneState('input')} className="ml-2 text-[var(--miraitu-primary-green)] font-bold text-xs hover:underline">Edit</button>
+                                                <span className="text-sm text-gray-500">{t('login.sentTo')} {phoneNumber}</span>
+                                                <button type="button" onClick={() => setPhoneState('input')} className="ml-2 text-[var(--miraitu-primary-green)] font-bold text-xs hover:underline">{t('login.edit')}</button>
                                             </div>
                                             <div className="relative">
                                                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60">lock</span>
@@ -309,13 +367,15 @@ export default function UserLoginPage() {
                                                     value={otp}
                                                     onChange={(e) => setOtp(e.target.value)}
                                                     className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-[var(--miraitu-primary-green)]/20 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none transition-all placeholder:text-gray-400 text-lg font-medium tracking-widest text-center"
-                                                    placeholder="OTP Code"
+                                                    placeholder={t('login.otpPlaceholder')}
                                                     autoFocus
                                                     maxLength={6}
+                                                    required
+                                                    minLength={4}
                                                 />
                                             </div>
                                             <div className="text-center">
-                                                <button type="button" className="text-xs text-gray-400 font-bold uppercase tracking-wider hover:text-[var(--miraitu-primary-green)]">Resend Code</button>
+                                                <button type="button" className="text-xs text-gray-400 font-bold uppercase tracking-wider hover:text-[var(--miraitu-primary-green)]">{t('login.resendCode')}</button>
                                             </div>
                                         </div>
                                     )}
@@ -329,7 +389,7 @@ export default function UserLoginPage() {
                                             <span className="material-symbols-outlined animate-spin">progress_activity</span>
                                         ) : (
                                             <>
-                                                {phoneState === 'input' ? 'Get OTP' : 'Verify & Login'}
+                                                {phoneState === 'input' ? t('login.getOtp') : t('login.verifyLogin')}
                                                 <span className="material-symbols-outlined">arrow_forward</span>
                                             </>
                                         )}
@@ -340,9 +400,9 @@ export default function UserLoginPage() {
                             {/* Create Account Link (Only on selection screen or simple text on phone screen?) */}
                             {authMethod === 'default' && (
                                 <p className="text-center mt-8 text-sm text-[#53935d] font-medium animate-footer-entrance">
-                                    Don't have an account?{' '}
+                                    {t('login.noAccount')}{' '}
                                     <Link href="/user-register" className="text-[var(--miraitu-primary-green)] font-bold hover:underline">
-                                        Create one here
+                                        {t('login.createHere')}
                                     </Link>
                                 </p>
                             )}
@@ -352,11 +412,11 @@ export default function UserLoginPage() {
                         <div className="mt-8 flex justify-center gap-6 text-xs text-[#1a3d21] font-medium animate-footer-entrance">
                             <div className="flex items-center gap-1">
                                 <span className="material-symbols-outlined text-sm">verified_user</span>
-                                <span className="drop-shadow-sm">Secure</span>
+                                <span className="drop-shadow-sm">{t('login.secure')}</span>
                             </div>
                             <div className="flex items-center gap-1">
                                 <span className="material-symbols-outlined text-sm">eco</span>
-                                <span className="drop-shadow-sm">Eco-Certified</span>
+                                <span className="drop-shadow-sm">{t('login.ecoCertified')}</span>
                             </div>
                         </div>
                     </div>

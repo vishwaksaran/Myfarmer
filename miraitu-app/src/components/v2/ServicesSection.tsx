@@ -18,7 +18,7 @@ export default function ServicesSection() {
                         <h2 className="text-3xl md:text-4xl font-black tracking-tight">{t('services.title')}</h2>
                         <p className="text-gray-500 mt-1">{t('services.subtitle')}</p>
                     </div>
-                    <a href="/v2/services">
+                    <a href="/home/services">
                         <button className="skeuo-button-3d flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-primary hover:scale-105 transition-transform">
                             {t('services.viewAll')}
                             <span className="material-symbols-outlined text-lg">arrow_forward_ios</span>
@@ -67,7 +67,7 @@ export default function ServicesSection() {
                                     </div>
                                 </div>
                             </div>
-                            <a href="/v2/services/farm-labours" className="block">
+                            <a href="/home/services/farm-labours" className="block">
                                 <button className="w-full bg-gradient-to-r from-primary to-lush-green py-4 font-bold text-white hover:brightness-110 transition-all flex items-center justify-center gap-2 group/btn">
                                     <span className="material-symbols-outlined text-lg">person_add</span>
                                     {t('services.hire')} Rajesh
@@ -97,7 +97,7 @@ export default function ServicesSection() {
                                     {t('services.tractorMechanicsDesc')}
                                 </p>
                             </div>
-                            <a href="/v2/services/mechanic" className="block">
+                            <a href="/home/services/mechanic" className="block">
                                 <button className="mt-6 w-full flex items-center justify-center gap-2 rounded-xl bg-primary/10 py-3 font-bold text-primary hover:bg-primary/20 transition-all group/btn">
                                     {t('services.callService')}
                                     <span className="material-symbols-outlined text-sm group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
@@ -126,7 +126,7 @@ export default function ServicesSection() {
                                     </div>
                                 </div>
                             </div>
-                            <a href="/v2/services/storage-godown" className="block">
+                            <a href="/home/services/storage-godown" className="block">
                                 <button className="mt-6 w-full flex items-center justify-center gap-2 rounded-xl bg-primary/10 py-3 font-bold text-primary hover:bg-primary/20 transition-all group/btn">
                                     {t('services.checkRates')}
                                     <span className="material-symbols-outlined text-sm group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>

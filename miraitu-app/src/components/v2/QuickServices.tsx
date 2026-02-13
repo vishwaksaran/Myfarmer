@@ -5,19 +5,19 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useRouter } from 'next/navigation';
 
 const buySellOptions = [
-    { label: 'Machinery', desc: 'Tractors, harvesters & farm equipment', icon: 'agriculture', link: '/v2/machinery', color: 'from-green-500 to-emerald-600' },
-    { label: 'Crops', desc: 'Rice, vegetables, spices & more', icon: 'eco', link: '/v2/crops', color: 'from-green-500 to-emerald-600' },
-    { label: 'Livestock', desc: 'Cattle, poultry, goats & sheep', icon: 'pets', link: '/v2/livestock', color: 'from-green-500 to-emerald-600' },
-    { label: 'Shop', desc: 'Seeds, fertilizers & farm supplies', icon: 'storefront', link: '/v2/shop', color: 'from-green-500 to-emerald-600' },
+    { label: 'Machinery', desc: 'Tractors, harvesters & farm equipment', icon: 'agriculture', link: '/home/machinery', color: 'from-green-500 to-emerald-600' },
+    { label: 'Crops', desc: 'Rice, vegetables, spices & more', icon: 'eco', link: '/home/crops', color: 'from-green-500 to-emerald-600' },
+    { label: 'Livestock', desc: 'Cattle, poultry, goats & sheep', icon: 'pets', link: '/home/livestock', color: 'from-green-500 to-emerald-600' },
+    { label: 'Shop', desc: 'Seeds, fertilizers & farm supplies', icon: 'storefront', link: '/home/shop', color: 'from-green-500 to-emerald-600' },
 ];
 
 const services = [
-    { icon: 'psychiatry', tTitle: 'qs.farmServices', tDesc: 'qs.farmServicesDesc', tBtn: 'qs.bookNow', link: '/v2/services' },
-    { icon: 'groups', tTitle: 'qs.bookLabour', tDesc: 'qs.bookLabourDesc', tBtn: 'qs.findLabour', link: '/v2/services/farm-labours' },
-    { icon: 'storefront', tTitle: 'qs.buySell', tDesc: 'qs.buySellDesc', tBtn: 'qs.goToMarket', link: '/v2/shop', isBuySell: true },
-    { icon: 'calculate', tTitle: 'qs.agriCalc', tDesc: 'qs.agriCalcDesc', tBtn: 'qs.openTools', link: '/v2/toolbox' },
-    { icon: 'water_drop', tTitle: 'qs.borewellBooking', tDesc: 'qs.borewellDesc', tBtn: 'qs.requestSurvey', link: '/v2/borewell' },
-    { icon: 'solar_power', tTitle: 'qs.solarSetup', tDesc: 'qs.solarDesc', tBtn: 'qs.calculate', link: '/v2/cctv' },
+    { icon: 'psychiatry', tTitle: 'qs.farmServices', tDesc: 'qs.farmServicesDesc', tBtn: 'qs.bookNow', link: '/home/services' },
+    { icon: 'groups', tTitle: 'qs.bookLabour', tDesc: 'qs.bookLabourDesc', tBtn: 'qs.findLabour', link: '/home/services/farm-labours' },
+    { icon: 'storefront', tTitle: 'qs.buySell', tDesc: 'qs.buySellDesc', tBtn: 'qs.goToMarket', link: '/home/shop', isBuySell: true },
+    { icon: 'calculate', tTitle: 'qs.agriCalc', tDesc: 'qs.agriCalcDesc', tBtn: 'qs.openTools', link: '/home/toolbox' },
+    { icon: 'water_drop', tTitle: 'qs.borewellBooking', tDesc: 'qs.borewellDesc', tBtn: 'qs.requestSurvey', link: '/home/borewell' },
+    { icon: 'solar_power', tTitle: 'qs.solarSetup', tDesc: 'qs.solarDesc', tBtn: 'qs.calculate', link: '/home/cctv' },
 ];
 
 export default function QuickServices() {
@@ -52,7 +52,7 @@ export default function QuickServices() {
                             {t('qs.subtitle')}
                         </p>
                     </div>
-                    <a href="/v2/services">
+                    <a href="/home/services">
                         <button className="skeuo-button-3d flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-primary hover:scale-105 transition-transform">
                             View All Services
                             <span className="material-symbols-outlined text-lg">arrow_forward_ios</span>

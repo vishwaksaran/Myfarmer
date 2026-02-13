@@ -15,8 +15,8 @@ export default function CTABanner() {
     const whatsappLink = "https://wa.me/919876543210";
 
     const handleGetStarted = () => {
-        // Redirect to login/signup page
-        router.push('/v2/login');
+        // Redirect to community page
+        router.push('/home/community');
     };
 
     const handleCallbackRequest = (e: React.FormEvent) => {
@@ -51,9 +51,14 @@ export default function CTABanner() {
                             {/* Trust Indicators */}
                             <div className="flex flex-wrap items-center justify-center md:justify-start gap-6 mt-8">
                                 <div className="flex -space-x-3">
-                                    {[1, 2, 3, 4].map(i => (
+                                    {[
+                                        'https://images.unsplash.com/photo-1595246140625-573b715d11dc?w=100&h=100&fit=crop', // Indian Farmer Man
+                                        'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=100&h=100&fit=crop', // Indian Farmer Woman
+                                        'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=100&h=100&fit=crop', // Dealer
+                                        'https://images.unsplash.com/photo-1534078362425-387ae9668c17?w=100&h=100&fit=crop'  // Rural Man
+                                    ].map((src, i) => (
                                         <div key={i} className="w-10 h-10 rounded-full border-2 border-primary-dark bg-gray-300 overflow-hidden">
-                                            <img src={`https://randomuser.me/api/portraits/men/${i + 20}.jpg`} alt="User" className="w-full h-full object-cover" />
+                                            <img src={src} alt="User" className="w-full h-full object-cover" />
                                         </div>
                                     ))}
                                     <div className="w-10 h-10 rounded-full border-2 border-primary-dark bg-white flex items-center justify-center text-[10px] font-bold text-primary">

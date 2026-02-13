@@ -8,7 +8,7 @@ const testimonials = [
         role: 'Farmer, Andhra Pradesh',
         text: 'Miraitu helped me sell my livestock at the best price. The app is simple to use and connects me with genuine buyers nearby.',
         rating: 5,
-        avatar: '👨‍🌾',
+        image: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=150&h=150&fit=crop', // Indian Farmer
         stat: '₹2.5L earned',
     },
     {
@@ -16,7 +16,7 @@ const testimonials = [
         role: 'Dairy Farmer, Karnataka',
         text: 'The borewell booking service saved me so much time. I got expert consultation and the water quality testing was very helpful.',
         rating: 5,
-        avatar: '👩‍🌾',
+        image: 'https://images.unsplash.com/photo-1628352081506-83c43123ed6d?w=150&h=150&fit=crop', // Indian Woman Farmer
         stat: '40% more yield',
     },
     {
@@ -24,7 +24,7 @@ const testimonials = [
         role: 'Farmer, Tamil Nadu',
         text: 'I found the best tractor deals on Miraitu. The compare feature helped me choose the right machinery for my farm.',
         rating: 4,
-        avatar: '🧑‍🌾',
+        image: 'https://images.unsplash.com/photo-1595246140625-573b715d11dc?w=150&h=150&fit=crop', // Indian Farmer Man
         stat: '30% cost saved',
     },
 ];
@@ -78,8 +78,12 @@ export default function TestimonialsSection() {
 
                             {/* Author */}
                             <div className="flex items-center gap-3 pt-4 border-t border-black/5 dark:border-white/5">
-                                <div className="size-11 rounded-full bg-primary/10 flex items-center justify-center text-2xl">
-                                    {testimonial.avatar}
+                                <div className="h-11 w-11 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
+                                    <img
+                                        src={testimonial.image}
+                                        alt={testimonial.name}
+                                        className="h-full w-full object-cover"
+                                    />
                                 </div>
                                 <div>
                                     <h4 className="font-bold text-sm">{testimonial.name}</h4>

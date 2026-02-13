@@ -10,7 +10,7 @@ const leftServices = [
         desc: 'AI-powered crop disease detection & treatment suggestions',
         color: 'from-orange-500 to-amber-500',
         bgLight: 'bg-orange-50 dark:bg-orange-900/10',
-        link: '/v2/crops',
+        link: '/home/crops',
     },
     {
         icon: 'microbiology',
@@ -18,7 +18,7 @@ const leftServices = [
         desc: 'Detailed NPK, pH & micro-nutrient reports for your farmland',
         color: 'from-green-500 to-emerald-500',
         bgLight: 'bg-green-50 dark:bg-green-900/10',
-        link: '/v2/services/soil-testing',
+        link: '/home/services/soil-testing',
     },
 ];
 
@@ -29,7 +29,7 @@ const rightServices = [
         desc: 'Smart water management based on soil & weather data',
         color: 'from-cyan-500 to-teal-500',
         bgLight: 'bg-cyan-50 dark:bg-cyan-900/10',
-        link: '/v2/borewell',
+        link: '/home/borewell',
     },
     {
         icon: 'shield',
@@ -37,7 +37,7 @@ const rightServices = [
         desc: 'Protect your harvest with pest alerts & preventive care',
         color: 'from-indigo-500 to-purple-500',
         bgLight: 'bg-indigo-50 dark:bg-indigo-900/10',
-        link: '/v2/toolbox',
+        link: '/home/toolbox',
     },
 ];
 

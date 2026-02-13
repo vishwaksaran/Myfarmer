@@ -6,16 +6,16 @@
   --miraitu-primary-green: #22c33d;
   --miraitu-primary-dark-green: #1e3d1a;
   --miraitu-primary-light-green: #4a7d42;
-  
+
   /* Accent Colors */
   --miraitu-accent-lime: #8CDA4F;
   --miraitu-warm-orange: #FF9F1C;
   --miraitu-warm-yellow: #E0C040;
-  
+
   /* Background Colors */
   --miraitu-background-light: #fbfaf9;
   --miraitu-background-dark: #191c17;
-  
+
   /* Default theme (light) */
   --background: var(--miraitu-background-light);
   --foreground: #171717;
@@ -31,7 +31,7 @@
   --color-warm-yellow: var(--miraitu-warm-yellow);
   --color-background-light: var(--miraitu-background-light);
   --color-background-dark: var(--miraitu-background-dark);
-  
+
   /* System Colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -75,15 +75,15 @@ body {
 
 /* Tactile Button Effect */
 .miraitu-button-tactile {
-  box-shadow: 0 6px 0 var(--miraitu-primary-dark-green), 
-              0 12px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 0 var(--miraitu-primary-dark-green),
+    0 12px 16px rgba(0, 0, 0, 0.3);
   transition: all 0.1s ease-in-out;
 }
 
 .miraitu-button-tactile:active {
   transform: translateY(4px);
-  box-shadow: 0 2px 0 var(--miraitu-primary-dark-green), 
-              0 4px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 0 var(--miraitu-primary-dark-green),
+    0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Gradient Highlights */
@@ -128,7 +128,7 @@ body {
 /* Skeuomorphic Card */
 .skeuo-card {
   background: #ffffff;
-  box-shadow: 
+  box-shadow:
     0 10px 25px -5px rgba(0, 0, 0, 0.05),
     0 8px 10px -6px rgba(0, 0, 0, 0.05),
     inset 0 1px 1px rgba(255, 255, 255, 1);
@@ -137,16 +137,16 @@ body {
 
 /* Skeuomorphic Inputs and Controls */
 .skeuo-input {
-  box-shadow: inset 2px 2px 4px rgba(0,0,0,0.05);
+  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
 }
 
 .skeuo-input:focus {
-  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.05), 0 0 0 3px rgba(34, 195, 61, 0.2);
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.05), 0 0 0 3px rgba(34, 195, 61, 0.2);
 }
 
 .skeuo-button {
-  box-shadow: 
+  box-shadow:
     0 4px 0 0 #1a942e,
     0 8px 15px rgba(34, 195, 61, 0.3);
   transform: translateY(-2px);
@@ -155,7 +155,7 @@ body {
 
 .skeuo-button:active {
   transform: translateY(2px);
-  box-shadow: 
+  box-shadow:
     0 0px 0 0 #1a942e,
     0 2px 5px rgba(34, 195, 61, 0.2);
 }
@@ -166,107 +166,107 @@ body {
 }
 
 .skeuo-role-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
-    border-radius: 1rem;
-    border: 2px solid transparent;
-    background-color: white;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 8px 15px -3px rgba(0,0,0,0.05), inset 0 2px 4px rgba(255,255,255,1);
-    position: relative;
-    overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 2px solid transparent;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.05), inset 0 2px 4px rgba(255, 255, 255, 1);
+  position: relative;
+  overflow: hidden;
 }
 
 .skeuo-role-card:hover {
-    border-color: rgba(40, 167, 69, 0.3);
-    transform: translateY(-4px);
-    box-shadow: 0 15px 30px -10px rgba(40, 167, 69, 0.15), inset 0 2px 4px rgba(255,255,255,1);
+  border-color: rgba(40, 167, 69, 0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 15px 30px -10px rgba(40, 167, 69, 0.15), inset 0 2px 4px rgba(255, 255, 255, 1);
 }
 
 .skeuo-role-card.selected {
-    border-color: var(--miraitu-primary-green);
-    background-color: rgba(40, 167, 69, 0.05);
-    box-shadow: 0 10px 20px -5px rgba(40, 167, 69, 0.2), inset 0 0 0 2px rgba(40, 167, 69, 0.1);
+  border-color: var(--miraitu-primary-green);
+  background-color: rgba(40, 167, 69, 0.05);
+  box-shadow: 0 10px 20px -5px rgba(40, 167, 69, 0.2), inset 0 0 0 2px rgba(40, 167, 69, 0.1);
 }
 
 .skeuo-pill {
-    padding: 0.5rem 1.25rem;
-    border-radius: 9999px;
-    border: 1px solid #e5e7eb;
-    background-color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #374151;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), inset 0 1px 1px rgba(255,255,255,1);
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  border: 1px solid #e5e7eb;
+  background-color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 1);
 }
 
 .skeuo-pill:hover {
-    background-color: #f9fafb;
-    border-color: #d1d5db;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .skeuo-pill.selected {
-    background-color: var(--miraitu-primary-green);
-    color: white;
-    border-color: var(--miraitu-primary-green);
-    box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3), inset 0 2px 4px rgba(255,255,255,0.2);
+  background-color: var(--miraitu-primary-green);
+  color: white;
+  border-color: var(--miraitu-primary-green);
+  box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.2);
 }
 
 .skeuo-button-next {
-    background-color: var(--miraitu-primary-green);
-    color: white;
-    font-weight: 700;
-    border-radius: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    transition: all 0.2s ease;
-    box-shadow: 0 6px 0 0 #1e7e34, 0 10px 15px rgba(40, 167, 69, 0.3);
+  background-color: var(--miraitu-primary-green);
+  color: white;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 0 0 #1e7e34, 0 10px 15px rgba(40, 167, 69, 0.3);
 }
 
 .skeuo-button-next:active {
-    transform: translateY(4px);
-    box-shadow: 0 2px 0 0 #1e7e34, 0 4px 8px rgba(0, 167, 69, 0.2);
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 0 #1e7e34, 0 4px 8px rgba(0, 167, 69, 0.2);
 }
 
 .skeuo-button-back {
-    background-color: white;
-    border: 1px solid #e5e7eb;
-    color: #4b5563;
-    font-weight: 700;
-    border-radius: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 0 0 #e5e7eb, 0 6px 10px rgba(0,0,0,0.05);
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  color: #4b5563;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 0 0 #e5e7eb, 0 6px 10px rgba(0, 0, 0, 0.05);
 }
 
 .skeuo-button-back:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 0 #e5e7eb, 0 2px 4px rgba(0,0,0,0.05);
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 0 #e5e7eb, 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .icon-3d {
-    width: 4rem;
-    height: 4rem;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 1rem;
-    color: var(--miraitu-primary-green);
-    background: linear-gradient(145deg, #ffffff, #f0f0f0);
-    box-shadow: 5px 5px 10px #e6e6e6, -5px -5px 10px #ffffff;
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  color: var(--miraitu-primary-green);
+  background: linear-gradient(145deg, #ffffff, #f0f0f0);
+  box-shadow: 5px 5px 10px #e6e6e6, -5px -5px 10px #ffffff;
 }
 
 
@@ -284,7 +284,7 @@ body {
   align-items: center;
   justify-content: center;
   transition: background 0.3s ease;
-  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.1);
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .leaf-checkbox:checked {
@@ -306,7 +306,7 @@ body {
   border: 2px solid transparent;
   transition: background-color 0.2s ease-in-out;
   background: linear-gradient(180deg, #d1d5db 0%, #e5e7eb 100%);
-  box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1);
+  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .glossy-switch[aria-checked="true"] {
@@ -320,7 +320,7 @@ body {
   width: 1.5rem;
   border-radius: 9999px;
   background: radial-gradient(circle at 30% 30%, #ffffff 0%, #f3f4f6 100%);
-  box-shadow: 1px 1px 3px rgba(0,0,0,0.3), inset -1px -1px 2px rgba(255,255,255,0.5);
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3), inset -1px -1px 2px rgba(255, 255, 255, 0.5);
   transition: transform 0.2s ease-in-out;
 }
 
@@ -335,6 +335,7 @@ body {
     opacity: 0;
     transform: scale(1.1);
   }
+
   100% {
     opacity: 1;
     transform: scale(1);
@@ -351,13 +352,16 @@ body {
     opacity: 0;
     transform: scale(0.3) translateY(-50px);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.05) translateY(0);
   }
+
   70% {
     transform: scale(0.95);
   }
+
   100% {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -376,6 +380,7 @@ body {
     opacity: 0;
     transform: translateY(40px) scale(0.95);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -394,6 +399,7 @@ body {
     opacity: 0;
     transform: translateY(30px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -412,6 +418,7 @@ body {
     opacity: 0;
     transform: translateY(10px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -426,9 +433,12 @@ body {
 
 /* Floating animation for decorative elements */
 @keyframes floatGently {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -440,10 +450,13 @@ body {
 
 /* Pulse glow animation for logo background */
 @keyframes pulseGlow {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.3;
     transform: scale(0.75);
   }
+
   50% {
     opacity: 0.5;
     transform: scale(0.85);
@@ -452,4 +465,100 @@ body {
 
 .animate-pulse-glow {
   animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Bounce once animation for success checkmark */
+@keyframes bounceOnce {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.15);
+  }
+
+  70% {
+    transform: scale(0.95);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-bounce-once {
+  animation: bounceOnce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Panel entrance */
+@keyframes panelEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-panel-entrance {
+  animation: panelEntrance 0.6s ease-out forwards;
+}
+
+/* Footer entrance */
+@keyframes footerEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-footer-entrance {
+  animation: footerEntrance 0.8s ease-out 0.3s forwards;
+  opacity: 0;
+}
+
+/* Zoom in */
+.animate-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.zoom-in-95 {
+  animation: zoomIn95 0.3s ease-out forwards;
+}
+
+@keyframes zoomIn95 {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }

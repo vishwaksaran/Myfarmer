@@ -1,17 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import MiraituLogo from '@/components/MiraituLogo';
+import { useAuth } from '@/context/AuthContext';
 
 /**
  * UserRegisterPage - Multi-step registration form
  */
 export default function UserRegisterPage() {
     const router = useRouter();
+    const { loginAsGuest } = useAuth();
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
+    const [validationError, setValidationError] = useState<string | null>(null);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -54,24 +58,74 @@ export default function UserRegisterPage() {
 
     // Navigation Handlers
     const nextStep = () => {
+        setValidationError(null);
+        // Validate Step 1
+        if (currentStep === 1) {
+            if (!formData.fullName.trim()) {
+                setValidationError('Please enter your full name.');
+                return;
+            }
+            if (!formData.mobileNumber.trim() || formData.mobileNumber.length < 10) {
+                setValidationError('Please enter a valid mobile number (10+ digits).');
+                return;
+            }
+            if (!formData.farmLocation) {
+                setValidationError('Please select your farm location.');
+                return;
+            }
+        }
+        // Validate Step 2
+        if (currentStep === 2) {
+            if (!formData.role) {
+                setValidationError('Please select your role.');
+                return;
+            }
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
         setCurrentStep(prev => prev + 1);
     };
 
     const prevStep = () => {
+        setValidationError(null);
         window.scrollTo({ top: 0, behavior: 'smooth' });
         setCurrentStep(prev => prev - 1);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setValidationError(null);
+        if (!formData.password || formData.password.length < 6) {
+            setValidationError('Password must be at least 6 characters.');
+            return;
+        }
+        if (formData.password !== formData.confirmPassword) {
+            setValidationError('Passwords do not match.');
+            return;
+        }
+        if (!formData.termsAccepted) {
+            setValidationError('Please accept the Terms and Privacy Policy.');
+            return;
+        }
         setLoading(true);
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 2000));
         console.log('Registration data:', formData);
-        router.push('/dashboard'); // Or login
+        // Log the user in (simulated)
+        await loginAsGuest();
         setLoading(false);
+        // Show success modal
+        setShowSuccessModal(true);
     };
+
+    // Auto-redirect after showing success modal
+    useEffect(() => {
+        if (showSuccessModal) {
+            const timer = setTimeout(() => {
+                router.push('/home');
+            }, 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [showSuccessModal, router]);
 
     return (
         <div className="min-h-screen bg-[var(--miraitu-background-light)] dark:bg-background-dark font-display text-[#0f1a11] flex flex-col">
@@ -129,6 +183,14 @@ export default function UserRegisterPage() {
                         </div>
                     </div>
 
+                    {/* Validation Error */}
+                    {validationError && (
+                        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm font-medium flex items-center gap-2 relative z-10 animate-fade-in">
+                            <span className="material-symbols-outlined text-lg">error</span>
+                            {validationError}
+                        </div>
+                    )}
+
                     {/* STEP 1 CONTENTS */}
                     {currentStep === 1 && (
                         <div className="flex flex-col gap-8 animate-fade-in relative z-10">
@@ -145,6 +207,7 @@ export default function UserRegisterPage() {
                                                 className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none"
                                                 placeholder="John Doe"
                                                 type="text"
+                                                required
                                             />
                                         </div>
                                     </label>
@@ -161,6 +224,8 @@ export default function UserRegisterPage() {
                                                 className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none"
                                                 placeholder="+91 98765 43210"
                                                 type="tel"
+                                                required
+                                                minLength={10}
                                             />
                                         </div>
                                     </label>
@@ -175,6 +240,7 @@ export default function UserRegisterPage() {
                                                 value={formData.farmLocation}
                                                 onChange={handleInputChange}
                                                 className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] text-[#0f1a11] appearance-none"
+                                                required
                                             >
                                                 <option disabled value="">Select your district / region</option>
                                                 <option value="north">North Valley Region</option>
@@ -273,6 +339,8 @@ export default function UserRegisterPage() {
                                             className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none"
                                             placeholder="••••••••"
                                             type="password"
+                                            required
+                                            minLength={6}
                                         />
                                     </div>
                                 </div>
@@ -287,6 +355,8 @@ export default function UserRegisterPage() {
                                             className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none"
                                             placeholder="••••••••"
                                             type="password"
+                                            required
+                                            minLength={6}
                                         />
                                     </div>
                                 </div>
@@ -363,6 +433,62 @@ export default function UserRegisterPage() {
             <footer className="py-10 border-t border-[var(--miraitu-primary-green)]/10 bg-white/50 text-center">
                 <p className="text-sm text-[#53935d]">© 2026 Miraitu Agriculture Tech. Empowering farmers globally.</p>
             </footer>
+
+            {/* Success Registration Modal */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+                    <div className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 md:p-10 text-center animate-in zoom-in-95 fade-in duration-300">
+                        {/* Decorative background */}
+                        <div className="absolute inset-0 rounded-3xl overflow-hidden">
+                            <div className="absolute -top-16 -right-16 w-40 h-40 bg-[var(--miraitu-lime-green)]/10 rounded-full blur-2xl" />
+                            <div className="absolute -bottom-16 -left-16 w-40 h-40 bg-[var(--miraitu-harvest-gold)]/10 rounded-full blur-2xl" />
+                        </div>
+
+                        <div className="relative z-10">
+                            {/* Animated Checkmark */}
+                            <div className="mx-auto mb-6 w-24 h-24 rounded-full bg-gradient-to-br from-[var(--miraitu-primary-green)] to-[var(--miraitu-lime-green)] flex items-center justify-center shadow-lg shadow-[var(--miraitu-primary-green)]/30 animate-bounce-once">
+                                <span className="material-symbols-outlined text-white text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                            </div>
+
+                            {/* Title */}
+                            <h2 className="text-2xl md:text-3xl font-black text-[#0f1a11] mb-2 tracking-tight">
+                                Successfully Registered!
+                            </h2>
+                            <p className="text-[#53935d] text-base font-medium mb-2">
+                                Welcome to Miraitu, <span className="font-bold text-[var(--miraitu-primary-green)]">{formData.fullName || 'Farmer'}</span>!
+                            </p>
+                            <p className="text-gray-500 text-sm mb-8">
+                                Your account has been created successfully. You can now explore our full range of agricultural services.
+                            </p>
+
+                            {/* User Card Preview */}
+                            <div className="bg-[var(--miraitu-primary-green)]/5 rounded-2xl p-4 mb-8 flex items-center gap-3 border border-[var(--miraitu-primary-green)]/10">
+                                <div className="size-12 rounded-full bg-gradient-to-br from-[var(--miraitu-primary-green)] to-[var(--miraitu-lime-green)] flex items-center justify-center text-white shadow-md">
+                                    <span className="material-symbols-outlined text-2xl">person</span>
+                                </div>
+                                <div className="text-left flex-1 min-w-0">
+                                    <p className="font-bold text-[#0f1a11] truncate">{formData.fullName || 'Farmer'}</p>
+                                    <p className="text-xs text-gray-500 truncate">{formData.role} • {formData.mobileNumber}</p>
+                                </div>
+                                <span className="material-symbols-outlined text-[var(--miraitu-primary-green)]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                            </div>
+
+                            {/* CTA Button */}
+                            <button
+                                onClick={() => router.push('/home')}
+                                className="w-full py-4 bg-gradient-to-r from-[var(--miraitu-primary-green)] to-[var(--miraitu-lime-green)] text-white font-bold text-base rounded-xl shadow-lg shadow-[var(--miraitu-primary-green)]/30 hover:shadow-xl hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                            >
+                                Start Exploring
+                                <span className="material-symbols-outlined">arrow_forward</span>
+                            </button>
+
+                            {/* Auto redirect notice */}
+                            <p className="text-xs text-gray-400 mt-4 font-medium">Redirecting automatically in a few seconds...</p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

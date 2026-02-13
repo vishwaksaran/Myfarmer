@@ -79,7 +79,7 @@ export default function LivestockMarketplace() {
                         </div>
                         <p className="text-gray-500 dark:text-gray-400 max-w-lg">{t('livestock.subtitle')}</p>
                     </div>
-                    <a href="/v2/livestock">
+                    <a href="/home/livestock">
                         <button className="skeuo-button-3d flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-primary hover:scale-105 transition-transform">
                             {t('livestock.viewAll')}
                             <span className="material-symbols-outlined text-lg">arrow_forward_ios</span>

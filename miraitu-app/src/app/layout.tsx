@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Noto_Sans } from "next/font/google";
 import { AuthProvider } from "@/context/AuthContext";
+import { LanguageProvider } from "@/i18n/LanguageContext";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -56,7 +57,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
         className={`${plusJakartaSans.variable} ${notoSans.variable} font-display antialiased`}
       >
         <AuthProvider>
-          {children}
+          <LanguageProvider>
+            {children}
+          </LanguageProvider>
         </AuthProvider>
       </body>
     </html>

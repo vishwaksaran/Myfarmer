@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from 'react';
 import {
     User,
     signInWithPopup,
@@ -8,6 +8,8 @@ import {
     onAuthStateChanged
 } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
+
+const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
 interface AuthContextType {
     user: User | null;
@@ -22,7 +24,69 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+    // Sign out handler
+    const handleSignOut = useCallback(async () => {
+        try {
+            // Check if it's a guest user
+            if (user && (user as unknown as { uid: string }).uid === 'guest-123') {
+                setUser(null);
+            } else {
+                await firebaseSignOut(auth);
+            }
+        } catch (error) {
+            console.error('Error signing out:', error);
+            // Force clear user state even on error
+            setUser(null);
+        }
+    }, [user]);
+
+    // Reset the inactivity timer
+    const resetInactivityTimer = useCallback(() => {
+        if (inactivityTimerRef.current) {
+            clearTimeout(inactivityTimerRef.current);
+        }
+        if (user) {
+            inactivityTimerRef.current = setTimeout(() => {
+                console.log('[Miraitu] Auto-logout due to inactivity');
+                handleSignOut();
+            }, INACTIVITY_TIMEOUT_MS);
+        }
+    }, [user, handleSignOut]);
+
+    // Set up inactivity detection when user is logged in
+    useEffect(() => {
+        if (!user) {
+            if (inactivityTimerRef.current) {
+                clearTimeout(inactivityTimerRef.current);
+            }
+            return;
+        }
+
+        const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+
+        const onActivity = () => resetInactivityTimer();
+
+        // Start the timer
+        resetInactivityTimer();
+
+        // Listen for user activity
+        events.forEach(event => {
+            window.addEventListener(event, onActivity, { passive: true });
+        });
+
+        return () => {
+            events.forEach(event => {
+                window.removeEventListener(event, onActivity);
+            });
+            if (inactivityTimerRef.current) {
+                clearTimeout(inactivityTimerRef.current);
+            }
+        };
+    }, [user, resetInactivityTimer]);
+
+    // Firebase auth state listener
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setUser(user);
@@ -46,10 +110,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const loginAsGuest = async () => {
         setLoading(true);
-        // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 800));
 
-        // Create a dummy user object conforming to Firebase User interface (partially)
         const dummyUser = {
             uid: 'guest-123',
             displayName: 'Guest Farmer',
@@ -80,17 +142,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
     };
 
-    const signOut = async () => {
-        try {
-            await firebaseSignOut(auth);
-        } catch (error) {
-            console.error('Error signing out:', error);
-            throw error;
-        }
-    };
-
     return (
-        <AuthContext.Provider value={{ user, loading, signInWithGoogle, loginAsGuest, signOut }}>
+        <AuthContext.Provider value={{ user, loading, signInWithGoogle, loginAsGuest, signOut: handleSignOut }}>
             {children}
         </AuthContext.Provider>
     );
