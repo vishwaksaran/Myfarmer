@@ -7,10 +7,10 @@ export default function FloatingActionButtons() {
     const [showTooltip, setShowTooltip] = useState(false);
 
     return (
-        <div className="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-50 flex flex-col items-end gap-4">
-            {/* Talk to Expert Button */}
+        <div className="fixed z-50 flex flex-col items-end gap-4 bottom-24 md:bottom-6 right-4 lg:bottom-10 lg:right-10">
+            {/* Talk to Expert Button — Desktop only */}
             <div
-                className="flex items-center gap-3"
+                className="hidden md:flex items-center gap-3"
                 onMouseEnter={() => setShowTooltip(true)}
                 onMouseLeave={() => setShowTooltip(false)}
             >

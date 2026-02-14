@@ -124,12 +124,12 @@ export default function HeroSection() {
                             <p className="mb-8 text-base md:text-lg font-medium leading-relaxed opacity-85 max-w-xl">
                                 {t('hero.mainSubtitle')}
                             </p>
-                            <div className="flex flex-wrap gap-3 mb-8">
-                                <button className="group flex items-center gap-2 rounded-2xl bg-white px-6 md:px-8 py-3.5 md:py-4 text-sm md:text-base font-bold text-primary shadow-xl hover:shadow-2xl hover:bg-gray-50 active:scale-[0.97] transition-all">
+                            <div className="flex flex-row gap-3 mb-8">
+                                <button className="group flex items-center gap-2 rounded-2xl bg-white px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-primary shadow-xl hover:shadow-2xl hover:bg-gray-50 active:scale-[0.97] transition-all whitespace-nowrap">
                                     <span className="material-symbols-outlined text-lg group-hover:rotate-45 transition-transform">explore</span>
                                     {t('hero.exploreHub')}
                                 </button>
-                                <button className="group flex items-center gap-2 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm px-6 md:px-8 py-3.5 md:py-4 text-sm md:text-base font-bold text-white hover:bg-white/20 active:scale-[0.97] transition-all">
+                                <button className="group flex items-center gap-2 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-white hover:bg-white/20 active:scale-[0.97] transition-all whitespace-nowrap">
                                     <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">play_circle</span>
                                     Watch Demo
                                 </button>

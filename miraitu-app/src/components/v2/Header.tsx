@@ -10,12 +10,12 @@ import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 
 const primaryNavItems = [
-    { tKey: 'nav.about', path: '/home/about' },
-    { tKey: 'nav.machinery', path: '/home/machinery' },
-    { tKey: 'nav.crops', path: '/home/crops' },
-    { tKey: 'nav.livestock', path: '/home/livestock' },
-    { tKey: 'nav.finance', path: '/home/finance' },
-    { tKey: 'nav.shop', path: '/home/shop' },
+    { tKey: 'nav.about', path: '/home/about', icon: 'info' },
+    { tKey: 'nav.machinery', path: '/home/machinery', icon: 'agriculture' },
+    { tKey: 'nav.crops', path: '/home/crops', icon: 'grass' },
+    { tKey: 'nav.livestock', path: '/home/livestock', icon: 'pets' },
+    { tKey: 'nav.finance', path: '/home/finance', icon: 'account_balance' },
+    { tKey: 'nav.shop', path: '/home/shop', icon: 'shopping_bag' },
 ];
 
 const moreNavItems = [
@@ -36,6 +36,8 @@ export default function Header() {
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [selectedLang, setSelectedLang] = useState<LangCode>(lang);
+    const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+    const lastScrollY = useRef(0);
     const moreMenuRef = useRef<HTMLDivElement>(null);
     const profileMenuRef = useRef<HTMLDivElement>(null);
 
@@ -63,6 +65,23 @@ export default function Header() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Scroll direction detection — hide on scroll down, show on scroll up
+    useEffect(() => {
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+            if (isMobileMenuOpen) {
+                setIsHeaderVisible(true);
+            } else if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
+                setIsHeaderVisible(false);
+            } else {
+                setIsHeaderVisible(true);
+            }
+            lastScrollY.current = currentScrollY;
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [isMobileMenuOpen]);
+
     const saveLanguageSelection = () => {
         setLang(selectedLang);
         setIsLanguageModalOpen(false);
@@ -75,7 +94,7 @@ export default function Header() {
 
     return (
         <>
-            <header className="sticky top-0 z-50 w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+            <header className={`sticky top-0 z-50 w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md transition-transform duration-300 ease-in-out ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}>
                 <div className="mx-auto max-w-[1400px] px-4 py-3">
                     {/* Main Header Row */}
                     <div className="flex items-center justify-between gap-4">
@@ -183,14 +202,14 @@ export default function Header() {
                             </div>
                             <button
                                 onClick={() => setIsLanguageModalOpen(true)}
-                                className="hidden sm:flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold skeuo-card transition-transform hover:scale-105"
+                                className="flex items-center gap-1.5 rounded-xl px-2 sm:px-3 py-2 text-sm font-semibold skeuo-card transition-transform hover:scale-105"
                             >
                                 <span className="material-symbols-outlined text-primary text-lg">language</span>
                                 <span className="hidden lg:inline">{allLanguages.find(lang => lang.code === selectedLang)?.name || 'English'}</span>
                             </button>
 
                             {/* Cart Button */}
-                            <Link href="/home/shop/checkout" className="relative hidden sm:flex items-center justify-center size-10 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-black/5 dark:border-white/10 hover:bg-primary/5 hover:text-primary transition-colors skeuo-card">
+                            <Link href="/home/shop/checkout" className="relative flex items-center justify-center size-9 sm:size-10 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-black/5 dark:border-white/10 hover:bg-primary/5 hover:text-primary transition-colors skeuo-card">
                                 <span className="material-symbols-outlined text-xl">shopping_cart</span>
                                 {totalItems > 0 && (
                                     <span className="absolute -top-1.5 -right-1.5 size-5 flex items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm animate-in zoom-in duration-300">
@@ -294,11 +313,23 @@ export default function Header() {
                         </div>
                     </div>
 
+                    {/* Mobile Search Bar */}
+                    <div className="md:hidden mt-2">
+                        <div className="skeuo-inset flex h-10 w-full items-center rounded-xl bg-[#ebf0ea] dark:bg-[#222d21] px-4">
+                            <span className="material-symbols-outlined text-primary/60 text-lg">search</span>
+                            <input
+                                className="w-full border-none bg-transparent px-3 text-sm focus:ring-0 placeholder:text-gray-500"
+                                placeholder={t('header.search')}
+                                type="text"
+                            />
+                        </div>
+                    </div>
+
                     {/* Mobile Menu */}
                     {isMobileMenuOpen && (
-                        <div className="lg:hidden mt-3 pb-2 border-t border-black/5 dark:border-white/10 pt-3">
+                        <div className="lg:hidden mt-3 pb-24 border-t border-black/5 dark:border-white/10 pt-3">
                             <div className="grid grid-cols-2 gap-2">
-                                {[...primaryNavItems.map(({ tKey, path }) => ({ tKey, path })), ...moreNavItems.map(({ tKey, path, icon }) => ({ tKey, path, icon }))].map((item) => (
+                                {[...primaryNavItems, ...moreNavItems].map((item) => (
                                     <Link
                                         key={item.tKey}
                                         href={item.path}
@@ -308,81 +339,30 @@ export default function Header() {
                                             : 'text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-primary/5'
                                             }`}
                                     >
-                                        {'icon' in item && <span className={`material-symbols-outlined text-lg ${isActive(item.path) ? 'text-primary' : 'text-gray-400'}`}>{(item as { icon: string }).icon}</span>}
+                                        <span className={`material-symbols-outlined text-lg ${isActive(item.path) ? 'text-primary' : 'text-gray-400'}`}>{item.icon}</span>
                                         {t(item.tKey)}
                                     </Link>
                                 ))}
                             </div>
 
-                            {/* Mobile: Language & Cart & Auth */}
-                            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-black/5 dark:border-white/10">
-                                <button
-                                    onClick={() => { setIsMobileMenuOpen(false); setIsLanguageModalOpen(true); }}
-                                    className="flex-1 flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold bg-primary/5 text-primary hover:bg-primary/10 transition-colors"
-                                >
-                                    <span className="material-symbols-outlined text-lg">language</span>
-                                    {allLanguages.find(l => l.code === selectedLang)?.name || 'English'}
-                                </button>
+                            {/* Mobile: Become a Dealer/Seller Banner */}
+                            <div className="mt-3 pt-3 border-t border-black/5 dark:border-white/10">
                                 <Link
-                                    href="/home/shop/checkout"
+                                    href="/home/become-seller"
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="relative flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold bg-primary/5 text-primary hover:bg-primary/10 transition-colors"
+                                    className="block rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 p-4 group hover:from-orange-600 hover:to-amber-600 transition-all"
                                 >
-                                    <span className="material-symbols-outlined text-lg">shopping_cart</span>
-                                    Cart
-                                    {totalItems > 0 && (
-                                        <span className="size-5 flex items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-                                            {totalItems}
-                                        </span>
-                                    )}
-                                </Link>
-                            </div>
-
-                            {/* Mobile: User Profile or Login */}
-                            <div className="mt-2">
-                                {user ? (
-                                    <div className="rounded-xl bg-primary/5 p-3">
-                                        <div className="flex items-center gap-3 mb-3">
-                                            {user.photoURL ? (
-                                                <img src={user.photoURL} alt="Profile" className="size-10 rounded-full ring-2 ring-primary/20" />
-                                            ) : (
-                                                <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary ring-2 ring-primary/20">
-                                                    <span className="material-symbols-outlined text-xl">person</span>
-                                                </div>
-                                            )}
-                                            <div className="flex-1 min-w-0">
-                                                <p className="font-bold text-gray-900 dark:text-white text-sm truncate">{user.displayName || 'User'}</p>
-                                                <p className="text-xs text-gray-500 truncate">{user.email || ''}</p>
-                                            </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex items-center justify-center size-10 rounded-lg bg-white/20 backdrop-blur-sm shrink-0">
+                                            <span className="material-symbols-outlined text-white text-xl">storefront</span>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <Link
-                                                href="/home/profile"
-                                                onClick={() => setIsMobileMenuOpen(false)}
-                                                className="flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-primary bg-white border border-primary/20 hover:bg-primary/5 transition-colors"
-                                            >
-                                                <span className="material-symbols-outlined text-sm">account_circle</span>
-                                                Profile
-                                            </Link>
-                                            <button
-                                                onClick={() => { setIsMobileMenuOpen(false); signOut(); }}
-                                                className="flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-red-500 bg-white border border-red-200 hover:bg-red-50 transition-colors"
-                                            >
-                                                <span className="material-symbols-outlined text-sm">logout</span>
-                                                Logout
-                                            </button>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-black text-white leading-tight">Become a Dealer / Seller</p>
+                                            <p className="text-[11px] text-white/80 font-medium">Start selling on Miraitu today</p>
                                         </div>
+                                        <span className="material-symbols-outlined text-white/80 text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
                                     </div>
-                                ) : (
-                                    <Link
-                                        href="/user-login"
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                        className="w-full flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 bg-primary text-white text-sm font-bold shadow-lg hover:brightness-110 transition-all"
-                                    >
-                                        <span className="material-symbols-outlined text-lg">login</span>
-                                        {t('header.login')}
-                                    </Link>
-                                )}
+                                </Link>
                             </div>
                         </div>
                     )}
