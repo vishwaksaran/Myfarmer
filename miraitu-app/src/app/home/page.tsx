@@ -28,10 +28,7 @@ export const metadata = {
 export default function V2Page() {
     return (
         <div className="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark text-[#121811] dark:text-[#f9fbf9] transition-colors duration-300">
-            {/* Sticky Header Wrapper */}
-            <div className="sticky top-0 z-50 [&>header]:static [&>header]:z-auto">
-                <Header />
-            </div>
+            <Header />
             <main className="flex-1 w-full flex flex-col overflow-x-hidden">
                 <HeroSection />
                 <QuickServices />

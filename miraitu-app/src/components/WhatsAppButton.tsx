@@ -21,13 +21,13 @@ export default function WhatsAppButton({
     const sizeClasses = {
         sm: 'h-12 w-12 lg:h-14 lg:w-14',
         md: 'h-14 w-14 lg:h-16 lg:w-16',
-        lg: 'h-16 w-16 lg:h-20 lg:w-20',
+        lg: 'h-12 w-12 lg:h-16 lg:w-16',
     };
 
     const iconSizes = {
         sm: 'w-6 h-6',
         md: 'w-7 h-7',
-        lg: 'w-8 h-8 lg:w-10 lg:h-10',
+        lg: 'w-6 h-6 lg:w-8 lg:h-8',
     };
 
     return (

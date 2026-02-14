@@ -82,6 +82,23 @@ export default function Header() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [isMobileMenuOpen]);
 
+    // Force header visible when mobile menu opens
+    useEffect(() => {
+        if (isMobileMenuOpen) {
+            setIsHeaderVisible(true);
+        }
+    }, [isMobileMenuOpen]);
+
+    // Lock body scroll when mobile menu or language modal is open
+    useEffect(() => {
+        if (isMobileMenuOpen || isLanguageModalOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => { document.body.style.overflow = ''; };
+    }, [isMobileMenuOpen, isLanguageModalOpen]);
+
     const saveLanguageSelection = () => {
         setLang(selectedLang);
         setIsLanguageModalOpen(false);
@@ -94,7 +111,7 @@ export default function Header() {
 
     return (
         <>
-            <header className={`sticky top-0 z-50 w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md transition-transform duration-300 ease-in-out ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+            <header className={`sticky top-0 w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'z-[70]' : 'z-50'} ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}>
                 <div className="mx-auto max-w-[1400px] px-4 py-3">
                     {/* Main Header Row */}
                     <div className="flex items-center justify-between gap-4">
@@ -304,7 +321,7 @@ export default function Header() {
                             )}
                             {/* Mobile Hamburger */}
                             <button
-                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                                onClick={() => { if (!isMobileMenuOpen) setIsHeaderVisible(true); setIsMobileMenuOpen(!isMobileMenuOpen); }}
                                 className="lg:hidden flex items-center justify-center size-10 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
                                 aria-label="Toggle menu"
                             >
@@ -325,66 +342,68 @@ export default function Header() {
                         </div>
                     </div>
 
-                    {/* Mobile Menu */}
-                    {isMobileMenuOpen && (
-                        <div className="lg:hidden mt-3 pb-24 border-t border-black/5 dark:border-white/10 pt-3">
-                            <div className="grid grid-cols-2 gap-2">
-                                {[...primaryNavItems, ...moreNavItems].map((item) => (
-                                    <Link
-                                        key={item.tKey}
-                                        href={item.path}
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${isActive(item.path)
-                                            ? 'text-primary bg-primary/5'
-                                            : 'text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-primary/5'
-                                            }`}
-                                    >
-                                        <span className={`material-symbols-outlined text-lg ${isActive(item.path) ? 'text-primary' : 'text-gray-400'}`}>{item.icon}</span>
-                                        {t(item.tKey)}
-                                    </Link>
-                                ))}
-                            </div>
-
-                            {/* Mobile: Become a Dealer/Seller Banner */}
-                            <div className="mt-3 pt-3 border-t border-black/5 dark:border-white/10">
-                                <Link
-                                    href="/home/become-seller"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    className="block rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 p-4 group hover:from-orange-600 hover:to-amber-600 transition-all"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex items-center justify-center size-10 rounded-lg bg-white/20 backdrop-blur-sm shrink-0">
-                                            <span className="material-symbols-outlined text-white text-xl">storefront</span>
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-black text-white leading-tight">Become a Dealer / Seller</p>
-                                            <p className="text-[11px] text-white/80 font-medium">Start selling on Miraitu today</p>
-                                        </div>
-                                        <span className="material-symbols-outlined text-white/80 text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                                    </div>
-                                </Link>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </header>
 
+            {/* Mobile Menu — Full-screen Overlay (covers bottom nav & WhatsApp) */}
+            {isMobileMenuOpen && (
+                <div className="lg:hidden fixed inset-0 top-0 z-[60] bg-background-light dark:bg-background-dark overflow-y-auto pt-[140px] pb-8 px-4">
+                    <div className="grid grid-cols-2 gap-2">
+                        {[...primaryNavItems, ...moreNavItems].map((item) => (
+                            <Link
+                                key={item.tKey}
+                                href={item.path}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${isActive(item.path)
+                                    ? 'text-primary bg-primary/5'
+                                    : 'text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-primary/5'
+                                    }`}
+                            >
+                                <span className={`material-symbols-outlined text-lg ${isActive(item.path) ? 'text-primary' : 'text-gray-400'}`}>{item.icon}</span>
+                                {t(item.tKey)}
+                            </Link>
+                        ))}
+                    </div>
+
+                    {/* Mobile: Become a Dealer/Seller Banner */}
+                    <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/10">
+                        <Link
+                            href="/home/become-seller"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="block rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 p-4 group hover:from-orange-600 hover:to-amber-600 transition-all"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center justify-center size-10 rounded-lg bg-white/20 backdrop-blur-sm shrink-0">
+                                    <span className="material-symbols-outlined text-white text-xl">storefront</span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-black text-white leading-tight">Become a Dealer / Seller</p>
+                                    <p className="text-[11px] text-white/80 font-medium">Start selling on Miraitu today</p>
+                                </div>
+                                <span className="material-symbols-outlined text-white/80 text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            </div>
+                        </Link>
+                    </div>
+                </div>
+            )}
+
             {/* Language Selection Modal */}
             {isLanguageModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4" onClick={() => setIsLanguageModalOpen(false)}>
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" onClick={() => setIsLanguageModalOpen(false)}>
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
 
                     <div
-                        className="relative w-full sm:max-w-2xl lg:max-w-4xl bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden border-t-4 border-white max-h-[90vh] overflow-y-auto"
+                        className="relative w-full sm:max-w-2xl lg:max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden border-t-4 border-white max-h-[85vh] flex flex-col"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-[#f0f4ec] opacity-50 pointer-events-none"></div>
 
-                        <div className="relative z-10 p-5 sm:p-8 lg:p-10">
+                        {/* Scrollable content */}
+                        <div className="relative z-10 p-5 sm:p-8 lg:p-10 overflow-y-auto flex-1">
                             {/* Close Button */}
                             <button
                                 onClick={() => setIsLanguageModalOpen(false)}
-                                className="absolute top-4 right-4 sm:top-6 sm:right-6 size-10 sm:size-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-white to-gray-200 shadow-[4px_4px_8px_rgba(0,0,0,0.1),-2px_-2px_6px_rgba(255,255,255,0.8)] flex items-center justify-center text-soil-dark hover:text-red-500 transition-all active:shadow-inner active:scale-95"
+                                className="absolute top-4 right-4 sm:top-6 sm:right-6 size-10 sm:size-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-white to-gray-200 shadow-[4px_4px_8px_rgba(0,0,0,0.1),-2px_-2px_6px_rgba(255,255,255,0.8)] flex items-center justify-center text-soil-dark hover:text-red-500 transition-all active:shadow-inner active:scale-95 z-20"
                             >
                                 <span className="material-symbols-outlined font-bold text-lg sm:text-xl">close</span>
                             </button>
@@ -399,7 +418,7 @@ export default function Header() {
                             </div>
 
                             {/* Language Grid */}
-                            <div className="mb-6 sm:mb-8">
+                            <div>
                                 <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-4">
                                     {allLanguages.map((lang) => {
                                         const isSelected = selectedLang === lang.code;
@@ -427,17 +446,17 @@ export default function Header() {
                                     })}
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Save Button */}
-                            <div className="flex justify-center">
-                                <button
-                                    onClick={saveLanguageSelection}
-                                    className="w-full sm:w-80 h-14 sm:h-16 rounded-2xl bg-gradient-to-b from-[#4d8f43] to-primary text-white font-black text-lg sm:text-xl flex items-center justify-center gap-3 shadow-[0_5px_0_#1a3617,_0_10px_14px_rgba(44,89,38,0.4)] active:shadow-[0_2px_0_#1a3617,_0_5px_10px_rgba(44,89,38,0.4)] active:translate-y-1 transition-all"
-                                >
-                                    <span className="material-symbols-outlined font-black text-xl sm:text-2xl">done_all</span>
-                                    {t('lang.save')}
-                                </button>
-                            </div>
+                        {/* Sticky Save Button */}
+                        <div className="relative z-10 p-4 sm:p-6 bg-white border-t border-gray-100 shrink-0">
+                            <button
+                                onClick={saveLanguageSelection}
+                                className="w-full sm:w-80 sm:mx-auto h-14 sm:h-16 rounded-2xl bg-gradient-to-b from-[#4d8f43] to-primary text-white font-black text-lg sm:text-xl flex items-center justify-center gap-3 shadow-[0_5px_0_#1a3617,_0_10px_14px_rgba(44,89,38,0.4)] active:shadow-[0_2px_0_#1a3617,_0_5px_10px_rgba(44,89,38,0.4)] active:translate-y-1 transition-all"
+                            >
+                                <span className="material-symbols-outlined font-black text-xl sm:text-2xl">done_all</span>
+                                {t('lang.save')}
+                            </button>
                         </div>
                     </div>
                 </div>
