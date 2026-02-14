@@ -162,7 +162,7 @@ const cropCategories = [
 // Seller data for crops — multiple verified farmers per crop for comparison
 const cropSellers: Record<string, { name: string; location: string; phone: string; price: string; minQty: string; rating: number; verified: boolean }[]> = {
     'Rice': [
-        { name: 'Rajesh Kumar', location: 'Karnal, Haryana', phone: '+91 98765 43210', price: '₹2,400/qtl', minQty: '5 Quintals', rating: 4.5, verified: true },
+        { name: 'Rajesh Kumar', location: 'Karnal, Haryana', phone: '+91 74484 10198', price: '₹2,400/qtl', minQty: '5 Quintals', rating: 4.5, verified: true },
         { name: 'Suresh Patel', location: 'Guntur, AP', phone: '+91 87654 32109', price: '₹2,250/qtl', minQty: '10 Quintals', rating: 4.2, verified: true },
         { name: 'Anand Singh', location: 'Burdwan, WB', phone: '+91 76543 21098', price: '₹2,350/qtl', minQty: '2 Quintals', rating: 3.8, verified: false },
         { name: 'Lakshmi Devi', location: 'Thanjavur, TN', phone: '+91 94321 56789', price: '₹2,300/qtl', minQty: '3 Quintals', rating: 4.6, verified: true },

@@ -162,24 +162,7 @@ export default function Footer() {
                     </div>
                 </div>
 
-                {/* Mobile: Call to Expert Banner */}
-                <div className="md:hidden mb-8">
-                    <a
-                        href="tel:917448410198"
-                        className="flex items-center gap-4 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 p-4 shadow-lg active:scale-[0.98] transition-all"
-                    >
-                        <div className="flex items-center justify-center size-12 rounded-xl bg-white/20 backdrop-blur-sm shrink-0">
-                            <span className="material-symbols-outlined text-white text-2xl">support_agent</span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-base font-black text-white leading-tight">Talk to Expert</p>
-                            <p className="text-xs text-white/70 font-medium mt-0.5">+91 - 8553498691 • Tap to call</p>
-                        </div>
-                        <div className="flex items-center justify-center size-10 rounded-full bg-white/20">
-                            <span className="material-symbols-outlined text-white text-xl">call</span>
-                        </div>
-                    </a>
-                </div>
+
 
                 {/* Legal & Safety Section */}
                 <div className="border-t border-white/10 pt-6">

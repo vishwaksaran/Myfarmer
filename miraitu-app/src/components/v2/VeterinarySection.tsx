@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useLoginPrompt } from '@/context/LoginPromptContext';
 
 const services = [
     {
@@ -35,6 +36,7 @@ const services = [
 ];
 
 export default function VeterinarySection() {
+    const { requireLogin } = useLoginPrompt();
     const [selectedService, setSelectedService] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: '',
@@ -45,6 +47,9 @@ export default function VeterinarySection() {
 
     const handleBookNow = (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!requireLogin()) return; // Enforce login
+
         setShowSuccess(true);
         // Reset form after 3 seconds or close modal
         setTimeout(() => {
@@ -115,6 +120,7 @@ export default function VeterinarySection() {
                     <button
                         onClick={() => setSelectedService('General Consultation')}
                         className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-green-600 text-white font-bold shadow-lg shadow-green-200 dark:shadow-none"
+                        data-no-auth
                     >
                         Book a Service <span className="material-symbols-outlined">calendar_month</span>
                     </button>
@@ -129,6 +135,7 @@ export default function VeterinarySection() {
                         <button
                             onClick={() => setSelectedService(null)}
                             className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                            data-no-auth
                         >
                             <span className="material-symbols-outlined">close</span>
                         </button>
