@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Noto_Sans } from "next/font/google";
 import { AuthProvider } from "@/context/AuthContext";
+import { LoginPromptProvider } from "@/context/LoginPromptContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
+import LoginPromptOverlay from "@/components/auth/LoginPromptOverlay";
+import GlobalLoginInterceptor from "@/components/auth/GlobalLoginInterceptor";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -57,9 +60,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
         className={`${plusJakartaSans.variable} ${notoSans.variable} font-display antialiased`}
       >
         <AuthProvider>
-          <LanguageProvider>
-            {children}
-          </LanguageProvider>
+          <LoginPromptProvider>
+            <LanguageProvider>
+              {children}
+              <LoginPromptOverlay />
+              <GlobalLoginInterceptor />
+            </LanguageProvider>
+          </LoginPromptProvider>
         </AuthProvider>
       </body>
     </html>

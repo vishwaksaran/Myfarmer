@@ -1,6 +1,7 @@
 'use client';
 
 import { useLanguage } from '@/i18n/LanguageContext';
+import { useRef, useState, useEffect } from 'react';
 
 const testimonials = [
     {
@@ -31,6 +32,61 @@ const testimonials = [
 
 export default function TestimonialsSection() {
     const { t } = useLanguage();
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [activeIndex, setActiveIndex] = useState(0);
+
+    useEffect(() => {
+        const container = scrollRef.current;
+        if (!container) return;
+        const handleScroll = () => {
+            const scrollLeft = container.scrollLeft;
+            const cardWidth = container.scrollWidth / testimonials.length;
+            setActiveIndex(Math.round(scrollLeft / cardWidth));
+        };
+        container.addEventListener('scroll', handleScroll, { passive: true });
+        return () => container.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const TestimonialCard = ({ testimonial, index, className = '' }: { testimonial: typeof testimonials[0]; index: number; className?: string }) => (
+        <div
+            className={`testimonial-card skeuo-card-hover rounded-2xl md:rounded-3xl p-5 md:p-7 border border-white/50 dark:border-white/5 flex flex-col ${className}`}
+        >
+            {/* Stars */}
+            <div className="flex gap-0.5 mb-3 md:mb-4">
+                {[...Array(5)].map((_, i) => (
+                    <span key={i} className={`text-sm md:text-lg ${i < testimonial.rating ? 'text-accent' : 'text-gray-200 dark:text-gray-700'}`}>★</span>
+                ))}
+            </div>
+
+            {/* Quote */}
+            <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-xs md:text-sm mb-4 md:mb-6 flex-grow">
+                &ldquo;{testimonial.text}&rdquo;
+            </p>
+
+            {/* Stat badge */}
+            <div className="mb-4 md:mb-5">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 md:py-1.5 text-[10px] md:text-xs font-black text-primary">
+                    <span className="material-symbols-outlined text-[10px] md:text-xs">trending_up</span>
+                    {testimonial.stat}
+                </span>
+            </div>
+
+            {/* Author */}
+            <div className="flex items-center gap-2.5 md:gap-3 pt-3 md:pt-4 border-t border-black/5 dark:border-white/5">
+                <div className="h-9 w-9 md:h-11 md:w-11 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
+                    <img
+                        src={testimonial.image}
+                        alt={testimonial.name}
+                        className="h-full w-full object-cover"
+                    />
+                </div>
+                <div>
+                    <h4 className="font-bold text-xs md:text-sm">{testimonial.name}</h4>
+                    <p className="text-[10px] md:text-xs text-gray-500">{testimonial.role}</p>
+                </div>
+            </div>
+        </div>
+    );
 
     return (
         <section className="px-4 md:px-6 py-14 relative overflow-hidden">
@@ -49,49 +105,41 @@ export default function TestimonialsSection() {
                     </p>
                 </div>
 
-                {/* Testimonial Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Desktop: Grid */}
+                <div className="hidden md:grid grid-cols-3 gap-6">
                     {testimonials.map((testimonial, index) => (
-                        <div
+                        <TestimonialCard
                             key={index}
-                            className={`testimonial-card skeuo-card-hover rounded-3xl p-7 border border-white/50 dark:border-white/5 flex flex-col opacity-0 animate-fade-in-up stagger-${index + 2}`}
-                        >
-                            {/* Stars */}
-                            <div className="flex gap-0.5 mb-4">
-                                {[...Array(5)].map((_, i) => (
-                                    <span key={i} className={`text-lg ${i < testimonial.rating ? 'text-accent' : 'text-gray-200 dark:text-gray-700'}`}>★</span>
-                                ))}
-                            </div>
-
-                            {/* Quote */}
-                            <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-sm mb-6 flex-grow">
-                                &ldquo;{testimonial.text}&rdquo;
-                            </p>
-
-                            {/* Stat badge */}
-                            <div className="mb-5">
-                                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-black text-primary">
-                                    <span className="material-symbols-outlined text-xs">trending_up</span>
-                                    {testimonial.stat}
-                                </span>
-                            </div>
-
-                            {/* Author */}
-                            <div className="flex items-center gap-3 pt-4 border-t border-black/5 dark:border-white/5">
-                                <div className="h-11 w-11 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
-                                    <img
-                                        src={testimonial.image}
-                                        alt={testimonial.name}
-                                        className="h-full w-full object-cover"
-                                    />
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-sm">{testimonial.name}</h4>
-                                    <p className="text-xs text-gray-500">{testimonial.role}</p>
-                                </div>
-                            </div>
-                        </div>
+                            testimonial={testimonial}
+                            index={index}
+                            className={`opacity-0 animate-fade-in-up stagger-${index + 2}`}
+                        />
                     ))}
+                </div>
+
+                {/* Mobile: Horizontal Carousel */}
+                <div className="md:hidden">
+                    <div
+                        ref={scrollRef}
+                        className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 -mx-4 px-4"
+                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    >
+                        {testimonials.map((testimonial, index) => (
+                            <div key={index} className="snap-start shrink-0 w-[80vw]">
+                                <TestimonialCard testimonial={testimonial} index={index} />
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Carousel Dots */}
+                    <div className="flex justify-center gap-1.5 mt-3">
+                        {testimonials.map((_, index) => (
+                            <div
+                                key={index}
+                                className={`h-1.5 rounded-full transition-all duration-300 ${activeIndex === index ? 'w-6 bg-accent' : 'w-1.5 bg-gray-300 dark:bg-gray-600'}`}
+                            />
+                        ))}
+                    </div>
                 </div>
             </div>
         </section>

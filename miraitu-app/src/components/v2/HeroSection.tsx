@@ -129,7 +129,7 @@ export default function HeroSection() {
                                     <span className="material-symbols-outlined text-lg group-hover:rotate-45 transition-transform">explore</span>
                                     {t('hero.exploreHub')}
                                 </button>
-                                <button className="group flex items-center gap-2 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-white hover:bg-white/20 active:scale-[0.97] transition-all whitespace-nowrap">
+                                <button className="group flex items-center gap-2 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-white hover:bg-white/20 active:scale-[0.97] transition-all whitespace-nowrap" data-no-auth>
                                     <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">play_circle</span>
                                     Watch Demo
                                 </button>
@@ -147,7 +147,7 @@ export default function HeroSection() {
                         </div>
 
                         {/* Right Content - Sell Form */}
-                        <div className="lg:col-span-5 flex justify-center lg:justify-end w-full animate-fade-in-right">
+                        <div className="lg:col-span-5 hidden lg:flex justify-center lg:justify-end w-full animate-fade-in-right">
                             <div className="glass-card w-full max-w-md rounded-3xl p-6 md:p-8 shadow-2xl">
                                 <div className="flex items-center gap-3 mb-6">
                                     <div className="size-10 rounded-xl bg-gradient-to-br from-primary to-lush-green flex items-center justify-center shadow-lg">

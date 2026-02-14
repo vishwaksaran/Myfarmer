@@ -84,7 +84,7 @@ export default function NearbyLocation({ onLocationChange }: NearbyLocationProps
     const displayLocation = location || t(locationKey);
 
     return (
-        <div className="relative">
+        <div className="relative" data-no-auth>
             <button
                 onClick={() => setShowDropdown(!showDropdown)}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary transition-colors shadow-sm"

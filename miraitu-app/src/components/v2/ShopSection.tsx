@@ -63,7 +63,7 @@ export default function ShopSection() {
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                     {shopCategories.map((item, index) => (
                         <Link
                             href="/home/shop"
@@ -79,17 +79,17 @@ export default function ShopSection() {
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                             </div>
 
-                            <div className="relative p-6 text-white pb-8">
-                                <div className={`w-12 h-12 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 text-white border border-white/30`}>
-                                    <span className="material-symbols-outlined text-2xl">{item.icon}</span>
+                            <div className="relative p-4 md:p-6 text-white pb-5 md:pb-8">
+                                <div className="w-9 h-9 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-2 md:mb-4 text-white border border-white/30">
+                                    <span className="material-symbols-outlined text-lg md:text-2xl">{item.icon}</span>
                                 </div>
-                                <h3 className="text-xl font-bold mb-1 group-hover:text-green-300 transition-colors">
+                                <h3 className="text-sm md:text-xl font-bold mb-0.5 md:mb-1 group-hover:text-green-300 transition-colors">
                                     {item.name}
                                 </h3>
-                                <p className="text-white/80 text-sm font-medium mb-4">
+                                <p className="text-white/80 text-[11px] md:text-sm font-medium md:mb-4">
                                     {item.desc}
                                 </p>
-                                <div className="flex items-center text-sm font-bold text-green-300 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                                <div className="hidden md:flex items-center text-sm font-bold text-green-300 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                                     Shop Now <span className="material-symbols-outlined text-lg ml-1">arrow_forward</span>
                                 </div>
                             </div>

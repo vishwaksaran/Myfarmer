@@ -61,7 +61,7 @@ export default function QuickServices() {
                 </div>
 
                 {/* Services Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
                     {services.map((service, index) => (
                         <div
                             key={index}
@@ -74,27 +74,27 @@ export default function QuickServices() {
                                 }
                             }}
                         >
-                            <div className="skeuo-card-hover group rounded-3xl p-6 border border-white/50 dark:border-white/5 flex flex-col h-full cursor-pointer relative overflow-hidden transition-all duration-300">
+                            <div className="skeuo-card-hover group rounded-2xl md:rounded-3xl p-4 md:p-6 border border-white/50 dark:border-white/5 flex flex-col h-full cursor-pointer relative overflow-hidden transition-all duration-300">
                                 {/* Top accent */}
                                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-green-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                                <div className="flex items-start gap-4 mb-4">
+                                <div className="flex flex-col md:flex-row items-start gap-2 md:gap-4 mb-3 md:mb-4">
                                     {/* Uniform green themed icon */}
-                                    <div className="bg-gradient-to-br from-primary to-green-500 size-14 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-primary/25 transition-all duration-300 shadow-md">
-                                        <span className="material-symbols-outlined text-2xl text-white">
+                                    <div className="bg-gradient-to-br from-primary to-green-500 size-10 md:size-14 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-primary/25 transition-all duration-300 shadow-md">
+                                        <span className="material-symbols-outlined text-xl md:text-2xl text-white">
                                             {service.icon}
                                         </span>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="text-lg font-black mb-1 group-hover:text-primary transition-colors">{t(service.tTitle)}</h3>
-                                        <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">{t(service.tDesc)}</p>
+                                        <h3 className="text-sm md:text-lg font-black mb-0.5 md:mb-1 group-hover:text-primary transition-colors">{t(service.tTitle)}</h3>
+                                        <p className="text-[11px] md:text-sm text-gray-500 leading-relaxed line-clamp-2">{t(service.tDesc)}</p>
                                     </div>
                                 </div>
 
-                                <div className="mt-auto pt-4 border-t border-black/5 dark:border-white/5">
+                                <div className="mt-auto pt-3 md:pt-4 border-t border-black/5 dark:border-white/5">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm font-bold text-primary">{t(service.tBtn)}</span>
-                                        <span className="material-symbols-outlined text-primary text-lg group-hover:translate-x-1 transition-transform">
+                                        <span className="text-xs md:text-sm font-bold text-primary">{t(service.tBtn)}</span>
+                                        <span className="material-symbols-outlined text-primary text-base md:text-lg group-hover:translate-x-1 transition-transform">
                                             arrow_forward
                                         </span>
                                     </div>

@@ -90,6 +90,7 @@ export default function CTABanner() {
                             <button
                                 onClick={() => setIsContactModalOpen(true)}
                                 className="group flex items-center justify-center gap-3 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-md px-8 py-5 text-lg font-bold text-white hover:bg-white/20 hover:border-white/50 active:scale-[0.98] transition-all duration-300"
+                                data-no-auth
                             >
                                 <span className="material-symbols-outlined text-2xl">call</span>
                                 Talk to Us
@@ -101,7 +102,7 @@ export default function CTABanner() {
 
             {/* Contact Modal */}
             {isContactModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" data-no-auth>
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setIsContactModalOpen(false)}></div>
 
                     <div className="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-2xl overflow-hidden animate-fade-in-up">

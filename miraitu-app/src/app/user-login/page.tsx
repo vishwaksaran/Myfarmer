@@ -112,7 +112,7 @@ export default function UserLoginPage() {
     }
 
     return (
-        <div className="relative min-h-screen bg-[var(--miraitu-background-light)] font-display">
+        <div className="relative min-h-screen bg-[var(--miraitu-background-light)] font-display" data-no-auth>
             {/* Scalable CSS Background */}
             <div className="fixed inset-0 z-0 overflow-hidden">
                 {/* Base Gradient */}
@@ -205,7 +205,7 @@ export default function UserLoginPage() {
             {/* Main Content */}
             <div className="relative z-10 min-h-screen flex flex-col">
                 {/* Header */}
-                <header className="flex items-center justify-between px-6 md:px-10 py-4 bg-white/80 backdrop-blur-md border-b border-[var(--miraitu-primary-green)]/10">
+                <header className="flex items-center justify-between px-6 md:px-10 py-4 bg-white/80 backdrop-blur-md border-b border-[var(--miraitu-primary-green)]/10 relative z-50 overflow-visible">
                     <Link href="/home" className="flex items-center gap-3 text-[var(--miraitu-primary-green)]">
                         <MiraituLogo size={40} />
                         <h2 className="text-[#0f1a11] text-xl font-extrabold leading-tight tracking-[-0.015em]">Miraitu</h2>

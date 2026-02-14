@@ -115,12 +115,21 @@ export default function ToolboxSection() {
             </div>
 
             <div className="mx-auto max-w-[1400px] relative z-10">
+                {/* Mobile: 2x2 grid of all service cards + form below */}
+                {/* Desktop: left-center-right layout */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
 
-                    {/* Left Service Cards */}
-                    <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-5">
+                    {/* Left Service Cards - hidden on mobile, shown on desktop */}
+                    <div className="hidden lg:grid lg:col-span-3 grid-cols-1 gap-5">
                         {leftServices.map((service, index) => (
                             <ServiceCard key={service.title} service={service} index={index} side="left" />
+                        ))}
+                    </div>
+
+                    {/* Mobile: All 4 cards in 2x2 grid */}
+                    <div className="lg:hidden grid grid-cols-2 gap-3">
+                        {[...leftServices, ...rightServices].map((service, index) => (
+                            <ServiceCard key={service.title} service={service} index={index} side={index < 2 ? "left" : "right"} />
                         ))}
                     </div>
 
@@ -263,8 +272,8 @@ export default function ToolboxSection() {
                         </div>
                     </div>
 
-                    {/* Right Service Cards */}
-                    <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-5">
+                    {/* Right Service Cards - hidden on mobile, shown on desktop */}
+                    <div className="hidden lg:grid lg:col-span-3 grid-cols-1 gap-5">
                         {rightServices.map((service, index) => (
                             <ServiceCard key={service.title} service={service} index={index} side="right" />
                         ))}
