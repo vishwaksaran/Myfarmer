@@ -95,7 +95,7 @@ export default function HeroSection() {
         <section className="relative px-4 md:px-6 pt-6 pb-4">
             <div className="mx-auto max-w-[1400px]">
                 {/* Main Hero Container */}
-                <div className="relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem] min-h-[480px] md:min-h-[600px] lg:min-h-[680px]">
+                <div className="relative overflow-hidden rounded-tl-[2rem] rounded-tr-[2rem] rounded-bl-none rounded-br-none md:rounded-tl-[2.5rem] md:rounded-tr-[2.5rem] md:rounded-bl-none md:rounded-br-none min-h-[480px] md:min-h-[600px] lg:min-h-[680px]">
                     {/* Background Image with Parallax Feel */}
                     <div className="absolute inset-0 z-0">
                         <div className="hero-gradient-overlay absolute inset-0 z-10"></div>
