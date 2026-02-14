@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import MachineryListing from '@/components/home/machinery/MachineryListing';
-import CompareModal from '@/components/home/machinery/CompareModal';
+import MachineryListing from '@/components/v2/machinery/MachineryListing';
+import CompareModal from '@/components/v2/machinery/CompareModal';
 
 const newTractors = [
     {
@@ -158,3 +158,4 @@ export default function NewTractorsPage() {
         </div>
     );
 }
+

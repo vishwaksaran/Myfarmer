@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import NearbyLocation from '@/components/home/NearbyLocation';
+import NearbyLocation from '@/components/v2/NearbyLocation';
 
 const landServices = [
     {
@@ -119,3 +119,4 @@ export default function LandPage() {
         </div>
     );
 }
+

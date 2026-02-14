@@ -1,22 +1,23 @@
-import Header from '@/components/home/Header';
-import HeroSection from '@/components/home/HeroSection';
-import QuickServices from '@/components/home/QuickServices';
-import LivestockMarketplace from '@/components/home/LivestockMarketplace';
-import VeterinarySection from '@/components/home/VeterinarySection';
-import FPOBanner from '@/components/home/FPOBanner';
-import FinanceBanner from '@/components/home/FinanceBanner';
-import MachinerySection from '@/components/home/MachinerySection';
-import CropMarketplaceSection from '@/components/home/CropMarketplaceSection';
-import StorageSection from '@/components/home/StorageSection';
-import ShopSection from '@/components/home/ShopSection';
-import FarmLandSection from '@/components/home/FarmLandSection';
-import ServicesSection from '@/components/home/ServicesSection';
-import WaterEnergySection from '@/components/home/WaterEnergySection';
-import ToolboxSection from '@/components/home/ToolboxSection';
-import Footer from '@/components/home/Footer';
-import CTABanner from '@/components/home/CTABanner';
-import TestimonialsSection from '@/components/home/TestimonialsSection';
-import FeaturedVideosSection from '@/components/home/FeaturedVideosSection';
+import Header from '@/components/v2/Header';
+import HeroSection from '@/components/v2/HeroSection';
+import QuickServices from '@/components/v2/QuickServices';
+import LivestockMarketplace from '@/components/v2/LivestockMarketplace';
+import VeterinarySection from '@/components/v2/VeterinarySection';
+import FPOBanner from '@/components/v2/FPOBanner';
+import FinanceBanner from '@/components/v2/FinanceBanner';
+import FarmerServicesGrid from '@/components/v2/FarmerServicesGrid';
+import MachinerySection from '@/components/v2/MachinerySection';
+import CropMarketplaceSection from '@/components/v2/CropMarketplaceSection';
+import StorageSection from '@/components/v2/StorageSection';
+import ShopSection from '@/components/v2/ShopSection';
+import FarmLandSection from '@/components/v2/FarmLandSection';
+import ServicesSection from '@/components/v2/ServicesSection';
+import WaterEnergySection from '@/components/v2/WaterEnergySection';
+import ToolboxSection from '@/components/v2/ToolboxSection';
+import Footer from '@/components/v2/Footer';
+import CTABanner from '@/components/v2/CTABanner';
+import TestimonialsSection from '@/components/v2/TestimonialsSection';
+import FeaturedVideosSection from '@/components/v2/FeaturedVideosSection';
 import './globals-v2.css';
 
 export const metadata = {
@@ -36,6 +37,7 @@ export default function V2Page() {
                 <QuickServices />
                 <FinanceBanner />
                 <FPOBanner />
+                <FarmerServicesGrid />
                 <LivestockMarketplace />
                 <VeterinarySection />
                 <CTABanner />

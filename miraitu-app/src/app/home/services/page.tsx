@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import NearbyLocation from '@/components/home/NearbyLocation';
+import NearbyLocation from '@/components/v2/NearbyLocation';
 
 const services = [
     {
@@ -428,3 +428,4 @@ export default function ServicesPage() {
         </div>
     );
 }
+

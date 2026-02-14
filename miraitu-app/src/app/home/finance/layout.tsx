@@ -1,5 +1,5 @@
-import Header from '@/components/home/Header';
-import Footer from '@/components/home/Footer';
+import Header from '@/components/v2/Header';
+import Footer from '@/components/v2/Footer';
 import '../globals-v2.css';
 
 export default function FinanceLayout({
@@ -20,3 +20,4 @@ export default function FinanceLayout({
         </div>
     );
 }
+

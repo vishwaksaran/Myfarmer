@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import Header from '@/components/home/Header';
-import Footer from '@/components/home/Footer';
+import Header from '@/components/v2/Header';
+import Footer from '@/components/v2/Footer';
 
 const sellerTypes = [
     {
@@ -376,3 +376,4 @@ export default function BecomeSellerPage() {
         </div>
     );
 }
+

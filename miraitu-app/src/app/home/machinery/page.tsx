@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
-import NearbyLocation from '@/components/home/NearbyLocation';
+import NearbyLocation from '@/components/v2/NearbyLocation';
 
 // Category data with real images
 const categories = [
@@ -101,6 +101,7 @@ export default function MachineryPage() {
     const [hpRange, setHpRange] = useState([50, 1000]);
     const [selectedBrand, setSelectedBrand] = useState('All Brands');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [modalCategory, setModalCategory] = useState<typeof categories[0] | null>(null);
 
     const addToCompare = (item: typeof sampleMachinery[0]) => {
         const emptySlotIndex = compareSlots.findIndex(slot => slot === null);
@@ -140,10 +141,10 @@ export default function MachineryPage() {
                         {/* Category Cards Grid */}
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                             {categories.map((category) => (
-                                <Link
+                                <button
                                     key={category.id}
-                                    href={category.path}
-                                    className="group relative rounded-2xl p-4 border border-gray-100 dark:border-gray-800 hover:border-primary/30 hover:shadow-xl transition-all duration-300 overflow-hidden bg-[#d4edda] dark:bg-emerald-900/30"
+                                    onClick={() => setModalCategory(category)}
+                                    className="group relative rounded-2xl p-4 border border-gray-100 dark:border-gray-800 hover:border-primary/30 hover:shadow-xl transition-all duration-300 overflow-hidden bg-[#d4edda] dark:bg-emerald-900/30 text-left"
                                 >
                                     {/* Image Container - uniform size with matching bg */}
                                     <div className="flex flex-col items-center">
@@ -166,10 +167,93 @@ export default function MachineryPage() {
                                     <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <span className="material-symbols-outlined text-primary text-lg">arrow_forward</span>
                                     </div>
-                                </Link>
+                                </button>
                             ))}
                         </div>
                     </div>
+
+                    {/* Category Action Modal */}
+                    {modalCategory && (
+                        <div
+                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                            onClick={() => setModalCategory(null)}
+                            style={{ animation: 'fadeIn 0.2s ease-out' }}
+                        >
+                            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                            <div
+                                className="relative bg-white dark:bg-[#1a231a] rounded-3xl p-0 max-w-md w-full shadow-2xl overflow-hidden"
+                                onClick={(e) => e.stopPropagation()}
+                                style={{ animation: 'zoomIn95 0.3s ease-out' }}
+                            >
+                                {/* Modal Header with Image */}
+                                <div className="relative h-40 overflow-hidden">
+                                    <img
+                                        src={modalCategory.image}
+                                        alt={modalCategory.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                                    <button
+                                        onClick={() => setModalCategory(null)}
+                                        className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/30 rounded-full p-1.5 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-xl">close</span>
+                                    </button>
+                                    <div className="absolute bottom-4 left-6">
+                                        <h3 className="text-2xl font-black text-white">{modalCategory.name}</h3>
+                                        <p className="text-white/70 text-sm">{modalCategory.count} listings available</p>
+                                    </div>
+                                </div>
+
+                                {/* Action Options */}
+                                <div className="p-6 space-y-3">
+                                    <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">What would you like to do?</p>
+
+                                    <Link
+                                        href={`${modalCategory.path}/new`}
+                                        className="flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary hover:bg-primary/5 transition-all group/opt"
+                                    >
+                                        <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center shrink-0">
+                                            <span className="material-symbols-outlined text-white text-2xl">add_circle</span>
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-bold text-gray-900 dark:text-white">New {modalCategory.name}</p>
+                                            <p className="text-xs text-gray-500">Browse brand new equipment</p>
+                                        </div>
+                                        <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-primary group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
+                                    </Link>
+
+                                    <Link
+                                        href={`${modalCategory.path}/buy`}
+                                        className="flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary hover:bg-primary/5 transition-all group/opt"
+                                    >
+                                        <div className="w-12 h-12 rounded-xl bg-emerald-500 flex items-center justify-center shrink-0">
+                                            <span className="material-symbols-outlined text-white text-2xl">shopping_cart</span>
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-bold text-gray-900 dark:text-white">Buy Used {modalCategory.name}</p>
+                                            <p className="text-xs text-gray-500">Find pre-owned at great prices</p>
+                                        </div>
+                                        <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-primary group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
+                                    </Link>
+
+                                    <Link
+                                        href={`${modalCategory.path}/sell`}
+                                        className="flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary hover:bg-primary/5 transition-all group/opt"
+                                    >
+                                        <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center shrink-0">
+                                            <span className="material-symbols-outlined text-white text-2xl">sell</span>
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-bold text-gray-900 dark:text-white">Sell Used {modalCategory.name}</p>
+                                            <p className="text-xs text-gray-500">List your equipment for sale</p>
+                                        </div>
+                                        <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-primary group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Compare Selected Models Section */}
                     <div className="mb-10">
@@ -445,3 +529,4 @@ export default function MachineryPage() {
         </div>
     );
 }
+

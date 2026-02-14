@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import Header from '@/components/home/Header';
-import Footer from '@/components/home/Footer';
+import Header from '@/components/v2/Header';
+import Footer from '@/components/v2/Footer';
 import MiraituLogo from '@/components/MiraituLogo';
 
 // Sample community posts
@@ -527,3 +527,4 @@ export default function CommunityPage() {
         </div>
     );
 }
+

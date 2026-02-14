@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import MachineryListing from '@/components/home/machinery/MachineryListing';
-import SellMachineryForm from '@/components/home/machinery/SellMachineryForm';
-import CompareModal from '@/components/home/machinery/CompareModal';
+import MachineryListing from '@/components/v2/machinery/MachineryListing';
+import SellMachineryForm from '@/components/v2/machinery/SellMachineryForm';
+import CompareModal from '@/components/v2/machinery/CompareModal';
 
 type TabType = 'new' | 'sell' | 'buy';
 
@@ -108,3 +108,4 @@ export default function SmallMachineriesPage() {
         </div>
     );
 }
+

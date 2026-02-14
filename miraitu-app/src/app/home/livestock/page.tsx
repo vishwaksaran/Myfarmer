@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import NearbyLocation from '@/components/home/NearbyLocation';
+import NearbyLocation from '@/components/v2/NearbyLocation';
 import MiraituLogo from '@/components/MiraituLogo';
 import LoginModal from '@/components/auth/LoginModal';
 
@@ -59,6 +59,7 @@ export default function LivestockPage() {
     const [contactModal, setContactModal] = useState<{ open: boolean; seller: string; phone: string } | null>(null);
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [pendingContact, setPendingContact] = useState<{ seller: string; phone: string } | null>(null);
+    const [showWelcomeModal, setShowWelcomeModal] = useState(true);
 
     // Auth context
     const { user } = useAuth();
@@ -82,7 +83,6 @@ export default function LivestockPage() {
             setShowLoginModal(true);
         }
     };
-
 
 
     // Listing Card Component
@@ -382,13 +382,91 @@ export default function LivestockPage() {
 
                     {/* New "Welcome Back" Login Modal */}
                     <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+
+                    {/* Livestock Welcome Modal - shows on page load */}
+                    {showWelcomeModal && (
+                        <div
+                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                            onClick={() => setShowWelcomeModal(false)}
+                            style={{ animation: 'fadeIn 0.2s ease-out' }}
+                        >
+                            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                            <div
+                                className="relative bg-white dark:bg-[#1a231a] rounded-3xl p-0 max-w-md w-full shadow-2xl overflow-hidden"
+                                onClick={(e) => e.stopPropagation()}
+                                style={{ animation: 'zoomIn95 0.3s ease-out' }}
+                            >
+                                {/* Modal Header */}
+                                <div className="relative h-44 overflow-hidden">
+                                    <img
+                                        src="https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=600&h=300&fit=crop"
+                                        alt="Livestock"
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                                    <button
+                                        onClick={() => setShowWelcomeModal(false)}
+                                        className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/30 rounded-full p-1.5 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-xl">close</span>
+                                    </button>
+                                    <div className="absolute bottom-4 left-6">
+                                        <h3 className="text-2xl font-black text-white">Livestock Marketplace</h3>
+                                        <p className="text-white/70 text-sm">Buy or sell livestock from verified sellers</p>
+                                    </div>
+                                </div>
+
+                                {/* Action Options */}
+                                <div className="p-6 space-y-3">
+                                    <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">What would you like to do?</p>
+
+                                    <button
+                                        onClick={() => { setActiveTab('buy'); setShowWelcomeModal(false); }}
+                                        className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary hover:bg-primary/5 transition-all group/opt text-left"
+                                    >
+                                        <div className="w-14 h-14 rounded-xl bg-emerald-500 flex items-center justify-center shrink-0">
+                                            <span className="material-symbols-outlined text-white text-3xl">shopping_cart</span>
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-bold text-gray-900 dark:text-white text-lg">Buy Livestock</p>
+                                            <p className="text-xs text-gray-500">Browse cattle, poultry, goats & more</p>
+                                        </div>
+                                        <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-primary group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
+                                    </button>
+
+                                    <button
+                                        onClick={() => { setActiveTab('sell'); setShowWelcomeModal(false); }}
+                                        className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary hover:bg-primary/5 transition-all group/opt text-left"
+                                    >
+                                        <div className="w-14 h-14 rounded-xl bg-orange-500 flex items-center justify-center shrink-0">
+                                            <span className="material-symbols-outlined text-white text-3xl">sell</span>
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-bold text-gray-900 dark:text-white text-lg">Sell Livestock</p>
+                                            <p className="text-xs text-gray-500">List your animals & reach buyers</p>
+                                        </div>
+                                        <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-primary group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
+                                    </button>
+
+                                    <button
+                                        onClick={() => setShowWelcomeModal(false)}
+                                        className="w-full text-center text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 pt-2 transition-colors"
+                                    >
+                                        Skip — Browse all categories
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <style jsx>{`
                 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+                @keyframes zoomIn95 { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
                 .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
             `}</style>
             </div>
         </div>
     );
 }
+

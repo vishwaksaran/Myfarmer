@@ -1,4 +1,4 @@
-import SellMachineryForm from '@/components/home/machinery/SellMachineryForm';
+import SellMachineryForm from '@/components/v2/machinery/SellMachineryForm';
 
 export default function SellHarvestersPage() {
     return (
@@ -7,3 +7,4 @@ export default function SellHarvestersPage() {
         </div>
     );
 }
+

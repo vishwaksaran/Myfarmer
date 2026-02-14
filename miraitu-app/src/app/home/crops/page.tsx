@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
-import NearbyLocation from '@/components/home/NearbyLocation';
+import NearbyLocation from '@/components/v2/NearbyLocation';
 
 const marketHighlights = [
     { crop: 'Wheat', price: '₹2,450/qtl', change: '+2.3%', trend: 'up' },
@@ -150,3 +150,4 @@ export default function CropsPage() {
         </div>
     );
 }
+
