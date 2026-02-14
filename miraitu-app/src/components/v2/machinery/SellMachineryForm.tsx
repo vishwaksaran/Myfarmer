@@ -37,7 +37,7 @@ const categories = [
     { id: 'small-machineries', name: 'Small Machineries', icon: 'precision_manufacturing' },
     { id: 'implements', name: 'Implements', icon: 'handyman' },
     { id: 'harvesters', name: 'Harvesters', icon: 'grass' },
-    { id: 'drones', name: 'Drones', icon: 'drone' },
+    { id: 'drones', name: 'Agri Drones', icon: 'drone' },
 ];
 
 const brands: Record<string, string[]> = {

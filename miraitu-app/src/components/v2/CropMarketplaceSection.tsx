@@ -9,7 +9,7 @@ const services = [
         desc: 'Check daily market rates',
         color: 'text-emerald-600',
         bg: 'bg-emerald-50 dark:bg-emerald-900/20',
-        href: '/home/crops/mandi'
+        href: '/home/crops/mandi/prices'
     },
     {
         name: 'Buy Crops',
@@ -33,7 +33,7 @@ const services = [
         desc: 'Find markets near you',
         color: 'text-emerald-600',
         bg: 'bg-emerald-50 dark:bg-emerald-900/20',
-        href: '/home/crops/mandi'
+        href: '/home/crops/mandi/nearby'
     }
 ];
 
@@ -79,8 +79,8 @@ export default function CropMarketplaceSection() {
                                 className="group relative overflow-hidden rounded-2xl bg-white px-8 py-5 text-lg font-black text-emerald-800 shadow-xl hover:shadow-2xl hover:scale-105 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-3"
                             >
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-100/50 to-transparent w-full h-full -translate-x-full group-hover:animate-shimmer"></div>
-                                <span className="material-symbols-outlined text-2xl group-hover:rotate-12 transition-transform">storefront</span>
-                                View Marketplace
+                                <span className="material-symbols-outlined text-2xl group-hover:rotate-12 transition-transform">eco</span>
+                                Browse Crops
                             </Link>
 
                             <Link

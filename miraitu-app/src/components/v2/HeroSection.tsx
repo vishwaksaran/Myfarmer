@@ -13,6 +13,9 @@ export default function HeroSection() {
     const [images, setImages] = useState<ImagePreview[]>([]);
     const [selectedCategory, setSelectedCategory] = useState('hero.catLivestock');
     const [subCategory, setSubCategory] = useState('');
+    const [dynamicValue, setDynamicValue] = useState('');
+    const [dynamicUnit, setDynamicUnit] = useState('');
+    const [secondaryValue, setSecondaryValue] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const MAX_IMAGES = 3;
@@ -24,6 +27,27 @@ export default function HeroSection() {
         'hero.catFarmersLand': ['Sell', 'Lease/Rent'],
         'hero.catCrops': ['Rice & Grains', 'Vegetables', 'Spices', 'Plants', 'Others'],
     };
+
+    // Category-specific field configurations
+    // Categories with secondField get two inputs side by side
+    const categoryDynamicFields: Record<string, {
+        label: string; placeholder: string; unit: string; icon: string; options?: string[];
+        secondField?: { label: string; placeholder: string; icon: string; type?: string };
+    }> = {
+        'hero.catLivestock': {
+            label: 'No. of Animals', placeholder: 'e.g. 5', unit: 'Head', icon: 'pets',
+            secondField: { label: 'Breed Name', placeholder: 'e.g. Holstein', icon: 'genetics', type: 'text' },
+        },
+        'hero.catMachinery': {
+            label: 'Horsepower / Capacity', placeholder: 'e.g. 45', unit: 'HP', icon: 'speed',
+            secondField: { label: 'Brand Name', placeholder: 'e.g. Mahindra', icon: 'factory', type: 'text' },
+        },
+        'hero.catAgriProducts': { label: 'Quantity', placeholder: 'e.g. 50', unit: 'Kg', icon: 'scale', options: ['Kg', 'Quintals', 'Tonnes', 'Bags'] },
+        'hero.catFarmersLand': { label: 'Land Area', placeholder: 'e.g. 5', unit: 'Acres', icon: 'landscape', options: ['Acres', 'Hectares', 'Bigha', 'Guntha'] },
+        'hero.catCrops': { label: 'Quantity Available', placeholder: 'e.g. 100', unit: 'Kg', icon: 'eco', options: ['Kg', 'Quintals', 'Tonnes', 'Bags'] },
+    };
+
+    const currentDynamicField = categoryDynamicFields[selectedCategory];
 
     const addImages = (files: FileList | File[]) => {
         const fileArray = Array.from(files);
@@ -208,6 +232,9 @@ export default function HeroSection() {
                                                     onChange={(e) => {
                                                         setSelectedCategory(e.target.value);
                                                         setSubCategory('');
+                                                        setDynamicValue('');
+                                                        setSecondaryValue('');
+                                                        setDynamicUnit(categoryDynamicFields[e.target.value]?.unit || '');
                                                     }}
                                                     className="w-full border-none bg-transparent p-0 text-sm font-bold text-gray-800 dark:text-gray-200 focus:ring-0 cursor-pointer"
                                                 >
@@ -233,6 +260,91 @@ export default function HeroSection() {
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* Category-Specific Dynamic Field(s) */}
+                                    {currentDynamicField && (
+                                        currentDynamicField.secondField ? (
+                                            /* Dual fields side by side for Machinery / Livestock */
+                                            <div className="grid grid-cols-2 gap-3">
+                                                {/* Secondary field (Brand / Breed) — shown first visually */}
+                                                <div>
+                                                    <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">
+                                                        {currentDynamicField.secondField.label}
+                                                    </label>
+                                                    <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5 flex items-center gap-2">
+                                                        <span className="material-symbols-outlined text-primary/60 text-base shrink-0">
+                                                            {currentDynamicField.secondField.icon}
+                                                        </span>
+                                                        <input
+                                                            type={currentDynamicField.secondField.type || 'text'}
+                                                            placeholder={currentDynamicField.secondField.placeholder}
+                                                            value={secondaryValue}
+                                                            onChange={(e) => setSecondaryValue(e.target.value)}
+                                                            className="flex-1 border-none bg-transparent p-0 text-sm font-bold text-gray-800 dark:text-gray-200 focus:ring-0 placeholder:text-gray-500 min-w-0"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                {/* Primary field (HP / No. of Animals) */}
+                                                <div>
+                                                    <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">
+                                                        {currentDynamicField.label}
+                                                    </label>
+                                                    <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5 flex items-center gap-2">
+                                                        <span className="material-symbols-outlined text-primary/60 text-base shrink-0">
+                                                            {currentDynamicField.icon}
+                                                        </span>
+                                                        <input
+                                                            type="number"
+                                                            inputMode="decimal"
+                                                            placeholder={currentDynamicField.placeholder}
+                                                            value={dynamicValue}
+                                                            onChange={(e) => setDynamicValue(e.target.value)}
+                                                            className="flex-1 border-none bg-transparent p-0 text-sm font-bold text-gray-800 dark:text-gray-200 focus:ring-0 placeholder:text-gray-500 min-w-0"
+                                                        />
+                                                        <span className="text-xs font-bold text-primary/60 shrink-0">
+                                                            {currentDynamicField.unit}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            /* Single field for Agri Products / Farmer Land / Crops */
+                                            <div>
+                                                <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">
+                                                    {currentDynamicField.label}
+                                                </label>
+                                                <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5 flex items-center gap-2">
+                                                    <span className="material-symbols-outlined text-primary/60 text-lg shrink-0">
+                                                        {currentDynamicField.icon}
+                                                    </span>
+                                                    <input
+                                                        type="number"
+                                                        inputMode="decimal"
+                                                        placeholder={currentDynamicField.placeholder}
+                                                        value={dynamicValue}
+                                                        onChange={(e) => setDynamicValue(e.target.value)}
+                                                        className="flex-1 border-none bg-transparent p-0 text-sm font-bold text-gray-800 dark:text-gray-200 focus:ring-0 placeholder:text-gray-500 min-w-0"
+                                                    />
+                                                    {currentDynamicField.options ? (
+                                                        <select
+                                                            value={dynamicUnit || currentDynamicField.unit}
+                                                            onChange={(e) => setDynamicUnit(e.target.value)}
+                                                            className="border-none bg-primary/10 rounded-lg px-2 py-1 text-xs font-bold text-primary focus:ring-0 cursor-pointer appearance-none shrink-0"
+                                                        >
+                                                            {currentDynamicField.options.map(opt => (
+                                                                <option key={opt} value={opt}>{opt}</option>
+                                                            ))}
+                                                        </select>
+                                                    ) : (
+                                                        <span className="text-xs font-bold text-primary/60 shrink-0">
+                                                            {currentDynamicField.unit}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )
+                                    )}
+
                                     <div>
                                         <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">{t('hero.price')}</label>
                                         <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5">

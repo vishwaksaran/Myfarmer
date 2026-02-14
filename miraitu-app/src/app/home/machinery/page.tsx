@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-
+import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 
 // Category data with real images
@@ -49,7 +49,7 @@ const categories = [
     },
     {
         id: 'drones',
-        name: 'Drones',
+        name: 'Agri Drones',
         description: 'Agricultural drones for spraying & monitoring',
         image: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=200&h=200&fit=crop',
         count: 42,
@@ -57,68 +57,80 @@ const categories = [
     },
 ];
 
-// Sample machinery for comparison
-const sampleMachinery = [
+const featuredMachinery = [
     {
         id: 1,
-        name: 'Titan TX-500',
-        brand: 'John Deere Series',
-        category: 'TRACTOR',
-        power: '450 HP',
-        efficiency: '12.5 L/h',
-        weight: '9,500 kg',
+        name: 'Mahindra Yuvo 575 DI',
+        category: 'Tractor',
+        specs: '45 HP • 4 Cylinder • 4WD',
+        price: '₹7,20,000',
         image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBWsqsKqEqa_h-S_aYAkE4ZqzR1MQd2aRdT1gvRnx9WEOdtnuHtVNLka56bmLI_TE6CYFGjA_uQHZRLo8LVAP0ZlXrdtvHzyYftqpvWTr6CKXSgJnsAjjb_71gvo-Bu-_z-rgFL0BiY1TokeFHiYUzG76huPkqwLZ7ya4TB3v_9ColMS3PzKzFWkqNrqfyU0i_cinEdO3BvQt0xaUaLmmOamOqkO2wQcvCZQ1P-oYknPm4SxdlZlmk0TiVDd69_VrmcgXnS4UKPTJ7C',
+        brand: 'Mahindra',
+        hp: '45',
+        type: 'new'
     },
     {
         id: 2,
-        name: 'Xerion 5000 VC',
-        brand: 'Claas Machinery',
-        category: 'TRACTOR',
-        power: '530 HP',
-        efficiency: '14.2 L/h',
-        weight: '16,000 kg',
-        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAtM8TSKMPgBVKfBrFRv35XUcQxeNHBCocIJr-EhVwMsXpwRhwUfh8cJyAb_jlT3KlL-gTNVeV0UmU686uHIlpl66NlgQc8j2y6cEKwXPEkUMRpxvpQ6NljEMRXJdg2BvModl1ckkJlngdiilgPFQIdLBDuxv2QILSkUIwinzeUFso79NyvpTB4JTb2CHOOWK7Wi5DzLIQfkaqRyRnCmqmDFKoA88uyZOE_7mB9NHLUZ34oThbXIRVjACMbxoUB-EgVCwZECqbl8XnE',
-        badge: 'NEW ARRIVAL',
-        originalPrice: '$365,000',
-        price: '$320,000',
+        name: 'JCB 3DX Super',
+        category: 'JCB',
+        specs: '76 HP • Backhoe Loader',
+        price: '₹28,50,000',
+        image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400&h=300&fit=crop',
+        brand: 'JCB',
+        hp: '76',
+        type: 'new'
     },
     {
         id: 3,
-        name: 'Titan TX-600',
-        brand: 'John Deere',
-        category: 'TRACTOR',
-        power: '460 HP',
-        efficiency: '12.5 L/h',
-        weight: '9,500 kg',
-        image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=300&fit=crop',
-        badge: 'ECO-CERTIFIED',
+        name: 'DJI Agras T40',
+        category: 'Agri Drone',
+        specs: '40L Tank • 10.8m Spray Width',
+        price: '₹12,50,000',
+        image: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400&h=300&fit=crop',
+        brand: 'DJI',
+        type: 'new'
     },
+    {
+        id: 4,
+        name: 'Honda Power Tiller',
+        category: 'Small Machinery',
+        specs: '8.5 HP • Diesel • Rotary Tiller',
+        price: '₹1,25,000',
+        image: 'https://images.unsplash.com/photo-1592805144716-feeccccef5ac?w=400&h=300&fit=crop',
+        brand: 'Honda',
+        hp: '8.5',
+        type: 'new'
+    },
+    {
+        id: 5,
+        name: 'Kubota DC-70G Plus',
+        category: 'Harvester',
+        specs: '70 HP • 4-Row • Grain Tank 1200L',
+        price: '₹14,50,000',
+        image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=300&fit=crop',
+        brand: 'Kubota',
+        hp: '70',
+        type: 'new'
+    },
+    {
+        id: 6,
+        name: 'Fieldstar Disc Harrow',
+        category: 'Implement',
+        specs: '16 Discs • Heavy Duty • Mounted',
+        price: '₹55,000',
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDrP7cN8CTOtAkybDCL0QlIA-JizzfFm72xhbedX54SXeP4sbtxIadoSuijbGsc06AkXwxnUGnebgrcKT3PFZgziYLbXXBogmFMQ7xsAkpUYd5JPOZAaqHAfqbXgDQjkgbin1xqfhrWYaZKPOfumKTzC3EM3vOdwhqexqjl4m4-_9vRyI_ub_fWBU49A9oNMzlgBLNY7E9svHG0jZ7CBGCrA52KpkUC3qmlwTihE8bkTBp3_Z3WcD8yf3tzkKvKK6xIiZOPaQbOPyHC',
+        brand: 'Fieldstar',
+        type: 'new'
+    }
 ];
 
+
 export default function MachineryPage() {
-    const [compareSlots, setCompareSlots] = useState<(typeof sampleMachinery[0] | null)[]>([null, null, null]);
     const [selectedCategory, setSelectedCategory] = useState('Tractors');
     const [hpRange, setHpRange] = useState([50, 1000]);
     const [selectedBrand, setSelectedBrand] = useState('All Brands');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [modalCategory, setModalCategory] = useState<typeof categories[0] | null>(null);
-
-    const addToCompare = (item: typeof sampleMachinery[0]) => {
-        const emptySlotIndex = compareSlots.findIndex(slot => slot === null);
-        if (emptySlotIndex !== -1) {
-            const newSlots = [...compareSlots];
-            newSlots[emptySlotIndex] = item;
-            setCompareSlots(newSlots);
-        }
-    };
-
-    const removeFromCompare = (index: number) => {
-        const newSlots = [...compareSlots];
-        newSlots[index] = null;
-        setCompareSlots(newSlots);
-    };
-
-    const filledSlots = compareSlots.filter(slot => slot !== null).length;
 
     return (
         <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-[#121811] dark:text-[#f9fbf9] transition-colors duration-300">
@@ -255,90 +267,6 @@ export default function MachineryPage() {
                         </div>
                     )}
 
-                    {/* Compare Selected Models Section */}
-                    <div className="mb-10">
-                        <div className="flex items-center gap-2 mb-4">
-                            <span className="material-symbols-outlined text-primary">compare_arrows</span>
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Compare Selected Models</h2>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {compareSlots.map((slot, index) => (
-                                <div
-                                    key={index}
-                                    className={`relative rounded-2xl border-2 border-dashed transition-all ${slot
-                                        ? 'border-primary/30 bg-white dark:bg-[#1a231a]'
-                                        : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50'
-                                        }`}
-                                >
-                                    {slot ? (
-                                        <div className="p-4">
-                                            {/* Remove Button */}
-                                            <button
-                                                onClick={() => removeFromCompare(index)}
-                                                className="absolute top-3 right-3 text-red-500 hover:text-red-600 transition-colors"
-                                            >
-                                                <span className="material-symbols-outlined">close</span>
-                                            </button>
-
-                                            <div className="flex gap-4">
-                                                {/* Image */}
-                                                <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-700 overflow-hidden shrink-0">
-                                                    <img
-                                                        src={slot.image}
-                                                        alt={slot.name}
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                </div>
-
-                                                {/* Details */}
-                                                <div className="flex-1 min-w-0">
-                                                    <span className="inline-block px-2 py-0.5 bg-primary/10 text-primary text-xs font-bold rounded mb-1">
-                                                        {slot.category}
-                                                    </span>
-                                                    <h4 className="font-bold text-gray-900 dark:text-white truncate">
-                                                        {slot.name}
-                                                    </h4>
-                                                    <p className="text-xs text-gray-500 mb-2">{slot.brand}</p>
-
-                                                    <div className="grid grid-cols-2 gap-2 text-xs">
-                                                        <div>
-                                                            <span className="text-gray-400">POWER</span>
-                                                            <p className="font-semibold text-gray-700 dark:text-gray-200">{slot.power}</p>
-                                                        </div>
-                                                        <div>
-                                                            <span className="text-gray-400">EFFICIENCY</span>
-                                                            <p className="font-semibold text-gray-700 dark:text-gray-200">{slot.efficiency}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="p-8 flex flex-col items-center justify-center min-h-[140px]">
-                                            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                                                <span className="material-symbols-outlined text-primary text-2xl">add</span>
-                                            </div>
-                                            <p className="text-sm text-gray-500">Slot {index + 1}: Add Model</p>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Launch Comparison Button */}
-                        {filledSlots >= 2 && (
-                            <div className="mt-4 text-center">
-                                <Link
-                                    href="/home/machinery/compare"
-                                    className="inline-flex items-center gap-2 px-8 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark transition-colors"
-                                >
-                                    <span className="material-symbols-outlined">compare_arrows</span>
-                                    Launch Comparison Tool
-                                </Link>
-                            </div>
-                        )}
-                    </div>
 
                     {/* Main Content Grid */}
                     <div className="flex gap-8">
@@ -408,7 +336,7 @@ export default function MachineryPage() {
                                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                                         Available Machinery
                                     </h2>
-                                    <p className="text-sm text-gray-500">(42 results)</p>
+                                    <p className="text-sm text-gray-500">({featuredMachinery.length} results)</p>
                                 </div>
 
                                 <div className="flex items-center gap-4">
@@ -436,95 +364,14 @@ export default function MachineryPage() {
                                 </div>
                             </div>
 
-                            {/* Machinery Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {sampleMachinery.map((item) => {
-                                    const isInCompare = compareSlots.some(slot => slot?.id === item.id);
-
-                                    return (
-                                        <div
-                                            key={item.id}
-                                            className="bg-white dark:bg-[#1a231a] rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-all group"
-                                        >
-                                            {/* Image */}
-                                            <div className="relative aspect-[4/3] bg-gray-100 dark:bg-gray-800 overflow-hidden">
-                                                <img
-                                                    src={item.image}
-                                                    alt={item.name}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                />
-
-                                                {/* Badge */}
-                                                {item.badge && (
-                                                    <div className="absolute top-3 left-3">
-                                                        <span className={`inline-block px-2 py-1 text-xs font-bold rounded-lg ${item.badge === 'NEW ARRIVAL'
-                                                            ? 'bg-orange-500 text-white'
-                                                            : 'bg-green-500 text-white'
-                                                            }`}>
-                                                            {item.badge}
-                                                        </span>
-                                                    </div>
-                                                )}
-
-                                                {/* Compare Button */}
-                                                <button
-                                                    onClick={() => !isInCompare && addToCompare(item)}
-                                                    disabled={isInCompare || filledSlots >= 3}
-                                                    className={`absolute top-3 right-3 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all ${isInCompare
-                                                        ? 'bg-primary text-white'
-                                                        : 'bg-white/90 text-gray-700 hover:bg-primary hover:text-white'
-                                                        }`}
-                                                >
-                                                    <span className="material-symbols-outlined text-sm">
-                                                        {isInCompare ? 'check' : 'add'}
-                                                    </span>
-                                                    COMPARE
-                                                </button>
-                                            </div>
-
-                                            {/* Content */}
-                                            <div className="p-4">
-                                                <h4 className="font-bold text-gray-900 dark:text-white mb-1">
-                                                    {item.name}
-                                                </h4>
-                                                <p className="text-xs text-gray-500 mb-3">{item.brand}</p>
-
-                                                {/* Price */}
-                                                {item.price && (
-                                                    <div className="mb-3">
-                                                        {item.originalPrice && (
-                                                            <span className="text-sm text-gray-400 line-through mr-2">
-                                                                {item.originalPrice}
-                                                            </span>
-                                                        )}
-                                                        <span className="text-lg font-bold text-primary">{item.price}</span>
-                                                    </div>
-                                                )}
-
-                                                {/* Specs */}
-                                                <div className="flex items-center gap-4 text-xs text-gray-500 pt-3 border-t border-gray-100 dark:border-gray-800">
-                                                    <div className="flex items-center gap-1">
-                                                        <span className="material-symbols-outlined text-sm">bolt</span>
-                                                        {item.power}
-                                                    </div>
-                                                    <div className="flex items-center gap-1">
-                                                        <span className="material-symbols-outlined text-sm">local_gas_station</span>
-                                                        {item.efficiency}
-                                                    </div>
-                                                    <div className="flex items-center gap-1">
-                                                        <span className="material-symbols-outlined text-sm">scale</span>
-                                                        {item.weight}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                            <MachineryListing
+                                items={featuredMachinery}
+                                type="new"
+                            />
                         </div>
                     </div>
-
                 </div>
+
             </div>
         </div>
     );

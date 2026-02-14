@@ -25,8 +25,8 @@ const popularCrops = [
 
 const quickActions = [
     { name: 'Mandi Prices', description: 'Check live prices from nearby mandis', icon: 'trending_up', href: '/home/crops/mandi/prices', color: 'bg-primary' },
-    { name: 'Buy Crops', description: 'Browse available produce listings', icon: 'shopping_cart', href: '/home/crops/buy/grains', color: 'bg-primary' },
-    { name: 'Sell Crops', description: 'List your harvest for sale', icon: 'sell', href: '/home/crops/sell/list', color: 'bg-primary' },
+    { name: 'Buy Crops', description: 'Browse available produce listings', icon: 'shopping_cart', href: '/home/crops/buy', color: 'bg-primary' },
+    { name: 'Sell Crops', description: 'List your harvest for sale', icon: 'sell', href: '/home/crops/sell', color: 'bg-primary' },
     { name: 'Nearby Mandis', description: 'Find mandis near your location', icon: 'location_on', href: '/home/crops/mandi/nearby', color: 'bg-primary' },
 ];
 
@@ -108,7 +108,7 @@ export default function CropsPage() {
                     <div className="mb-10">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Popular Crops</h2>
-                            <Link href="/home/crops/buy/grains" className="text-primary font-semibold hover:underline">
+                            <Link href="/home/crops/buy" className="text-primary font-semibold hover:underline">
                                 View All →
                             </Link>
                         </div>
@@ -116,7 +116,7 @@ export default function CropsPage() {
                             {popularCrops.map((crop) => (
                                 <Link
                                     key={crop.name}
-                                    href={`/home/crops/buy/grains?crop=${crop.name.toLowerCase()}`}
+                                    href={`/home/crops/buy?crop=${crop.name.toLowerCase()}`}
                                     className="p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all group"
                                 >
                                     <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
@@ -138,7 +138,7 @@ export default function CropsPage() {
                                 <p className="text-white/90">List your produce and connect with buyers directly. No middlemen, better prices.</p>
                             </div>
                             <Link
-                                href="/home/crops/sell/list"
+                                href="/home/crops/sell"
                                 className="shrink-0 px-8 py-4 bg-white text-primary rounded-xl font-bold hover:bg-green-50 transition-colors shadow-lg"
                             >
                                 Start Selling →

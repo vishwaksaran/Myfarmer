@@ -10,6 +10,8 @@ const cropCategories = [
     { id: 'fruits', name: 'Fruits', icon: 'nutrition', examples: 'Mango, Banana, Grapes, Orange' },
     { id: 'oilseeds', name: 'Oilseeds', icon: 'water_drop', examples: 'Soybean, Groundnut, Mustard' },
     { id: 'spices', name: 'Spices', icon: 'local_fire_department', examples: 'Turmeric, Chilli, Coriander' },
+    { id: 'organic', name: 'Organic Products', icon: 'compost', examples: 'Organic Veggies, Pulses, Ghee, Honey' },
+    { id: 'others', name: 'Others', icon: 'more_horiz', examples: 'Flowers, Medicinal Herbs, Fodder' },
 ];
 
 export default function SellCropsListPage() {

@@ -28,13 +28,25 @@ interface MachineryListingProps {
 export default function MachineryListing({ items, type, onCompare, selectedForCompare = [] }: MachineryListingProps) {
     const [selectedItem, setSelectedItem] = useState<MachineryItem | null>(null);
     const [showQuoteModal, setShowQuoteModal] = useState(false);
+    const [submitSuccess, setSubmitSuccess] = useState(false);
+
+    const handleQuoteSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitSuccess(true);
+    };
+
+    const closeQuoteModal = () => {
+        setShowQuoteModal(false);
+        setSelectedItem(null);
+        setTimeout(() => setSubmitSuccess(false), 300);
+    };
 
     return (
         <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {items.map((item) => {
                     const isSelected = selectedForCompare.includes(item.id);
-                    const isDisabled = !isSelected && selectedForCompare.length >= 2;
+                    const isDisabled = !isSelected && selectedForCompare.length >= 3;
 
                     return (
                         <div
@@ -128,6 +140,7 @@ export default function MachineryListing({ items, type, onCompare, selectedForCo
                                             onClick={() => {
                                                 setSelectedItem(item);
                                                 setShowQuoteModal(true);
+                                                setSubmitSuccess(false);
                                             }}
                                             className="flex-1 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-1"
                                         >
@@ -186,7 +199,10 @@ export default function MachineryListing({ items, type, onCompare, selectedForCo
 
                             <div className="flex gap-3">
                                 <button
-                                    onClick={() => setShowQuoteModal(true)}
+                                    onClick={() => {
+                                        setShowQuoteModal(true);
+                                        setSubmitSuccess(false);
+                                    }}
                                     className="flex-1 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors"
                                 >
                                     {type === 'new' ? 'Get On-Road Price' : 'Request Quote'}
@@ -203,94 +219,115 @@ export default function MachineryListing({ items, type, onCompare, selectedForCo
             {/* Quote/Price Modal */}
             {showQuoteModal && selectedItem && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowQuoteModal(false)} />
-                    <div className="relative w-full max-w-lg bg-white dark:bg-[#1a231a] rounded-3xl shadow-2xl overflow-hidden">
-                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={closeQuoteModal} />
+                    <div className="relative w-full max-w-lg bg-white dark:bg-[#1a231a] rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+                        <div className="p-6 border-b border-gray-200 dark:border-gray-700 shrink-0">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                                    {type === 'new' ? 'Get On-Road Price' : 'Request Quote'}
+                                    {submitSuccess ? 'Success!' : (type === 'new' ? 'Get On-Road Price' : 'Request Quote')}
                                 </h3>
                                 <button
-                                    onClick={() => setShowQuoteModal(false)}
+                                    onClick={closeQuoteModal}
                                     className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800"
                                 >
                                     <span className="material-symbols-outlined">close</span>
                                 </button>
                             </div>
-                            <p className="text-sm text-gray-500 mt-1">{selectedItem.name}</p>
+                            {!submitSuccess && <p className="text-sm text-gray-500 mt-1">{selectedItem.name}</p>}
                         </div>
 
-                        <form className="p-6 space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
+                        {submitSuccess ? (
+                            <div className="p-8 flex flex-col items-center text-center">
+                                <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4">
+                                    <span className="material-symbols-outlined text-green-500 text-3xl">check_circle</span>
+                                </div>
+                                <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Request Submitted!</h4>
+                                <p className="text-gray-500 dark:text-gray-400 mb-8">
+                                    Thank you for your interest. Our team will get back to you shortly with the best price for {selectedItem.name}.
+                                </p>
+                                <button
+                                    onClick={closeQuoteModal}
+                                    className="w-full py-3 rounded-xl bg-gray-100 dark:bg-gray-800 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleQuoteSubmit} className="p-6 space-y-4 overflow-y-auto">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name *</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none transition-colors"
+                                            placeholder="John"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name *</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none transition-colors"
+                                            placeholder="Doe"
+                                        />
+                                    </div>
+                                </div>
+
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name *</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mobile Number *</label>
                                     <input
-                                        type="text"
+                                        type="tel"
+                                        required
                                         className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none transition-colors"
-                                        placeholder="John"
+                                        placeholder="+91 7448410198"
                                     />
                                 </div>
+
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name *</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email (Optional)</label>
                                     <input
-                                        type="text"
+                                        type="email"
                                         className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none transition-colors"
-                                        placeholder="Doe"
+                                        placeholder="john@example.com"
                                     />
                                 </div>
-                            </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mobile Number *</label>
-                                <input
-                                    type="tel"
-                                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none transition-colors"
-                                    placeholder="+91 7448410198"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email (Optional)</label>
-                                <input
-                                    type="email"
-                                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none transition-colors"
-                                    placeholder="john@example.com"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State *</label>
-                                    <select className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none appearance-none">
-                                        <option>Select State</option>
-                                        <option>Maharashtra</option>
-                                        <option>Karnataka</option>
-                                        <option>Punjab</option>
-                                        <option>Uttar Pradesh</option>
-                                    </select>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State *</label>
+                                        <select className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none appearance-none">
+                                            <option>Select State</option>
+                                            <option>Maharashtra</option>
+                                            <option>Karnataka</option>
+                                            <option>Punjab</option>
+                                            <option>Uttar Pradesh</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">District *</label>
+                                        <select className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none appearance-none">
+                                            <option>Select District</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">District *</label>
-                                    <select className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none appearance-none">
-                                        <option>Select District</option>
-                                    </select>
+
+                                <div className="flex items-start gap-2 pt-2">
+                                    <input type="checkbox" required className="mt-1 rounded border-gray-300" />
+                                    <span className="text-xs text-gray-500">
+                                        I agree that by clicking Get Price, I am explicitly soliciting a call from Miraitu or its partners.
+                                    </span>
                                 </div>
-                            </div>
 
-                            <div className="flex items-start gap-2 pt-2">
-                                <input type="checkbox" className="mt-1 rounded border-gray-300" />
-                                <span className="text-xs text-gray-500">
-                                    I agree that by clicking Get Price, I am explicitly soliciting a call from Miraitu or its partners.
-                                </span>
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="w-full py-4 rounded-xl bg-primary text-white font-bold text-lg hover:bg-primary-dark transition-colors"
-                            >
-                                {type === 'new' ? 'Get Price' : 'Request Quote'}
-                            </button>
-                        </form>
+                                <button
+                                    type="submit"
+                                    className="w-full py-4 rounded-xl bg-primary text-white font-bold text-lg hover:bg-primary-dark transition-colors"
+                                >
+                                    {type === 'new' ? 'Get Price' : 'Request Quote'}
+                                </button>
+                            </form>
+                        )}
                     </div>
                 </div>
             )}

@@ -2,16 +2,47 @@
 
 import { useState } from 'react';
 
+// Category-specific field configurations
+const categoryFields: Record<string, { label: string; placeholder: string; unit: string; icon: string; type?: string; options?: string[] }> = {
+    'Livestock': { label: 'Number of Animals', placeholder: 'e.g. 5', unit: 'Head', icon: 'pets', type: 'number' },
+    'Machinery': { label: 'Horsepower / Capacity', placeholder: 'e.g. 45', unit: 'HP', icon: 'speed' },
+    'Agricultural Products': { label: 'Quantity', placeholder: 'e.g. 50', unit: 'Quintals', icon: 'scale', options: ['Kg', 'Quintals', 'Tonnes', 'Bags'] },
+    'Farmer Land': { label: 'Land Area', placeholder: 'e.g. 5', unit: 'Acres', icon: 'landscape', options: ['Acres', 'Hectares', 'Bigha', 'Guntha'] },
+    'Crops': { label: 'Quantity Available', placeholder: 'e.g. 100', unit: 'Kg', icon: 'eco', options: ['Kg', 'Quintals', 'Tonnes', 'Bags'] },
+};
+
+// Category type configurations
+const categoryTypes: Record<string, string[]> = {
+    'Livestock': ['Cattle', 'Buffalo', 'Goat', 'Sheep', 'Poultry', 'Horse', 'Others'],
+    'Machinery': ['Tractor', 'JCB', 'Harvester', 'Drone', 'Implement', 'Small Machinery'],
+    'Agricultural Products': ['Grains', 'Pulses', 'Oilseeds', 'Spices', 'Fertilizers', 'Pesticides', 'Seeds'],
+    'Farmer Land': ['Agricultural Land', 'Farm House', 'Orchard', 'Irrigated Land', 'Dry Land', 'Wasteland'],
+    'Crops': ['Food Grains', 'Vegetables', 'Fruits', 'Spices', 'Cash Crops', 'Flowers', 'Medicinal Herbs'],
+};
+
 export default function ItemListingUpload() {
     const [images, setImages] = useState<File[]>([]);
     const [itemName, setItemName] = useState('');
     const [category, setCategory] = useState('Livestock');
+    const [subType, setSubType] = useState('');
+    const [dynamicValue, setDynamicValue] = useState('');
+    const [dynamicUnit, setDynamicUnit] = useState('');
     const [price, setPrice] = useState('');
     const [location, setLocation] = useState('');
     const [description, setDescription] = useState('');
     const [featureListing, setFeatureListing] = useState(false);
 
-    const categories = ['Livestock', 'Machinery', 'Crops & Seeds', 'Fertilizers', 'Equipment'];
+    const categories = ['Livestock', 'Machinery', 'Agricultural Products', 'Farmer Land', 'Crops'];
+    const currentField = categoryFields[category];
+    const currentTypes = categoryTypes[category] || [];
+
+    // Reset sub fields when category changes
+    const handleCategoryChange = (newCategory: string) => {
+        setCategory(newCategory);
+        setSubType('');
+        setDynamicValue('');
+        setDynamicUnit(categoryFields[newCategory]?.unit || '');
+    };
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -86,7 +117,7 @@ export default function ItemListingUpload() {
                         <div className="relative">
                             <select
                                 value={category}
-                                onChange={(e) => setCategory(e.target.value)}
+                                onChange={(e) => handleCategoryChange(e.target.value)}
                                 className="w-full px-4 py-3 rounded-xl bg-white/80 shadow-[inset_2px_2px_4px_#d4d9ce,inset_-2px_-2px_4px_#ffffff] border border-[#e0e5df]/50 outline-none font-medium text-primary-dark cursor-pointer focus:border-primary/50 transition-colors appearance-none pr-10"
                             >
                                 {categories.map(cat => (
@@ -98,6 +129,65 @@ export default function ItemListingUpload() {
                             </span>
                         </div>
                     </div>
+                </div>
+
+                {/* Type and Category-Specific Field */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    {/* Type Dropdown (changes per category) */}
+                    <div>
+                        <label className="text-sm font-bold text-soil-dark mb-2 block">Type</label>
+                        <div className="relative">
+                            <select
+                                value={subType}
+                                onChange={(e) => setSubType(e.target.value)}
+                                className="w-full px-4 py-3 rounded-xl bg-white/80 shadow-[inset_2px_2px_4px_#d4d9ce,inset_-2px_-2px_4px_#ffffff] border border-[#e0e5df]/50 outline-none font-medium text-primary-dark cursor-pointer focus:border-primary/50 transition-colors appearance-none pr-10"
+                            >
+                                <option value="">Select Type</option>
+                                {currentTypes.map(type => (
+                                    <option key={type} value={type}>{type}</option>
+                                ))}
+                            </select>
+                            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-primary pointer-events-none">
+                                expand_more
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Dynamic Category-Specific Field */}
+                    {currentField && (
+                        <div>
+                            <label className="text-sm font-bold text-soil-dark mb-2 block">{currentField.label}</label>
+                            <div className="relative">
+                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary/60">
+                                    {currentField.icon}
+                                </span>
+                                <input
+                                    type={currentField.type || 'text'}
+                                    inputMode="decimal"
+                                    placeholder={currentField.placeholder}
+                                    value={dynamicValue}
+                                    onChange={(e) => setDynamicValue(e.target.value)}
+                                    className="w-full pl-11 pr-28 py-3 rounded-xl bg-white/80 shadow-[inset_2px_2px_4px_#d4d9ce,inset_-2px_-2px_4px_#ffffff] border border-[#e0e5df]/50 outline-none font-medium text-primary-dark placeholder:text-soil-dark/40 focus:border-primary/50 transition-colors"
+                                />
+                                {/* Unit selector or label on the right */}
+                                {currentField.options ? (
+                                    <select
+                                        value={dynamicUnit || currentField.unit}
+                                        onChange={(e) => setDynamicUnit(e.target.value)}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg bg-primary/10 text-primary text-sm font-bold border-none outline-none cursor-pointer appearance-none"
+                                    >
+                                        {currentField.options.map(opt => (
+                                            <option key={opt} value={opt}>{opt}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-primary/60">
+                                        {currentField.unit}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Price and Location */}

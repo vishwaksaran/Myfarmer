@@ -1,9 +1,13 @@
 import SellMachineryForm from '@/components/v2/machinery/SellMachineryForm';
+import MachinerySubNav from '@/components/v2/machinery/MachinerySubNav';
 
 export default function SellDronesPage() {
     return (
         <div className="px-6 py-8">
-            <SellMachineryForm category="drones" />
+            <div className="mx-auto max-w-[1280px]">
+                <MachinerySubNav category="drones" currentAction="sell" />
+                <SellMachineryForm category="drones" />
+            </div>
         </div>
     );
 }

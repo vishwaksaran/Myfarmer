@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import CompareModal from '@/components/v2/machinery/CompareModal';
+import CompareSection from '@/components/v2/machinery/CompareSection';
+import MachinerySubNav from '@/components/v2/machinery/MachinerySubNav';
 
 const usedHarvesters = [
     {
@@ -66,9 +68,13 @@ export default function BuyHarvestersPage() {
     const toggleSelection = (id: number) => {
         setSelectedItems(prev => {
             if (prev.includes(id)) return prev.filter(i => i !== id);
-            if (prev.length >= 2) return prev;
+            if (prev.length >= 3) return prev;
             return [...prev, id];
         });
+    };
+
+    const removeFromCompare = (index: number) => {
+        setSelectedItems(prev => prev.filter((_, i) => i !== index));
     };
 
     const compareItems = usedHarvesters.filter(item => selectedItems.includes(item.id));
@@ -76,6 +82,7 @@ export default function BuyHarvestersPage() {
     return (
         <div className="px-6">
             <div className="mx-auto max-w-[1280px]">
+                <MachinerySubNav category="harvesters" currentAction="buy" />
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Buy Used Harvesters</h1>
                     <p className="text-gray-500">Browse pre-owned combine harvesters and reaper machines from trusted sellers.</p>
@@ -112,6 +119,12 @@ export default function BuyHarvestersPage() {
                         <option>Above ₹10 Lakhs</option>
                     </select>
                 </div>
+
+                <CompareSection
+                    items={compareItems}
+                    onRemove={removeFromCompare}
+                    onCompare={() => setShowCompareModal(true)}
+                />
 
                 <MachineryListing
                     items={usedHarvesters}

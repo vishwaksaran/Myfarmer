@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import CompareModal from '@/components/v2/machinery/CompareModal';
+import CompareSection from '@/components/v2/machinery/CompareSection';
+import MachinerySubNav from '@/components/v2/machinery/MachinerySubNav';
 
 const usedSmallMachineries = [
     {
@@ -66,9 +68,13 @@ export default function BuySmallMachineriesPage() {
     const toggleSelection = (id: number) => {
         setSelectedItems(prev => {
             if (prev.includes(id)) return prev.filter(i => i !== id);
-            if (prev.length >= 2) return prev;
+            if (prev.length >= 3) return prev;
             return [...prev, id];
         });
+    };
+
+    const removeFromCompare = (index: number) => {
+        setSelectedItems(prev => prev.filter((_, i) => i !== index));
     };
 
     const compareItems = usedSmallMachineries.filter(item => selectedItems.includes(item.id));
@@ -76,6 +82,7 @@ export default function BuySmallMachineriesPage() {
     return (
         <div className="px-6">
             <div className="mx-auto max-w-[1280px]">
+                <MachinerySubNav category="small-machineries" currentAction="buy" />
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Buy Used Small Machineries</h1>
                     <p className="text-gray-500">Browse pre-owned power tillers, weeders, and farm equipment.</p>
@@ -103,6 +110,12 @@ export default function BuySmallMachineriesPage() {
                         <option>Above ₹1,00,000</option>
                     </select>
                 </div>
+
+                <CompareSection
+                    items={compareItems}
+                    onRemove={removeFromCompare}
+                    onCompare={() => setShowCompareModal(true)}
+                />
 
                 <MachineryListing
                     items={usedSmallMachineries}

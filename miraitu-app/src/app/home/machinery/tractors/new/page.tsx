@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import CompareModal from '@/components/v2/machinery/CompareModal';
+import CompareSection from '@/components/v2/machinery/CompareSection';
+import MachinerySubNav from '@/components/v2/machinery/MachinerySubNav';
 
 const newTractors = [
     {
@@ -88,9 +90,13 @@ export default function NewTractorsPage() {
             if (prev.includes(id)) {
                 return prev.filter(i => i !== id);
             }
-            if (prev.length >= 2) return prev;
+            if (prev.length >= 3) return prev;
             return [...prev, id];
         });
+    };
+
+    const removeFromCompare = (index: number) => {
+        setSelectedItems(prev => prev.filter((_, i) => i !== index));
     };
 
     const compareItems = newTractors.filter(item => selectedItems.includes(item.id));
@@ -98,6 +104,7 @@ export default function NewTractorsPage() {
     return (
         <div className="px-6">
             <div className="mx-auto max-w-[1280px]">
+                <MachinerySubNav category="tractors" currentAction="new" />
                 {/* Page Header */}
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">New Tractors</h1>
@@ -139,6 +146,12 @@ export default function NewTractorsPage() {
                         </select>
                     </div>
                 </div>
+
+                <CompareSection
+                    items={compareItems}
+                    onRemove={removeFromCompare}
+                    onCompare={() => setShowCompareModal(true)}
+                />
 
                 {/* Listing */}
                 <MachineryListing
