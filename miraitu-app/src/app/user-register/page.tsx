@@ -5,17 +5,23 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import MiraituLogo from '@/components/MiraituLogo';
 import { useAuth } from '@/context/AuthContext';
+import { updateProfile } from '@/lib/supabase-db';
 
 /**
- * UserRegisterPage - Multi-step registration form
+ * UserRegisterPage - Multi-step registration form with Supabase OTP
  */
 export default function UserRegisterPage() {
     const router = useRouter();
-    const { loginAsGuest } = useAuth();
+    const { user, signInWithPhone, verifyOtp, loginAsGuest } = useAuth();
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [phoneVerified, setPhoneVerified] = useState(false);
+    const [otpSent, setOtpSent] = useState(false);
+    const [otpCode, setOtpCode] = useState('');
+    const [otpLoading, setOtpLoading] = useState(false);
+    const [otpError, setOtpError] = useState<string | null>(null);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -56,6 +62,55 @@ export default function UserRegisterPage() {
         });
     };
 
+    // Send OTP to phone
+    const handleSendOtp = async () => {
+        const phone = formData.mobileNumber.trim();
+        if (!phone || phone.length < 10) {
+            setOtpError('Please enter a valid 10-digit mobile number.');
+            return;
+        }
+        setOtpError(null);
+        setOtpLoading(true);
+        try {
+            const formatted = phone.startsWith('+') ? phone : `+91${phone}`;
+            const result = await signInWithPhone(formatted);
+            if (result.error) {
+                setOtpError(result.error);
+            } else {
+                setOtpSent(true);
+            }
+        } catch {
+            setOtpError('Failed to send OTP. Please try again.');
+        } finally {
+            setOtpLoading(false);
+        }
+    };
+
+    // Verify OTP
+    const handleVerifyOtp = async () => {
+        if (otpCode.length < 4) {
+            setOtpError('Please enter the OTP code.');
+            return;
+        }
+        setOtpError(null);
+        setOtpLoading(true);
+        try {
+            const phone = formData.mobileNumber.trim();
+            const formatted = phone.startsWith('+') ? phone : `+91${phone}`;
+            const result = await verifyOtp(formatted, otpCode);
+            if (result.error) {
+                setOtpError(result.error);
+            } else {
+                setPhoneVerified(true);
+                setOtpError(null);
+            }
+        } catch {
+            setOtpError('Failed to verify OTP. Please try again.');
+        } finally {
+            setOtpLoading(false);
+        }
+    };
+
     // Navigation Handlers
     const nextStep = () => {
         setValidationError(null);
@@ -67,6 +122,10 @@ export default function UserRegisterPage() {
             }
             if (!formData.mobileNumber.trim() || formData.mobileNumber.length < 10) {
                 setValidationError('Please enter a valid mobile number (10+ digits).');
+                return;
+            }
+            if (!phoneVerified) {
+                setValidationError('Please verify your mobile number with OTP before continuing.');
                 return;
             }
             if (!formData.farmLocation) {
@@ -107,14 +166,27 @@ export default function UserRegisterPage() {
             return;
         }
         setLoading(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        console.log('Registration data:', formData);
-        // Log the user in (simulated)
-        await loginAsGuest();
-        setLoading(false);
-        // Show success modal
-        setShowSuccessModal(true);
+        try {
+            // If user is authenticated via OTP, save profile to Supabase
+            if (user && !user.isGuest) {
+                await updateProfile(user.id, {
+                    full_name: formData.fullName,
+                    phone: formData.mobileNumber.startsWith('+') ? formData.mobileNumber : `+91${formData.mobileNumber}`,
+                    role: formData.role.toLowerCase(),
+                    farm_location: formData.farmLocation,
+                });
+            } else {
+                // Fallback: log in as guest
+                await loginAsGuest();
+            }
+            console.log('Registration data:', formData);
+            setShowSuccessModal(true);
+        } catch (error) {
+            console.error('Registration error:', error);
+            setValidationError('Registration failed. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Auto-redirect after showing success modal
@@ -214,14 +286,31 @@ export default function UserRegisterPage() {
                                 </div>
                                 <div className="col-span-1">
                                     <label className="flex flex-col gap-2">
-                                        <span className="text-[#0f1a11] text-sm font-bold uppercase tracking-wide ml-1">Mobile Number</span>
+                                        <span className="text-[#0f1a11] text-sm font-bold uppercase tracking-wide ml-1">
+                                            Mobile Number
+                                            {phoneVerified && (
+                                                <span className="ml-2 text-[var(--miraitu-primary-green)] text-xs normal-case font-bold inline-flex items-center gap-1">
+                                                    <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                                    Verified
+                                                </span>
+                                            )}
+                                        </span>
                                         <div className="relative">
                                             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">call</span>
                                             <input
                                                 name="mobileNumber"
                                                 value={formData.mobileNumber}
-                                                onChange={handleInputChange}
-                                                className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none"
+                                                onChange={(e) => {
+                                                    handleInputChange(e);
+                                                    // Reset verification if number changes
+                                                    if (phoneVerified) {
+                                                        setPhoneVerified(false);
+                                                        setOtpSent(false);
+                                                        setOtpCode('');
+                                                    }
+                                                }}
+                                                disabled={phoneVerified}
+                                                className={`skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border bg-[#fcfdfc] outline-none ${phoneVerified ? 'border-[var(--miraitu-primary-green)] bg-green-50/50 text-gray-600' : 'border-gray-200 focus:border-[var(--miraitu-primary-green)]'}`}
                                                 placeholder="+91 98765 43210"
                                                 type="tel"
                                                 required
@@ -229,6 +318,82 @@ export default function UserRegisterPage() {
                                             />
                                         </div>
                                     </label>
+
+                                    {/* OTP Verification Section */}
+                                    {!phoneVerified && (
+                                        <div className="mt-3 space-y-3">
+                                            {/* OTP Error */}
+                                            {otpError && (
+                                                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs font-medium flex items-center gap-1.5">
+                                                    <span className="material-symbols-outlined text-sm">error</span>
+                                                    {otpError}
+                                                </div>
+                                            )}
+
+                                            {!otpSent ? (
+                                                /* Send OTP Button */
+                                                <button
+                                                    type="button"
+                                                    onClick={handleSendOtp}
+                                                    disabled={otpLoading || !formData.mobileNumber || formData.mobileNumber.length < 10}
+                                                    className="w-full py-3 rounded-xl bg-[var(--miraitu-primary-green)] text-white font-bold text-sm flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-[var(--miraitu-primary-green)]/20"
+                                                >
+                                                    {otpLoading ? (
+                                                        <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
+                                                    ) : (
+                                                        <>
+                                                            <span className="material-symbols-outlined text-lg">sms</span>
+                                                            Send OTP to Verify
+                                                        </>
+                                                    )}
+                                                </button>
+                                            ) : (
+                                                /* OTP Input + Verify */
+                                                <div className="space-y-2">
+                                                    <p className="text-xs text-gray-500 font-medium">
+                                                        OTP sent to <span className="font-bold text-[var(--miraitu-primary-green)]">+91{formData.mobileNumber.replace(/^\+91/, '')}</span>
+                                                    </p>
+                                                    <div className="flex gap-2">
+                                                        <div className="relative flex-1">
+                                                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">lock</span>
+                                                            <input
+                                                                value={otpCode}
+                                                                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                                                className="skeuo-input w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none text-center tracking-[0.3em] font-bold text-lg"
+                                                                placeholder="• • • • • •"
+                                                                type="text"
+                                                                maxLength={6}
+                                                                autoFocus
+                                                            />
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleVerifyOtp}
+                                                            disabled={otpLoading || otpCode.length < 4}
+                                                            className="px-5 py-3 rounded-xl bg-[var(--miraitu-primary-green)] text-white font-bold text-sm flex items-center gap-1.5 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                                                        >
+                                                            {otpLoading ? (
+                                                                <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
+                                                            ) : (
+                                                                <>
+                                                                    <span className="material-symbols-outlined text-lg">check</span>
+                                                                    Verify
+                                                                </>
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleSendOtp}
+                                                        disabled={otpLoading}
+                                                        className="text-xs font-bold text-[var(--miraitu-primary-green)] hover:underline"
+                                                    >
+                                                        Resend OTP
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="col-span-1 md:col-span-2">
                                     <label className="flex flex-col gap-2">

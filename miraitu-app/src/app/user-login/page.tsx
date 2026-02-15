@@ -12,7 +12,7 @@ import { LangCode } from '@/i18n/translations';
  * UserLoginPage - Login page with Google SSO and Phone Auth
  */
 export default function UserLoginPage() {
-    const { user, loading, signInWithGoogle, loginAsGuest } = useAuth();
+    const { user, loading, signInWithGoogle, signInWithPhone, verifyOtp, loginAsGuest } = useAuth();
     const { lang, setLang, t } = useLanguage();
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
@@ -71,7 +71,7 @@ export default function UserLoginPage() {
         }
     };
 
-    const handleSendOtp = (e: React.FormEvent) => {
+    const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         if (phoneNumber.length < 10) {
             setError("Please enter a valid phone number");
@@ -79,14 +79,23 @@ export default function UserLoginPage() {
         }
         setError(null);
         setIsSigningIn(true);
-        // Simulate API call
-        setTimeout(() => {
+        try {
+            // Format phone with country code if not present
+            const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+91${phoneNumber}`;
+            const result = await signInWithPhone(formattedPhone);
+            if (result.error) {
+                setError(result.error);
+            } else {
+                setPhoneState('otp');
+            }
+        } catch {
+            setError('Failed to send OTP. Please try again.');
+        } finally {
             setIsSigningIn(false);
-            setPhoneState('otp');
-        }, 1000);
+        }
     };
 
-    const handleVerifyOtp = (e: React.FormEvent) => {
+    const handleVerifyOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         if (otp.length < 4) {
             setError("Please enter a valid OTP");
@@ -94,11 +103,19 @@ export default function UserLoginPage() {
         }
         setError(null);
         setIsSigningIn(true);
-        // Simulate API call / verification
-        setTimeout(() => {
+        try {
+            const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+91${phoneNumber}`;
+            const result = await verifyOtp(formattedPhone, otp);
+            if (result.error) {
+                setError(result.error);
+            } else {
+                router.push('/home');
+            }
+        } catch {
+            setError('Failed to verify OTP. Please try again.');
+        } finally {
             setIsSigningIn(false);
-            router.push('/home');
-        }, 1500);
+        }
     };
 
     const handleBackToSelection = () => {

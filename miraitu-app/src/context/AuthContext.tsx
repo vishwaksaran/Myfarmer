@@ -1,43 +1,69 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from 'react';
-import {
-    User,
-    signInWithPopup,
-    signOut as firebaseSignOut,
-    onAuthStateChanged
-} from 'firebase/auth';
-import { auth, googleProvider } from '@/lib/firebase';
+import { User as SupabaseUser, Session } from '@supabase/supabase-js';
+import supabase from '@/lib/supabase';
 
 const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
+/**
+ * Normalized user interface that maps Supabase user properties
+ * to the field names used throughout the app (displayName, photoURL, etc.)
+ */
+export interface MiraituUser {
+    id: string;
+    displayName: string | null;
+    email: string | null;
+    photoURL: string | null;
+    phone: string | null;
+    isGuest: boolean;
+    uid: string; // alias for id, for backward compatibility
+}
+
 interface AuthContextType {
-    user: User | null;
+    user: MiraituUser | null;
     loading: boolean;
     signInWithGoogle: () => Promise<void>;
+    signInWithPhone: (phone: string) => Promise<{ error: string | null }>;
+    verifyOtp: (phone: string, token: string) => Promise<{ error: string | null }>;
     loginAsGuest: () => Promise<void>;
     signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Convert Supabase user to normalized MiraituUser
+ */
+function toMiraituUser(supabaseUser: SupabaseUser): MiraituUser {
+    const meta = supabaseUser.user_metadata || {};
+    return {
+        id: supabaseUser.id,
+        uid: supabaseUser.id,
+        displayName: meta.full_name || meta.name || meta.display_name || null,
+        email: supabaseUser.email || null,
+        photoURL: meta.avatar_url || meta.picture || null,
+        phone: supabaseUser.phone || null,
+        isGuest: false,
+    };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<MiraituUser | null>(null);
     const [loading, setLoading] = useState(true);
     const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     // Sign out handler
     const handleSignOut = useCallback(async () => {
         try {
-            // Check if it's a guest user
-            if (user && (user as unknown as { uid: string }).uid === 'guest-123') {
+            if (user?.isGuest) {
                 setUser(null);
             } else {
-                await firebaseSignOut(auth);
+                await supabase.auth.signOut();
+                setUser(null);
             }
         } catch (error) {
             console.error('Error signing out:', error);
-            // Force clear user state even on error
             setUser(null);
         }
     }, [user]);
@@ -65,13 +91,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
-
         const onActivity = () => resetInactivityTimer();
 
-        // Start the timer
         resetInactivityTimer();
 
-        // Listen for user activity
         events.forEach(event => {
             window.addEventListener(event, onActivity, { passive: true });
         });
@@ -86,64 +109,119 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
     }, [user, resetInactivityTimer]);
 
-    // Firebase auth state listener
+    // Supabase auth state listener
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            setUser(user);
+        // Check current session on mount
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session?.user) {
+                setUser(toMiraituUser(session.user));
+            }
             setLoading(false);
         });
 
-        return () => unsubscribe();
+        // Listen for auth changes (sign in, sign out, token refresh)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            (_event: string, session: Session | null) => {
+                if (session?.user) {
+                    setUser(toMiraituUser(session.user));
+                } else {
+                    setUser(null);
+                }
+                setLoading(false);
+            }
+        );
+
+        return () => {
+            subscription.unsubscribe();
+        };
     }, []);
 
+    // Google OAuth Sign-In
     const signInWithGoogle = async () => {
         try {
             setLoading(true);
-            await signInWithPopup(auth, googleProvider);
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                    queryParams: {
+                        prompt: 'select_account',
+                    },
+                },
+            });
+            if (error) throw error;
+            // Browser will redirect — loading stays true until redirect completes
         } catch (error) {
             console.error('Error signing in with Google:', error);
-            throw error;
-        } finally {
             setLoading(false);
+            throw error;
         }
     };
 
+    // Phone OTP — send code
+    const signInWithPhone = async (phone: string): Promise<{ error: string | null }> => {
+        try {
+            const { error } = await supabase.auth.signInWithOtp({ phone });
+            if (error) {
+                return { error: error.message };
+            }
+            return { error: null };
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Failed to send OTP';
+            return { error: message };
+        }
+    };
+
+    // Phone OTP — verify code
+    const verifyOtp = async (phone: string, token: string): Promise<{ error: string | null }> => {
+        try {
+            const { data, error } = await supabase.auth.verifyOtp({
+                phone,
+                token,
+                type: 'sms',
+            });
+            if (error) {
+                return { error: error.message };
+            }
+            if (data?.user) {
+                setUser(toMiraituUser(data.user));
+            }
+            return { error: null };
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Failed to verify OTP';
+            return { error: message };
+        }
+    };
+
+    // Guest login (local only, no Supabase session)
     const loginAsGuest = async () => {
         setLoading(true);
         await new Promise(resolve => setTimeout(resolve, 800));
 
-        const dummyUser = {
+        const guestUser: MiraituUser = {
+            id: 'guest-123',
             uid: 'guest-123',
             displayName: 'Guest Farmer',
             email: 'guest@miraitu.com',
-            photoURL: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB5_v_lniQz4XLFLkx3O3SeXzO_Vd6OB9PUYPojmux-I3GoGRPWmi8nSbcJqB7cWKvHsKMk0AyD1USWoxF7YsfgQyVHkGQjeNmdw0PR0Qi1wzn-frtFtoHACNhJiXyo8I7REszNvu-udHFbxLRDwTECoRY9bnVSKvnZhHpj2mU4s0rgVqHajBCUdg3GmLxAFMWSCgJF50CnNSZKZWHta7Ba7QWXeau-ssvkjFJMzWM1nN6JbYkzrl4ek9rB58CtkfVSOFTgTDHzGTFO',
-            emailVerified: true,
-            isAnonymous: true,
-            metadata: {},
-            providerData: [],
-            refreshToken: '',
-            tenantId: null,
-            delete: async () => { },
-            getIdToken: async () => 'dummy-token',
-            getIdTokenResult: async () => ({
-                token: 'dummy',
-                signInProvider: 'custom',
-                claims: {},
-                authTime: Date.now(),
-                issuedAtTime: Date.now(),
-                expirationTime: Date.now(),
-            }),
-            reload: async () => { },
-            toJSON: () => ({}),
-            phoneNumber: null,
-        } as unknown as User;
+            photoURL: null,
+            phone: null,
+            isGuest: true,
+        };
 
-        setUser(dummyUser);
+        setUser(guestUser);
         setLoading(false);
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, signInWithGoogle, loginAsGuest, signOut: handleSignOut }}>
+        <AuthContext.Provider value={{
+            user,
+            loading,
+            signInWithGoogle,
+            signInWithPhone,
+            verifyOtp,
+            loginAsGuest,
+            signOut: handleSignOut
+        }}>
             {children}
         </AuthContext.Provider>
     );
