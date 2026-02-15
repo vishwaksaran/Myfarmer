@@ -73,6 +73,7 @@ export default function LeaseLandPage() {
     const [activeTab, setActiveTab] = useState<TabType>('browse');
     const [photos, setPhotos] = useState<File[]>([]);
     const [previews, setPreviews] = useState<string[]>([]);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
         location: '',
@@ -121,7 +122,8 @@ export default function LeaseLandPage() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        alert('Your lease listing has been submitted! 🎉');
+        setShowSuccessModal(true);
+        setTimeout(() => setShowSuccessModal(false), 5000);
     };
 
     return (
@@ -367,6 +369,26 @@ export default function LeaseLandPage() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                )}
+
+                {/* Success Modal */}
+                {showSuccessModal && (
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50">
+                        <div className="bg-white dark:bg-[#1a231a] rounded-2xl md:rounded-3xl p-6 md:p-10 shadow-2xl max-w-sm w-full animate-bounce">
+                            <div className="text-center">
+                                <div className="w-16 md:w-20 h-16 md:h-20 mx-auto mb-4 md:mb-6 bg-gradient-to-br from-teal-400 to-cyan-600 rounded-full flex items-center justify-center shadow-lg">
+                                    <span className="material-symbols-outlined text-3xl md:text-4xl text-white">check</span>
+                                </div>
+                                <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">Listing Posted!</h2>
+                                <p className="text-base md:text-lg text-gray-600 dark:text-gray-300 font-bold mb-1">Perfect! 🌟</p>
+                                <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mb-6 md:mb-8">The Miraitu team will contact you soon to verify and promote your listing.</p>
+                                <div className="flex items-center justify-center gap-3 text-primary font-bold text-sm md:text-base">
+                                    <span className="material-symbols-outlined text-xl animate-pulse">handshake</span>
+                                    Let's grow together!
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
