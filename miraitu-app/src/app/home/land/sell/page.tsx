@@ -13,6 +13,8 @@ const landCategories = [
 
 export default function SellLandPage() {
     const [selectedCategory, setSelectedCategory] = useState('');
+    const [photos, setPhotos] = useState<File[]>([]);
+    const [previews, setPreviews] = useState<string[]>([]);
     const [formData, setFormData] = useState({
         title: '',
         location: '',
@@ -29,6 +31,37 @@ export default function SellLandPage() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const newPhotos: File[] = [];
+        const newPreviews: string[] = [];
+
+        for (const file of files) {
+            if (photos.length + newPhotos.length >= 3) {
+                alert('Maximum 3 photos allowed');
+                break;
+            }
+            if (file.size > maxSize) {
+                alert(`${file.name} exceeds 5MB limit`);
+                continue;
+            }
+            newPhotos.push(file);
+            newPreviews.push(URL.createObjectURL(file));
+        }
+
+        setPhotos([...photos, ...newPhotos]);
+        setPreviews([...previews, ...newPreviews]);
+    };
+
+    const removePhoto = (index: number) => {
+        const newPhotos = photos.filter((_, i) => i !== index);
+        const newPreviews = previews.filter((_, i) => i !== index);
+        URL.revokeObjectURL(previews[index]);
+        setPhotos(newPhotos);
+        setPreviews(newPreviews);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -175,12 +208,47 @@ export default function SellLandPage() {
 
                         {/* Upload Photos */}
                         <div className="mb-6">
-                            <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Upload Photos</label>
-                            <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg md:rounded-2xl p-4 md:p-8 text-center cursor-pointer hover:border-primary transition-colors">
+                            <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Upload Land Photos ({photos.length}/3)</label>
+                            <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                disabled={photos.length >= 3}
+                                className="hidden"
+                                id="photoInput"
+                            />
+                            <label
+                                htmlFor="photoInput"
+                                className={`block border-2 border-dashed rounded-lg md:rounded-2xl p-4 md:p-8 text-center ${
+                                    photos.length >= 3
+                                        ? 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 cursor-not-allowed'
+                                        : 'border-gray-300 dark:border-gray-700 hover:border-primary cursor-pointer transition-colors'
+                                }`}
+                            >
                                 <span className="material-symbols-outlined text-2xl md:text-4xl text-gray-400 mb-1 md:mb-2 block">add_a_photo</span>
-                                <p className="text-xs md:text-sm text-gray-500 font-medium">Tap to upload land photos</p>
-                                <p className="text-[10px] md:text-xs text-gray-400 mt-1">Supports JPG, PNG (Max 10MB each)</p>
-                            </div>
+                                <p className="text-xs md:text-sm text-gray-500 font-medium">{photos.length >= 3 ? 'Max 3 photos reached' : 'Tap to upload land photos'}</p>
+                                <p className="text-[10px] md:text-xs text-gray-400 mt-1">JPG, PNG up to 5MB each • Max 3 photos</p>
+                            </label>
+                            {previews.length > 0 && (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4 mt-4">
+                                    {previews.map((preview, index) => (
+                                        <div key={index} className="relative group rounded-lg md:rounded-xl overflow-hidden">
+                                            <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-32 md:h-40 object-cover" />
+                                            <button
+                                                type="button"
+                                                onClick={() => removePhoto(index)}
+                                                className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                            >
+                                                <span className="material-symbols-outlined text-white text-3xl">delete</span>
+                                            </button>
+                                            <span className="absolute top-1 md:top-2 right-1 md:right-2 px-1.5 md:px-2 py-0.5 bg-black/70 text-white text-[10px] md:text-xs font-bold rounded-md">
+                                                {index + 1}/3
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         {/* Contact Info */}
