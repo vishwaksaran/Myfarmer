@@ -39,8 +39,8 @@ export default function ServicesSection() {
                                         className="h-28 w-28 lg:h-32 lg:w-32 rounded-2xl bg-cover bg-center shadow-lg group-hover:scale-105 transition-transform duration-500"
                                         style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuATgvrhKcwWAeFMtAmx0GiGt2CgRWWsxLceYGolQzgUi90X3Bp9FtTrn527TOwxNUKY4z_GXK6C12DkQb9WOa2u24GqNyr5-wGTP7JQGl2u3tkEIjoqPwBILvHjmUy0-P7IE8aCRDJ8iMtxY-nHzJ7VIHf5iZRPvCToaICZrKGSMNOT7xitqyjV1y7kMlSgP6MeBlk2KLHWx1zY4k7aiJStbatpizhFTy01EBjRvhd7APwZkJ3K9c5rTmzkAC-vwXPL6xQdO7VMKSKB')" }}
                                     ></div>
-                                    <div className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-gradient-to-br from-primary to-green-400 border-4 border-white flex items-center justify-center shadow-md">
-                                        <span className="material-symbols-outlined text-white text-xs">verified</span>
+                                    <div className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-gradient-to-br from-primary to-green-400 border-4 border-white flex items-center justify-center shadow-lg shadow-primary/40">
+                                        <span className="material-symbols-outlined text-white text-xs font-black">verified</span>
                                     </div>
                                 </div>
                                 <div className="flex-1">
@@ -49,20 +49,20 @@ export default function ServicesSection() {
                                         <span className="rounded-full bg-green-100 px-3 py-1 text-[10px] font-black text-green-700 uppercase tracking-wider">{t('services.topRated')}</span>
                                     </div>
                                     <p className="text-gray-500 font-medium text-sm mb-4">General Labor • Land Clearing • Harvest Help</p>
-                                    <div className="flex items-center gap-6">
-                                        <div className="text-center">
+                                    <div className="flex flex-wrap items-center gap-3 lg:gap-6">
+                                        <div className="text-center min-w-max">
                                             <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">{t('services.rate')}</p>
-                                            <p className="text-xl font-black text-primary">₹500<span className="text-sm font-semibold text-gray-400">/day</span></p>
+                                            <p className="text-lg lg:text-xl font-black text-primary">₹500<span className="text-xs lg:text-sm font-semibold text-gray-400">/day</span></p>
                                         </div>
-                                        <div className="w-px h-10 bg-gray-200 dark:bg-gray-700"></div>
-                                        <div className="text-center">
+                                        <div className="hidden lg:block w-px h-10 bg-gray-200 dark:bg-gray-700"></div>
+                                        <div className="text-center min-w-max">
                                             <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">{t('services.experience')}</p>
-                                            <p className="text-xl font-black">12 <span className="text-sm font-semibold text-gray-400">{t('services.years')}</span></p>
+                                            <p className="text-lg lg:text-xl font-black">12 <span className="text-xs lg:text-sm font-semibold text-gray-400">{t('services.years')}</span></p>
                                         </div>
-                                        <div className="w-px h-10 bg-gray-200 dark:bg-gray-700"></div>
-                                        <div className="text-center">
+                                        <div className="hidden lg:block w-px h-10 bg-gray-200 dark:bg-gray-700"></div>
+                                        <div className="text-center min-w-max">
                                             <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">Rating</p>
-                                            <p className="text-xl font-black text-accent">4.9★</p>
+                                            <p className="text-lg lg:text-xl font-black text-accent">4.9★</p>
                                         </div>
                                     </div>
                                 </div>
@@ -80,7 +80,7 @@ export default function ServicesSection() {
                     {/* Right Column - Two stacked cards */}
                     <div className="md:col-span-6 grid grid-cols-2 gap-3 md:gap-6">
                         {/* Tractor Mechanics */}
-                        <div className="skeuo-card-hover group flex flex-col p-4 md:p-6 rounded-2xl md:rounded-3xl relative overflow-hidden">
+                        <div className="skeuo-card-hover group flex flex-col p-4 md:p-6 rounded-2xl md:rounded-3xl relative overflow-hidden bg-gradient-to-br from-orange-50 to-white dark:from-gray-900 dark:to-gray-800">
                             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                             <div className="mb-auto">
                                 <div className="flex items-center justify-between mb-3 md:mb-5">
@@ -93,7 +93,7 @@ export default function ServicesSection() {
                                     </div>
                                 </div>
                                 <h4 className="text-sm md:text-lg font-black mb-1 md:mb-2 group-hover:text-primary transition-colors">{t('services.tractorMechanics')}</h4>
-                                <p className="text-[11px] md:text-sm text-gray-500 leading-relaxed">
+                                <p className="text-[11px] md:text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
                                     {t('services.tractorMechanicsDesc')}
                                 </p>
                             </div>
@@ -106,14 +106,14 @@ export default function ServicesSection() {
                         </div>
 
                         {/* Cold Storage */}
-                        <div className="skeuo-card-hover group flex flex-col p-4 md:p-6 rounded-2xl md:rounded-3xl relative overflow-hidden">
+                        <div className="skeuo-card-hover group flex flex-col p-4 md:p-6 rounded-2xl md:rounded-3xl relative overflow-hidden bg-gradient-to-br from-blue-50 to-white dark:from-gray-900 dark:to-gray-800">
                             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                             <div className="mb-auto">
                                 <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-50 flex items-center justify-center mb-3 md:mb-5 group-hover:scale-110 transition-transform">
                                     <span className="material-symbols-outlined text-blue-600 text-lg md:text-xl">ac_unit</span>
                                 </div>
                                 <h4 className="text-sm md:text-lg font-black mb-1 md:mb-2 group-hover:text-primary transition-colors">{t('services.coldStorage')}</h4>
-                                <p className="text-[11px] md:text-sm text-gray-500 leading-relaxed">
+                                <p className="text-[11px] md:text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
                                     {t('services.coldStorageDesc')}
                                 </p>
                                 <div className="mt-3 md:mt-4 skeuo-inset rounded-xl p-2 md:p-3">

@@ -2,11 +2,13 @@
 
 import { useAuth } from '@/context/AuthContext';
 import { useLoginPrompt } from '@/context/LoginPromptContext';
+import { useRouter } from 'next/navigation';
 import MiraituLogo from '@/components/MiraituLogo';
 
 export default function LoginPromptOverlay() {
-    const { isLoginPromptOpen, closeLoginPrompt } = useLoginPrompt();
-    const { signInWithGoogle, loginAsGuest, loading: authLoading } = useAuth();
+    const router = useRouter();
+    const { isLoginPromptOpen, closeLoginPrompt, dismissLoginPrompt } = useLoginPrompt();
+    const { signInWithGoogle, loading: authLoading } = useAuth();
 
     if (!isLoginPromptOpen) return null;
 
@@ -19,13 +21,14 @@ export default function LoginPromptOverlay() {
         }
     };
 
-    const handleGuestLogin = async () => {
-        try {
-            await loginAsGuest();
-            closeLoginPrompt();
-        } catch (error) {
-            console.error(error);
-        }
+    const handleLogin = () => {
+        closeLoginPrompt();
+        router.push('/user-login');
+    };
+
+    const handleSignUp = () => {
+        closeLoginPrompt();
+        router.push('/user-register');
     };
 
     return (
@@ -77,7 +80,7 @@ export default function LoginPromptOverlay() {
 
                     {/* Login button */}
                     <button
-                        onClick={handleGuestLogin}
+                        onClick={handleLogin}
                         disabled={authLoading}
                         className="w-full py-3.5 rounded-xl bg-primary text-white font-bold text-base shadow-lg shadow-primary/25 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mb-3"
                     >
@@ -101,9 +104,18 @@ export default function LoginPromptOverlay() {
                         <span className="font-bold text-sm text-gray-700 dark:text-gray-200">Continue with Google</span>
                     </button>
 
+                    {/* Sign Up button */}
+                    <button
+                        onClick={handleSignUp}
+                        className="w-full py-3 rounded-xl bg-green-50 dark:bg-green-900/20 border-2 border-primary/30 hover:bg-green-100 dark:hover:bg-green-900/30 transition-all flex items-center justify-center gap-2.5 mb-3"
+                    >
+                        <span className="material-symbols-outlined text-lg text-primary">person_add</span>
+                        <span className="font-bold text-sm text-primary">Create New Account</span>
+                    </button>
+
                     {/* Skip */}
                     <button
-                        onClick={closeLoginPrompt}
+                        onClick={dismissLoginPrompt}
                         className="text-xs font-bold text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors py-2"
                     >
                         Maybe later

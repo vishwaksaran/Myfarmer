@@ -389,7 +389,7 @@ export default function Header() {
 
             {/* Language Selection Modal */}
             {isLanguageModalOpen && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" onClick={() => setIsLanguageModalOpen(false)}>
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" data-no-auth onClick={() => setIsLanguageModalOpen(false)}>
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
 
                     <div

@@ -11,8 +11,8 @@ export default function CTABanner() {
     const [callbackSubmitted, setCallbackSubmitted] = useState(false);
 
     // Placeholder contact details
-    const contactNumber = "+91 98765 43210";
-    const whatsappLink = "https://wa.me/919876543210";
+    const contactNumber = "+91 74484 10198";
+    const whatsappLink = "https://wa.me/917448410198";
 
     const handleGetStarted = () => {
         // Redirect to community page

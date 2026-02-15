@@ -26,11 +26,14 @@ const AUTH_PAGES = ['/user-login', '/user-register', '/language-selection'];
 
 export default function GlobalLoginInterceptor() {
     const { user } = useAuth();
-    const { showLoginPrompt } = useLoginPrompt();
+    const { showLoginPrompt, isDismissed } = useLoginPrompt();
     const pathname = usePathname();
 
     useEffect(() => {
         if (user) return; // User is logged in, no need to intercept
+
+        // Don't intercept if user has clicked "Maybe later"
+        if (isDismissed) return;
 
         // Don't intercept on auth-related pages
         if (AUTH_PAGES.some(page => pathname.startsWith(page))) return;
@@ -100,7 +103,7 @@ export default function GlobalLoginInterceptor() {
         return () => {
             document.removeEventListener('click', handleClick, true);
         };
-    }, [user, showLoginPrompt, pathname]);
+    }, [user, showLoginPrompt, pathname, isDismissed]);
 
     return null; // This component renders nothing
 }

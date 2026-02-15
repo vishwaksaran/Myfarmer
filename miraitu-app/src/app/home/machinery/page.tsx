@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import NearbyLocation from '@/components/v2/NearbyLocation';
@@ -131,53 +131,105 @@ export default function MachineryPage() {
     const [selectedBrand, setSelectedBrand] = useState('All Brands');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [modalCategory, setModalCategory] = useState<typeof categories[0] | null>(null);
+    const [showFilterModal, setShowFilterModal] = useState(false);
+
+    // Manage overflow and hide other elements when modal is open
+    useEffect(() => {
+        if (showFilterModal) {
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.overflow = 'hidden';
+            // Hide header
+            const header = document.querySelector('header');
+            if (header) header.style.display = 'none';
+            // Hide bottom nav
+            const bottomNav = document.querySelector('nav');
+            if (bottomNav) bottomNav.style.display = 'none';
+            
+            // Hide WhatsApp icon with specific z-50 class
+            const whatsappIcon = document.querySelector('.fixed.z-50.flex.flex-col.items-end.gap-4');
+            if (whatsappIcon) {
+                (whatsappIcon as any).style.zIndex = '-1';
+                (whatsappIcon as any).style.pointerEvents = 'none';
+            }
+            // Also target by data attribute if available
+            const whatsappByHref = document.querySelector('a[href*="wa.me"]');
+            if (whatsappByHref) {
+                (whatsappByHref as any).style.zIndex = '-1';
+                (whatsappByHref as any).style.pointerEvents = 'none';
+            }
+        } else {
+            document.documentElement.style.overflow = '';
+            document.body.style.overflow = '';
+            // Show header
+            const header = document.querySelector('header');
+            if (header) header.style.display = '';
+            // Show bottom nav
+            const bottomNav = document.querySelector('nav');
+            if (bottomNav) bottomNav.style.display = '';
+            
+            // Restore WhatsApp icon z-index
+            const whatsappIcon = document.querySelector('.fixed.z-50.flex.flex-col.items-end.gap-4');
+            if (whatsappIcon) {
+                (whatsappIcon as any).style.zIndex = '';
+                (whatsappIcon as any).style.pointerEvents = '';
+            }
+            // Restore by data attribute if available
+            const whatsappByHref = document.querySelector('a[href*="wa.me"]');
+            if (whatsappByHref) {
+                (whatsappByHref as any).style.zIndex = '';
+                (whatsappByHref as any).style.pointerEvents = '';
+            }
+        }
+    }, [showFilterModal]);
 
     return (
         <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-[#121811] dark:text-[#f9fbf9] transition-colors duration-300">
-            <div className="px-6 pb-12 py-8">
+            <div className="px-3 md:px-6 pb-12 py-6 md:py-8">
                 <div className="mx-auto max-w-[1280px]">
                     {/* Hero Section with Category Cards */}
-                    <div className="mb-10">
-                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
-                            <div>
-                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    <div className="mb-8 md:mb-10">
+                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6 md:mb-8">
+                            <div className="min-w-0">
+                                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
                                     Agricultural Machinery
                                 </h1>
-                                <p className="text-gray-500 dark:text-gray-400">
+                                <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">
                                     Browse our comprehensive collection of farm equipment and machinery
                                 </p>
                             </div>
-                            <NearbyLocation />
+                            <div className="shrink-0">
+                                <NearbyLocation />
+                            </div>
                         </div>
 
                         {/* Category Cards Grid */}
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4">
                             {categories.map((category) => (
                                 <button
                                     key={category.id}
                                     onClick={() => setModalCategory(category)}
-                                    className="group relative rounded-2xl p-4 border border-gray-100 dark:border-gray-800 hover:border-primary/30 hover:shadow-xl transition-all duration-300 overflow-hidden bg-[#d4edda] dark:bg-emerald-900/30 text-left"
+                                    className="group relative rounded-lg md:rounded-2xl p-2 md:p-4 border border-gray-100 dark:border-gray-800 hover:border-primary/30 hover:shadow-xl transition-all duration-300 overflow-hidden bg-[#d4edda] dark:bg-emerald-900/30 text-left"
                                 >
                                     {/* Image Container - uniform size with matching bg */}
                                     <div className="flex flex-col items-center">
-                                        <div className="w-20 h-20 rounded-2xl bg-[#c8e6c9] dark:bg-emerald-800/50 flex items-center justify-center mb-3 overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                                        <div className="w-12 md:w-20 h-12 md:h-20 rounded-lg md:rounded-2xl bg-[#c8e6c9] dark:bg-emerald-800/50 flex items-center justify-center mb-1.5 md:mb-3 overflow-hidden group-hover:scale-105 transition-transform duration-300">
                                             <img
                                                 src={category.image}
                                                 alt={category.name}
-                                                className="w-full h-full object-cover rounded-xl"
+                                                className="w-full h-full object-cover rounded-lg md:rounded-xl"
                                             />
                                         </div>
-                                        <h3 className="font-bold text-gray-900 dark:text-white text-center text-sm mb-1">
+                                        <h3 className="font-bold text-gray-900 dark:text-white text-center text-xs md:text-sm mb-0.5 md:mb-1 line-clamp-2">
                                             {category.name}
                                         </h3>
-                                        <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
+                                        <p className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 text-center">
                                             {category.count} listings
                                         </p>
                                     </div>
 
                                     {/* Hover Arrow */}
-                                    <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <span className="material-symbols-outlined text-primary text-lg">arrow_forward</span>
+                                    <div className="absolute bottom-1.5 md:bottom-3 right-1.5 md:right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span className="material-symbols-outlined text-primary text-base md:text-lg">arrow_forward</span>
                                     </div>
                                 </button>
                             ))}
@@ -269,9 +321,9 @@ export default function MachineryPage() {
 
 
                     {/* Main Content Grid */}
-                    <div className="flex gap-8">
-                        {/* Filters Sidebar */}
-                        <div className="w-64 shrink-0">
+                    <div className="flex gap-6 md:gap-8">
+                        {/* Filters Sidebar - Hidden on Mobile */}
+                        <div className="hidden md:block md:w-64 shrink-0">
                             <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 sticky top-32">
                                 <h3 className="font-bold text-gray-900 dark:text-white mb-4">Refine Search</h3>
 
@@ -329,17 +381,26 @@ export default function MachineryPage() {
                         </div>
 
                         {/* Machinery Listings */}
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                             {/* Header */}
-                            <div className="flex items-center justify-between mb-6">
-                                <div>
-                                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-4 md:mb-6">
+                                <div className="min-w-0">
+                                    <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">
                                         Available Machinery
                                     </h2>
-                                    <p className="text-sm text-gray-500">({featuredMachinery.length} results)</p>
+                                    <p className="text-xs md:text-sm text-gray-500">({featuredMachinery.length} results)</p>
                                 </div>
 
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2 md:gap-4 shrink-0">
+                                    {/* Filter Button - Mobile Only */}
+                                    <button
+                                        onClick={() => setShowFilterModal(true)}
+                                        className="md:hidden flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
+                                    >
+                                        <span className="material-symbols-outlined text-base md:text-lg">tune</span>
+                                        <span className="text-xs md:text-sm">Filter</span>
+                                    </button>
+
                                     {/* View Toggle */}
                                     <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
                                         <button
@@ -370,6 +431,101 @@ export default function MachineryPage() {
                             />
                         </div>
                     </div>
+
+                    {/* Filter Modal - Mobile Only */}
+                    {showFilterModal && (
+                        <div
+                            className="fixed inset-0 z-[9999] flex items-start justify-center pt-[2rem] p-4 md:hidden bg-black/40 backdrop-blur-sm overflow-y-auto"
+                            onClick={() => setShowFilterModal(false)}
+                        >
+                            <div
+                                className="relative w-full max-w-md bg-white dark:bg-[#1a231a] rounded-3xl p-6 shadow-2xl"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                {/* Modal Header */}
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">Refine Search</h2>
+                                    <button
+                                        onClick={() => setShowFilterModal(false)}
+                                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                                    >
+                                        <span className="material-symbols-outlined">close</span>
+                                    </button>
+                                </div>
+
+                                {/* Category Filter */}
+                                <div className="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Category</label>
+                                    <div className="space-y-3">
+                                        {['Tractors', 'Harvesters', 'Tillers'].map((cat) => (
+                                            <label key={cat} className="flex items-center gap-3 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedCategory === cat}
+                                                    onChange={() => setSelectedCategory(cat)}
+                                                    className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
+                                                />
+                                                <span className="text-sm text-gray-700 dark:text-gray-300">{cat}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* HP Range Filter */}
+                                <div className="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">HP Range</label>
+                                    <input
+                                        type="range"
+                                        min="50"
+                                        max="1000"
+                                        value={hpRange[1]}
+                                        onChange={(e) => setHpRange([50, Number(e.target.value)])}
+                                        className="w-full accent-primary"
+                                    />
+                                    <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-3">
+                                        <span className="font-semibold">{hpRange[0]} HP</span>
+                                        <span className="font-semibold">{hpRange[1]} HP</span>
+                                    </div>
+                                </div>
+
+                                {/* Brand Filter */}
+                                <div className="mb-8">
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Brand</label>
+                                    <select
+                                        value={selectedBrand}
+                                        onChange={(e) => setSelectedBrand(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm"
+                                    >
+                                        <option>All Brands</option>
+                                        <option>John Deere</option>
+                                        <option>Mahindra</option>
+                                        <option>Claas</option>
+                                        <option>Kubota</option>
+                                    </select>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                                    <button
+                                        onClick={() => {
+                                            setSelectedCategory('Tractors');
+                                            setHpRange([50, 1000]);
+                                            setSelectedBrand('All Brands');
+                                        }}
+                                        className="flex-1 px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                    >
+                                        Reset
+                                    </button>
+                                    <button
+                                        onClick={() => setShowFilterModal(false)}
+                                        className="flex-1 px-4 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-colors"
+                                    >
+                                        Apply Filters
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
             </div>

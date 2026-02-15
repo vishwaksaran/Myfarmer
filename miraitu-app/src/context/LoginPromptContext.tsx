@@ -7,6 +7,8 @@ interface LoginPromptContextType {
     showLoginPrompt: () => void;
     isLoginPromptOpen: boolean;
     closeLoginPrompt: () => void;
+    dismissLoginPrompt: () => void;
+    isDismissed: boolean;
     /** Call this before performing a protected action. Returns true if user is logged in. */
     requireLogin: () => boolean;
 }
@@ -16,23 +18,33 @@ const LoginPromptContext = createContext<LoginPromptContextType | undefined>(und
 export function LoginPromptProvider({ children }: { children: ReactNode }) {
     const { user } = useAuth();
     const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
+    const [isDismissed, setIsDismissed] = useState(false);
 
     const showLoginPrompt = useCallback(() => {
-        setIsLoginPromptOpen(true);
-    }, []);
+        if (!isDismissed) {
+            setIsLoginPromptOpen(true);
+        }
+    }, [isDismissed]);
 
     const closeLoginPrompt = useCallback(() => {
         setIsLoginPromptOpen(false);
     }, []);
 
+    const dismissLoginPrompt = useCallback(() => {
+        setIsLoginPromptOpen(false);
+        setIsDismissed(true);
+    }, []);
+
     const requireLogin = useCallback(() => {
         if (user) return true;
-        setIsLoginPromptOpen(true);
+        if (!isDismissed) {
+            setIsLoginPromptOpen(true);
+        }
         return false;
-    }, [user]);
+    }, [user, isDismissed]);
 
     return (
-        <LoginPromptContext.Provider value={{ showLoginPrompt, isLoginPromptOpen, closeLoginPrompt, requireLogin }}>
+        <LoginPromptContext.Provider value={{ showLoginPrompt, isLoginPromptOpen, closeLoginPrompt, dismissLoginPrompt, isDismissed, requireLogin }}>
             {children}
         </LoginPromptContext.Provider>
     );

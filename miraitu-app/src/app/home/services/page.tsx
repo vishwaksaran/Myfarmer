@@ -213,17 +213,17 @@ export default function ServicesPage() {
     };
 
     return (
-        <div className="px-6">
+        <div className="px-3 md:px-6">
             <div className="mx-auto max-w-[1280px]">
                 {/* Hero Section */}
-                <div className="mb-10">
+                <div className="mb-8 md:mb-10">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-3">
-                        <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+                        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
                             Farm <span className="text-primary">Services</span>
                         </h1>
                         <NearbyLocation />
                     </div>
-                    <p className="text-lg text-gray-500 max-w-2xl">
+                    <p className="text-base md:text-lg text-gray-500 max-w-2xl">
                         Book reliable farm services from verified providers. From harvesting to transportation, we've got you covered.
                     </p>
                 </div>
@@ -246,23 +246,23 @@ export default function ServicesPage() {
 
                 {/* Services Grid */}
                 <div className="mb-10">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Our Services</h2>
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4 md:mb-6">Our Services</h2>
+                    <div className="grid grid-cols-2 gap-3 md:gap-6">
                         {services.map((service) => (
                             <Link
                                 key={service.name}
                                 href={service.href}
-                                className="group flex items-center gap-6 p-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all"
+                                className="group flex flex-col md:flex-row md:items-center gap-3 md:gap-6 p-3 md:p-6 rounded-lg md:rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all"
                             >
-                                <div className={`w-20 h-20 ${service.color} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                                    <span className="material-symbols-outlined text-white text-4xl">{service.icon}</span>
+                                <div className={`w-16 md:w-20 h-16 md:h-20 ${service.color} rounded-xl md:rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                                    <span className="material-symbols-outlined text-white text-2xl md:text-4xl">{service.icon}</span>
                                 </div>
-                                <div className="flex-1">
-                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{service.name}</h3>
-                                    <p className="text-sm text-gray-500 mb-2">{service.description}</p>
-                                    <p className="text-primary font-semibold">{service.available}</p>
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-sm md:text-xl font-bold text-gray-900 dark:text-white mb-1 line-clamp-2">{service.name}</h3>
+                                    <p className="text-xs md:text-sm text-gray-500 mb-2 line-clamp-2">{service.description}</p>
+                                    <p className="text-xs md:text-base text-primary font-semibold">{service.available}</p>
                                 </div>
-                                <span className="material-symbols-outlined text-gray-400 group-hover:text-primary group-hover:translate-x-2 transition-all">
+                                <span className="material-symbols-outlined text-gray-400 group-hover:text-primary group-hover:translate-x-2 transition-all text-lg md:text-xl flex-shrink-0">
                                     arrow_forward
                                 </span>
                             </Link>
