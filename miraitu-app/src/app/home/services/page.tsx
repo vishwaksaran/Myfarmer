@@ -192,9 +192,6 @@ export default function ServicesPage() {
     const [selectedState, setSelectedState] = useState('');
     const [enrolmentState, setEnrolmentState] = useState('');
     const [schemeState, setSchemeState] = useState('');
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
-    const [selectedService, setSelectedService] = useState<string | null>(null);
-
     const handleKisanRegistration = () => {
         if (selectedState && stateKisanPortals[selectedState]) {
             window.open(stateKisanPortals[selectedState], '_blank');
@@ -211,15 +208,6 @@ export default function ServicesPage() {
         if (schemeState && stateSchemePortals[schemeState]) {
             window.open(stateSchemePortals[schemeState], '_blank');
         }
-    };
-
-    const handleBookNow = (serviceName: string, href: string) => {
-        setSelectedService(serviceName);
-        setShowSuccessModal(true);
-        // Navigate after 1.5 seconds
-        setTimeout(() => {
-            window.location.href = href;
-        }, 1500);
     };
 
     return (
@@ -259,11 +247,12 @@ export default function ServicesPage() {
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4 md:mb-6">Our Services</h2>
                     <div className="grid grid-cols-2 gap-3 md:gap-6">
                         {services.map((service) => (
-                            <div
+                            <Link
                                 key={service.name}
-                                className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6 p-3 md:p-6 rounded-lg md:rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all"
+                                href={service.href}
+                                className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6 p-3 md:p-6 rounded-lg md:rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all group"
                             >
-                                <div className={`w-16 md:w-20 h-16 md:h-20 ${service.color} rounded-xl md:rounded-2xl flex items-center justify-center flex-shrink-0 hover:scale-110 transition-transform`}>
+                                <div className={`w-16 md:w-20 h-16 md:h-20 ${service.color} rounded-xl md:rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
                                     <span className="material-symbols-outlined text-white text-2xl md:text-4xl">{service.icon}</span>
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -271,13 +260,8 @@ export default function ServicesPage() {
                                     <p className="text-xs md:text-sm text-gray-500 mb-2 line-clamp-2">{service.description}</p>
                                     <p className="text-xs md:text-base text-primary font-semibold">{service.available}</p>
                                 </div>
-                                <button
-                                    onClick={() => handleBookNow(service.name, service.href)}
-                                    className="flex-shrink-0 px-3 md:px-6 py-2 md:py-3 bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/90 hover:to-emerald-700 text-white rounded-lg md:rounded-xl font-bold text-xs md:text-sm shadow-lg hover:shadow-primary/30 active:scale-95 transition-all whitespace-nowrap"
-                                >
-                                    Book Now
-                                </button>
-                            </div>
+                                <span className="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors text-xl md:text-2xl flex-shrink-0">arrow_forward</span>
+                            </Link>
                         ))}
                     </div>
                 </div>
@@ -430,28 +414,6 @@ export default function ServicesPage() {
                 </div>
             </div>
 
-            {/* Success Modal */}
-            {showSuccessModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-300">
-                        <div className="flex justify-center mb-6">
-                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center animate-bounce">
-                                <span className="material-symbols-outlined text-white text-5xl">check_circle</span>
-                            </div>
-                        </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-center text-gray-900 dark:text-white mb-3">Booking Confirmed!</h2>
-                        <p className="text-center text-gray-600 dark:text-gray-300 mb-2 text-sm md:text-base">
-                            Great! Your booking for <span className="font-bold text-primary">{selectedService}</span> has been submitted.
-                        </p>
-                        <p className="text-center text-gray-500 dark:text-gray-400 text-xs md:text-sm mb-6">
-                            Redirecting you to the service page...
-                        </p>
-                        <div className="w-full h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-primary to-emerald-600 animate-pulse" />
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
