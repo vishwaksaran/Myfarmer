@@ -1,9 +1,23 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import MiraituLogo from '@/components/MiraituLogo';
 
 export default function StoragePage() {
+    const [headerVisible, setHeaderVisible] = useState(true);
+    const lastScrollY = useRef(0);
+
+    useEffect(() => {
+        const onScroll = () => {
+            const y = window.scrollY;
+            setHeaderVisible(y <= 80 || y < lastScrollY.current);
+            lastScrollY.current = y;
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
+
     const [formData, setFormData] = useState({
         full_name: '',
         phone: '',
@@ -14,7 +28,20 @@ export default function StoragePage() {
         duration: '',
     });
 
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [estimatedCost, setEstimatedCost] = useState<string | null>(null);
+
+    const handleFindGodown = () => {
+        if (!formData.full_name || !formData.phone || !formData.location) {
+            alert('Please fill in all required fields');
+            return;
+        }
+        setShowSuccessModal(true);
+        setTimeout(() => {
+            setFormData({ full_name: '', phone: '', location: '', crop_type: 'wheat', storage_type: 'dry', quantity: '', duration: '' });
+            setShowSuccessModal(false);
+        }, 3000);
+    };
 
     const handleCalculate = () => {
         const qty = parseFloat(formData.quantity) || 0;
@@ -52,19 +79,29 @@ export default function StoragePage() {
 
     return (
         <div className="min-h-screen bg-background-light dark:bg-background-dark">
+            {/* Header */}
+            <header className={`sticky top-0 z-50 w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md transition-transform duration-300 ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+                <div className="mx-auto max-w-[1280px] px-4 md:px-6 py-3 md:py-4">
+                    <div className="flex items-center gap-2">
+                        <a href="/home" className="flex items-center gap-2">
+                            <MiraituLogo size={36} />
+                            <h2 className="text-lg md:text-xl font-bold tracking-tight text-[#121811] dark:text-[#f9fbf9]">Miraitu</h2>
+                        </a>
+                    </div>
+                    <nav className="flex items-center gap-1 mt-1.5 text-xs md:text-sm">
+                        <a href="/home" className="text-gray-500 hover:text-primary transition-colors font-medium">Home</a>
+                        <span className="material-symbols-outlined text-gray-400 text-xs md:text-sm">chevron_right</span>
+                        <a href="/home/services" className="text-gray-500 hover:text-primary transition-colors font-medium">Services</a>
+                        <span className="material-symbols-outlined text-gray-400 text-xs md:text-sm">chevron_right</span>
+                        <span className="text-primary font-bold">Storage & Godowns</span>
+                    </nav>
+                </div>
+            </header>
+
             {/* Hero Section */}
             <section className="relative px-6 py-12 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
                 <div className="mx-auto max-w-[1280px]">
-                    <div className="absolute top-6 left-6 md:left-12">
-                        <Link
-                            href="/home/services"
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/50 dark:bg-black/20 backdrop-blur-sm text-sm font-bold hover:bg-white/80 dark:hover:bg-black/40 transition-all text-gray-700 dark:text-gray-200"
-                        >
-                            <span className="material-symbols-outlined text-lg">arrow_back</span>
-                            Back to Services
-                        </Link>
-                    </div>
-                    <div className="text-center mb-12 pt-10">
+                    <div className="text-center mb-12">
                         <div className="inline-flex items-center justify-center size-20 rounded-[2rem] bg-gradient-to-br from-green-600 to-emerald-700 text-white mb-6 shadow-2xl">
                             <span className="material-symbols-outlined text-4xl">warehouse</span>
                         </div>
@@ -214,7 +251,10 @@ export default function StoragePage() {
                                         placeholder="e.g. Wheat, Onions, Potatoes"
                                     />
                                 </div>
-                                <button className="w-full rounded-xl py-4 bg-gradient-to-r from-green-700 to-emerald-800 text-white font-black text-lg shadow-lg hover:shadow-green-500/30 active:scale-[0.98] transition-all mt-6">
+                                <button 
+                                    onClick={handleFindGodown}
+                                    disabled={!formData.full_name || !formData.phone || !formData.location}
+                                    className="w-full rounded-xl py-4 bg-gradient-to-r from-green-700 to-emerald-800 text-white font-black text-lg shadow-lg hover:shadow-green-500/30 active:scale-[0.98] transition-all mt-6 disabled:opacity-50 disabled:cursor-not-allowed">
                                     FIND GODOWN
                                 </button>
                             </div>
@@ -222,6 +262,22 @@ export default function StoragePage() {
                     </div>
                 </div>
             </section>
+
+            {/* Success Modal */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="mx-4 max-w-md rounded-3xl bg-white dark:bg-gray-800 p-6 md:p-8 text-center shadow-2xl animate-in fade-in scale-in duration-300">
+                        <div className="flex justify-center mb-4 md:mb-6">
+                            <div className="inline-flex items-center justify-center size-16 md:size-20 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 animate-bounce">
+                                <span className="material-symbols-outlined text-4xl md:text-5xl text-white">check_circle</span>
+                            </div>
+                        </div>
+                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">Thanks for Applying!</h2>
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-1">Your storage space request has been submitted successfully.</p>
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">Our team will contact you within 48 hours to connect you with verified godown owners.</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

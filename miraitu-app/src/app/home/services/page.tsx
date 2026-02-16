@@ -191,6 +191,9 @@ const stats = [
 export default function ServicesPage() {
     const [selectedState, setSelectedState] = useState('');
     const [enrolmentState, setEnrolmentState] = useState('');
+    const [schemeState, setSchemeState] = useState('');
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [selectedService, setSelectedService] = useState<string | null>(null);
 
     const handleKisanRegistration = () => {
         if (selectedState && stateKisanPortals[selectedState]) {
@@ -204,12 +207,19 @@ export default function ServicesPage() {
         }
     };
 
-    const [schemeState, setSchemeState] = useState('');
-
     const handleSchemeRedirect = () => {
         if (schemeState && stateSchemePortals[schemeState]) {
             window.open(stateSchemePortals[schemeState], '_blank');
         }
+    };
+
+    const handleBookNow = (serviceName: string, href: string) => {
+        setSelectedService(serviceName);
+        setShowSuccessModal(true);
+        // Navigate after 1.5 seconds
+        setTimeout(() => {
+            window.location.href = href;
+        }, 1500);
     };
 
     return (
@@ -249,12 +259,11 @@ export default function ServicesPage() {
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4 md:mb-6">Our Services</h2>
                     <div className="grid grid-cols-2 gap-3 md:gap-6">
                         {services.map((service) => (
-                            <Link
+                            <div
                                 key={service.name}
-                                href={service.href}
-                                className="group flex flex-col md:flex-row md:items-center gap-3 md:gap-6 p-3 md:p-6 rounded-lg md:rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all"
+                                className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6 p-3 md:p-6 rounded-lg md:rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all"
                             >
-                                <div className={`w-16 md:w-20 h-16 md:h-20 ${service.color} rounded-xl md:rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                                <div className={`w-16 md:w-20 h-16 md:h-20 ${service.color} rounded-xl md:rounded-2xl flex items-center justify-center flex-shrink-0 hover:scale-110 transition-transform`}>
                                     <span className="material-symbols-outlined text-white text-2xl md:text-4xl">{service.icon}</span>
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -262,36 +271,39 @@ export default function ServicesPage() {
                                     <p className="text-xs md:text-sm text-gray-500 mb-2 line-clamp-2">{service.description}</p>
                                     <p className="text-xs md:text-base text-primary font-semibold">{service.available}</p>
                                 </div>
-                                <span className="material-symbols-outlined text-gray-400 group-hover:text-primary group-hover:translate-x-2 transition-all text-lg md:text-xl flex-shrink-0">
-                                    arrow_forward
-                                </span>
-                            </Link>
+                                <button
+                                    onClick={() => handleBookNow(service.name, service.href)}
+                                    className="flex-shrink-0 px-3 md:px-6 py-2 md:py-3 bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/90 hover:to-emerald-700 text-white rounded-lg md:rounded-xl font-bold text-xs md:text-sm shadow-lg hover:shadow-primary/30 active:scale-95 transition-all whitespace-nowrap"
+                                >
+                                    Book Now
+                                </button>
+                            </div>
                         ))}
                     </div>
                 </div>
 
                 {/* How it Works */}
                 <div className="mb-10">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">How It Works</h2>
-                    <div className="grid md:grid-cols-3 gap-6">
-                        <div className="p-6 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-xl mb-4">1</div>
-                            <h3 className="font-bold text-gray-900 dark:text-white mb-2">Choose a Service</h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6">How It Works</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                        <div className="p-4 md:p-6 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                            <div className="w-10 md:w-12 h-10 md:h-12 bg-primary rounded-lg md:rounded-xl flex items-center justify-center text-white font-bold text-lg md:text-xl mb-3 md:mb-4">1</div>
+                            <h3 className="font-bold text-sm md:text-base text-gray-900 dark:text-white mb-2">Choose a Service</h3>
+                            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
                                 Select the type of service you need for your farm.
                             </p>
                         </div>
-                        <div className="p-6 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-xl mb-4">2</div>
-                            <h3 className="font-bold text-gray-900 dark:text-white mb-2">Book & Schedule</h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                        <div className="p-4 md:p-6 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                            <div className="w-10 md:w-12 h-10 md:h-12 bg-primary rounded-lg md:rounded-xl flex items-center justify-center text-white font-bold text-lg md:text-xl mb-3 md:mb-4">2</div>
+                            <h3 className="font-bold text-sm md:text-base text-gray-900 dark:text-white mb-2">Book & Schedule</h3>
+                            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
                                 Select a provider and book for your preferred date and time.
                             </p>
                         </div>
-                        <div className="p-6 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-xl mb-4">3</div>
-                            <h3 className="font-bold text-gray-900 dark:text-white mb-2">Get It Done</h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                        <div className="p-4 md:p-6 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 col-span-2 md:col-span-1">
+                            <div className="w-10 md:w-12 h-10 md:h-12 bg-primary rounded-lg md:rounded-xl flex items-center justify-center text-white font-bold text-lg md:text-xl mb-3 md:mb-4">3</div>
+                            <h3 className="font-bold text-sm md:text-base text-gray-900 dark:text-white mb-2">Get It Done</h3>
+                            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
                                 The provider arrives at your farm and completes the service.
                             </p>
                         </div>
@@ -301,130 +313,145 @@ export default function ServicesPage() {
                 {/* Check Enrolment Status */}
 
 
-                {/* Kisan Card Registration */}
-                <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-3xl p-8 text-white mb-10">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-white text-3xl">badge</span>
-                                </div>
-                                <div>
-                                    <h2 className="text-2xl font-bold mb-1">Farmer Registration Card</h2>
-                                    <p className="text-white/90">Apply for your Unique Farmer ID and access government schemes. Select your state to proceed.</p>
-                                </div>
+                {/* Grid Cards Section */}
+                <div className="grid grid-cols-2 gap-4 md:gap-6 mb-10">
+                    {/* Kisan Card Registration */}
+                    <div className="col-span-2 md:col-span-1 bg-gradient-to-br from-orange-500 to-amber-500 rounded-2xl md:rounded-3xl p-4 md:p-8 text-white">
+                        <div className="flex items-start gap-3 md:gap-4 mb-4">
+                            <div className="w-12 md:w-16 h-12 md:h-16 bg-white/20 rounded-xl md:rounded-2xl flex items-center justify-center flex-shrink-0">
+                                <span className="material-symbols-outlined text-white text-2xl md:text-3xl">badge</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h2 className="text-lg md:text-2xl font-bold mb-1">Farmer Registration Card</h2>
+                                <p className="text-xs md:text-sm text-white/90 line-clamp-2">Apply for your Unique Farmer ID and access government schemes.</p>
                             </div>
                         </div>
-                        <div className="w-full md:w-auto flex flex-col sm:flex-row gap-4">
-                            <div className="relative min-w-[250px]">
+                        <div className="flex flex-col gap-3">
+                            <div className="relative">
                                 <select
                                     value={selectedState}
                                     onChange={(e) => setSelectedState(e.target.value)}
-                                    className="w-full appearance-none bg-white text-gray-900 font-semibold py-4 px-6 pr-12 rounded-xl focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer"
+                                    className="w-full appearance-none bg-white text-gray-900 font-semibold py-2 md:py-3 px-3 md:px-4 pr-8 rounded-lg md:rounded-xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer"
                                 >
-                                    <option value="">Select Your State</option>
+                                    <option value="">Select State</option>
                                     {Object.keys(stateKisanPortals).map((state) => (
                                         <option key={state} value={state}>{state}</option>
                                     ))}
                                 </select>
-                                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+                                <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none text-sm">
                                     expand_more
                                 </span>
                             </div>
                             <button
                                 onClick={handleKisanRegistration}
                                 disabled={!selectedState}
-                                className="px-8 py-4 bg-white/20 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold transition-colors shadow-lg whitespace-nowrap"
+                                className="px-4 py-2 md:py-3 bg-white/20 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg md:rounded-xl font-bold text-xs md:text-sm transition-colors shadow-lg"
                             >
                                 Go to Portal →
                             </button>
                         </div>
                     </div>
-                </div>
 
-                {/* My Government Scheme */}
-                <div className="bg-gradient-to-r from-purple-500 to-indigo-500 rounded-3xl p-8 text-white mb-10">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-white text-3xl">policy</span>
-                                </div>
-                                <div>
-                                    <h2 className="text-2xl font-bold mb-1">My Government Scheme</h2>
-                                    <p className="text-white/90">Find and apply for government schemes in your state. Select your state to proceed.</p>
-                                </div>
+                    {/* My Government Scheme */}
+                    <div className="col-span-2 md:col-span-1 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-2xl md:rounded-3xl p-4 md:p-8 text-white">
+                        <div className="flex items-start gap-3 md:gap-4 mb-4">
+                            <div className="w-12 md:w-16 h-12 md:h-16 bg-white/20 rounded-xl md:rounded-2xl flex items-center justify-center flex-shrink-0">
+                                <span className="material-symbols-outlined text-white text-2xl md:text-3xl">policy</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h2 className="text-lg md:text-2xl font-bold mb-1">My Government Scheme</h2>
+                                <p className="text-xs md:text-sm text-white/90 line-clamp-2">Find and apply for government schemes in your state.</p>
                             </div>
                         </div>
-                        <div className="w-full md:w-auto flex flex-col sm:flex-row gap-4">
-                            <div className="relative min-w-[250px]">
+                        <div className="flex flex-col gap-3">
+                            <div className="relative">
                                 <select
                                     value={schemeState}
                                     onChange={(e) => setSchemeState(e.target.value)}
-                                    className="w-full appearance-none bg-white text-gray-900 font-semibold py-4 px-6 pr-12 rounded-xl focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer"
+                                    className="w-full appearance-none bg-white text-gray-900 font-semibold py-2 md:py-3 px-3 md:px-4 pr-8 rounded-lg md:rounded-xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer"
                                 >
-                                    <option value="">Select Your State</option>
+                                    <option value="">Select State</option>
                                     {Object.keys(stateSchemePortals).map((state) => (
                                         <option key={state} value={state}>{state}</option>
                                     ))}
                                 </select>
-                                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+                                <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none text-sm">
                                     expand_more
                                 </span>
                             </div>
                             <button
                                 onClick={handleSchemeRedirect}
                                 disabled={!schemeState}
-                                className="px-8 py-4 bg-white/20 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold transition-colors shadow-lg whitespace-nowrap"
+                                className="px-4 py-2 md:py-3 bg-white/20 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg md:rounded-xl font-bold text-xs md:text-sm transition-colors shadow-lg"
                             >
                                 Go to Portal →
                             </button>
                         </div>
                     </div>
-                </div>
 
-                {/* Kisan Credit Card */}
-                <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-3xl p-8 text-white mb-10">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-white text-3xl">credit_card</span>
-                                </div>
-                                <div>
-                                    <h2 className="text-2xl font-bold mb-1">Kisan Credit Card (KCC)</h2>
-                                    <p className="text-white/90">Get affordable credit for your farming needs. Check your eligibility and apply online.</p>
-                                </div>
+                    {/* Kisan Credit Card */}
+                    <div className="col-span-2 md:col-span-1 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl md:rounded-3xl p-4 md:p-8 text-white">
+                        <div className="flex items-start gap-3 md:gap-4 mb-4">
+                            <div className="w-12 md:w-16 h-12 md:h-16 bg-white/20 rounded-xl md:rounded-2xl flex items-center justify-center flex-shrink-0">
+                                <span className="material-symbols-outlined text-white text-2xl md:text-3xl">credit_card</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h2 className="text-lg md:text-2xl font-bold mb-1">Kisan Credit Card</h2>
+                                <p className="text-xs md:text-sm text-white/90 line-clamp-2">Get affordable credit for your farming needs.</p>
                             </div>
                         </div>
-                        <div className="w-full md:w-auto">
-                            <Link
-                                href="https://www.myscheme.gov.in/schemes/kcc"
-                                target="_blank"
-                                className="inline-block w-full text-center px-8 py-4 bg-white/20 hover:bg-white/30 text-white rounded-xl font-bold transition-colors shadow-lg whitespace-nowrap"
-                            >
-                                Check Eligibility →
-                            </Link>
-                        </div>
+                        <Link
+                            href="https://www.myscheme.gov.in/schemes/kcc"
+                            target="_blank"
+                            className="block w-full text-center px-4 py-2 md:py-3 bg-white/20 hover:bg-white/30 text-white rounded-lg md:rounded-xl font-bold text-xs md:text-sm transition-colors shadow-lg"
+                        >
+                            Check Eligibility →
+                        </Link>
                     </div>
-                </div>
 
-                {/* CTA Banner */}
-                <div className="bg-gradient-to-r from-primary to-emerald-500 rounded-3xl p-8 text-white">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div>
-                            <h2 className="text-2xl font-bold mb-2">Become a Service Provider</h2>
-                            <p className="text-white/90">Own equipment? Register as a provider and earn by offering your services to farmers.</p>
+                    {/* Become a Service Provider */}
+                    <div className="col-span-2 md:col-span-1 bg-gradient-to-br from-primary to-emerald-500 rounded-2xl md:rounded-3xl p-4 md:p-8 text-white">
+                        <div className="flex items-start gap-3 md:gap-4 mb-4">
+                            <div className="w-12 md:w-16 h-12 md:h-16 bg-white/20 rounded-xl md:rounded-2xl flex items-center justify-center flex-shrink-0">
+                                <span className="material-symbols-outlined text-white text-2xl md:text-3xl">person_add</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h2 className="text-lg md:text-2xl font-bold mb-1">Become a Provider</h2>
+                                <p className="text-xs md:text-sm text-white/90 line-clamp-2">Register and earn by offering your services.</p>
+                            </div>
                         </div>
                         <Link
                             href="/home/services/register-provider"
-                            className="shrink-0 px-8 py-4 bg-white text-primary rounded-xl font-bold hover:bg-green-50 transition-colors shadow-lg"
+                            className="block w-full text-center px-4 py-2 md:py-3 bg-white text-primary rounded-lg md:rounded-xl font-bold text-xs md:text-sm hover:bg-green-50 transition-colors shadow-lg"
                         >
                             Register Now →
                         </Link>
                     </div>
                 </div>
             </div>
+
+            {/* Success Modal */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-300">
+                        <div className="flex justify-center mb-6">
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center animate-bounce">
+                                <span className="material-symbols-outlined text-white text-5xl">check_circle</span>
+                            </div>
+                        </div>
+                        <h2 className="text-2xl md:text-3xl font-black text-center text-gray-900 dark:text-white mb-3">Booking Confirmed!</h2>
+                        <p className="text-center text-gray-600 dark:text-gray-300 mb-2 text-sm md:text-base">
+                            Great! Your booking for <span className="font-bold text-primary">{selectedService}</span> has been submitted.
+                        </p>
+                        <p className="text-center text-gray-500 dark:text-gray-400 text-xs md:text-sm mb-6">
+                            Redirecting you to the service page...
+                        </p>
+                        <div className="w-full h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-primary to-emerald-600 animate-pulse" />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

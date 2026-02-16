@@ -263,15 +263,13 @@ export default function BecomeSellerPage() {
 
     return (
         <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-[#121811] dark:text-[#f9fbf9]">
-            <div className="fixed top-0 left-0 right-0 z-50 [&>header]:static [&>header]:z-auto">
-                <Header />
-            </div>
+            <Header />
 
             {/* Hero */}
             <section className="relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-500"></div>
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyem0wLTMwVjJIMjR2Mmgxem0tMzAgMzBoMlYyMmgtMnYxMnptMzAgMGgyVjIyaC0ydjEyem0tMzAtMzBoMlYybC0yLS4wMVYxNHptMzAgMGgyVjJoLTJ2MTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
-                <div className="relative z-10 px-4 md:px-6 pt-28 md:pt-40 pb-16 md:pb-28">
+                <div className="relative z-10 px-4 md:px-6 pt-12 md:pt-20 pb-16 md:pb-28">
                     <div className="mx-auto max-w-[1280px] text-center text-white">
                         <div className="inline-flex items-center gap-2 px-4 md:px-5 py-2 rounded-full bg-white/20 backdrop-blur-sm text-xs md:text-sm font-bold mb-6 md:mb-8 border border-white/30">
                             <span className="material-symbols-outlined text-base md:text-lg">rocket_launch</span>

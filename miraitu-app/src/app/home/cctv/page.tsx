@@ -1,10 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import MiraituLogo from '@/components/MiraituLogo';
 
 export default function CCTVSurveillancePage() {
     const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
+    const [headerVisible, setHeaderVisible] = useState(true);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [formData, setFormData] = useState({
+        name: '',
+        phone: '',
+        location: '',
+        installDate: '',
+    });
+    const lastScrollY = useRef(0);
+
+    useEffect(() => {
+        const onScroll = () => {
+            const y = window.scrollY;
+            setHeaderVisible(y <= 80 || y < lastScrollY.current);
+            lastScrollY.current = y;
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
 
     const packages = [
         {
@@ -79,18 +98,42 @@ export default function CCTVSurveillancePage() {
         },
     ];
 
+    const handleSubmitRequest = () => {
+        if (formData.name && formData.phone && formData.location && formData.installDate && selectedPackage) {
+            setShowSuccessModal(true);
+            // Reset form after showing modal
+            setTimeout(() => {
+                setFormData({
+                    name: '',
+                    phone: '',
+                    location: '',
+                    installDate: '',
+                });
+                setSelectedPackage(null);
+                setShowSuccessModal(false);
+            }, 3000);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-background-light dark:bg-background-dark">
             {/* Header */}
-            <header className="sticky top-0 z-50 w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
-                <div className="mx-auto flex max-w-[1280px] items-center justify-between px-6 py-4">
-                    <div className="flex items-center gap-2">
-                        <MiraituLogo size={40} />
-                        <h2 className="text-2xl font-bold tracking-tight text-[#121811] dark:text-[#f9fbf9]">Miraitu</h2>
+            <header className={`sticky top-0 z-50 w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md transition-transform duration-300 ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+                <div className="mx-auto max-w-[1280px] px-6 py-4">
+                    <div className="flex items-center justify-between">
+                        <a href="/home" className="flex items-center gap-2">
+                            <MiraituLogo size={36} />
+                            <h2 className="text-xl font-bold tracking-tight text-[#121811] dark:text-[#f9fbf9]">Miraitu</h2>
+                        </a>
                     </div>
-                    <a href="/home/services" className="text-sm font-semibold hover:text-primary transition-colors">
-                        ← Back to Services
-                    </a>
+                    {/* Breadcrumbs */}
+                    <nav className="flex items-center gap-1 mt-2 text-sm">
+                        <a href="/home" className="text-gray-500 hover:text-primary transition-colors font-medium">Home</a>
+                        <span className="material-symbols-outlined text-gray-400 text-sm">chevron_right</span>
+                        <a href="/home/services" className="text-gray-500 hover:text-primary transition-colors font-medium">Services</a>
+                        <span className="material-symbols-outlined text-gray-400 text-sm">chevron_right</span>
+                        <span className="text-primary font-bold">CCTV Surveillance</span>
+                    </nav>
                 </div>
             </header>
 
@@ -112,15 +155,18 @@ export default function CCTVSurveillancePage() {
             {/* Features Section */}
             <section className="px-6 py-12">
                 <div className="mx-auto max-w-[1280px]">
-                    <h2 className="text-3xl font-black text-center mb-12">Why Farm Surveillance?</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <h2 className="text-3xl font-black text-center mb-4">Why Farm Surveillance?</h2>
+                    <p className="text-center text-gray-500 dark:text-gray-400 mb-10 max-w-2xl mx-auto">Keep your farm safe around the clock with smart, solar-powered monitoring</p>
+                    <div className="grid grid-cols-2 md:grid-cols-1 gap-4 md:gap-5 md:max-w-2xl mx-auto">
                         {features.map((feature, index) => (
-                            <div key={index} className="skeuo-card rounded-2xl p-6 text-center">
-                                <div className="inline-flex items-center justify-center size-16 rounded-xl bg-orange-100 mb-4">
-                                    <span className="material-symbols-outlined text-3xl text-orange-600">{feature.icon}</span>
+                            <div key={index} className="skeuo-card rounded-2xl p-4 md:p-6 flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-3 md:gap-5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-orange-200 dark:hover:border-orange-900/40">
+                                <div className="inline-flex items-center justify-center size-12 md:size-14 shrink-0 rounded-2xl bg-gradient-to-br from-orange-100 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/20 shadow-sm">
+                                    <span className="material-symbols-outlined text-xl md:text-2xl text-orange-600 dark:text-orange-400">{feature.icon}</span>
                                 </div>
-                                <h3 className="text-lg font-black mb-2">{feature.title}</h3>
-                                <p className="text-sm text-gray-600">{feature.description}</p>
+                                <div>
+                                    <h3 className="text-sm md:text-base font-black mb-1 text-gray-900 dark:text-white">{feature.title}</h3>
+                                    <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{feature.description}</p>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -128,22 +174,22 @@ export default function CCTVSurveillancePage() {
             </section>
 
             {/* Packages Section */}
-            <section className="px-6 py-12 bg-slate-50">
-                <div className="mx-auto max-w-[1280px]">
-                    <div className="text-center mb-12">
-                        <h2 className="text-4xl font-black text-primary-dark mb-4">Choose Your Package</h2>
-                        <p className="text-gray-600">All packages include free installation and 2-year warranty</p>
+            <section className="px-6 py-12 bg-slate-50 dark:bg-slate-900/50">
+                <div className="mx-auto max-w-[900px]">
+                    <div className="text-center mb-10">
+                        <h2 className="text-3xl md:text-4xl font-black text-primary-dark dark:text-white mb-3">Choose Your Package</h2>
+                        <p className="text-gray-600 dark:text-gray-400">All packages include free installation and 2-year warranty</p>
                     </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 gap-4 md:gap-6 md:max-w-xl md:mx-auto">
                         {packages.map((pkg) => (
                             <div
                                 key={pkg.id}
-                                className={`skeuo-card rounded-3xl p-8 border-4 transition-all ${selectedPackage === pkg.id
+                                className={`skeuo-card rounded-2xl md:rounded-3xl p-4 md:p-8 border-2 md:border-4 transition-all hover:shadow-xl hover:-translate-y-1 duration-300 ${selectedPackage === pkg.id
                                     ? 'border-orange-500 shadow-2xl shadow-orange-500/30'
                                     : pkg.popular
-                                        ? 'border-primary/30'
-                                        : 'border-white'
-                                    } ${pkg.popular ? 'lg:scale-105' : ''}`}
+                                        ? 'border-primary/30 ring-2 ring-primary/10'
+                                        : 'border-white dark:border-gray-800'
+                                    }`}
                             >
                                 {pkg.popular && (
                                     <div className="mb-4 -mt-4 -mx-4 bg-gradient-to-r from-primary to-green-600 text-white text-center py-2 rounded-t-2xl font-black text-sm">
@@ -200,6 +246,8 @@ export default function CCTVSurveillancePage() {
                                         <label className="block text-sm font-bold mb-2 text-gray-700">Full Name *</label>
                                         <input
                                             type="text"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                             className="w-full skeuo-inset rounded-xl px-4 py-3 font-bold focus:ring-0 border-none appearance-none"
                                             placeholder="Enter your name"
                                         />
@@ -208,6 +256,8 @@ export default function CCTVSurveillancePage() {
                                         <label className="block text-sm font-bold mb-2 text-gray-700">Phone Number *</label>
                                         <input
                                             type="tel"
+                                            value={formData.phone}
+                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                             className="w-full skeuo-inset rounded-xl px-4 py-3 font-bold focus:ring-0 border-none appearance-none"
                                             placeholder="+91 XXXXX XXXXX"
                                         />
@@ -217,32 +267,20 @@ export default function CCTVSurveillancePage() {
                                     <label className="block text-sm font-bold mb-2 text-gray-700">Farm Address *</label>
                                     <input
                                         type="text"
+                                        value={formData.location}
+                                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                                         className="w-full skeuo-inset rounded-xl px-4 py-3 font-bold focus:ring-0 border-none appearance-none"
                                         placeholder="Village, District, State"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold mb-2 text-gray-700">Farm Area (Acres)</label>
-                                    <input
-                                        type="number"
-                                        className="w-full skeuo-inset rounded-xl px-4 py-3 font-bold focus:ring-0 border-none appearance-none"
-                                        placeholder="e.g., 10"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold mb-2 text-gray-700">Preferred Installation Date</label>
                                     <input
                                         type="date"
+                                        value={formData.installDate}
+                                        onChange={(e) => setFormData({ ...formData, installDate: e.target.value })}
                                         className="w-full skeuo-inset rounded-xl px-4 py-3 font-bold focus:ring-0 border-none appearance-none"
                                     />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold mb-2 text-gray-700">Special Requirements (Optional)</label>
-                                    <textarea
-                                        rows={3}
-                                        className="w-full skeuo-inset rounded-xl px-4 py-3 font-bold focus:ring-0 border-none bg-white resize-none"
-                                        placeholder="Any specific requirements or questions..."
-                                    ></textarea>
                                 </div>
                                 <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-4">
                                     <p className="text-sm font-bold text-orange-800 mb-1">Selected Package:</p>
@@ -253,7 +291,11 @@ export default function CCTVSurveillancePage() {
                                         {packages.find(p => p.id === selectedPackage)?.price}
                                     </p>
                                 </div>
-                                <button className="vibrant-gradient w-full rounded-xl py-5 text-white font-black text-xl shadow-2xl shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+                                <button 
+                                    onClick={handleSubmitRequest}
+                                    disabled={!formData.name || !formData.phone || !formData.location || !formData.installDate}
+                                    className="vibrant-gradient w-full rounded-xl py-5 text-white font-black text-xl shadow-2xl shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
                                     <span className="material-symbols-outlined text-2xl">send</span>
                                     SUBMIT REQUEST
                                 </button>
@@ -261,6 +303,26 @@ export default function CCTVSurveillancePage() {
                         </div>
                     </div>
                 </section>
+            )}
+
+            {/* Success Modal */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-300">
+                        <div className="flex justify-center mb-6">
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center animate-bounce">
+                                <span className="material-symbols-outlined text-white text-5xl">check_circle</span>
+                            </div>
+                        </div>
+                        <h2 className="text-2xl md:text-3xl font-black text-center text-gray-900 dark:text-white mb-3">Thanks for Applying!</h2>
+                        <p className="text-center text-gray-600 dark:text-gray-300 mb-2 text-sm md:text-base">
+                            Your CCTV installation request has been submitted successfully.
+                        </p>
+                        <p className="text-center text-gray-500 dark:text-gray-400 text-xs md:text-sm">
+                            Our team will contact you within <span className="font-bold text-primary">48 hours</span> to finalize your installation.
+                        </p>
+                    </div>
+                </div>
             )}
         </div>
     );

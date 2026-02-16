@@ -1,9 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import MiraituLogo from '@/components/MiraituLogo';
 
 export default function BorewellServicesPage() {
+    const [headerVisible, setHeaderVisible] = useState(true);
+    const lastScrollY = useRef(0);
+
+    useEffect(() => {
+        const onScroll = () => {
+            const y = window.scrollY;
+            setHeaderVisible(y <= 80 || y < lastScrollY.current);
+            lastScrollY.current = y;
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
+
     const [formData, setFormData] = useState({
         depth: '',
         diameter: '',
@@ -14,10 +27,18 @@ export default function BorewellServicesPage() {
         preferredDate: '',
     });
 
-    const calculateCost = () => {
-        const depth = parseInt(formData.depth) || 0;
-        const baseRate = 150; // per foot
-        return (depth * baseRate).toLocaleString('en-IN');
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+    const handleBookConsultation = () => {
+        if (!formData.name || !formData.phone || !formData.location || !formData.preferredDate) {
+            alert('Please fill in all required fields');
+            return;
+        }
+        setShowSuccessModal(true);
+        setTimeout(() => {
+            setFormData({ depth: '', diameter: '', location: '', soilType: 'clay', name: '', phone: '', preferredDate: '' });
+            setShowSuccessModal(false);
+        }, 3000);
     };
 
     const services = [
@@ -40,15 +61,21 @@ export default function BorewellServicesPage() {
     return (
         <div className="min-h-screen bg-background-light dark:bg-background-dark">
             {/* Header */}
-            <header className="sticky top-0 z-50 w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
-                <div className="mx-auto flex max-w-[1280px] items-center justify-between px-4 md:px-6 py-3 md:py-4">
+            <header className={`sticky top-0 z-50 w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md transition-transform duration-300 ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+                <div className="mx-auto max-w-[1280px] px-4 md:px-6 py-3 md:py-4">
                     <div className="flex items-center gap-2">
-                        <MiraituLogo size={40} />
-                        <h2 className="text-lg md:text-2xl font-bold tracking-tight text-[#121811] dark:text-[#f9fbf9]">Miraitu</h2>
+                        <a href="/home" className="flex items-center gap-2">
+                            <MiraituLogo size={36} />
+                            <h2 className="text-lg md:text-xl font-bold tracking-tight text-[#121811] dark:text-[#f9fbf9]">Miraitu</h2>
+                        </a>
                     </div>
-                    <a href="/home/services" className="text-xs md:text-sm font-semibold hover:text-primary transition-colors">
-                        ← Back to Services
-                    </a>
+                    <nav className="flex items-center gap-1 mt-1.5 text-xs md:text-sm">
+                        <a href="/home" className="text-gray-500 hover:text-primary transition-colors font-medium">Home</a>
+                        <span className="material-symbols-outlined text-gray-400 text-xs md:text-sm">chevron_right</span>
+                        <a href="/home/services" className="text-gray-500 hover:text-primary transition-colors font-medium">Services</a>
+                        <span className="material-symbols-outlined text-gray-400 text-xs md:text-sm">chevron_right</span>
+                        <span className="text-primary font-bold">Borewell & Water</span>
+                    </nav>
                 </div>
             </header>
 
@@ -103,60 +130,10 @@ export default function BorewellServicesPage() {
                 </div>
             </section>
 
-            {/* Depth Calculator & Booking Form */}
+            {/* Booking Form */}
             <section className="px-4 md:px-6 py-8 md:py-12 bg-primary/5">
                 <div className="mx-auto max-w-[1280px]">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
-                        {/* Depth Calculator */}
-                        <div className="skeuo-card rounded-2xl md:rounded-3xl p-4 md:p-8 border-2 md:border-4 border-white">
-                            <h3 className="text-xl md:text-2xl font-black text-primary-dark mb-4 md:mb-6">Depth Calculator</h3>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700">Required Depth (feet)</label>
-                                    <input
-                                        type="number"
-                                        value={formData.depth}
-                                        onChange={(e) => setFormData({ ...formData, depth: e.target.value })}
-                                        className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none"
-                                        placeholder="Enter depth (e.g., 300)"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700">Borewell Diameter</label>
-                                    <select
-                                        value={formData.diameter}
-                                        onChange={(e) => setFormData({ ...formData, diameter: e.target.value })}
-                                        className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none"
-                                    >
-                                        <option value="">Select diameter</option>
-                                        <option value="6">6 inches</option>
-                                        <option value="8">8 inches (Recommended)</option>
-                                        <option value="10">10 inches</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700">Soil Type</label>
-                                    <select
-                                        value={formData.soilType}
-                                        onChange={(e) => setFormData({ ...formData, soilType: e.target.value })}
-                                        className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none"
-                                    >
-                                        <option value="clay">Clay</option>
-                                        <option value="sandy">Sandy</option>
-                                        <option value="rocky">Rocky</option>
-                                        <option value="mixed">Mixed</option>
-                                    </select>
-                                </div>
-                                {formData.depth && (
-                                    <div className="mt-4 md:mt-6 p-4 md:p-6 rounded-lg md:rounded-2xl bg-blue-50 border-2 border-blue-200">
-                                        <p className="text-xs md:text-sm font-bold text-gray-600 mb-2">Estimated Cost</p>
-                                        <p className="text-2xl md:text-4xl font-black text-blue-600">₹{calculateCost()}</p>
-                                        <p className="text-[10px] md:text-xs text-gray-500 mt-2">*Base rate: ₹150/ft. Final cost may vary.</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
+                    <div className="max-w-2xl">
                         {/* Expert Consultation Form */}
                         <div className="skeuo-card rounded-2xl md:rounded-3xl p-4 md:p-8 border-2 md:border-4 border-white">
                             <h3 className="text-xl md:text-2xl font-black text-primary-dark mb-1.5 md:mb-2">Book Expert Consultation</h3>
@@ -201,7 +178,11 @@ export default function BorewellServicesPage() {
                                         className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none"
                                     />
                                 </div>
-                                <button className="vibrant-gradient w-full rounded-lg md:rounded-xl py-3 md:py-4 text-white font-black text-base md:text-lg shadow-2xl shadow-primary/30 active:scale-[0.98] transition-all mt-4 md:mt-6">
+                                <button 
+                                    onClick={handleBookConsultation}
+                                    disabled={!formData.name || !formData.phone || !formData.location || !formData.preferredDate}
+                                    className="vibrant-gradient w-full rounded-lg md:rounded-xl py-3 md:py-4 text-white font-black text-base md:text-lg shadow-2xl shadow-primary/30 active:scale-[0.98] transition-all mt-4 md:mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
                                     BOOK CONSULTATION
                                 </button>
                             </div>
@@ -209,6 +190,26 @@ export default function BorewellServicesPage() {
                     </div>
                 </div>
             </section>
+
+            {/* Success Modal */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-300">
+                        <div className="flex justify-center mb-6">
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-cyan-600 flex items-center justify-center animate-bounce">
+                                <span className="material-symbols-outlined text-white text-5xl">check_circle</span>
+                            </div>
+                        </div>
+                        <h2 className="text-2xl md:text-3xl font-black text-center text-gray-900 dark:text-white mb-3">Thanks for Applying!</h2>
+                        <p className="text-center text-gray-600 dark:text-gray-300 mb-2 text-sm md:text-base">
+                            Your borewell consultation request has been submitted successfully.
+                        </p>
+                        <p className="text-center text-gray-500 dark:text-gray-400 text-xs md:text-sm">
+                            Our team will contact you within <span className="font-bold text-primary">48 hours</span> to schedule your visit.
+                        </p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

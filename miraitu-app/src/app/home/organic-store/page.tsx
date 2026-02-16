@@ -1,10 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import MiraituLogo from '@/components/MiraituLogo';
 
 export default function OrganicStorePage() {
     const [cart, setCart] = useState<string[]>([]);
+    const [headerVisible, setHeaderVisible] = useState(true);
+    const lastScrollY = useRef(0);
+
+    useEffect(() => {
+        const onScroll = () => {
+            const y = window.scrollY;
+            setHeaderVisible(y <= 80 || y < lastScrollY.current);
+            lastScrollY.current = y;
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
 
     const pureFats = [
         {
@@ -77,23 +89,25 @@ export default function OrganicStorePage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
             {/* Header */}
-            <header className="sticky top-0 z-50 w-full border-b border-black/5 bg-white/80 backdrop-blur-md">
-                <div className="mx-auto flex max-w-[1280px] items-center justify-between px-6 py-4">
-                    <div className="flex items-center gap-2">
-                        <MiraituLogo size={40} />
-                        <h2 className="text-2xl font-bold tracking-tight text-[#121811]">Miraitu</h2>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <div className="relative">
-                            <button className="flex items-center gap-2 rounded-xl bg-white skeuo-card px-4 py-2 font-bold">
-                                <span className="material-symbols-outlined text-primary">shopping_cart</span>
-                                <span className="text-sm">{cart.length}</span>
-                            </button>
-                        </div>
-                        <a href="/home" className="text-sm font-semibold hover:text-primary transition-colors">
-                            ← Back to Home
+            <header className={`sticky top-0 z-50 w-full border-b border-black/5 bg-white/80 backdrop-blur-md transition-transform duration-300 ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+                <div className="mx-auto max-w-[1280px] px-4 md:px-6 py-3 md:py-4">
+                    <div className="flex items-center justify-between">
+                        <a href="/home" className="flex items-center gap-2">
+                            <MiraituLogo size={36} />
+                            <h2 className="text-lg md:text-xl font-bold tracking-tight text-[#121811]">Miraitu</h2>
                         </a>
+                        <button className="flex items-center gap-2 rounded-xl bg-white skeuo-card px-3 py-1.5 font-bold">
+                            <span className="material-symbols-outlined text-primary text-lg">shopping_cart</span>
+                            <span className="text-sm">{cart.length}</span>
+                        </button>
                     </div>
+                    <nav className="flex items-center gap-1 mt-1.5 text-xs md:text-sm">
+                        <a href="/home" className="text-gray-500 hover:text-primary transition-colors font-medium">Home</a>
+                        <span className="material-symbols-outlined text-gray-400 text-xs md:text-sm">chevron_right</span>
+                        <a href="/home/shop" className="text-gray-500 hover:text-primary transition-colors font-medium">Shop</a>
+                        <span className="material-symbols-outlined text-gray-400 text-xs md:text-sm">chevron_right</span>
+                        <span className="text-primary font-bold">Organic Store</span>
+                    </nav>
                 </div>
             </header>
 
