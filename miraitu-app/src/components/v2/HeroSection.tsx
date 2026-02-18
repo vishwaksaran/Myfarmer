@@ -8,9 +8,62 @@ interface ImagePreview {
     url: string;
 }
 
+const galleryItems = [
+    {
+        image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800&h=600&fit=crop',
+        title: 'Smart Irrigation',
+        desc: 'Modern drip & sprinkler systems save up to 60% water while boosting crop yield significantly.',
+        brief: 'Water is the lifeline of agriculture. Smart irrigation technologies like drip irrigation, sprinkler systems, and automated sensors are transforming how Indian farmers manage water resources. These systems deliver water directly to plant roots, reducing wastage by up to 60% compared to traditional flood irrigation. With climate change making rainfall increasingly unpredictable, smart irrigation ensures consistent crop growth regardless of monsoon patterns. Farmers using these systems report 30-50% higher yields while consuming significantly less water — a win for both productivity and sustainability.',
+    },
+    {
+        image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=800&h=600&fit=crop',
+        title: 'Organic Farming',
+        desc: 'Chemical-free farming practices that produce healthier crops and protect soil for future generations.',
+        brief: 'Organic farming is more than a trend — it\'s a return to nature\'s way of growing food. By eliminating synthetic pesticides and fertilizers, organic farmers produce crops that are safer for consumers and gentler on the environment. The organic market in India is growing at 25% annually, with premium prices rewarding farmers who make the switch. Practices like composting, crop rotation, and bio-pest control not only improve soil health but also reduce input costs over time. Miraitu connects organic farmers directly with health-conscious consumers, ensuring fair prices and eliminating middlemen.',
+    },
+    {
+        image: 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=800&h=600&fit=crop',
+        title: 'Livestock Care',
+        desc: 'Proper animal husbandry and veterinary care ensure healthy livestock and better dairy production.',
+        brief: 'India has the world\'s largest livestock population, and proper animal care is crucial for rural livelihoods. Good livestock management includes balanced nutrition, timely vaccinations, clean shelter, and access to veterinary services. Healthy animals produce more milk, grow faster, and have better reproductive outcomes. With Miraitu\'s veterinary services, farmers can connect with qualified vets for on-demand consultations, schedule vaccinations, and get expert advice on breeding programs. This reduces mortality rates and significantly increases farm income from dairy and meat production.',
+    },
+    {
+        image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=800&h=600&fit=crop',
+        title: 'Modern Machinery',
+        desc: 'Tractors, harvesters & drones are revolutionizing farming efficiency across rural India.',
+        brief: 'Agricultural mechanization is transforming Indian farming from labor-intensive to efficient and scalable. Modern tractors with GPS guidance, combine harvesters that reduce post-harvest losses, and agricultural drones for precision spraying are now accessible to farmers through Miraitu\'s rental and marketplace platform. A single drone can spray 10 acres in 30 minutes — work that would take manual laborers an entire day. Mechanization reduces costs by 20-40%, improves crop quality, and frees farmers to focus on strategic decisions rather than back-breaking manual labor.',
+    },
+    {
+        image: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=800&h=600&fit=crop',
+        title: 'Crop Diversity',
+        desc: 'Growing multiple crops reduces risk and ensures food security while maintaining soil nutrients.',
+        brief: 'Crop diversification is a farmer\'s best insurance policy against market volatility and climate risks. By growing a mix of cereals, pulses, vegetables, and cash crops, farmers spread their risk and maintain multiple income streams throughout the year. Intercropping and mixed farming systems also improve soil fertility naturally — legumes fix nitrogen for neighboring cereal crops, reducing fertilizer needs. The Indian government\'s push for crop diversification aligns with Miraitu\'s mission to help farmers explore profitable alternatives beyond traditional rice-wheat systems.',
+    },
+    {
+        image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop',
+        title: 'Golden Harvests',
+        desc: 'India\'s wheat and rice fields feed billions — timely harvesting maximizes returns for farmers.',
+        brief: 'Harvesting at the right time is critical for maximizing both quality and quantity of produce. Delayed harvesting can lead to 15-25% crop losses due to shattering, pest damage, and weather exposure. Modern harvesting techniques and machinery help farmers collect their crops at peak maturity, preserving nutritional value and commanding better market prices. Miraitu\'s real-time mandi price tracking helps farmers decide the optimal time to sell, while our logistics network ensures produce reaches markets quickly, minimizing post-harvest losses that cost Indian agriculture ₹92,000 crores annually.',
+    },
+    {
+        image: 'https://images.unsplash.com/photo-1585336261022-680e295ce3fe?w=800&h=600&fit=crop',
+        title: 'Soil Health',
+        desc: 'Regular soil testing and proper fertilization are the foundation of high-yield sustainable farming.',
+        brief: 'Healthy soil is the foundation of productive agriculture. India\'s soils face challenges from over-cultivation, chemical overuse, and erosion. Regular soil testing reveals pH levels, nutrient deficiencies, and organic matter content — enabling farmers to apply exactly the right fertilizers in the right amounts. This precision approach reduces input costs by 20-30% while improving yields. Practices like cover cropping, minimum tillage, and adding organic matter rebuild soil structure over time. Miraitu\'s soil testing service connects farmers with certified labs and provides actionable recommendations in their local language.',
+    },
+    {
+        image: 'https://images.unsplash.com/photo-1498579150354-977475b7ea0b?w=800&h=600&fit=crop',
+        title: 'Farm to Market',
+        desc: 'Direct market access eliminates middlemen and ensures farmers get fair prices for their produce.',
+        brief: 'The journey from farm to consumer\'s plate involves multiple middlemen, each taking a cut that reduces farmer income. Studies show Indian farmers receive only 15-25% of the final retail price. Miraitu\'s digital marketplace connects farmers directly with buyers, processors, and retailers — increasing farmer earnings by 30-50%. Real-time price discovery across mandis empowers farmers to negotiate better deals. Our platform also facilitates group selling through FPOs, giving small farmers the bargaining power of large cooperatives. From listing produce to arranging transport, Miraitu handles the entire supply chain.',
+    },
+];
+
 export default function HeroSection() {
     const { t } = useLanguage();
     const [images, setImages] = useState<ImagePreview[]>([]);
+    const [showGallery, setShowGallery] = useState(false);
+    const [expandedItem, setExpandedItem] = useState<number | null>(null);
     const [selectedCategory, setSelectedCategory] = useState('hero.catLivestock');
     const [subCategory, setSubCategory] = useState('');
     const [dynamicValue, setDynamicValue] = useState('');
@@ -92,6 +145,7 @@ export default function HeroSection() {
     ];
 
     return (
+        <>
         <section className="relative px-4 md:px-6 pt-6 pb-4">
             <div className="mx-auto max-w-[1400px]">
                 {/* Main Hero Container */}
@@ -125,14 +179,14 @@ export default function HeroSection() {
                                 {t('hero.mainSubtitle')}
                             </p>
                             <div className="flex flex-row gap-3 mb-8">
-                                <button className="group flex items-center gap-2 rounded-2xl bg-white px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-primary shadow-xl hover:shadow-2xl hover:bg-gray-50 active:scale-[0.97] transition-all whitespace-nowrap">
-                                    <span className="material-symbols-outlined text-lg group-hover:rotate-45 transition-transform">explore</span>
-                                    {t('hero.exploreHub')}
+                                <button onClick={() => setShowGallery(true)} className="group flex items-center gap-2 rounded-2xl bg-white px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-primary shadow-xl hover:shadow-2xl hover:bg-gray-50 active:scale-[0.97] transition-all whitespace-nowrap">
+                                    <span className="material-symbols-outlined text-lg group-hover:rotate-45 transition-transform">photo_library</span>
+                                    {t('hero.exploreGallery')}
                                 </button>
-                                <button className="group flex items-center gap-2 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-white hover:bg-white/20 active:scale-[0.97] transition-all whitespace-nowrap" data-no-auth>
+                                <a href="https://www.youtube.com/@miraituapp" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-white hover:bg-white/20 active:scale-[0.97] transition-all whitespace-nowrap" data-no-auth>
                                     <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">play_circle</span>
-                                    Watch Demo
-                                </button>
+                                    {t('hero.watchFarmerVideos')}
+                                </a>
                             </div>
 
                             {/* Stats Row */}
@@ -379,5 +433,91 @@ export default function HeroSection() {
                 </div>
             </div>
         </section>
+
+            {/* Gallery Modal */}
+            {showGallery && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={() => { setShowGallery(false); setExpandedItem(null); }}>
+                    <div className="relative w-full max-w-5xl max-h-[90vh] bg-white dark:bg-[#121811] rounded-3xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                        {/* Header */}
+                        <div className="sticky top-0 z-10 flex items-center justify-between px-5 md:px-8 py-4 md:py-5 bg-gradient-to-r from-primary to-green-600 text-white">
+                            <div className="flex items-center gap-3">
+                                <span className="material-symbols-outlined text-2xl">photo_library</span>
+                                <div>
+                                    <h2 className="text-lg md:text-2xl font-black tracking-tight">Explore Gallery</h2>
+                                    <p className="text-[11px] md:text-xs text-white/70 font-medium">Discover the importance of modern agriculture</p>
+                                </div>
+                            </div>
+                            <button onClick={() => { setShowGallery(false); setExpandedItem(null); }} className="size-10 rounded-xl bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
+                                <span className="material-symbols-outlined text-white text-xl">close</span>
+                            </button>
+                        </div>
+
+                        {/* Expanded View */}
+                        {expandedItem !== null && (
+                            <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
+                                <div className="relative">
+                                    <img
+                                        src={galleryItems[expandedItem].image}
+                                        alt={galleryItems[expandedItem].title}
+                                        className="w-full h-[250px] md:h-[400px] object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                                    <div className="absolute bottom-4 left-5 md:left-8 right-5 md:right-8">
+                                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/90 text-primary text-[10px] font-bold mb-2">
+                                            <span className="material-symbols-outlined text-xs">eco</span>
+                                            Agriculture
+                                        </span>
+                                        <h3 className="text-2xl md:text-4xl font-black text-white tracking-tight">{galleryItems[expandedItem].title}</h3>
+                                    </div>
+                                </div>
+                                <div className="p-5 md:p-8">
+                                    <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed mb-6">{galleryItems[expandedItem].brief}</p>
+                                    <button onClick={() => setExpandedItem(null)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary/10 text-primary font-bold text-sm hover:bg-primary/20 transition-colors">
+                                        <span className="material-symbols-outlined text-lg">arrow_back</span>
+                                        Back to Gallery
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Gallery Grid */}
+                        {expandedItem === null && (
+                        <div className="overflow-y-auto max-h-[calc(90vh-80px)] p-4 md:p-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                                {galleryItems.map((item, index) => (
+                                    <div key={index} onClick={() => setExpandedItem(index)} className="group rounded-2xl overflow-hidden bg-gray-50 dark:bg-[#1a2318] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                                        <div className="relative aspect-[4/3] overflow-hidden">
+                                            <img
+                                                src={item.image}
+                                                alt={item.title}
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                            <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-between">
+                                                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/90 text-primary text-[10px] font-bold">
+                                                    <span className="material-symbols-outlined text-xs">eco</span>
+                                                    Agriculture
+                                                </span>
+                                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-white/90 text-gray-700 text-[10px] font-bold">
+                                                    <span className="material-symbols-outlined text-xs">open_in_full</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="p-3 md:p-4">
+                                            <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white mb-1">{item.title}</h3>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">{item.desc}</p>
+                                            <span className="inline-flex items-center gap-1 text-primary text-[11px] font-bold mt-2">
+                                                Read More <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </>
     );
 }

@@ -9,7 +9,7 @@ const shopCategories = [
         desc: 'Certified organic inputs',
         color: 'text-green-600',
         bg: 'bg-green-50 dark:bg-green-900/20',
-        image: 'https://images.unsplash.com/photo-1594488517510-77a837d995cb?w=400&h=300&fit=crop'
+        image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=500&fit=crop'
     },
     {
         name: 'Fertilizers',
@@ -17,7 +17,7 @@ const shopCategories = [
         desc: 'Boost crop yield',
         color: 'text-green-600',
         bg: 'bg-green-50 dark:bg-green-900/20',
-        image: 'https://images.unsplash.com/photo-1628352081506-83c43123ed6d?w=400&h=300&fit=crop'
+        image: 'https://images.unsplash.com/photo-1628352081506-83c43123ed6d?w=400&h=500&fit=crop'
     },
     {
         name: 'Pesticides',
@@ -25,7 +25,7 @@ const shopCategories = [
         desc: 'Crop protection solutions',
         color: 'text-green-600',
         bg: 'bg-green-50 dark:bg-green-900/20',
-        image: 'https://images.unsplash.com/photo-1595116701754-c9636e8af7a6?w=400&h=300&fit=crop'
+        image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=500&fit=crop'
     },
     {
         name: 'Seeds & More',
@@ -33,7 +33,7 @@ const shopCategories = [
         desc: 'High-quality seeds',
         color: 'text-green-600',
         bg: 'bg-green-50 dark:bg-green-900/20',
-        image: 'https://images.unsplash.com/photo-1593305841991-05c297365073?w=400&h=300&fit=crop'
+        image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=500&fit=crop'
     }
 ];
 

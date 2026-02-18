@@ -1,13 +1,45 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import MiraituLogo from '@/components/MiraituLogo';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { LangCode } from '@/i18n/translations';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+
+// Searchable items across the entire app
+const searchableItems = [
+    { name: 'About Us', path: '/home/about', icon: 'info', keywords: ['about', 'company', 'team', 'miraitu', 'who we are'] },
+    { name: 'Machinery', path: '/home/machinery', icon: 'agriculture', keywords: ['machinery', 'tractor', 'equipment', 'farm machines'] },
+    { name: 'Tractors', path: '/home/machinery', icon: 'agriculture', keywords: ['tractor', 'mahindra', 'john deere', 'kubota', 'swaraj'] },
+    { name: 'JCB & Excavators', path: '/home/machinery', icon: 'construction', keywords: ['jcb', 'excavator', 'earthmover', 'backhoe'] },
+    { name: 'Harvesters', path: '/home/machinery', icon: 'agriculture', keywords: ['harvester', 'combine harvester', 'crop harvesting'] },
+    { name: 'Agri Drones', path: '/home/machinery', icon: 'flight', keywords: ['drone', 'agri drone', 'spraying drone', 'dji'] },
+    { name: 'Crops', path: '/home/crops', icon: 'grass', keywords: ['crops', 'wheat', 'rice', 'paddy', 'sugarcane', 'cotton', 'maize'] },
+    { name: 'Livestock', path: '/home/livestock', icon: 'pets', keywords: ['livestock', 'cattle', 'cow', 'buffalo', 'goat', 'sheep', 'poultry', 'animal'] },
+    { name: 'Finance & Loans', path: '/home/finance', icon: 'account_balance', keywords: ['finance', 'loan', 'kisan credit', 'subsidy', 'insurance', 'pm kisan'] },
+    { name: 'Shop', path: '/home/shop', icon: 'shopping_bag', keywords: ['shop', 'store', 'buy', 'organic', 'fertilizer', 'pesticide', 'seeds'] },
+    { name: 'Organic Products', path: '/home/organic-store', icon: 'eco', keywords: ['organic', 'natural', 'chemical free', 'organic store'] },
+    { name: 'Fertilizers', path: '/home/shop', icon: 'science', keywords: ['fertilizer', 'urea', 'dap', 'npk', 'manure'] },
+    { name: 'Pesticides', path: '/home/shop', icon: 'bug_report', keywords: ['pesticide', 'insecticide', 'herbicide', 'fungicide', 'crop protection'] },
+    { name: 'Seeds', path: '/home/shop', icon: 'spa', keywords: ['seeds', 'hybrid seeds', 'seed variety', 'sowing'] },
+    { name: 'Veterinary', path: '/home/veterinary', icon: 'vaccines', keywords: ['veterinary', 'vet', 'animal doctor', 'vaccination', 'animal health'] },
+    { name: 'Land', path: '/home/land', icon: 'landscape', keywords: ['land', 'farm land', 'plot', 'agriculture land', 'buy land', 'sell land'] },
+    { name: 'Farm Services', path: '/home/services', icon: 'home_repair_service', keywords: ['services', 'labour', 'borewell', 'fencing', 'cctv', 'solar'] },
+    { name: 'Borewell Services', path: '/home/borewell', icon: 'water_drop', keywords: ['borewell', 'borewell drilling', 'water', 'tubewell'] },
+    { name: 'Fencing', path: '/home/fencing', icon: 'fence', keywords: ['fencing', 'farm fencing', 'barbed wire', 'chain link'] },
+    { name: 'CCTV & Security', path: '/home/cctv', icon: 'videocam', keywords: ['cctv', 'camera', 'security', 'surveillance', 'farm security'] },
+    { name: 'Crop Protection', path: '/home/protection', icon: 'shield', keywords: ['protection', 'crop protection', 'pest control', 'disease'] },
+    { name: 'Toolbox', path: '/home/toolbox', icon: 'handyman', keywords: ['toolbox', 'tools', 'calculator', 'weather', 'mandi prices'] },
+    { name: 'Community', path: '/home/community', icon: 'groups', keywords: ['community', 'farmer forum', 'discussion', 'help', 'connect'] },
+    { name: 'Become a Seller', path: '/home/become-seller', icon: 'storefront', keywords: ['seller', 'dealer', 'sell', 'register as seller', 'become dealer'] },
+    { name: 'Settings', path: '/home/settings', icon: 'settings', keywords: ['settings', 'profile', 'notification', 'language', 'account'] },
+    { name: 'Weather', path: '/home/toolbox', icon: 'cloud', keywords: ['weather', 'forecast', 'rain', 'temperature', 'humidity'] },
+    { name: 'Mandi Prices', path: '/home/toolbox', icon: 'trending_up', keywords: ['mandi', 'market price', 'mandi price', 'apmc', 'crop price'] },
+    { name: 'Cart & Checkout', path: '/home/shop/checkout', icon: 'shopping_cart', keywords: ['cart', 'checkout', 'order', 'payment'] },
+];
 
 const primaryNavItems = [
     { tKey: 'nav.about', path: '/home/about', icon: 'info' },
@@ -28,6 +60,7 @@ const moreNavItems = [
 
 export default function Header() {
     const pathname = usePathname();
+    const router = useRouter();
     const { lang, setLang, t } = useLanguage();
     const { totalItems } = useCart();
     const { user, signOut } = useAuth();
@@ -40,6 +73,111 @@ export default function Header() {
     const lastScrollY = useRef(0);
     const moreMenuRef = useRef<HTMLDivElement>(null);
     const profileMenuRef = useRef<HTMLDivElement>(null);
+
+    // Search state
+    const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedQuery, setDebouncedQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<typeof searchableItems>([]);
+    const [showSearchResults, setShowSearchResults] = useState(false);
+    const [activeResultIndex, setActiveResultIndex] = useState(-1);
+    const searchRef = useRef<HTMLDivElement>(null);
+    const mobileSearchRef = useRef<HTMLDivElement>(null);
+    const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+
+    // Debounced search
+    const handleSearchChange = useCallback((value: string) => {
+        setSearchQuery(value);
+        setActiveResultIndex(-1);
+
+        if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
+        debounceTimer.current = setTimeout(() => {
+            setDebouncedQuery(value);
+        }, 300);
+    }, []);
+
+    // Filter results when debounced query changes
+    useEffect(() => {
+        if (debouncedQuery.trim().length === 0) {
+            setSearchResults([]);
+            setShowSearchResults(false);
+            return;
+        }
+
+        const query = debouncedQuery.toLowerCase().trim();
+        const matched = searchableItems.filter(item => {
+            const nameMatch = item.name.toLowerCase().includes(query);
+            const keywordMatch = item.keywords.some(kw => kw.includes(query));
+            return nameMatch || keywordMatch;
+        });
+
+        // Deduplicate by path + name
+        const seen = new Set<string>();
+        const unique = matched.filter(item => {
+            const key = `${item.path}|${item.name}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+
+        setSearchResults(unique.slice(0, 8));
+        setShowSearchResults(true);
+    }, [debouncedQuery]);
+
+    // Close search results when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            const target = event.target as Node;
+            if (
+                searchRef.current && !searchRef.current.contains(target) &&
+                mobileSearchRef.current && !mobileSearchRef.current.contains(target)
+            ) {
+                setShowSearchResults(false);
+            } else if (searchRef.current && !searchRef.current.contains(target) && !mobileSearchRef.current) {
+                setShowSearchResults(false);
+            } else if (!searchRef.current && mobileSearchRef.current && !mobileSearchRef.current.contains(target)) {
+                setShowSearchResults(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Handle keyboard navigation in search results
+    const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+        if (!showSearchResults || searchResults.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setActiveResultIndex(prev => (prev < searchResults.length - 1 ? prev + 1 : 0));
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setActiveResultIndex(prev => (prev > 0 ? prev - 1 : searchResults.length - 1));
+        } else if (e.key === 'Enter' && activeResultIndex >= 0) {
+            e.preventDefault();
+            const selected = searchResults[activeResultIndex];
+            router.push(selected.path);
+            setSearchQuery('');
+            setDebouncedQuery('');
+            setShowSearchResults(false);
+        } else if (e.key === 'Escape') {
+            setShowSearchResults(false);
+        }
+    };
+
+    const handleResultClick = (path: string) => {
+        router.push(path);
+        setSearchQuery('');
+        setDebouncedQuery('');
+        setShowSearchResults(false);
+    };
+
+    // Cleanup debounce timer
+    useEffect(() => {
+        return () => {
+            if (debounceTimer.current) clearTimeout(debounceTimer.current);
+        };
+    }, []);
 
     const allLanguages: { name: string; sub: string; code: LangCode }[] = [
         { name: 'English', sub: 'ENGLISH', code: 'en' },
@@ -111,8 +249,8 @@ export default function Header() {
 
     return (
         <>
-            <header className={`sticky top-0 w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'z-[70]' : 'z-50'} ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}>
-                <div className="mx-auto max-w-[1400px] px-4 py-3">
+            <header className={`sticky top-0 w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'z-[70]' : 'z-50'} ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} overflow-visible`}>
+                <div className="mx-auto max-w-[1400px] px-4 py-3 overflow-visible">
                     {/* Main Header Row */}
                     <div className="flex items-center justify-between gap-4">
                         {/* Logo */}
@@ -122,15 +260,60 @@ export default function Header() {
                         </Link>
 
                         {/* Search Bar */}
-                        <div className="hidden md:block flex-1 max-w-md mx-4">
+                        <div className="hidden md:block flex-1 max-w-md mx-4 relative" ref={searchRef}>
                             <div className="skeuo-inset flex h-10 w-full items-center rounded-xl bg-[#ebf0ea] dark:bg-[#222d21] px-4">
                                 <span className="material-symbols-outlined text-primary/60 text-lg">search</span>
                                 <input
-                                    className="w-full border-none bg-transparent px-3 text-sm focus:ring-0 placeholder:text-gray-500"
+                                    className="w-full border-none bg-transparent px-3 text-sm focus:ring-0 placeholder:text-gray-500 outline-none"
                                     placeholder={t('header.search')}
                                     type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => handleSearchChange(e.target.value)}
+                                    onKeyDown={handleSearchKeyDown}
+                                    onFocus={() => { if (debouncedQuery.trim()) setShowSearchResults(true); }}
                                 />
+                                {searchQuery && (
+                                    <button onClick={() => { setSearchQuery(''); setDebouncedQuery(''); setShowSearchResults(false); }} className="text-gray-400 hover:text-gray-600 transition-colors">
+                                        <span className="material-symbols-outlined text-lg">close</span>
+                                    </button>
+                                )}
                             </div>
+
+                            {/* Desktop Search Suggestions */}
+                            {showSearchResults && searchResults.length > 0 && (
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1e2a1c] rounded-2xl shadow-2xl border border-black/5 dark:border-white/10 z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="p-2">
+                                        <p className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Suggestions</p>
+                                        {searchResults.map((item, index) => (
+                                            <button
+                                                key={`${item.path}-${item.name}`}
+                                                onClick={() => handleResultClick(item.path)}
+                                                className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors text-left ${
+                                                    activeResultIndex === index
+                                                        ? 'bg-primary/10 text-primary'
+                                                        : 'text-gray-700 dark:text-gray-200 hover:bg-primary/5 hover:text-primary'
+                                                }`}
+                                            >
+                                                <span className={`material-symbols-outlined text-lg shrink-0 ${
+                                                    activeResultIndex === index ? 'text-primary' : 'text-gray-400'
+                                                }`}>{item.icon}</span>
+                                                <span className="flex-1 min-w-0 truncate">{item.name}</span>
+                                                <span className="material-symbols-outlined text-sm text-gray-300 shrink-0">arrow_forward</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* No results */}
+                            {showSearchResults && debouncedQuery.trim() && searchResults.length === 0 && (
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1e2a1c] rounded-2xl shadow-2xl border border-black/5 dark:border-white/10 z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="p-6 text-center">
+                                        <span className="material-symbols-outlined text-3xl text-gray-300 mb-2">search_off</span>
+                                        <p className="text-sm text-gray-500">No results for &ldquo;{debouncedQuery}&rdquo;</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Navigation Menu — Desktop */}
@@ -331,15 +514,60 @@ export default function Header() {
                     </div>
 
                     {/* Mobile Search Bar */}
-                    <div className="md:hidden mt-2">
+                    <div className="md:hidden mt-2 relative" ref={mobileSearchRef}>
                         <div className="skeuo-inset flex h-10 w-full items-center rounded-xl bg-[#ebf0ea] dark:bg-[#222d21] px-4">
                             <span className="material-symbols-outlined text-primary/60 text-lg">search</span>
                             <input
-                                className="w-full border-none bg-transparent px-3 text-sm focus:ring-0 placeholder:text-gray-500"
+                                className="w-full border-none bg-transparent px-3 text-sm focus:ring-0 placeholder:text-gray-500 outline-none"
                                 placeholder={t('header.search')}
                                 type="text"
+                                value={searchQuery}
+                                onChange={(e) => handleSearchChange(e.target.value)}
+                                onKeyDown={handleSearchKeyDown}
+                                onFocus={() => { if (debouncedQuery.trim()) setShowSearchResults(true); }}
                             />
+                            {searchQuery && (
+                                <button onClick={() => { setSearchQuery(''); setDebouncedQuery(''); setShowSearchResults(false); }} className="text-gray-400 hover:text-gray-600 transition-colors">
+                                    <span className="material-symbols-outlined text-lg">close</span>
+                                </button>
+                            )}
                         </div>
+
+                        {/* Mobile Search Suggestions */}
+                        {showSearchResults && searchResults.length > 0 && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1e2a1c] rounded-2xl shadow-2xl border border-black/5 dark:border-white/10 z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="p-2">
+                                    <p className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Suggestions</p>
+                                    {searchResults.map((item, index) => (
+                                        <button
+                                            key={`${item.path}-${item.name}`}
+                                            onClick={() => handleResultClick(item.path)}
+                                            className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors text-left ${
+                                                activeResultIndex === index
+                                                    ? 'bg-primary/10 text-primary'
+                                                    : 'text-gray-700 dark:text-gray-200 hover:bg-primary/5 hover:text-primary'
+                                            }`}
+                                        >
+                                            <span className={`material-symbols-outlined text-lg shrink-0 ${
+                                                activeResultIndex === index ? 'text-primary' : 'text-gray-400'
+                                            }`}>{item.icon}</span>
+                                            <span className="flex-1 min-w-0 truncate">{item.name}</span>
+                                            <span className="material-symbols-outlined text-sm text-gray-300 shrink-0">arrow_forward</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* No results - mobile */}
+                        {showSearchResults && debouncedQuery.trim() && searchResults.length === 0 && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1e2a1c] rounded-2xl shadow-2xl border border-black/5 dark:border-white/10 z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="p-6 text-center">
+                                    <span className="material-symbols-outlined text-3xl text-gray-300 mb-2">search_off</span>
+                                    <p className="text-sm text-gray-500">No results for &ldquo;{debouncedQuery}&rdquo;</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                 </div>

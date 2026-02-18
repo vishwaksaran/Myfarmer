@@ -21,11 +21,12 @@ interface MachineryItem {
 interface MachineryListingProps {
     items: MachineryItem[];
     type: 'new' | 'used';
+    viewMode?: 'grid' | 'list';
     onCompare?: (id: number) => void;
     selectedForCompare?: number[];
 }
 
-export default function MachineryListing({ items, type, onCompare, selectedForCompare = [] }: MachineryListingProps) {
+export default function MachineryListing({ items, type, viewMode = 'grid', onCompare, selectedForCompare = [] }: MachineryListingProps) {
     const [selectedItem, setSelectedItem] = useState<MachineryItem | null>(null);
     const [showQuoteModal, setShowQuoteModal] = useState(false);
     const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -43,117 +44,232 @@ export default function MachineryListing({ items, type, onCompare, selectedForCo
 
     return (
         <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {items.map((item) => {
-                    const isSelected = selectedForCompare.includes(item.id);
-                    const isDisabled = !isSelected && selectedForCompare.length >= 3;
+            {viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                    {items.map((item) => {
+                        const isSelected = selectedForCompare.includes(item.id);
+                        const isDisabled = !isSelected && selectedForCompare.length >= 3;
 
-                    return (
-                        <div
-                            key={item.id}
-                            className="skeuo-card group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 hover:shadow-xl transition-all duration-300"
-                        >
-                            {/* Compare Checkbox */}
-                            {onCompare && (
-                                <label
-                                    className={`absolute right-3 top-3 z-10 ${isDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-                                >
-                                    <input
-                                        checked={isSelected}
-                                        onChange={() => onCompare(item.id)}
-                                        disabled={isDisabled}
-                                        className="h-6 w-6 rounded-lg border-white/50 bg-black/20 text-accent focus:ring-0 disabled:cursor-not-allowed"
-                                        type="checkbox"
-                                    />
-                                </label>
-                            )}
-
-                            {/* Category Badge */}
-                            <div className="absolute left-3 top-3 z-10 flex gap-2">
-                                <span className="inline-block rounded-lg bg-primary/90 px-2 py-1 text-xs font-bold text-white">
-                                    {item.brand}
-                                </span>
-                                {type === 'used' && item.condition && (
-                                    <span className="inline-block rounded-lg bg-accent px-2 py-1 text-xs font-bold text-black">
-                                        {item.condition}
-                                    </span>
-                                )}
-                            </div>
-
-                            {/* Image */}
+                        return (
                             <div
-                                className="aspect-[4/3] w-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
-                                style={{ backgroundImage: `url('${item.image}')` }}
-                            />
+                                key={item.id}
+                                className="skeuo-card group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 hover:shadow-xl transition-all duration-300"
+                            >
+                                {/* Compare Checkbox */}
+                                {onCompare && (
+                                    <label
+                                        className={`absolute right-3 top-3 z-10 ${isDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                                    >
+                                        <input
+                                            checked={isSelected}
+                                            onChange={() => onCompare(item.id)}
+                                            disabled={isDisabled}
+                                            className="h-6 w-6 rounded-lg border-white/50 bg-black/20 text-accent focus:ring-0 disabled:cursor-not-allowed"
+                                            type="checkbox"
+                                        />
+                                    </label>
+                                )}
 
-                            {/* Content */}
-                            <div className="p-5 flex flex-col flex-1">
-                                <h4 className="font-bold text-lg text-gray-900 dark:text-white">{item.name}</h4>
-                                <p className="text-sm text-gray-500 mb-2">{item.specs}</p>
-
-                                {/* Details Grid */}
-                                <div className="grid grid-cols-2 gap-2 text-xs mb-4">
-                                    {item.hp && (
-                                        <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                                            <span className="material-symbols-outlined text-sm">speed</span>
-                                            {item.hp} HP
-                                        </div>
-                                    )}
-                                    {item.warranty && (
-                                        <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                                            <span className="material-symbols-outlined text-sm">verified</span>
-                                            {item.warranty}
-                                        </div>
-                                    )}
-                                    {item.year && (
-                                        <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                                            <span className="material-symbols-outlined text-sm">calendar_month</span>
-                                            {item.year}
-                                        </div>
-                                    )}
-                                    {item.location && (
-                                        <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400 col-span-2">
-                                            <span className="material-symbols-outlined text-sm">location_on</span>
-                                            {item.location}
-                                        </div>
+                                {/* Category Badge */}
+                                <div className="absolute left-3 top-3 z-10 flex gap-2">
+                                    <span className="inline-block rounded-lg bg-primary/90 px-2 py-1 text-xs font-bold text-white">
+                                        {item.brand}
+                                    </span>
+                                    {type === 'used' && item.condition && (
+                                        <span className="inline-block rounded-lg bg-accent px-2 py-1 text-xs font-bold text-black">
+                                            {item.condition}
+                                        </span>
                                     )}
                                 </div>
 
-                                {/* Price and Actions */}
-                                <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div>
-                                            <span className="text-xs text-gray-500">{type === 'new' ? 'Starting from' : 'Asking Price'}</span>
-                                            <p className="text-xl font-bold text-primary">{item.price}</p>
-                                        </div>
+                                {/* Image */}
+                                <div
+                                    className="aspect-[4/3] w-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
+                                    style={{ backgroundImage: `url('${item.image}')` }}
+                                />
+
+                                {/* Content */}
+                                <div className="p-4 md:p-5 flex flex-col flex-1">
+                                    <h4 className="font-bold text-base md:text-lg text-gray-900 dark:text-white">{item.name}</h4>
+                                    <p className="text-xs md:text-sm text-gray-500 mb-2">{item.specs}</p>
+
+                                    {/* Details Grid */}
+                                    <div className="grid grid-cols-2 gap-2 text-xs mb-4">
+                                        {item.hp && (
+                                            <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                                                <span className="material-symbols-outlined text-sm">speed</span>
+                                                {item.hp} HP
+                                            </div>
+                                        )}
+                                        {item.warranty && (
+                                            <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                                                <span className="material-symbols-outlined text-sm">verified</span>
+                                                {item.warranty}
+                                            </div>
+                                        )}
+                                        {item.year && (
+                                            <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                                                <span className="material-symbols-outlined text-sm">calendar_month</span>
+                                                {item.year}
+                                            </div>
+                                        )}
+                                        {item.location && (
+                                            <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400 col-span-2">
+                                                <span className="material-symbols-outlined text-sm">location_on</span>
+                                                {item.location}
+                                            </div>
+                                        )}
                                     </div>
 
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => setSelectedItem(item)}
-                                            className="flex-1 py-2.5 rounded-xl bg-primary/10 text-primary font-semibold hover:bg-primary/20 transition-colors flex items-center justify-center gap-1"
-                                        >
-                                            <span className="material-symbols-outlined text-sm">info</span>
-                                            Details
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setSelectedItem(item);
-                                                setShowQuoteModal(true);
-                                                setSubmitSuccess(false);
-                                            }}
-                                            className="flex-1 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-1"
-                                        >
-                                            <span className="material-symbols-outlined text-sm">request_quote</span>
-                                            {type === 'new' ? 'Get Price' : 'Request Quote'}
-                                        </button>
+                                    {/* Price and Actions */}
+                                    <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div>
+                                                <span className="text-xs text-gray-500">{type === 'new' ? 'Starting from' : 'Asking Price'}</span>
+                                                <p className="text-xl font-bold text-primary">{item.price}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => setSelectedItem(item)}
+                                                className="flex-1 py-2.5 rounded-xl bg-primary/10 text-primary font-semibold hover:bg-primary/20 transition-colors flex items-center justify-center gap-1"
+                                            >
+                                                <span className="material-symbols-outlined text-sm">info</span>
+                                                Details
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedItem(item);
+                                                    setShowQuoteModal(true);
+                                                    setSubmitSuccess(false);
+                                                }}
+                                                className="flex-1 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-1"
+                                            >
+                                                <span className="material-symbols-outlined text-sm">request_quote</span>
+                                                {type === 'new' ? 'Get Price' : 'Request Quote'}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    );
-                })}
-            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                /* LIST VIEW */
+                <div className="flex flex-col gap-3 md:gap-4">
+                    {items.map((item) => {
+                        const isSelected = selectedForCompare.includes(item.id);
+                        const isDisabled = !isSelected && selectedForCompare.length >= 3;
+
+                        return (
+                            <div
+                                key={item.id}
+                                className="skeuo-card group relative flex flex-row overflow-hidden rounded-xl md:rounded-2xl border border-white/10 hover:shadow-xl transition-all duration-300"
+                            >
+                                {/* Compare Checkbox */}
+                                {onCompare && (
+                                    <label
+                                        className={`absolute right-3 top-3 z-10 ${isDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                                    >
+                                        <input
+                                            checked={isSelected}
+                                            onChange={() => onCompare(item.id)}
+                                            disabled={isDisabled}
+                                            className="h-5 w-5 rounded-lg border-white/50 bg-black/20 text-accent focus:ring-0 disabled:cursor-not-allowed"
+                                            type="checkbox"
+                                        />
+                                    </label>
+                                )}
+
+                                {/* Image - Left Side */}
+                                <div className="relative w-32 md:w-52 shrink-0">
+                                    <div
+                                        className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
+                                        style={{ backgroundImage: `url('${item.image}')` }}
+                                    />
+                                    {/* Category Badge */}
+                                    <div className="absolute left-2 top-2 z-10 flex flex-col gap-1">
+                                        <span className="inline-block rounded-md bg-primary/90 px-1.5 py-0.5 text-[10px] md:text-xs font-bold text-white">
+                                            {item.brand}
+                                        </span>
+                                        {type === 'used' && item.condition && (
+                                            <span className="inline-block rounded-md bg-accent px-1.5 py-0.5 text-[10px] md:text-xs font-bold text-black">
+                                                {item.condition}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Content - Right Side */}
+                                <div className="flex-1 min-w-0 p-3 md:p-5 flex flex-col">
+                                    <div className="flex-1">
+                                        <h4 className="font-bold text-sm md:text-lg text-gray-900 dark:text-white leading-tight">{item.name}</h4>
+                                        <p className="text-xs md:text-sm text-gray-500 mt-0.5 md:mt-1">{item.specs}</p>
+
+                                        {/* Details - Inline */}
+                                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] md:text-xs mt-2">
+                                            {item.hp && (
+                                                <div className="flex items-center gap-0.5 text-gray-600 dark:text-gray-400">
+                                                    <span className="material-symbols-outlined text-xs md:text-sm">speed</span>
+                                                    {item.hp} HP
+                                                </div>
+                                            )}
+                                            {item.warranty && (
+                                                <div className="flex items-center gap-0.5 text-gray-600 dark:text-gray-400">
+                                                    <span className="material-symbols-outlined text-xs md:text-sm">verified</span>
+                                                    {item.warranty}
+                                                </div>
+                                            )}
+                                            {item.year && (
+                                                <div className="flex items-center gap-0.5 text-gray-600 dark:text-gray-400">
+                                                    <span className="material-symbols-outlined text-xs md:text-sm">calendar_month</span>
+                                                    {item.year}
+                                                </div>
+                                            )}
+                                            {item.location && (
+                                                <div className="flex items-center gap-0.5 text-gray-600 dark:text-gray-400">
+                                                    <span className="material-symbols-outlined text-xs md:text-sm">location_on</span>
+                                                    {item.location}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Price and Actions */}
+                                    <div className="mt-2 md:mt-3 pt-2 md:pt-3 border-t border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                        <div className="shrink-0">
+                                            <span className="text-[10px] md:text-xs text-gray-500">{type === 'new' ? 'Starting from' : 'Asking Price'}</span>
+                                            <p className="text-lg md:text-xl font-bold text-primary leading-tight">{item.price}</p>
+                                        </div>
+                                        <div className="flex gap-2 sm:ml-auto">
+                                            <button
+                                                onClick={() => setSelectedItem(item)}
+                                                className="flex-1 sm:flex-none px-3 md:px-4 py-2 rounded-lg md:rounded-xl bg-primary/10 text-primary text-xs md:text-sm font-semibold hover:bg-primary/20 transition-colors flex items-center justify-center gap-1"
+                                            >
+                                                <span className="material-symbols-outlined text-sm">info</span>
+                                                Details
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedItem(item);
+                                                    setShowQuoteModal(true);
+                                                    setSubmitSuccess(false);
+                                                }}
+                                                className="flex-1 sm:flex-none px-3 md:px-4 py-2 rounded-lg md:rounded-xl bg-primary text-white text-xs md:text-sm font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-1"
+                                            >
+                                                <span className="material-symbols-outlined text-sm">request_quote</span>
+                                                {type === 'new' ? 'Get Price' : 'Request Quote'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
 
             {/* Details Modal */}
             {selectedItem && !showQuoteModal && (

@@ -36,8 +36,8 @@ export default function ServicesSection() {
                             <div className="flex flex-1 flex-col p-8 lg:flex-row lg:items-center gap-6">
                                 <div className="relative">
                                     <div
-                                        className="h-28 w-28 lg:h-32 lg:w-32 rounded-2xl bg-cover bg-center shadow-lg group-hover:scale-105 transition-transform duration-500"
-                                        style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuATgvrhKcwWAeFMtAmx0GiGt2CgRWWsxLceYGolQzgUi90X3Bp9FtTrn527TOwxNUKY4z_GXK6C12DkQb9WOa2u24GqNyr5-wGTP7JQGl2u3tkEIjoqPwBILvHjmUy0-P7IE8aCRDJ8iMtxY-nHzJ7VIHf5iZRPvCToaICZrKGSMNOT7xitqyjV1y7kMlSgP6MeBlk2KLHWx1zY4k7aiJStbatpizhFTy01EBjRvhd7APwZkJ3K9c5rTmzkAC-vwXPL6xQdO7VMKSKB')" }}
+                                        className="h-28 w-28 lg:h-32 lg:w-32 rounded-2xl bg-cover bg-[center_top] shadow-lg group-hover:scale-105 transition-transform duration-500"
+                                        style={{ backgroundImage: "url('/team/rajesh.jpeg')" }}
                                     ></div>
                                     <div className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-gradient-to-br from-primary to-green-400 border-4 border-white flex items-center justify-center shadow-lg shadow-primary/40">
                                         <span className="material-symbols-outlined text-white text-xs font-black">verified</span>

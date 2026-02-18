@@ -20,7 +20,7 @@ const teamMembers = [
     {
         name: 'C.A Manpreeth Singh',
         role: 'Director & CFO',
-        image: '/team/manpreeth.jpg',
+        image: '/team/manpreeth.jpeg',
         linkedin: 'https://www.linkedin.com/in/camanpreethsingh',
         description: 'Financial strategist ensuring sustainable growth. Manpreeth oversees financial operations, investor relations, and strategic planning to fuel Miraitu\'s expansion.',
     },
@@ -221,31 +221,31 @@ export default function AboutPage() {
             {/* ═══════════════════════════════════════════════════════ */}
             {/* The Minds Behind Miraitu                               */}
             {/* ═══════════════════════════════════════════════════════ */}
-            <section className="px-6 py-20">
+            <section className="px-4 md:px-6 py-10 md:py-20">
                 <div className="mx-auto max-w-[1280px]">
-                    <div className="text-center mb-16">
+                    <div className="text-center mb-10 md:mb-16">
                         <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-sm mb-4 border border-primary/20">
                             Leadership
                         </span>
-                        <h2 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 dark:text-white mb-4">
+                        <h2 className="text-3xl md:text-5xl font-black tracking-tight text-gray-900 dark:text-white mb-4">
                             The Minds Behind <span className="text-primary">Miraitu</span>
                         </h2>
-                        <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+                        <p className="text-base md:text-lg text-gray-500 max-w-2xl mx-auto">
                             A passionate team driven by the mission to revolutionize agriculture in India through technology and innovation
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-3 gap-10">
+                    <div className="grid md:grid-cols-3 gap-6 md:gap-10">
                         {teamMembers.map((member) => (
                             <a
                                 key={member.name}
                                 href={member.linkedin}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="group relative rounded-[2.5rem] overflow-hidden bg-white dark:bg-[#121811] border border-gray-100 dark:border-gray-800 shadow-xl hover:shadow-2xl hover:-translate-y-3 transition-all duration-500 cursor-pointer"
+                                className="group relative rounded-2xl md:rounded-[2.5rem] overflow-hidden bg-white dark:bg-[#121811] border border-gray-100 dark:border-gray-800 shadow-xl hover:shadow-2xl hover:-translate-y-3 transition-all duration-500 cursor-pointer"
                             >
                                 {/* Image Container */}
-                                <div className="relative h-[420px] overflow-hidden bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+                                <div className="relative h-[320px] md:h-[420px] overflow-hidden bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
                                     <img
                                         src={member.image}
                                         alt={member.name}
@@ -272,11 +272,11 @@ export default function AboutPage() {
                                 </div>
 
                                 {/* Description */}
-                                <div className="p-6 lg:p-8">
-                                    <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                                <div className="p-4 md:p-6 lg:p-8">
+                                    <p className="text-gray-600 dark:text-gray-300 text-xs md:text-sm leading-relaxed">
                                         {member.description}
                                     </p>
-                                    <div className="mt-4 flex items-center gap-2 text-primary font-bold text-sm">
+                                    <div className="mt-3 md:mt-4 flex items-center gap-2 text-primary font-bold text-sm">
                                         <span>View LinkedIn Profile</span>
                                         <span className="material-symbols-outlined text-base group-hover:translate-x-2 transition-transform">arrow_forward</span>
                                     </div>
@@ -290,36 +290,42 @@ export default function AboutPage() {
             {/* ═══════════════════════════════════════════════════════ */}
             {/* CTA Section — with Miraitu Logo                       */}
             {/* ═══════════════════════════════════════════════════════ */}
-            <section className="px-6 py-20">
+            <section className="px-4 md:px-6 py-8 md:py-20">
                 <div className="mx-auto max-w-[1280px]">
-                    <div className="rounded-[2.5rem] bg-gradient-to-r from-[#1a3a14] to-[#2d5a24] p-12 lg:p-16 text-center text-white relative overflow-hidden">
+                    <div className="rounded-2xl md:rounded-[2.5rem] bg-gradient-to-r from-[#1a3a14] to-[#2d5a24] p-6 md:p-12 lg:p-16 text-center text-white relative overflow-hidden">
                         {/* Decorative Elements */}
                         <div className="absolute top-0 right-0 w-96 h-96 bg-[#B0EA3C]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                         <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
 
                         <div className="relative z-10">
                             {/* Miraitu App Icon */}
-                            <div className="flex justify-center mb-8">
+                            <div className="flex justify-center mb-5 md:mb-8">
                                 <img
                                     src="/miraitu-app-icon.jpeg"
                                     alt="Miraitu - One App for Farmers"
-                                    className="w-28 h-28 rounded-[1.75rem] shadow-2xl shadow-black/30 ring-4 ring-white/20"
+                                    className="w-20 h-20 md:w-28 md:h-28 rounded-2xl md:rounded-[1.75rem] shadow-2xl shadow-black/30 ring-4 ring-white/20"
                                 />
                             </div>
-                            <h2 className="text-4xl lg:text-5xl font-black tracking-tight mb-6">
+                            <h2 className="text-2xl md:text-4xl lg:text-5xl font-black tracking-tight mb-4 md:mb-6">
                                 Join the <span className="text-[#B0EA3C]">Miraitu</span> Revolution
                             </h2>
-                            <p className="text-xl text-white/80 max-w-2xl mx-auto mb-10 leading-relaxed">
+                            <p className="text-sm md:text-xl text-white/80 max-w-2xl mx-auto mb-6 md:mb-10 leading-relaxed">
                                 Whether you&apos;re a farmer, dealer, or service provider — Miraitu is your gateway to a smarter agricultural future.
                             </p>
-                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                <a href="#" className="inline-flex items-center justify-center gap-2 px-10 py-5 bg-[#B0EA3C] text-[#1a3a14] rounded-2xl font-black text-lg shadow-2xl shadow-[#B0EA3C]/20 hover:-translate-y-1 active:scale-95 transition-all">
-                                    <svg className="size-5 fill-current" viewBox="0 0 24 24"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.302 2.302-2.302 2.302-2.608-2.302 2.608-2.302zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z" /></svg>
-                                    Download on Play Store
+                            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center max-w-md sm:max-w-none mx-auto">
+                                <a href="#" className="inline-flex items-center gap-3 md:gap-4 px-5 md:px-8 py-3 md:py-4 bg-[#B0EA3C] text-[#1a3a14] rounded-xl md:rounded-2xl shadow-2xl shadow-[#B0EA3C]/20 hover:-translate-y-1 active:scale-95 transition-all">
+                                    <svg className="size-7 md:size-8 fill-current shrink-0" viewBox="0 0 24 24"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.302 2.302-2.302 2.302-2.608-2.302 2.608-2.302zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z" /></svg>
+                                    <div className="text-left">
+                                        <p className="text-[10px] md:text-xs text-[#1a3a14]/60 leading-tight font-medium">Download on</p>
+                                        <p className="text-sm md:text-lg font-black leading-tight">Play Store</p>
+                                    </div>
                                 </a>
-                                <a href="#" className="inline-flex items-center justify-center gap-2 px-10 py-5 bg-white/10 backdrop-blur-sm text-white rounded-2xl font-bold text-lg border border-white/20 hover:bg-white/20 transition-all">
-                                    <svg className="size-5 fill-current" viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" /></svg>
-                                    Download on App Store
+                                <a href="#" className="inline-flex items-center gap-3 md:gap-4 px-5 md:px-8 py-3 md:py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl md:rounded-2xl border border-white/20 hover:bg-white/20 transition-all">
+                                    <svg className="size-7 md:size-8 fill-current shrink-0" viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" /></svg>
+                                    <div className="text-left">
+                                        <p className="text-[10px] md:text-xs text-white/60 leading-tight font-medium">Download on</p>
+                                        <p className="text-sm md:text-lg font-black leading-tight">App Store</p>
+                                    </div>
                                 </a>
                             </div>
                         </div>

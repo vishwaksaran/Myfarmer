@@ -11,7 +11,7 @@ const categories = [
         id: 'tractors',
         name: 'Tractors',
         description: 'Powerful farming tractors for all field operations',
-        image: 'https://images.unsplash.com/photo-1605338756138-54285923e911?w=200&h=200&fit=crop',
+        image: '/images/machinery/tractor.png',
         count: 245,
         path: '/home/machinery/tractors',
     },
@@ -19,7 +19,7 @@ const categories = [
         id: 'jcb',
         name: 'JCB',
         description: 'Heavy-duty construction & earthmoving equipment',
-        image: 'https://images.unsplash.com/photo-1621274403997-37aace184f49?w=200&h=200&fit=crop',
+        image: '/images/machinery/jcb.png',
         count: 78,
         path: '/home/machinery/jcb',
     },
@@ -27,7 +27,7 @@ const categories = [
         id: 'small-machineries',
         name: 'Small Machineries',
         description: 'Compact power tillers & cultivators',
-        image: 'https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?w=200&h=200&fit=crop',
+        image: '/images/machinery/small-machinery.png',
         count: 156,
         path: '/home/machinery/small-machineries',
     },
@@ -35,7 +35,7 @@ const categories = [
         id: 'implements',
         name: 'Implements',
         description: 'Ploughs, harrows & tractor attachments',
-        image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=200&h=200&fit=crop',
+        image: '/images/machinery/implements.png',
         count: 312,
         path: '/home/machinery/implements',
     },
@@ -43,7 +43,7 @@ const categories = [
         id: 'harvesters',
         name: 'Harvesters',
         description: 'Combine harvesters for efficient crop harvesting',
-        image: 'https://images.unsplash.com/photo-1599033329459-cc8c31c7eb6c?w=200&h=200&fit=crop',
+        image: '/images/machinery/harvester.png',
         count: 64,
         path: '/home/machinery/harvesters',
     },
@@ -51,7 +51,7 @@ const categories = [
         id: 'drones',
         name: 'Agri Drones',
         description: 'Agricultural drones for spraying & monitoring',
-        image: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=200&h=200&fit=crop',
+        image: '/images/machinery/drone.png',
         count: 42,
         path: '/home/machinery/drones',
     },
@@ -212,11 +212,11 @@ export default function MachineryPage() {
                                 >
                                     {/* Image Container - uniform size with matching bg */}
                                     <div className="flex flex-col items-center">
-                                        <div className="w-12 md:w-20 h-12 md:h-20 rounded-lg md:rounded-2xl bg-[#c8e6c9] dark:bg-emerald-800/50 flex items-center justify-center mb-1.5 md:mb-3 overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                                        <div className="size-16 md:size-22 aspect-square rounded-full bg-white dark:bg-emerald-800/50 flex items-center justify-center mb-1.5 md:mb-3 group-hover:scale-105 transition-transform duration-300 border-2 border-green-200 dark:border-green-700 shrink-0">
                                             <img
                                                 src={category.image}
                                                 alt={category.name}
-                                                className="w-full h-full object-cover rounded-lg md:rounded-xl"
+                                                className="size-10 md:size-14 object-contain"
                                             />
                                         </div>
                                         <h3 className="font-bold text-gray-900 dark:text-white text-center text-xs md:text-sm mb-0.5 md:mb-1 line-clamp-2">
@@ -428,6 +428,7 @@ export default function MachineryPage() {
                             <MachineryListing
                                 items={featuredMachinery}
                                 type="new"
+                                viewMode={viewMode}
                             />
                         </div>
                     </div>
