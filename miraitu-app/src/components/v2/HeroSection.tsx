@@ -178,7 +178,7 @@ export default function HeroSection() {
                             <p className="mb-8 text-base md:text-lg font-medium leading-relaxed opacity-85 max-w-xl">
                                 {t('hero.mainSubtitle')}
                             </p>
-                            <div className="flex flex-row gap-3 mb-8">
+                            <div className="flex flex-col sm:flex-row gap-3 mb-8">
                                 <button onClick={() => setShowGallery(true)} className="group flex items-center gap-2 rounded-2xl bg-white px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-primary shadow-xl hover:shadow-2xl hover:bg-gray-50 active:scale-[0.97] transition-all whitespace-nowrap">
                                     <span className="material-symbols-outlined text-lg group-hover:rotate-45 transition-transform">photo_library</span>
                                     {t('hero.exploreGallery')}
