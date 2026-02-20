@@ -26,6 +26,13 @@ export const metadata: Metadata = {
   description: "Miraitu Agriculture Tech - Empowering farmers with modern technology for sustainable farming and better yields.",
   keywords: ["agriculture", "farming", "technology", "sustainable", "Miraitu"],
   authors: [{ name: "Miraitu Agriculture Tech" }],
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/apple-icon.png",
+  },
 };
 
 export const viewport: Viewport = {

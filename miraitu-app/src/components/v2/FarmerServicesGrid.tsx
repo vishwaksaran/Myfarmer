@@ -12,6 +12,70 @@ const indianStates = [
     'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
 ];
 
+// State-wise farmer registration portal URLs
+const farmerRegPortals: Record<string, string> = {
+    'Andhra Pradesh': 'https://www.apagrisnet.gov.in/',
+    'Arunachal Pradesh': 'https://agricoop.nic.in/',
+    'Assam': 'https://diaboroagri.assam.gov.in/',
+    'Bihar': 'https://dbtagriculture.bihar.gov.in/',
+    'Chhattisgarh': 'https://agriportal.cg.nic.in/',
+    'Goa': 'https://agri.goa.gov.in/',
+    'Gujarat': 'https://ikhedut.gujarat.gov.in/',
+    'Haryana': 'https://agriharyana.gov.in/',
+    'Himachal Pradesh': 'https://eudyan.hp.gov.in/',
+    'Jharkhand': 'https://jharkhand.gov.in/agriculture',
+    'Karnataka': 'https://raitamitra.karnataka.gov.in/',
+    'Kerala': 'https://aims.kerala.gov.in/',
+    'Madhya Pradesh': 'https://mpfsts.mp.gov.in/',
+    'Maharashtra': 'https://mahadbt.maharashtra.gov.in/',
+    'Manipur': 'https://agrimanipur.gov.in/',
+    'Meghalaya': 'https://megagriculture.gov.in/',
+    'Mizoram': 'https://agriculturemizoram.nic.in/',
+    'Nagaland': 'https://agringl.nic.in/',
+    'Odisha': 'https://agriodisha.nic.in/',
+    'Punjab': 'https://agripb.gov.in/',
+    'Rajasthan': 'https://agriculture.rajasthan.gov.in/',
+    'Sikkim': 'https://sikkim.gov.in/departments/food-security-and-agriculture-development-department',
+    'Tamil Nadu': 'https://www.tn.gov.in/department/2',
+    'Telangana': 'https://agri.telangana.gov.in/',
+    'Tripura': 'https://agri.tripura.gov.in/',
+    'Uttar Pradesh': 'https://upagriculture.com/',
+    'Uttarakhand': 'https://agriculture.uk.gov.in/',
+    'West Bengal': 'https://matirkatha.net/'
+};
+
+// State-wise government schemes portal URLs
+const govSchemePortals: Record<string, string> = {
+    'Andhra Pradesh': 'https://navasakam.ap.gov.in/',
+    'Arunachal Pradesh': 'https://www.myscheme.gov.in/',
+    'Assam': 'https://directorateofagriculture.assam.gov.in/',
+    'Bihar': 'https://dbtagriculture.bihar.gov.in/',
+    'Chhattisgarh': 'https://kisan.cg.nic.in/',
+    'Goa': 'https://www.myscheme.gov.in/',
+    'Gujarat': 'https://ikhedut.gujarat.gov.in/',
+    'Haryana': 'https://www.haryana.gov.in/scheme-category/agriculture/',
+    'Himachal Pradesh': 'https://www.myscheme.gov.in/',
+    'Jharkhand': 'https://www.myscheme.gov.in/',
+    'Karnataka': 'https://raitamitra.karnataka.gov.in/',
+    'Kerala': 'https://www.kisan.gov.in/',
+    'Madhya Pradesh': 'https://mpfsts.mp.gov.in/',
+    'Maharashtra': 'https://mahadbt.maharashtra.gov.in/',
+    'Manipur': 'https://www.myscheme.gov.in/',
+    'Meghalaya': 'https://www.myscheme.gov.in/',
+    'Mizoram': 'https://www.myscheme.gov.in/',
+    'Nagaland': 'https://www.myscheme.gov.in/',
+    'Odisha': 'https://kalia.odisha.gov.in/',
+    'Punjab': 'https://agripb.gov.in/',
+    'Rajasthan': 'https://rajkisan.rajasthan.gov.in/',
+    'Sikkim': 'https://www.myscheme.gov.in/',
+    'Tamil Nadu': 'https://www.tn.gov.in/scheme/agriculture',
+    'Telangana': 'https://rythubandhu.telangana.gov.in/',
+    'Tripura': 'https://www.myscheme.gov.in/',
+    'Uttar Pradesh': 'https://upagriculture.com/',
+    'Uttarakhand': 'https://agriculture.uk.gov.in/',
+    'West Bengal': 'https://krishakbandhu.net/'
+};
+
 export default function FarmerServicesGrid() {
     const [farmerRegState, setFarmerRegState] = useState('');
     const [govSchemeState, setGovSchemeState] = useState('');
@@ -64,13 +128,16 @@ export default function FarmerServicesGrid() {
                                         <option key={state} value={state} className="text-gray-800">{state}</option>
                                     ))}
                                 </select>
-                                <button
-                                    disabled={!farmerRegState}
-                                    className="px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl bg-white text-[#1a5c2e] font-black text-xs md:text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:scale-105 active:enabled:scale-95 transition-all shadow-lg flex items-center justify-center gap-2 whitespace-nowrap"
+                                <a
+                                    href={farmerRegState ? farmerRegPortals[farmerRegState] : undefined}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => { if (!farmerRegState) e.preventDefault(); }}
+                                    className={`px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl bg-white text-[#1a5c2e] font-black text-xs md:text-sm transition-all shadow-lg flex items-center justify-center gap-2 whitespace-nowrap ${!farmerRegState ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}`}
                                 >
                                     <span className="material-symbols-outlined text-base md:text-lg">open_in_new</span>
                                     Portal
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -108,13 +175,16 @@ export default function FarmerServicesGrid() {
                                         <option key={state} value={state} className="text-gray-800">{state}</option>
                                     ))}
                                 </select>
-                                <button
-                                    disabled={!govSchemeState}
-                                    className="px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl bg-white text-[#1a5c2e] font-black text-xs md:text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:scale-105 active:enabled:scale-95 transition-all shadow-lg flex items-center justify-center gap-2 whitespace-nowrap"
+                                <a
+                                    href={govSchemeState ? govSchemePortals[govSchemeState] : undefined}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => { if (!govSchemeState) e.preventDefault(); }}
+                                    className={`px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl bg-white text-[#1a5c2e] font-black text-xs md:text-sm transition-all shadow-lg flex items-center justify-center gap-2 whitespace-nowrap ${!govSchemeState ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}`}
                                 >
                                     <span className="material-symbols-outlined text-base md:text-lg">open_in_new</span>
                                     Portal
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </div>
