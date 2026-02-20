@@ -28,17 +28,19 @@ export default function BorewellServicesPage() {
     });
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
     const handleBookConsultation = () => {
-        if (!formData.name || !formData.phone || !formData.location || !formData.preferredDate) {
-            alert('Please fill in all required fields');
-            return;
-        }
+        const errs: Record<string, string> = {};
+        if (!formData.name.trim()) errs.name = 'Name is required';
+        const digits = formData.phone.replace(/\D/g, '');
+        if (!digits) errs.phone = 'Phone number is required';
+        else if (digits.length !== 10) errs.phone = 'Enter a valid 10-digit number';
+        if (!formData.location.trim()) errs.location = 'Location is required';
+        if (!formData.preferredDate) errs.date = 'Please select a date';
+        if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
+        setFormErrors({});
         setShowSuccessModal(true);
-        setTimeout(() => {
-            setFormData({ depth: '', diameter: '', location: '', soilType: 'clay', name: '', phone: '', preferredDate: '' });
-            setShowSuccessModal(false);
-        }, 3000);
     };
 
     const services = [
@@ -144,30 +146,34 @@ export default function BorewellServicesPage() {
                                     <input
                                         type="text"
                                         value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none"
+                                        onChange={(e) => { setFormData({ ...formData, name: e.target.value }); setFormErrors(prev => { const {name, ...r} = prev; return r; }); }}
+                                        className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.name ? 'ring-2 ring-red-400' : ''}`}
                                         placeholder="Enter your name"
                                     />
+                                    {formErrors.name && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.name}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700">Phone Number</label>
                                     <input
                                         type="tel"
                                         value={formData.phone}
-                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none"
-                                        placeholder="+91 XXXXX XXXXX"
+                                        onChange={(e) => { setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const {phone, ...r} = prev; return r; }); }}
+                                        className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.phone ? 'ring-2 ring-red-400' : ''}`}
+                                        placeholder="10-digit number"
+                                        maxLength={10}
                                     />
+                                    {formErrors.phone && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.phone}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700">Farm Location</label>
                                     <input
                                         type="text"
                                         value={formData.location}
-                                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                        className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none"
+                                        onChange={(e) => { setFormData({ ...formData, location: e.target.value }); setFormErrors(prev => { const {location, ...r} = prev; return r; }); }}
+                                        className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.location ? 'ring-2 ring-red-400' : ''}`}
                                         placeholder="Village, District"
                                     />
+                                    {formErrors.location && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.location}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700">Preferred Visit Date</label>
@@ -193,21 +199,23 @@ export default function BorewellServicesPage() {
 
             {/* Success Modal */}
             {showSuccessModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-300">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowSuccessModal(false)}>
+                    <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()} style={{ animation: 'successPop 0.5s ease-out' }}>
                         <div className="flex justify-center mb-6">
-                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-cyan-600 flex items-center justify-center animate-bounce">
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-cyan-600 flex items-center justify-center">
                                 <span className="material-symbols-outlined text-white text-5xl">check_circle</span>
                             </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-center text-gray-900 dark:text-white mb-3">Thanks for Applying!</h2>
-                        <p className="text-center text-gray-600 dark:text-gray-300 mb-2 text-sm md:text-base">
+                        <h2 className="text-2xl md:text-3xl font-black text-center text-gray-900 dark:text-white mb-3">Consultation Booked!</h2>
+                        <p className="text-center text-gray-600 dark:text-gray-300 mb-4 text-sm md:text-base">
                             Your borewell consultation request has been submitted successfully.
                         </p>
-                        <p className="text-center text-gray-500 dark:text-gray-400 text-xs md:text-sm">
-                            Our team will contact you within <span className="font-bold text-primary">48 hours</span> to schedule your visit.
-                        </p>
+                        <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
+                            <p className="text-sm font-bold text-green-700 dark:text-green-400 text-center">📞 Our team will contact you soon to schedule your visit</p>
+                        </div>
+                        <button onClick={() => { setShowSuccessModal(false); setFormData({ depth: '', diameter: '', location: '', soilType: 'clay', name: '', phone: '', preferredDate: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">Done</button>
                     </div>
+                    <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>
                 </div>
             )}
         </div>

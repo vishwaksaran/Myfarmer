@@ -105,6 +105,7 @@ export default function GenericServicePage() {
     const [headerVisible, setHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [formData, setFormData] = useState({
         name: '',
         phone: '',
@@ -123,15 +124,15 @@ export default function GenericServicePage() {
     }, []);
 
     const handleFindProviders = () => {
-        if (!formData.name || !formData.phone || !formData.location) {
-            alert('Please fill in all required fields');
-            return;
-        }
+        const errs: Record<string, string> = {};
+        if (!formData.name.trim()) errs.name = 'Name is required';
+        const digits = formData.phone.replace(/\D/g, '');
+        if (!digits) errs.phone = 'Phone number is required';
+        else if (digits.length !== 10) errs.phone = 'Enter a valid 10-digit number';
+        if (!formData.location.trim()) errs.location = 'Location is required';
+        if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
+        setFormErrors({});
         setShowSuccessModal(true);
-        setTimeout(() => {
-            setFormData({ name: '', phone: '', location: '', date: '' });
-            setShowSuccessModal(false);
-        }, 3000);
     };
 
     if (!service) {
@@ -237,27 +238,37 @@ export default function GenericServicePage() {
                                 <p className="text-sm text-gray-500 mb-6">Fill details to get callbacks from providers</p>
 
                                 <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-                                    <input 
-                                        type="text" 
-                                        placeholder="Your Name"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                        className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-primary outline-none" 
-                                    />
-                                    <input 
-                                        type="tel" 
-                                        placeholder="Phone Number"
-                                        value={formData.phone}
-                                        onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                                        className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-primary outline-none" 
-                                    />
-                                    <input 
-                                        type="text" 
-                                        placeholder="Location/Village"
-                                        value={formData.location}
-                                        onChange={(e) => setFormData({...formData, location: e.target.value})}
-                                        className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-primary outline-none" 
-                                    />
+                                    <div>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Your Name *"
+                                            value={formData.name}
+                                            onChange={(e) => { setFormData({...formData, name: e.target.value}); setFormErrors(prev => { const {name, ...r} = prev; return r; }); }}
+                                            className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 ${formErrors.name ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none`}
+                                        />
+                                        {formErrors.name && <p className="text-red-500 text-xs mt-1 ml-1">{formErrors.name}</p>}
+                                    </div>
+                                    <div>
+                                        <input 
+                                            type="tel" 
+                                            placeholder="Phone Number (10 digits) *"
+                                            value={formData.phone}
+                                            onChange={(e) => { setFormData({...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10)}); setFormErrors(prev => { const {phone, ...r} = prev; return r; }); }}
+                                            className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 ${formErrors.phone ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none`}
+                                            maxLength={10}
+                                        />
+                                        {formErrors.phone && <p className="text-red-500 text-xs mt-1 ml-1">{formErrors.phone}</p>}
+                                    </div>
+                                    <div>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Location/Village *"
+                                            value={formData.location}
+                                            onChange={(e) => { setFormData({...formData, location: e.target.value}); setFormErrors(prev => { const {location, ...r} = prev; return r; }); }}
+                                            className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 ${formErrors.location ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none`}
+                                        />
+                                        {formErrors.location && <p className="text-red-500 text-xs mt-1 ml-1">{formErrors.location}</p>}
+                                    </div>
                                     <input 
                                         type="date"
                                         value={formData.date}
@@ -281,17 +292,21 @@ export default function GenericServicePage() {
 
             {/* Success Modal */}
             {showSuccessModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="mx-4 max-w-md rounded-3xl bg-white dark:bg-gray-800 p-6 md:p-8 text-center shadow-2xl animate-in fade-in scale-in duration-300">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowSuccessModal(false)}>
+                    <div className="mx-4 max-w-md rounded-3xl bg-white dark:bg-gray-800 p-6 md:p-8 text-center shadow-2xl" onClick={e => e.stopPropagation()} style={{ animation: 'successPop 0.5s ease-out' }}>
                         <div className="flex justify-center mb-4 md:mb-6">
-                            <div className={`inline-flex items-center justify-center size-16 md:size-20 rounded-full ${colors.bg} animate-bounce`}>
+                            <div className={`inline-flex items-center justify-center size-16 md:size-20 rounded-full ${colors.bg}`}>
                                 <span className="material-symbols-outlined text-4xl md:text-5xl text-white">check_circle</span>
                             </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">Thanks for Applying!</h2>
-                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-1">Your {service.title.toLowerCase()} booking request has been submitted successfully.</p>
-                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">Our team will contact you within 48 hours to connect you with verified service providers.</p>
+                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">Booking Submitted!</h2>
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4">Your {service.title.toLowerCase()} booking request has been submitted successfully.</p>
+                        <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
+                            <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will contact you soon to connect with verified providers</p>
+                        </div>
+                        <button onClick={() => { setShowSuccessModal(false); setFormData({ name: '', phone: '', location: '', date: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">Done</button>
                     </div>
+                    <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>
                 </div>
             )}
         </div>

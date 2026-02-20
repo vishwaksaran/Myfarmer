@@ -168,6 +168,7 @@ export default function BecomeSellerPage() {
     const [showSuccess, setShowSuccess] = useState(false);
     const [showForm, setShowForm] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const currentFormSteps = formStepsConfig[selectedType] || formStepsConfig['farmer-seller'];
@@ -175,6 +176,35 @@ export default function BecomeSellerPage() {
 
     const handleFieldChange = (name: string, value: string) => {
         setFormValues(prev => ({ ...prev, [name]: value }));
+        if (fieldErrors[name]) setFieldErrors(prev => ({ ...prev, [name]: '' }));
+    };
+
+    const validateField = (name: string, value: string, type: string): string => {
+        if (!value.trim()) return '';
+        if (name === 'phone' && !/^\d{10}$/.test(value.replace(/[\s+-]/g, '').slice(-10))) return 'Enter a valid 10-digit phone number';
+        if (type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) return 'Enter a valid email address';
+        if (name === 'aadhaarNumber' && !/^\d{12}$/.test(value.replace(/\s/g, ''))) return 'Enter a valid 12-digit Aadhaar number';
+        if (name === 'panNumber' && !/^[A-Z]{5}\d{4}[A-Z]$/.test(value.trim().toUpperCase())) return 'Enter a valid PAN (e.g. ABCDE1234F)';
+        if (name === 'ifscCode' && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(value.trim().toUpperCase())) return 'Enter a valid IFSC code';
+        if (name === 'gstNumber' && value.trim() && !/^\d{2}[A-Z]{5}\d{4}[A-Z]\d[Z][A-Z0-9]$/.test(value.trim().toUpperCase())) return 'Enter a valid GST number';
+        return '';
+    };
+
+    const validateCurrentStep = (): boolean => {
+        const step = currentFormSteps[currentStep];
+        if (!step.fields.length) return true;
+        const newErrors: Record<string, string> = {};
+        for (const field of step.fields) {
+            const val = formValues[field.name] || '';
+            if (field.required && !val.trim()) {
+                newErrors[field.name] = `${field.label} is required`;
+            } else {
+                const err = validateField(field.name, val, field.type);
+                if (err) newErrors[field.name] = err;
+            }
+        }
+        setFieldErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
     const handleImageUpload = useCallback((files: FileList | null) => {
@@ -196,10 +226,11 @@ export default function BecomeSellerPage() {
     const handleDragLeave = useCallback((e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); }, []);
     const handleDrop = useCallback((e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); handleImageUpload(e.dataTransfer.files); }, [handleImageUpload]);
 
-    const nextStep = () => { if (currentStep < totalSteps - 1) setCurrentStep(prev => prev + 1); };
-    const prevStep = () => { if (currentStep > 0) setCurrentStep(prev => prev - 1); };
+    const nextStep = () => { if (currentStep < totalSteps - 1 && validateCurrentStep()) setCurrentStep(prev => prev + 1); };
+    const prevStep = () => { if (currentStep > 0) { setFieldErrors({}); setCurrentStep(prev => prev - 1); } };
     const handleSubmit = async () => {
         if (isSubmitting) return;
+        if (!validateCurrentStep()) return;
         setIsSubmitting(true);
 
         try {
@@ -405,17 +436,18 @@ export default function BecomeSellerPage() {
                                                 {field.label} {field.required && <span className="text-red-500">*</span>}
                                             </label>
                                             {field.type === 'select' ? (
-                                                <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-3.5">
+                                                <div className={`skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-3.5 ${fieldErrors[field.name] ? 'ring-2 ring-red-400' : ''}`}>
                                                     <select className="w-full border-none bg-transparent p-0 text-sm font-bold focus:ring-0 cursor-pointer" value={formValues[field.name] || ''} onChange={(e) => handleFieldChange(field.name, e.target.value)}>
                                                         <option value="">{field.placeholder}</option>
                                                         {field.options?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                                                     </select>
                                                 </div>
                                             ) : (
-                                                <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-3.5">
+                                                <div className={`skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-3.5 ${fieldErrors[field.name] ? 'ring-2 ring-red-400' : ''}`}>
                                                     <input className="w-full border-none bg-transparent p-0 text-sm font-bold focus:ring-0 placeholder:text-gray-300" placeholder={field.placeholder} type={field.type} value={formValues[field.name] || ''} onChange={(e) => handleFieldChange(field.name, e.target.value)} />
                                                 </div>
                                             )}
+                                            {fieldErrors[field.name] && <p className="text-red-500 text-xs mt-1 ml-1">{fieldErrors[field.name]}</p>}
                                         </div>
                                     ))}
                                 </div>

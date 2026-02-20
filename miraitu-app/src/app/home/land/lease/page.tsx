@@ -74,6 +74,7 @@ export default function LeaseLandPage() {
     const [photos, setPhotos] = useState<File[]>([]);
     const [previews, setPreviews] = useState<string[]>([]);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
     const [formData, setFormData] = useState({
         title: '',
         location: '',
@@ -87,6 +88,22 @@ export default function LeaseLandPage() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+        if (errors[e.target.name]) setErrors(prev => ({ ...prev, [e.target.name]: '' }));
+    };
+
+    const validate = () => {
+        const newErrors: Record<string, string> = {};
+        if (!formData.title.trim()) newErrors.title = 'Land title is required';
+        if (!formData.location.trim()) newErrors.location = 'Location is required';
+        if (!formData.area.trim()) newErrors.area = 'Area is required';
+        else if (isNaN(Number(formData.area))) newErrors.area = 'Enter a valid number';
+        if (!formData.leasePrice.trim()) newErrors.leasePrice = 'Lease price is required';
+        if (!formData.duration) newErrors.duration = 'Duration is required';
+        if (!formData.contactName.trim()) newErrors.contactName = 'Name is required';
+        if (!formData.contactPhone.trim()) newErrors.contactPhone = 'Phone number is required';
+        else if (!/^\d{10}$/.test(formData.contactPhone.replace(/[\s+-]/g, '').slice(-10))) newErrors.contactPhone = 'Enter a valid 10-digit phone number';
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,8 +139,9 @@ export default function LeaseLandPage() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!validate()) return;
         setShowSuccessModal(true);
-        setTimeout(() => setShowSuccessModal(false), 5000);
+        setTimeout(() => setShowSuccessModal(false), 6000);
     };
 
     return (
@@ -273,26 +291,30 @@ export default function LeaseLandPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                                     <div>
                                         <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Land Title</label>
-                                        <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. 10 Acres Paddy Land" className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm md:text-base" />
+                                        <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. 10 Acres Paddy Land" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.title ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
+                                        {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Location</label>
-                                        <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="e.g. Bellary, Karnataka" className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm md:text-base" />
+                                        <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="e.g. Bellary, Karnataka" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.location ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
+                                        {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                                     <div>
                                         <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Area (Acres)</label>
-                                        <input type="text" name="area" value={formData.area} onChange={handleChange} placeholder="e.g. 10" className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm md:text-base" />
+                                        <input type="text" name="area" value={formData.area} onChange={handleChange} placeholder="e.g. 10" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.area ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
+                                        {errors.area && <p className="text-red-500 text-xs mt-1">{errors.area}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Lease Price (₹/acre/year)</label>
-                                        <input type="text" name="leasePrice" value={formData.leasePrice} onChange={handleChange} placeholder="e.g. 50000" className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm md:text-base" />
+                                        <input type="text" name="leasePrice" value={formData.leasePrice} onChange={handleChange} placeholder="e.g. 50000" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.leasePrice ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
+                                        {errors.leasePrice && <p className="text-red-500 text-xs mt-1">{errors.leasePrice}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Lease Duration</label>
-                                        <select name="duration" value={formData.duration} onChange={handleChange} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm md:text-base">
+                                        <select name="duration" value={formData.duration} onChange={handleChange} className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.duration ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`}>
                                             <option value="">Select Duration</option>
                                             <option>1 Year</option>
                                             <option>2 Years</option>
@@ -355,11 +377,13 @@ export default function LeaseLandPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                                     <div>
                                         <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Your Name</label>
-                                        <input type="text" name="contactName" value={formData.contactName} onChange={handleChange} placeholder="Full Name" className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm md:text-base" />
+                                        <input type="text" name="contactName" value={formData.contactName} onChange={handleChange} placeholder="Full Name" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.contactName ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
+                                        {errors.contactName && <p className="text-red-500 text-xs mt-1">{errors.contactName}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Phone Number</label>
-                                        <input type="tel" name="contactPhone" value={formData.contactPhone} onChange={handleChange} placeholder="+91 XXXXX XXXXX" className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm md:text-base" />
+                                        <input type="tel" name="contactPhone" value={formData.contactPhone} onChange={handleChange} placeholder="+91 XXXXX XXXXX" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.contactPhone ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
+                                        {errors.contactPhone && <p className="text-red-500 text-xs mt-1">{errors.contactPhone}</p>}
                                     </div>
                                 </div>
 
@@ -374,23 +398,26 @@ export default function LeaseLandPage() {
 
                 {/* Success Modal */}
                 {showSuccessModal && (
-                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50">
-                        <div className="bg-white dark:bg-[#1a231a] rounded-2xl md:rounded-3xl p-6 md:p-10 shadow-2xl max-w-sm w-full animate-bounce">
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50" onClick={() => setShowSuccessModal(false)}>
+                        <div className="bg-white dark:bg-[#1a231a] rounded-2xl md:rounded-3xl p-6 md:p-10 shadow-2xl max-w-sm w-full" onClick={e => e.stopPropagation()} style={{ animation: 'successPop 0.5s ease-out' }}>
                             <div className="text-center">
                                 <div className="w-16 md:w-20 h-16 md:h-20 mx-auto mb-4 md:mb-6 bg-gradient-to-br from-teal-400 to-cyan-600 rounded-full flex items-center justify-center shadow-lg">
                                     <span className="material-symbols-outlined text-3xl md:text-4xl text-white">check</span>
                                 </div>
-                                <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">Listing Posted!</h2>
+                                <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">Lease Listing Submitted!</h2>
                                 <p className="text-base md:text-lg text-gray-600 dark:text-gray-300 font-bold mb-1">Perfect! 🌟</p>
-                                <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mb-6 md:mb-8">The Miraitu team will contact you soon to verify and promote your listing.</p>
-                                <div className="flex items-center justify-center gap-3 text-primary font-bold text-sm md:text-base">
-                                    <span className="material-symbols-outlined text-xl animate-pulse">handshake</span>
-                                    Let's grow together!
+                                <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mb-4">Your land lease listing has been submitted successfully. Our team will verify and promote your listing to interested farmers.</p>
+                                <div className="bg-teal-50 dark:bg-teal-900/20 rounded-xl px-4 py-3 mb-4">
+                                    <p className="text-sm font-bold text-teal-700 dark:text-teal-400">📞 Our team will contact you shortly</p>
                                 </div>
+                                <button onClick={() => setShowSuccessModal(false)} className="w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors">
+                                    Done
+                                </button>
                             </div>
                         </div>
                     </div>
                 )}
+                <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>
             </div>
         </div>
     );

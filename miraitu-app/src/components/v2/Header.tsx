@@ -260,7 +260,7 @@ export default function Header() {
                         </Link>
 
                         {/* Search Bar */}
-                        <div className="hidden md:block flex-1 max-w-md mx-4 relative" ref={searchRef}>
+                        <div className="hidden md:block flex-1 max-w-md mx-4 relative" ref={searchRef} onClick={(e) => e.stopPropagation()}>
                             <div className="skeuo-inset flex h-10 w-full items-center rounded-xl bg-[#ebf0ea] dark:bg-[#222d21] px-4">
                                 <span className="material-symbols-outlined text-primary/60 text-lg">search</span>
                                 <input
@@ -273,7 +273,7 @@ export default function Header() {
                                     onFocus={() => { if (debouncedQuery.trim()) setShowSearchResults(true); }}
                                 />
                                 {searchQuery && (
-                                    <button onClick={() => { setSearchQuery(''); setDebouncedQuery(''); setShowSearchResults(false); }} className="text-gray-400 hover:text-gray-600 transition-colors">
+                                    <button type="button" onClick={(e) => { e.stopPropagation(); e.preventDefault(); setSearchQuery(''); setDebouncedQuery(''); setShowSearchResults(false); }} className="text-gray-400 hover:text-gray-600 transition-colors p-1">
                                         <span className="material-symbols-outlined text-lg">close</span>
                                     </button>
                                 )}
@@ -281,7 +281,7 @@ export default function Header() {
 
                             {/* Desktop Search Suggestions */}
                             {showSearchResults && searchResults.length > 0 && (
-                                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1e2a1c] rounded-2xl shadow-2xl border border-black/5 dark:border-white/10 z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1e2a1c] rounded-2xl shadow-2xl border border-black/5 dark:border-white/10 z-[100] animate-in fade-in slide-in-from-top-2 duration-200 min-w-[280px]" onClick={(e) => e.stopPropagation()}>
                                     <div className="p-2">
                                         <p className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Suggestions</p>
                                         {searchResults.map((item, index) => (
@@ -514,7 +514,7 @@ export default function Header() {
                     </div>
 
                     {/* Mobile Search Bar */}
-                    <div className="md:hidden mt-2 relative" ref={mobileSearchRef}>
+                    <div className="md:hidden mt-2 relative" ref={mobileSearchRef} onClick={(e) => e.stopPropagation()}>
                         <div className="skeuo-inset flex h-10 w-full items-center rounded-xl bg-[#ebf0ea] dark:bg-[#222d21] px-4">
                             <span className="material-symbols-outlined text-primary/60 text-lg">search</span>
                             <input
@@ -527,7 +527,7 @@ export default function Header() {
                                 onFocus={() => { if (debouncedQuery.trim()) setShowSearchResults(true); }}
                             />
                             {searchQuery && (
-                                <button onClick={() => { setSearchQuery(''); setDebouncedQuery(''); setShowSearchResults(false); }} className="text-gray-400 hover:text-gray-600 transition-colors">
+                                <button type="button" onClick={(e) => { e.stopPropagation(); e.preventDefault(); setSearchQuery(''); setDebouncedQuery(''); setShowSearchResults(false); }} className="text-gray-400 hover:text-gray-600 transition-colors p-1">
                                     <span className="material-symbols-outlined text-lg">close</span>
                                 </button>
                             )}
@@ -535,7 +535,7 @@ export default function Header() {
 
                         {/* Mobile Search Suggestions */}
                         {showSearchResults && searchResults.length > 0 && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1e2a1c] rounded-2xl shadow-2xl border border-black/5 dark:border-white/10 z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1e2a1c] rounded-2xl shadow-2xl border border-black/5 dark:border-white/10 z-[100] animate-in fade-in slide-in-from-top-2 duration-200 min-w-[280px]" onClick={(e) => e.stopPropagation()}>
                                 <div className="p-2">
                                     <p className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Suggestions</p>
                                     {searchResults.map((item, index) => (

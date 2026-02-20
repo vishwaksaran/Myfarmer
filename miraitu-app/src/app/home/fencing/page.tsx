@@ -7,6 +7,7 @@ export default function FencingInfrastructurePage() {
     const [headerVisible, setHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [formData, setFormData] = useState({
         full_name: '',
         phone: '',
@@ -26,15 +27,15 @@ export default function FencingInfrastructurePage() {
     }, []);
 
     const handleRequestFencingQuote = () => {
-        if (!formData.full_name || !formData.phone || !formData.location) {
-            alert('Please fill in all required fields');
-            return;
-        }
+        const errs: Record<string, string> = {};
+        if (!formData.full_name.trim()) errs.full_name = 'Name is required';
+        const digits = formData.phone.replace(/\D/g, '');
+        if (!digits) errs.phone = 'Phone number is required';
+        else if (digits.length !== 10) errs.phone = 'Enter a valid 10-digit number';
+        if (!formData.location.trim()) errs.location = 'Location is required';
+        if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
+        setFormErrors({});
         setShowSuccessModal(true);
-        setTimeout(() => {
-            setFormData({ full_name: '', phone: '', location: '', fencing_length: '', preferred_timeline: 'Within 1 week' });
-            setShowSuccessModal(false);
-        }, 3000);
     };
 
     const [selectedFencingType, setSelectedFencingType] = useState<string>('chain-link');
@@ -260,20 +261,23 @@ export default function FencingInfrastructurePage() {
                                         <input
                                             type="text"
                                             value={formData.full_name}
-                                            onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                                            className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none"
+                                            onChange={(e) => { setFormData({ ...formData, full_name: e.target.value }); setFormErrors(prev => { const {full_name, ...r} = prev; return r; }); }}
+                                            className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.full_name ? 'ring-2 ring-red-400' : ''}`}
                                             placeholder="Enter your name"
                                         />
+                                        {formErrors.full_name && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.full_name}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700">Phone Number *</label>
                                         <input
                                             type="tel"
                                             value={formData.phone}
-                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                            className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none"
-                                            placeholder="+91 XXXXX XXXXX"
+                                            onChange={(e) => { setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const {phone, ...r} = prev; return r; }); }}
+                                            className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.phone ? 'ring-2 ring-red-400' : ''}`}
+                                            placeholder="10-digit number"
+                                            maxLength={10}
                                         />
+                                        {formErrors.phone && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.phone}</p>}
                                     </div>
                                 </div>
                                 <div>
@@ -281,10 +285,11 @@ export default function FencingInfrastructurePage() {
                                     <input
                                         type="text"
                                         value={formData.location}
-                                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                        className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none"
+                                        onChange={(e) => { setFormData({ ...formData, location: e.target.value }); setFormErrors(prev => { const {location, ...r} = prev; return r; }); }}
+                                        className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.location ? 'ring-2 ring-red-400' : ''}`}
                                         placeholder="Village, District, State"
                                     />
+                                    {formErrors.location && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.location}</p>}
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                                     <div>
@@ -331,17 +336,21 @@ export default function FencingInfrastructurePage() {
 
             {/* Success Modal */}
             {showSuccessModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="mx-4 max-w-md rounded-3xl bg-white dark:bg-gray-800 p-6 md:p-8 text-center shadow-2xl animate-in fade-in scale-in duration-300">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowSuccessModal(false)}>
+                    <div className="mx-4 max-w-md rounded-3xl bg-white dark:bg-gray-800 p-6 md:p-8 text-center shadow-2xl" onClick={e => e.stopPropagation()} style={{ animation: 'successPop 0.5s ease-out' }}>
                         <div className="flex justify-center mb-4 md:mb-6">
-                            <div className="inline-flex items-center justify-center size-16 md:size-20 rounded-full bg-gradient-to-br from-green-400 to-primary animate-bounce">
+                            <div className="inline-flex items-center justify-center size-16 md:size-20 rounded-full bg-gradient-to-br from-green-400 to-primary">
                                 <span className="material-symbols-outlined text-4xl md:text-5xl text-white">check_circle</span>
                             </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-primary-dark dark:text-white mb-2 md:mb-3">Thanks for Applying!</h2>
-                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-1">Your fencing quote request has been submitted successfully.</p>
-                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">Our team will contact you within 48 hours to finalize your fencing installation.</p>
+                        <h2 className="text-2xl md:text-3xl font-black text-primary-dark dark:text-white mb-2 md:mb-3">Quote Requested!</h2>
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4">Your fencing quote request has been submitted successfully.</p>
+                        <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
+                            <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will contact you soon to finalize your fencing installation</p>
+                        </div>
+                        <button onClick={() => { setShowSuccessModal(false); setFormData({ full_name: '', phone: '', location: '', fencing_length: '', preferred_timeline: 'Within 1 week' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">Done</button>
                     </div>
+                    <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>
                 </div>
             )}
         </div>

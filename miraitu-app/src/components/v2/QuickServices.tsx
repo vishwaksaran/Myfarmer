@@ -118,14 +118,16 @@ export default function QuickServices() {
                     <div
                         className="relative z-10 w-full max-w-lg bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl overflow-hidden animate-fade-in-up"
                         onClick={(e) => e.stopPropagation()}
+                        data-no-auth
                     >
                         {/* Header */}
                         <div className="relative bg-gradient-to-r from-primary to-green-500 px-8 py-6 text-white">
                             <button
-                                onClick={() => setShowModal(false)}
-                                className="absolute top-4 right-4 h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setShowModal(false); }}
+                                className="absolute top-4 right-4 z-10 h-10 w-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors cursor-pointer"
                             >
-                                <span className="material-symbols-outlined text-white text-lg">close</span>
+                                <span className="material-symbols-outlined text-white text-xl">close</span>
                             </button>
                             <div className="flex items-center gap-3">
                                 <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center">
@@ -141,11 +143,14 @@ export default function QuickServices() {
                         {/* Options Grid */}
                         <div className="p-6 grid grid-cols-2 gap-4">
                             {buySellOptions.map((opt) => (
-                                <a
+                                <div
                                     key={opt.label}
-                                    href={opt.link}
                                     className="group/card"
-                                    onClick={() => setShowModal(false)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowModal(false);
+                                        router.push(opt.link);
+                                    }}
                                 >
                                     <div className="skeuo-card-hover flex flex-col items-center text-center p-5 rounded-2xl cursor-pointer h-full transition-all hover:shadow-xl hover:-translate-y-1 border-2 border-transparent hover:border-primary/30">
                                         <div className={`h-14 w-14 rounded-2xl bg-gradient-to-br ${opt.color} flex items-center justify-center mb-3 shadow-lg group-hover/card:scale-110 transition-transform`}>
@@ -154,7 +159,7 @@ export default function QuickServices() {
                                         <h4 className="font-black text-sm mb-1 group-hover/card:text-primary transition-colors">{opt.label}</h4>
                                         <p className="text-[11px] text-gray-500 leading-snug">{opt.desc}</p>
                                     </div>
-                                </a>
+                                </div>
                             ))}
                         </div>
                     </div>

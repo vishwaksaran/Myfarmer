@@ -29,18 +29,19 @@ export default function StoragePage() {
     });
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [estimatedCost, setEstimatedCost] = useState<string | null>(null);
 
     const handleFindGodown = () => {
-        if (!formData.full_name || !formData.phone || !formData.location) {
-            alert('Please fill in all required fields');
-            return;
-        }
+        const errs: Record<string, string> = {};
+        if (!formData.full_name.trim()) errs.full_name = 'Name is required';
+        const digits = formData.phone.replace(/\D/g, '');
+        if (!digits) errs.phone = 'Phone number is required';
+        else if (digits.length !== 10) errs.phone = 'Enter a valid 10-digit number';
+        if (!formData.location.trim()) errs.location = 'Location is required';
+        if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
+        setFormErrors({});
         setShowSuccessModal(true);
-        setTimeout(() => {
-            setFormData({ full_name: '', phone: '', location: '', crop_type: 'wheat', storage_type: 'dry', quantity: '', duration: '' });
-            setShowSuccessModal(false);
-        }, 3000);
     };
 
     const handleCalculate = () => {
@@ -216,30 +217,34 @@ export default function StoragePage() {
                                     <input
                                         type="text"
                                         value={formData.full_name}
-                                        onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                                        className="w-full rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white"
+                                        onChange={(e) => { setFormData({ ...formData, full_name: e.target.value }); setFormErrors(prev => { const {full_name, ...r} = prev; return r; }); }}
+                                        className={`w-full rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base bg-gray-50 dark:bg-gray-700 border-2 ${formErrors.full_name ? 'border-red-400' : 'border-transparent'} focus:border-green-500 outline-none transition-colors dark:text-white`}
                                         placeholder="Enter your name"
                                     />
+                                    {formErrors.full_name && <p className="text-red-500 text-xs mt-1">{formErrors.full_name}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700 dark:text-gray-300">Phone Number</label>
                                     <input
                                         type="tel"
                                         value={formData.phone}
-                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        className="w-full rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white"
-                                        placeholder="+91 XXXXX XXXXX"
+                                        onChange={(e) => { setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const {phone, ...r} = prev; return r; }); }}
+                                        className={`w-full rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base bg-gray-50 dark:bg-gray-700 border-2 ${formErrors.phone ? 'border-red-400' : 'border-transparent'} focus:border-green-500 outline-none transition-colors dark:text-white`}
+                                        placeholder="10-digit number"
+                                        maxLength={10}
                                     />
+                                    {formErrors.phone && <p className="text-red-500 text-xs mt-1">{formErrors.phone}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700 dark:text-gray-300">Location</label>
                                     <input
                                         type="text"
                                         value={formData.location}
-                                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                        className="w-full rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white"
+                                        onChange={(e) => { setFormData({ ...formData, location: e.target.value }); setFormErrors(prev => { const {location, ...r} = prev; return r; }); }}
+                                        className={`w-full rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base bg-gray-50 dark:bg-gray-700 border-2 ${formErrors.location ? 'border-red-400' : 'border-transparent'} focus:border-green-500 outline-none transition-colors dark:text-white`}
                                         placeholder="Village, District"
                                     />
+                                    {formErrors.location && <p className="text-red-500 text-xs mt-1">{formErrors.location}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700 dark:text-gray-300">Crop / Item</label>
@@ -265,17 +270,21 @@ export default function StoragePage() {
 
             {/* Success Modal */}
             {showSuccessModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="mx-4 max-w-md rounded-3xl bg-white dark:bg-gray-800 p-6 md:p-8 text-center shadow-2xl animate-in fade-in scale-in duration-300">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowSuccessModal(false)}>
+                    <div className="mx-4 max-w-md rounded-3xl bg-white dark:bg-gray-800 p-6 md:p-8 text-center shadow-2xl" onClick={e => e.stopPropagation()} style={{ animation: 'successPop 0.5s ease-out' }}>
                         <div className="flex justify-center mb-4 md:mb-6">
-                            <div className="inline-flex items-center justify-center size-16 md:size-20 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 animate-bounce">
+                            <div className="inline-flex items-center justify-center size-16 md:size-20 rounded-full bg-gradient-to-br from-green-400 to-emerald-600">
                                 <span className="material-symbols-outlined text-4xl md:text-5xl text-white">check_circle</span>
                             </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">Thanks for Applying!</h2>
-                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-1">Your storage space request has been submitted successfully.</p>
-                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">Our team will contact you within 48 hours to connect you with verified godown owners.</p>
+                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">Booking Submitted!</h2>
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4">Your storage space request has been submitted successfully.</p>
+                        <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
+                            <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will contact you soon to connect with verified godown owners</p>
+                        </div>
+                        <button onClick={() => { setShowSuccessModal(false); setFormData({ full_name: '', phone: '', location: '', crop_type: 'wheat', storage_type: 'dry', quantity: '', duration: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">Done</button>
                     </div>
+                    <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>
                 </div>
             )}
         </div>

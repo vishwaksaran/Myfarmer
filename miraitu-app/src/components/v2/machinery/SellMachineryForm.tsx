@@ -56,6 +56,8 @@ interface SellMachineryFormProps {
 export default function SellMachineryForm({ category = 'tractors' }: SellMachineryFormProps) {
     const [currentStep, setCurrentStep] = useState(1);
     const [selectedCategory, setSelectedCategory] = useState(category);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [stepErrors, setStepErrors] = useState<string[]>([]);
     const [formData, setFormData] = useState({
         category: category,
         brand: '',
@@ -82,6 +84,21 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                 images: [...prev.images, ...Array.from(e.target.files!)],
             }));
         }
+    };
+
+    const validateStep = (step: number): boolean => {
+        const errs: string[] = [];
+        if (step === 1) {
+            if (!formData.brand) errs.push('Please select a brand');
+            if (!formData.model.trim()) errs.push('Please enter the model name');
+            if (!formData.year) errs.push('Please select year of purchase');
+            if (!formData.hp) errs.push('Please select HP range');
+        } else if (step === 3) {
+            if (!formData.price.trim()) errs.push('Please enter your asking price');
+            else if (isNaN(Number(formData.price.replace(/,/g, '')))) errs.push('Enter a valid price');
+        }
+        setStepErrors(errs);
+        return errs.length === 0;
     };
 
     return (
@@ -453,9 +470,14 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                     <button
                         onClick={() => {
                             if (currentStep < steps.length) {
-                                setCurrentStep(prev => prev + 1);
+                                if (validateStep(currentStep)) {
+                                    setStepErrors([]);
+                                    setCurrentStep(prev => prev + 1);
+                                }
                             } else {
-                                alert('Listing submitted successfully!');
+                                if (validateStep(currentStep)) {
+                                    setShowSuccess(true);
+                                }
                             }
                         }}
                         className="flex items-center gap-2 px-8 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors"
@@ -464,7 +486,41 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                         <span className="material-symbols-outlined">arrow_forward</span>
                     </button>
                 </div>
+
+                {/* Validation Errors */}
+                {stepErrors.length > 0 && (
+                    <div className="mt-4 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                        {stepErrors.map((err, i) => (
+                            <p key={i} className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-sm">error</span>{err}
+                            </p>
+                        ))}
+                    </div>
+                )}
             </div>
+
+            {/* Success Modal */}
+            {showSuccess && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50" onClick={() => setShowSuccess(false)}>
+                    <div className="bg-white dark:bg-[#1a231a] rounded-2xl md:rounded-3xl p-6 md:p-10 shadow-2xl max-w-sm w-full" onClick={e => e.stopPropagation()} style={{ animation: 'successPop 0.5s ease-out' }}>
+                        <div className="text-center">
+                            <div className="w-16 md:w-20 h-16 md:h-20 mx-auto mb-4 md:mb-6 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+                                <span className="material-symbols-outlined text-3xl md:text-4xl text-white">check</span>
+                            </div>
+                            <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">Machinery Listed Successfully!</h2>
+                            <p className="text-base md:text-lg text-gray-600 dark:text-gray-300 font-bold mb-1">Great job! 🚜</p>
+                            <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mb-4">Your machinery listing has been submitted for review. Our team will verify the details and connect you with interested buyers.</p>
+                            <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-4">
+                                <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will contact you soon</p>
+                            </div>
+                            <button onClick={() => setShowSuccess(false)} className="w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors">
+                                Done
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>
         </div>
     );
 }

@@ -62,12 +62,12 @@ export default function ToolboxPage() {
     ];
 
     const moreTools = [
-        { tName: 'toolboxPage.weatherAlerts', icon: 'thunderstorm', color: 'text-blue-500' },
-        { tName: 'toolboxPage.soilTesting', icon: 'science', color: 'text-amber-600' },
-        { tName: 'toolboxPage.marketRates', icon: 'trending_up', color: 'text-green-600' },
-        { tName: 'toolboxPage.profitEstimator', icon: 'payments', color: 'text-purple-600' },
-        { tName: 'toolboxPage.irrigationCalc', icon: 'water_drop', color: 'text-cyan-600' },
-        { tName: 'toolboxPage.fertilizerGuide', icon: 'compost', color: 'text-orange-600' },
+        { tName: 'toolboxPage.weatherAlerts', icon: 'thunderstorm', color: 'text-blue-500', path: '/home/toolbox/weather-alerts' },
+        { tName: 'toolboxPage.soilTesting', icon: 'science', color: 'text-amber-600', path: '/home/toolbox/soil-testing' },
+        { tName: 'toolboxPage.marketRates', icon: 'trending_up', color: 'text-green-600', path: '/home/toolbox/market-rates' },
+        { tName: 'toolboxPage.profitEstimator', icon: 'payments', color: 'text-purple-600', path: '/home/toolbox/profit-estimator' },
+        { tName: 'toolboxPage.irrigationCalc', icon: 'water_drop', color: 'text-cyan-600', path: '/home/toolbox/irrigation-calc' },
+        { tName: 'toolboxPage.fertilizerGuide', icon: 'compost', color: 'text-orange-600', path: '/home/toolbox/fertilizer-guide' },
     ];
 
     return (
@@ -185,15 +185,16 @@ export default function ToolboxPage() {
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                             {moreTools.map((item) => (
-                                <button
+                                <Link
                                     key={item.tName}
+                                    href={item.path}
                                     className="skeuo-card rounded-2xl p-6 flex flex-col items-center gap-3 hover:-translate-y-1 transition-all group"
                                 >
                                     <div className={`h-14 w-14 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center ${item.color} group-hover:scale-110 transition-transform`}>
                                         <span className="material-symbols-outlined text-2xl">{item.icon}</span>
                                     </div>
                                     <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 text-center">{t(item.tName)}</span>
-                                </button>
+                                </Link>
                             ))}
                         </div>
                     </section>

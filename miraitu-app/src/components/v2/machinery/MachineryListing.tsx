@@ -30,15 +30,36 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
     const [selectedItem, setSelectedItem] = useState<MachineryItem | null>(null);
     const [showQuoteModal, setShowQuoteModal] = useState(false);
     const [submitSuccess, setSubmitSuccess] = useState(false);
+    const [quotePhone, setQuotePhone] = useState('');
+    const [quoteEmail, setQuoteEmail] = useState('');
+    const [quoteErrors, setQuoteErrors] = useState<Record<string, string>>({});
 
     const handleQuoteSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        const errs: Record<string, string> = {};
+        const digits = quotePhone.replace(/\D/g, '');
+        if (!digits) {
+            errs.phone = 'Mobile number is required';
+        } else if (digits.length !== 10) {
+            errs.phone = 'Mobile number must be exactly 10 digits';
+        }
+        if (quoteEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(quoteEmail)) {
+            errs.email = 'Enter a valid email address';
+        }
+        if (Object.keys(errs).length > 0) {
+            setQuoteErrors(errs);
+            return;
+        }
+        setQuoteErrors({});
         setSubmitSuccess(true);
     };
 
     const closeQuoteModal = () => {
         setShowQuoteModal(false);
         setSelectedItem(null);
+        setQuotePhone('');
+        setQuoteEmail('');
+        setQuoteErrors({});
         setTimeout(() => setSubmitSuccess(false), 300);
     };
 
@@ -358,14 +379,17 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                     <span className="material-symbols-outlined text-green-500 text-3xl">check_circle</span>
                                 </div>
                                 <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Request Submitted!</h4>
-                                <p className="text-gray-500 dark:text-gray-400 mb-8">
-                                    Thank you for your interest. Our team will get back to you shortly with the best price for {selectedItem.name}.
+                                <p className="text-gray-500 dark:text-gray-400 mb-4">
+                                    Thank you for your interest in {selectedItem.name}.
                                 </p>
+                                <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
+                                    <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will contact you soon with the best price</p>
+                                </div>
                                 <button
                                     onClick={closeQuoteModal}
-                                    className="w-full py-3 rounded-xl bg-gray-100 dark:bg-gray-800 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                    className="w-full py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-colors"
                                 >
-                                    Close
+                                    Done
                                 </button>
                             </div>
                         ) : (
@@ -396,18 +420,25 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                     <input
                                         type="tel"
                                         required
-                                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none transition-colors"
-                                        placeholder="+91 7448410198"
+                                        value={quotePhone}
+                                        onChange={e => { setQuotePhone(e.target.value.replace(/\D/g, '').slice(0, 10)); setQuoteErrors(prev => { const {phone, ...rest} = prev; return rest; }); }}
+                                        className={`w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 ${quoteErrors.phone ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none transition-colors`}
+                                        placeholder="7448410198"
+                                        maxLength={10}
                                     />
+                                    {quoteErrors.phone && <p className="text-red-500 text-xs mt-1">{quoteErrors.phone}</p>}
                                 </div>
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email (Optional)</label>
                                     <input
                                         type="email"
-                                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none transition-colors"
+                                        value={quoteEmail}
+                                        onChange={e => { setQuoteEmail(e.target.value); setQuoteErrors(prev => { const {email, ...rest} = prev; return rest; }); }}
+                                        className={`w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 ${quoteErrors.email ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none transition-colors`}
                                         placeholder="john@example.com"
                                     />
+                                    {quoteErrors.email && <p className="text-red-500 text-xs mt-1">{quoteErrors.email}</p>}
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">

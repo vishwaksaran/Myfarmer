@@ -9,6 +9,9 @@ export default function CTABanner() {
     const router = useRouter();
     const [isContactModalOpen, setIsContactModalOpen] = useState(false);
     const [callbackSubmitted, setCallbackSubmitted] = useState(false);
+    const [cbPhone, setCbPhone] = useState('');
+    const [cbName, setCbName] = useState('');
+    const [cbErrors, setCbErrors] = useState<Record<string, string>>({});
 
     // Placeholder contact details
     const contactNumber = "+91 74484 10198";
@@ -21,12 +24,14 @@ export default function CTABanner() {
 
     const handleCallbackRequest = (e: React.FormEvent) => {
         e.preventDefault();
+        const errs: Record<string, string> = {};
+        if (!cbName.trim()) errs.name = 'Name is required';
+        const digits = cbPhone.replace(/\D/g, '');
+        if (!digits) errs.phone = 'Phone number is required';
+        else if (digits.length !== 10) errs.phone = 'Enter a valid 10-digit number';
+        if (Object.keys(errs).length > 0) { setCbErrors(errs); return; }
+        setCbErrors({});
         setCallbackSubmitted(true);
-        // Simulate API call
-        setTimeout(() => {
-            setCallbackSubmitted(false);
-            setIsContactModalOpen(false);
-        }, 3000);
     };
 
     return (
@@ -129,7 +134,11 @@ export default function CTABanner() {
                                         <span className="material-symbols-outlined text-4xl">check_circle</span>
                                     </div>
                                     <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Request Received!</h4>
-                                    <p className="text-gray-500 dark:text-gray-400 text-sm">Our expert will call you shortly.</p>
+                                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">Our expert will call you shortly.</p>
+                                    <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-4">
+                                        <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will contact you soon</p>
+                                    </div>
+                                    <button onClick={() => { setIsContactModalOpen(false); setCallbackSubmitted(false); setCbName(''); setCbPhone(''); }} className="w-full py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-colors">Done</button>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
@@ -157,18 +166,29 @@ export default function CTABanner() {
 
                                     <form onSubmit={handleCallbackRequest} className="space-y-3 mt-4">
                                         <div className="space-y-3">
-                                            <input
-                                                type="text"
-                                                placeholder="Your Name"
-                                                className="w-full px-5 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-800 border-none outline-none focus:ring-2 focus:ring-primary/50 text-sm font-semibold text-gray-800 dark:text-white placeholder:text-gray-400 transition-all"
-                                                required
-                                            />
-                                            <input
-                                                type="tel"
-                                                placeholder="Phone Number"
-                                                className="w-full px-5 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-800 border-none outline-none focus:ring-2 focus:ring-primary/50 text-sm font-semibold text-gray-800 dark:text-white placeholder:text-gray-400 transition-all"
-                                                required
-                                            />
+                                            <div>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Your Name"
+                                                    value={cbName}
+                                                    onChange={e => { setCbName(e.target.value); setCbErrors(prev => { const {name, ...r} = prev; return r; }); }}
+                                                    className={`w-full px-5 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-800 border-none outline-none focus:ring-2 focus:ring-primary/50 text-sm font-semibold text-gray-800 dark:text-white placeholder:text-gray-400 transition-all ${cbErrors.name ? 'ring-2 ring-red-400' : ''}`}
+                                                    required
+                                                />
+                                                {cbErrors.name && <p className="text-red-500 text-xs mt-1 ml-1">{cbErrors.name}</p>}
+                                            </div>
+                                            <div>
+                                                <input
+                                                    type="tel"
+                                                    placeholder="Phone Number (10 digits)"
+                                                    value={cbPhone}
+                                                    onChange={e => { setCbPhone(e.target.value.replace(/\D/g, '').slice(0, 10)); setCbErrors(prev => { const {phone, ...r} = prev; return r; }); }}
+                                                    className={`w-full px-5 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-800 border-none outline-none focus:ring-2 focus:ring-primary/50 text-sm font-semibold text-gray-800 dark:text-white placeholder:text-gray-400 transition-all ${cbErrors.phone ? 'ring-2 ring-red-400' : ''}`}
+                                                    maxLength={10}
+                                                    required
+                                                />
+                                                {cbErrors.phone && <p className="text-red-500 text-xs mt-1 ml-1">{cbErrors.phone}</p>}
+                                            </div>
                                         </div>
                                         <button
                                             type="submit"

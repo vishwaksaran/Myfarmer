@@ -44,19 +44,22 @@ export default function VeterinarySection() {
         location: ''
     });
     const [showSuccess, setShowSuccess] = useState(false);
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
     const handleBookNow = (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!requireLogin()) return; // Enforce login
 
+        const errs: Record<string, string> = {};
+        if (!formData.name.trim()) errs.name = 'Name is required';
+        const digits = formData.mobile.replace(/\D/g, '');
+        if (!digits) errs.mobile = 'Mobile number is required';
+        else if (digits.length !== 10) errs.mobile = 'Enter a valid 10-digit number';
+        if (!formData.location.trim()) errs.location = 'Location is required';
+        if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
+        setFormErrors({});
         setShowSuccess(true);
-        // Reset form after 3 seconds or close modal
-        setTimeout(() => {
-            setShowSuccess(false);
-            setSelectedService(null);
-            setFormData({ name: '', mobile: '', location: '' });
-        }, 5000);
     };
 
     return (
@@ -166,10 +169,12 @@ export default function VeterinarySection() {
                                             required
                                             type="tel"
                                             value={formData.mobile}
-                                            onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-                                            className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-green-500 outline-none transition-colors"
-                                            placeholder="+91 XXXXX XXXXX"
+                                            onChange={(e) => { setFormData({ ...formData, mobile: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const {mobile, ...r} = prev; return r; }); }}
+                                            className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${formErrors.mobile ? 'border-red-400' : 'border-transparent'} focus:border-green-500 outline-none transition-colors`}
+                                            placeholder="10-digit number"
+                                            maxLength={10}
                                         />
+                                        {formErrors.mobile && <p className="text-red-500 text-xs mt-1">{formErrors.mobile}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-bold mb-1 text-gray-700 dark:text-gray-300">Location</label>
@@ -197,14 +202,17 @@ export default function VeterinarySection() {
                                     <span className="material-symbols-outlined text-4xl">check_circle</span>
                                 </div>
                                 <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Booking Confirmed!</h3>
-                                <p className="text-gray-600 dark:text-gray-300 mb-6">
-                                    Thank you for booking. We will assign a doctor shortly and you will get a call from a Miraitu partner veterinary service provider.
+                                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                                    Thank you for booking. We will assign a doctor shortly.
                                 </p>
+                                <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
+                                    <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will contact you soon</p>
+                                </div>
                                 <button
-                                    onClick={() => setSelectedService(null)}
-                                    className="w-full py-3 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-bold transition-all"
+                                    onClick={() => { setSelectedService(null); setShowSuccess(false); setFormData({ name: '', mobile: '', location: '' }); }}
+                                    className="w-full py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-all"
                                 >
-                                    Close
+                                    Done
                                 </button>
                             </div>
                         )}
