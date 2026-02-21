@@ -80,7 +80,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/logo-icon.png", sizes: "192x192", type: "image/png" },
     ],
     apple: "/apple-icon.png",
   },
@@ -162,7 +162,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
               name: "Miraitu",
               alternateName: "Miraitu Agriculture Tech",
               url: "https://miraitu.in",
-              logo: "https://miraitu.in/icon-192.png",
+              logo: "https://miraitu.in/logo-icon.png",
               description:
                 "India's agriculture super app empowering farmers with machinery, crop marketplace, livestock, finance, veterinary services, and government schemes.",
               sameAs: [
