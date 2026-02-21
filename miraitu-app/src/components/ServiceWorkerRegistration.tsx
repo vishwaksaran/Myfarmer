@@ -115,9 +115,18 @@ export default function ServiceWorkerRegistration() {
           justifyContent: 'center',
           fontSize: 24,
           flexShrink: 0,
+          overflow: 'hidden',
         }}
       >
-        🌾
+        <img
+          src="/logo-icon.png"
+          alt="Miraitu Logo"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+          }}
+        />
       </div>
       <div style={{ flex: 1 }}>
         <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a1a' }}>

@@ -58,9 +58,18 @@ export default function SplashScreen() {
           justifyContent: 'center',
           marginBottom: 24,
           animation: 'scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s backwards',
+          overflow: 'hidden',
         }}
       >
-        <div style={{ fontSize: 60 }}>🌾</div>
+        <img
+          src="/logo-icon.png"
+          alt="Miraitu Logo"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+          }}
+        />
       </div>
 
       {/* App Name */}
