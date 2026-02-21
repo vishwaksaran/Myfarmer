@@ -20,6 +20,14 @@ export interface MiraituUser {
     uid: string; // alias for id, for backward compatibility
 }
 
+export interface UserProfile {
+    full_name: string | null;
+    phone: string | null;
+    avatar_url: string | null;
+    farm_location: string | null;
+    role: string;
+}
+
 interface AuthContextType {
     user: MiraituUser | null;
     loading: boolean;
@@ -28,6 +36,9 @@ interface AuthContextType {
     verifyOtp: (phone: string, token: string) => Promise<{ error: string | null }>;
     loginAsGuest: () => Promise<void>;
     signOut: () => Promise<void>;
+    fetchProfile: () => Promise<UserProfile | null>;
+    updateProfile: (data: Partial<UserProfile>) => Promise<{ error: string | null }>;
+    uploadAvatar: (file: File) => Promise<{ url: string | null; error: string | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -140,6 +151,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const signInWithGoogle = async () => {
         try {
             setLoading(true);
+            // Pre-check: verify Google provider is available by testing the auth endpoint
+            const checkUrl = `${supabase.supabaseUrl}/auth/v1/authorize?provider=google`;
+            try {
+                const checkResp = await fetch(checkUrl, { method: 'HEAD', redirect: 'manual' });
+                // If the provider isn't enabled Supabase returns 400
+                if (checkResp.status === 400) {
+                    setLoading(false);
+                    throw new Error('Google sign-in is not yet configured. Please use Phone OTP or Guest login.');
+                }
+            } catch (preCheckError: unknown) {
+                // If the pre-check itself failed with our custom message, rethrow
+                if (preCheckError instanceof Error && preCheckError.message.includes('not yet configured')) {
+                    throw preCheckError;
+                }
+                // Network errors on pre-check are ok — let the main flow handle it
+            }
+
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
@@ -212,6 +240,73 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
     };
 
+    // Fetch user profile from Supabase profiles table
+    const fetchProfile = async (): Promise<UserProfile | null> => {
+        if (!user || user.isGuest) return null;
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('full_name, phone, avatar_url, farm_location, role')
+                .eq('id', user.id)
+                .single();
+            if (error) {
+                console.error('Error fetching profile:', error);
+                return null;
+            }
+            return data as UserProfile;
+        } catch (err) {
+            console.error('Error fetching profile:', err);
+            return null;
+        }
+    };
+
+    // Update user profile in Supabase profiles table
+    const updateProfile = async (data: Partial<UserProfile>): Promise<{ error: string | null }> => {
+        if (!user || user.isGuest) return { error: 'Not authenticated' };
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .upsert({ id: user.id, ...data, updated_at: new Date().toISOString() });
+            if (error) return { error: error.message };
+            // Update local user state
+            if (data.full_name !== undefined) {
+                setUser(prev => prev ? { ...prev, displayName: data.full_name || prev.displayName } : prev);
+            }
+            if (data.avatar_url !== undefined) {
+                setUser(prev => prev ? { ...prev, photoURL: data.avatar_url || prev.photoURL } : prev);
+            }
+            if (data.phone !== undefined) {
+                setUser(prev => prev ? { ...prev, phone: data.phone || prev.phone } : prev);
+            }
+            return { error: null };
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Failed to update profile';
+            return { error: message };
+        }
+    };
+
+    // Upload avatar image to Supabase Storage
+    const uploadAvatar = async (file: File): Promise<{ url: string | null; error: string | null }> => {
+        if (!user || user.isGuest) return { url: null, error: 'Not authenticated' };
+        try {
+            const fileExt = file.name.split('.').pop();
+            const filePath = `avatars/${user.id}.${fileExt}`;
+            const { error: uploadError } = await supabase.storage
+                .from('seller-images')
+                .upload(filePath, file, { upsert: true });
+            if (uploadError) return { url: null, error: uploadError.message };
+            const { data: { publicUrl } } = supabase.storage
+                .from('seller-images')
+                .getPublicUrl(filePath);
+            // Update the profile with the new avatar URL
+            await updateProfile({ avatar_url: publicUrl });
+            return { url: publicUrl, error: null };
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Failed to upload avatar';
+            return { url: null, error: message };
+        }
+    };
+
     return (
         <AuthContext.Provider value={{
             user,
@@ -220,7 +315,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             signInWithPhone,
             verifyOtp,
             loginAsGuest,
-            signOut: handleSignOut
+            signOut: handleSignOut,
+            fetchProfile,
+            updateProfile,
+            uploadAvatar,
         }}>
             {children}
         </AuthContext.Provider>

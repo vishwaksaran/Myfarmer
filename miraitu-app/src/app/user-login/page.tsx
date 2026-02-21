@@ -52,7 +52,7 @@ export default function UserLoginPage() {
             await signInWithGoogle();
             router.push('/home');
         } catch (err) {
-            setError('Failed to sign in with Google. Please try again.');
+            setError(err instanceof Error ? err.message : 'Failed to sign in with Google. Please try again.');
             console.error(err);
         } finally {
             setIsSigningIn(false);

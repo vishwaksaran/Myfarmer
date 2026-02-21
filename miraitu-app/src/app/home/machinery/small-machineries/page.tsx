@@ -15,16 +15,16 @@ const tabs = [
 ];
 
 const newItems = [
-    { id: 1, name: 'Honda Power Tiller FJ500', category: 'Tiller', specs: '5 HP • Petrol • 4-Stroke', price: '₹65,000', image: 'https://images.unsplash.com/photo-1592805144716-feeccccef5ac?w=400&h=300&fit=crop', brand: 'Honda', hp: '5', warranty: '2 Years' },
-    { id: 2, name: 'VST Shakti 130 DI', category: 'Tiller', specs: '13 HP • Diesel • Heavy Duty', price: '₹1,85,000', image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=300&fit=crop', brand: 'VST Shakti', hp: '13', warranty: '3 Years' },
-    { id: 3, name: 'Kirloskar Brush Cutter', category: 'Brush Cutter', specs: '2 HP • Petrol • Low Vibration', price: '₹12,500', image: 'https://images.unsplash.com/photo-1605002623881-8ac1989da9d7?w=400&h=300&fit=crop', brand: 'Kirloskar', hp: '2', warranty: '1 Year' },
-    { id: 4, name: 'Neptune Weeder', category: 'Weeder', specs: '3.5 HP • Petrol • Compact', price: '₹28,000', image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=400&h=300&fit=crop', brand: 'Neptune', hp: '3.5', warranty: '2 Years' },
+    { id: 1, name: 'Honda Power Tiller FJ500', category: 'Tiller', specs: '5 HP • Petrol • 4-Stroke', price: '₹65,000', image: 'https://images.pexels.com/photos/9686981/pexels-photo-9686981.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop', brand: 'Honda', hp: '5', warranty: '2 Years' },
+    { id: 2, name: 'VST Shakti 130 DI', category: 'Tiller', specs: '13 HP • Diesel • Heavy Duty', price: '₹1,85,000', image: 'https://images.pexels.com/photos/9686981/pexels-photo-9686981.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop', brand: 'VST Shakti', hp: '13', warranty: '3 Years' },
+    { id: 3, name: 'Kirloskar Brush Cutter', category: 'Brush Cutter', specs: '2 HP • Petrol • Low Vibration', price: '₹12,500', image: 'https://images.pexels.com/photos/11400234/pexels-photo-11400234.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop', brand: 'Kirloskar', hp: '2', warranty: '1 Year' },
+    { id: 4, name: 'Neptune Weeder', category: 'Weeder', specs: '3.5 HP • Petrol • Compact', price: '₹28,000', image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=300&fit=crop', brand: 'Neptune', hp: '3.5', warranty: '2 Years' },
 ];
 
 const usedItems = [
-    { id: 101, name: 'Honda Tiller 2020', category: 'Tiller', specs: '5 HP • Good Condition', price: '₹42,000', image: 'https://images.unsplash.com/photo-1592805144716-feeccccef5ac?w=400&h=300&fit=crop', brand: 'Honda', hp: '5', year: '2020', location: 'Pune', condition: 'Good' },
-    { id: 102, name: 'VST Shakti 2019', category: 'Tiller', specs: '12 HP • Well Maintained', price: '₹1,20,000', image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=300&fit=crop', brand: 'VST Shakti', hp: '12', year: '2019', location: 'Nashik', condition: 'Excellent' },
-    { id: 103, name: 'Stihl Brush Cutter', category: 'Brush Cutter', specs: '2 HP • Like New', price: '₹8,500', image: 'https://images.unsplash.com/photo-1605002623881-8ac1989da9d7?w=400&h=300&fit=crop', brand: 'Stihl', hp: '2', year: '2021', location: 'Bangalore', condition: 'Excellent' },
+    { id: 101, name: 'Honda Tiller 2020', category: 'Tiller', specs: '5 HP • Good Condition', price: '₹42,000', image: 'https://images.pexels.com/photos/9686981/pexels-photo-9686981.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop', brand: 'Honda', hp: '5', year: '2020', location: 'Pune', condition: 'Good' },
+    { id: 102, name: 'VST Shakti 2019', category: 'Tiller', specs: '12 HP • Well Maintained', price: '₹1,20,000', image: 'https://images.pexels.com/photos/9686981/pexels-photo-9686981.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop', brand: 'VST Shakti', hp: '12', year: '2019', location: 'Nashik', condition: 'Excellent' },
+    { id: 103, name: 'Stihl Brush Cutter', category: 'Brush Cutter', specs: '2 HP • Like New', price: '₹8,500', image: 'https://images.pexels.com/photos/11400234/pexels-photo-11400234.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop', brand: 'Stihl', hp: '2', year: '2021', location: 'Bangalore', condition: 'Excellent' },
 ];
 
 export default function SmallMachineriesPage() {

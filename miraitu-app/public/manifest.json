@@ -1,12 +1,35 @@
 {
+  "id": "/",
   "name": "Miraitu - Cultivating the Future Together",
   "short_name": "Miraitu",
+  "description": "India's #1 agriculture super app. Rent tractors & JCB, sell crops & livestock, access veterinary services, farm finance & government schemes.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#2c5926",
+  "background_color": "#ffffff",
+  "categories": ["agriculture", "business", "productivity"],
+  "lang": "en-IN",
+  "dir": "ltr",
   "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/web-app-manifest-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/web-app-manifest-512x512.png",
@@ -15,7 +38,21 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#2c5926",
-  "background_color": "#ffffff",
-  "display": "standalone"
+  "screenshots": [
+    {
+      "src": "/miraitu-hero-mobile.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Miraitu Home Screen"
+    },
+    {
+      "src": "/miraitu-hero-desktop.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Miraitu Dashboard"
+    }
+  ],
+  "prefer_related_applications": false
 }

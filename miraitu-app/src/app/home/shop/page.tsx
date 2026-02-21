@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
@@ -38,8 +39,39 @@ const dealsOfTheDay = [
     },
 ];
 
+const POPULAR_CITIES = [
+    'Hyderabad', 'Bangalore', 'Chennai', 'Mumbai', 'Delhi', 'Pune',
+    'Vijayawada', 'Visakhapatnam', 'Guntur', 'Tirupati', 'Warangal',
+    'Nagpur', 'Jaipur', 'Lucknow', 'Kolkata', 'Ahmedabad',
+    'Coimbatore', 'Madurai', 'Mysore', 'Hubli', 'Belgaum',
+];
+
 export default function ShopPage() {
     const { quantities, addItem, removeItem } = useCart();
+    const [locationInput, setLocationInput] = useState('');
+    const [selectedLocation, setSelectedLocation] = useState('');
+    const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+    const locationRef = useRef<HTMLDivElement>(null);
+
+    const filteredCities = locationInput.trim()
+        ? POPULAR_CITIES.filter(city => city.toLowerCase().includes(locationInput.toLowerCase()))
+        : POPULAR_CITIES;
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (locationRef.current && !locationRef.current.contains(e.target as Node)) {
+                setShowLocationDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleSelectCity = (city: string) => {
+        setSelectedLocation(city);
+        setLocationInput(city);
+        setShowLocationDropdown(false);
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-[#0d110d]">
@@ -47,8 +79,87 @@ export default function ShopPage() {
 
             <main className="py-8">
                 <div className="mx-auto max-w-[1280px] px-6">
+
+                    {/* Delivery Location Bar */}
+                    <div className="mb-6 flex items-center gap-3 bg-white dark:bg-[#1a231a] rounded-2xl px-4 py-3 border border-gray-200 dark:border-gray-700 shadow-sm" data-no-auth>
+                        <span className="material-symbols-outlined text-primary text-xl">location_on</span>
+                        <div className="relative flex-1" ref={locationRef}>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-500 font-medium whitespace-nowrap">Deliver to:</span>
+                                <input
+                                    type="text"
+                                    placeholder="Enter your area, city or pincode..."
+                                    value={locationInput}
+                                    onChange={(e) => { setLocationInput(e.target.value); setShowLocationDropdown(true); }}
+                                    onFocus={() => setShowLocationDropdown(true)}
+                                    className="flex-1 bg-transparent text-sm font-semibold text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none"
+                                />
+                                {selectedLocation && (
+                                    <button onClick={() => { setSelectedLocation(''); setLocationInput(''); }} className="text-gray-400 hover:text-red-500 transition-colors">
+                                        <span className="material-symbols-outlined text-lg">close</span>
+                                    </button>
+                                )}
+                            </div>
+                            {showLocationDropdown && (
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1a231a] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
+                                    {/* Use current location */}
+                                    <button
+                                        onClick={() => {
+                                            if (navigator.geolocation) {
+                                                navigator.geolocation.getCurrentPosition(
+                                                    async (pos) => {
+                                                        try {
+                                                            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`);
+                                                            const data = await res.json();
+                                                            const city = data.address?.city || data.address?.town || data.address?.village || data.address?.county || 'Your Location';
+                                                            handleSelectCity(city);
+                                                        } catch { handleSelectCity('Current Location'); }
+                                                    },
+                                                    () => handleSelectCity('Current Location')
+                                                );
+                                            }
+                                        }}
+                                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-primary font-bold hover:bg-green-50 dark:hover:bg-green-900/20 border-b border-gray-100 dark:border-gray-800 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-lg">my_location</span>
+                                        Use current location
+                                    </button>
+                                    {/* City list */}
+                                    {filteredCities.length > 0 ? (
+                                        <div className="py-1">
+                                            <p className="px-4 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Popular Cities</p>
+                                            {filteredCities.map(city => (
+                                                <button
+                                                    key={city}
+                                                    onClick={() => handleSelectCity(city)}
+                                                    className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex items-center gap-2"
+                                                >
+                                                    <span className="material-symbols-outlined text-gray-400 text-base">location_city</span>
+                                                    {city}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="px-4 py-6 text-center text-sm text-gray-400">
+                                            <span className="material-symbols-outlined text-2xl mb-1 block">search_off</span>
+                                            No matching city found. You can still type your area.
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        {selectedLocation && (
+                            <span className="hidden md:flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-bold whitespace-nowrap">
+                                <span className="material-symbols-outlined text-sm">check_circle</span>
+                                {selectedLocation}
+                            </span>
+                        )}
+                    </div>
+
                     {/* Hero Banner */}
                     <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-primary to-primary-dark p-8 md:p-12 mb-10">
+                        {/* Decorative dot pattern */}
+                        <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
                         <div className="relative z-10">
                             <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-sm text-white font-medium mb-4">
                                 🌾 Special Offer
@@ -57,14 +168,23 @@ export default function ShopPage() {
                                 Farm Essentials Sale
                             </h1>
                             <p className="text-white/80 text-lg mb-6 max-w-xl">
-                                Get up to 40% off on seeds, fertilizers, and farming equipment. Limited time offer!
+                                Get up to 40% off on seeds, fertilizers, and farming equipment.
+                                {selectedLocation ? ` Delivering to ${selectedLocation}.` : ' Limited time offer!'}
                             </p>
-                            <button className="px-8 py-3 bg-white text-primary font-bold rounded-xl hover:bg-gray-100 transition-colors shadow-lg">
+                            <Link href="/home/shop/all" className="inline-block px-8 py-3 bg-white text-primary font-bold rounded-xl hover:bg-gray-100 transition-colors shadow-lg" data-no-auth>
                                 Shop Now
-                            </button>
+                            </Link>
                         </div>
-                        <div className="absolute right-0 bottom-0 opacity-20">
-                            <span className="text-[200px]">🌾</span>
+                        {/* Decorative plant SVG */}
+                        <div className="absolute right-4 md:right-10 bottom-0 opacity-20 w-40 h-40 md:w-64 md:h-64">
+                            <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                                <path d="M100 180V100" stroke="white" strokeWidth="6" strokeLinecap="round"/>
+                                <path d="M100 140C80 140 60 120 60 100C60 80 80 70 100 80" stroke="white" strokeWidth="5" strokeLinecap="round" fill="none"/>
+                                <path d="M100 120C120 120 140 100 140 80C140 60 120 50 100 60" stroke="white" strokeWidth="5" strokeLinecap="round" fill="none"/>
+                                <path d="M100 100C80 100 55 80 55 55C55 35 75 25 100 40" stroke="white" strokeWidth="5" strokeLinecap="round" fill="none"/>
+                                <path d="M100 80C120 75 145 55 145 35C145 15 125 10 100 25" stroke="white" strokeWidth="5" strokeLinecap="round" fill="none"/>
+                                <ellipse cx="85" cy="185" rx="25" ry="5" fill="white" opacity="0.3"/>
+                            </svg>
                         </div>
                     </div>
 
@@ -80,7 +200,7 @@ export default function ShopPage() {
                             </Link>
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {shopCategories.map((category) => (
                                 <Link
                                     key={category.id}
@@ -88,7 +208,11 @@ export default function ShopPage() {
                                     className="group bg-white dark:bg-[#1a231a] rounded-2xl p-4 border border-gray-100 dark:border-gray-800 hover:border-primary/30 hover:shadow-xl transition-all duration-300"
                                 >
                                     <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${category.color} flex items-center justify-center text-3xl mb-3 mx-auto group-hover:scale-110 transition-transform`}>
-                                        {category.icon}
+                                        {category.isMatIcon ? (
+                                            <span className="material-symbols-outlined text-3xl text-gray-700 dark:text-gray-300">{category.icon}</span>
+                                        ) : (
+                                            category.icon
+                                        )}
                                     </div>
                                     <h3 className="font-semibold text-gray-900 dark:text-white text-center text-sm leading-tight">
                                         {category.name}
@@ -161,7 +285,7 @@ export default function ShopPage() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {featuredProducts.map((product) => (
                                 <div
                                     key={product.id}
@@ -245,9 +369,9 @@ export default function ShopPage() {
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                                         Premium quality certified organic seeds
                                     </p>
-                                    <button className="px-4 py-2 bg-amber-500 text-white text-sm font-semibold rounded-lg hover:bg-amber-600 transition-colors">
+                                    <Link href="/home/shop/seeds" className="inline-block px-4 py-2 bg-amber-500 text-white text-sm font-semibold rounded-lg hover:bg-amber-600 transition-colors">
                                         Explore
-                                    </button>
+                                    </Link>
                                 </div>
                             </div>
                             <div className="rounded-2xl bg-gradient-to-r from-green-100 to-green-50 dark:from-green-900/30 dark:to-green-800/20 p-6 flex items-center gap-6">
@@ -259,9 +383,9 @@ export default function ShopPage() {
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                                         Affordable daily & monthly rentals
                                     </p>
-                                    <button className="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors">
+                                    <Link href="/home/machinery" className="inline-block px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors">
                                         View Options
-                                    </button>
+                                    </Link>
                                 </div>
                             </div>
                         </div>

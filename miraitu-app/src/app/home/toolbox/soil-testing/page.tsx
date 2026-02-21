@@ -11,6 +11,9 @@ interface SoilParam {
     status: 'low' | 'normal' | 'high';
     icon: string;
     tip: string;
+    tipLow: string;
+    tipNormal: string;
+    tipHigh: string;
 }
 
 const statusColors = {
@@ -35,14 +38,50 @@ export default function SoilTestingPage() {
     const phNum = parseFloat(ph) || 7;
     const phCategory = phNum < 6.0 ? 'acidic' : phNum > 7.5 ? 'alkaline' : 'neutral';
 
+    const computeStatus = (value: string, ideal: string): 'low' | 'normal' | 'high' => {
+        const num = parseFloat(value);
+        if (isNaN(num)) return 'normal';
+        const [minStr, maxStr] = ideal.split('-');
+        const min = parseFloat(minStr);
+        const max = parseFloat(maxStr);
+        if (num < min) return 'low';
+        if (num > max) return 'high';
+        return 'normal';
+    };
+
     const [params, setParams] = useState<SoilParam[]>([
-        { name: 'Nitrogen (N)', unit: 'kg/ha', value: '240', ideal: '250-350', status: 'low', icon: 'grass', tip: 'Apply urea or ammonium sulphate. Green manuring helps improve nitrogen.' },
-        { name: 'Phosphorus (P)', unit: 'kg/ha', value: '28', ideal: '25-50', status: 'normal', icon: 'eco', tip: 'Adequate level. Maintain with DAP or single super phosphate during sowing.' },
-        { name: 'Potassium (K)', unit: 'kg/ha', value: '180', ideal: '150-250', status: 'normal', icon: 'psychiatry', tip: 'Good level. Continue with MOP application as needed.' },
-        { name: 'Organic Carbon', unit: '%', value: '0.4', ideal: '0.5-0.75', status: 'low', icon: 'compost', tip: 'Add FYM (Farm Yard Manure) or vermicompost at 5-10 tonnes per hectare.' },
-        { name: 'Zinc (Zn)', unit: 'ppm', value: '0.8', ideal: '0.6-1.2', status: 'normal', icon: 'science', tip: 'Within optimal range. Monitor annually.' },
-        { name: 'Iron (Fe)', unit: 'ppm', value: '5.2', ideal: '4.5-9.0', status: 'normal', icon: 'iron', tip: 'Adequate. Iron deficiency causes yellowing in crops like rice and sorghum.' },
+        { name: 'Nitrogen (N)', unit: 'kg/ha', value: '240', ideal: '250-350', status: 'low', icon: 'grass',
+          tip: '', tipLow: 'Apply urea or ammonium sulphate. Green manuring helps improve nitrogen.',
+          tipNormal: 'Nitrogen is in optimal range. Maintain with balanced fertilization.',
+          tipHigh: 'Excess nitrogen! Reduce urea application. Excess causes lodging and pest susceptibility.' },
+        { name: 'Phosphorus (P)', unit: 'kg/ha', value: '28', ideal: '25-50', status: 'normal', icon: 'eco',
+          tip: '', tipLow: 'Apply DAP or single super phosphate (SSP) during sowing to boost phosphorus.',
+          tipNormal: 'Adequate level. Maintain with DAP or single super phosphate during sowing.',
+          tipHigh: 'High phosphorus can lock zinc. Reduce phosphatic fertilizers and monitor zinc levels.' },
+        { name: 'Potassium (K)', unit: 'kg/ha', value: '180', ideal: '150-250', status: 'normal', icon: 'psychiatry',
+          tip: '', tipLow: 'Apply MOP (Muriate of Potash) at 40-60 kg/ha. Potassium improves drought resistance.',
+          tipNormal: 'Good level. Continue with MOP application as needed.',
+          tipHigh: 'Excess potassium can interfere with magnesium and calcium uptake. Reduce MOP application.' },
+        { name: 'Organic Carbon', unit: '%', value: '0.4', ideal: '0.5-0.75', status: 'low', icon: 'compost',
+          tip: '', tipLow: 'Add FYM (Farm Yard Manure) or vermicompost at 5-10 tonnes per hectare.',
+          tipNormal: 'Organic carbon is healthy. Continue adding organic matter to maintain levels.',
+          tipHigh: 'Excellent organic carbon! Your soil is very healthy. Maintain current practices.' },
+        { name: 'Zinc (Zn)', unit: 'ppm', value: '0.8', ideal: '0.6-1.2', status: 'normal', icon: 'science',
+          tip: '', tipLow: 'Apply zinc sulphate at 25 kg/ha. Zinc deficiency causes stunted growth in rice and maize.',
+          tipNormal: 'Within optimal range. Monitor annually.',
+          tipHigh: 'High zinc levels detected. Avoid zinc sulphate application this season.' },
+        { name: 'Iron (Fe)', unit: 'ppm', value: '5.2', ideal: '4.5-9.0', status: 'normal', icon: 'iron',
+          tip: '', tipLow: 'Apply ferrous sulphate (FeSO4) as foliar spray. Iron deficiency causes yellowing in rice and sorghum.',
+          tipNormal: 'Adequate. Iron deficiency causes yellowing in crops like rice and sorghum.',
+          tipHigh: 'High iron may cause toxicity in rice (bronzing). Improve drainage and apply lime.' },
     ]);
+
+    // Derive display params with dynamically computed status and tip
+    const displayParams = params.map(p => {
+        const status = computeStatus(p.value, p.ideal);
+        const tip = status === 'low' ? p.tipLow : status === 'high' ? p.tipHigh : p.tipNormal;
+        return { ...p, status, tip };
+    });
 
     const updateParamValue = (idx: number, val: string) => {
         const updated = [...params];
@@ -74,7 +113,7 @@ export default function SoilTestingPage() {
                     <nav className="flex items-center gap-1 mb-6 text-xs md:text-sm">
                         <Link href="/home" className="text-gray-500 hover:text-primary font-medium">Home</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">Toolbox</Link>
+                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">Agri Calculators</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
                         <span className="text-primary font-bold">Soil Testing</span>
                     </nav>
@@ -210,7 +249,7 @@ export default function SoilTestingPage() {
                                     <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-8">
                                         <h3 className="text-lg font-black mb-5 text-gray-900 dark:text-white">Nutrient Analysis</h3>
                                         <div className="space-y-3">
-                                            {params.map(p => {
+                                            {displayParams.map(p => {
                                                 const sc = statusColors[p.status];
                                                 return (
                                                     <div key={p.name} className={`p-4 rounded-xl ${sc.bg}`}>

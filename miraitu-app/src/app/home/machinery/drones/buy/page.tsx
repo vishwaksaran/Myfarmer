@@ -13,7 +13,7 @@ const usedDrones = [
         category: 'Drone',
         specs: '20L Tank • RTK Module • 500 Hours',
         price: '₹5,50,000',
-        image: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400&h=300&fit=crop',
+        image: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=400&h=300&fit=crop',
         brand: 'DJI',
         hp: 'Electric',
         year: '2022',

@@ -30,7 +30,7 @@ export default function MachineryMarketplace() {
         {
             id: 1,
             name: 'Mahindra 575 DI Tractor',
-            image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop',
+            image: 'https://images.unsplash.com/photo-1592805723127-004b174a1d03?w=400&h=300&fit=crop',
             price: '₹5,50,000',
             priceValue: 550000,
             location: 'Nasik, MH',
@@ -43,7 +43,7 @@ export default function MachineryMarketplace() {
         {
             id: 2,
             name: 'John Deere 5055E',
-            image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop',
+            image: 'https://images.unsplash.com/photo-1589771145485-d2e7e9b9de35?w=400&h=300&fit=crop',
             price: '₹6,20,000',
             priceValue: 620000,
             location: 'Pune, MH',
@@ -56,7 +56,7 @@ export default function MachineryMarketplace() {
         {
             id: 3,
             name: 'Mahindra Arjun 555',
-            image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop',
+            image: 'https://images.pexels.com/photos/2332736/pexels-photo-2332736.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',
             price: '₹7,50,000',
             priceValue: 750000,
             location: 'Satara, MH',
@@ -67,7 +67,7 @@ export default function MachineryMarketplace() {
         {
             id: 4,
             name: 'Swaraj 855 FE',
-            image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop',
+            image: 'https://images.pexels.com/photos/4394883/pexels-photo-4394883.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',
             price: '₹5,80,000',
             priceValue: 580000,
             location: 'Nashik, MH',

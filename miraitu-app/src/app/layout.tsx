@@ -5,6 +5,8 @@ import { LoginPromptProvider } from "@/context/LoginPromptContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import LoginPromptOverlay from "@/components/auth/LoginPromptOverlay";
 import GlobalLoginInterceptor from "@/components/auth/GlobalLoginInterceptor";
+import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+import SplashScreen from "@/components/SplashScreen";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -105,7 +107,7 @@ export const metadata: Metadata = {
     description:
       "India's all-in-one farming app for machinery rental, crop marketplace, livestock & finance.",
     images: ["/icon-512.png"],
-    creator: "@Miraituapp",
+    creator: "@Miraitu",
   },
   alternates: {
     canonical: "https://miraitu.in",
@@ -164,8 +166,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
               description:
                 "India's agriculture super app empowering farmers with machinery, crop marketplace, livestock, finance, veterinary services, and government schemes.",
               sameAs: [
-                "https://www.instagram.com/miraituapp",
-                "https://x.com/Miraituapp",
+                "https://www.instagram.com/miraitu",
+                "https://x.com/Miraitu",
                 "https://www.facebook.com/share/17xh4f5AUZ/",
                 "https://www.youtube.com/@Miraitu",
                 "https://www.linkedin.com/company/miraitu",
@@ -202,12 +204,14 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body
         className={`${plusJakartaSans.variable} ${notoSans.variable} font-display antialiased`}
       >
+        <SplashScreen />
         <AuthProvider>
           <LoginPromptProvider>
             <LanguageProvider>
               {children}
               <LoginPromptOverlay />
               <GlobalLoginInterceptor />
+              <ServiceWorkerRegistration />
             </LanguageProvider>
           </LoginPromptProvider>
         </AuthProvider>

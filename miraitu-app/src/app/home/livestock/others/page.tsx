@@ -12,7 +12,7 @@ const types = ['All Types', 'Rabbits', 'Ducks', 'Turkeys', 'Pigeons', 'Quails', 
 const listings = [
     { id: 1, name: 'White Giant Rabbits - 10 Pairs', type: 'Rabbits', count: 20, price: '₹8,000', location: 'Pune, Maharashtra', image: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=400&h=300&fit=crop', verified: true, seller: 'Amit Kulkarni', phone: '+91 98765 43210' },
     { id: 2, name: 'Fancy Pigeons - 5 Pairs', type: 'Pigeons', count: 10, price: '₹15,000', location: 'Hyderabad, Telangana', image: 'https://images.unsplash.com/photo-1555169062-013468b47731?w=400&h=300&fit=crop', verified: true, seller: 'Ravi Kumar', phone: '+91 87654 32109' },
-    { id: 3, name: 'Bee Colony with Box - 5 Units', type: 'Bees', count: 5, price: '₹25,000', location: 'Coorg, Karnataka', image: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=400&h=300&fit=crop', verified: false, seller: 'Krishna Gowda', phone: '+91 76543 21098' },
+    { id: 3, name: 'Bee Colony with Box - 5 Units', type: 'Bees', count: 5, price: '₹25,000', location: 'Coorg, Karnataka', image: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400&h=300&fit=crop', verified: false, seller: 'Krishna Gowda', phone: '+91 76543 21098' },
     { id: 4, name: 'Japanese Quails - 100 Birds', type: 'Quails', count: 100, price: '₹12,000', location: 'Salem, TN', image: 'https://images.unsplash.com/photo-1606567595334-d39972c85dfd?w=400&h=300&fit=crop', verified: true, seller: 'Selvam M', phone: '+91 65432 10987' },
 ];
 

@@ -17,14 +17,14 @@ const tabs = [
 const newItems = [
     { id: 1, name: 'DJI Agras T40', category: 'Sprayer Drone', specs: '40L Tank • 20m Spray Width • AI Obstacle Avoidance', price: '₹12,50,000', image: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=400&h=300&fit=crop', brand: 'DJI', warranty: '2 Years' },
     { id: 2, name: 'Garuda Kisan Drone', category: 'Sprayer Drone', specs: '16L Tank • GPS Mapping • Made in India', price: '₹4,50,000', image: 'https://images.unsplash.com/photo-1527977966376-1c8408f9f108?w=400&h=300&fit=crop', brand: 'Garuda', warranty: '1 Year' },
-    { id: 3, name: 'Marut Drontech AG 365', category: 'Survey Drone', specs: '45 Min Flight • 4K Camera • RTK GPS', price: '₹6,80,000', image: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400&h=300&fit=crop', brand: 'Marut', warranty: '2 Years' },
+    { id: 3, name: 'Marut Drontech AG 365', category: 'Survey Drone', specs: '45 Min Flight • 4K Camera • RTK GPS', price: '₹6,80,000', image: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=400&h=300&fit=crop', brand: 'Marut', warranty: '2 Years' },
     { id: 4, name: 'IoTechWorld Agri Drone', category: 'Sprayer Drone', specs: '10L Tank • Autonomous Flight • DGCA Approved', price: '₹3,50,000', image: 'https://images.unsplash.com/photo-1579829366248-204fe8413f31?w=400&h=300&fit=crop', brand: 'IoTechWorld', warranty: '1 Year' },
 ];
 
 const usedItems = [
     { id: 101, name: 'DJI Agras MG-1 2021', category: 'Sprayer Drone', specs: '10L Tank • Good Condition • 200 Hrs', price: '₹3,20,000', image: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=400&h=300&fit=crop', brand: 'DJI', year: '2021', location: 'Hyderabad, Telangana', condition: 'Good' },
     { id: 102, name: 'Garuda Drone 2022', category: 'Sprayer Drone', specs: '16L Tank • Excellent Condition', price: '₹2,80,000', image: 'https://images.unsplash.com/photo-1527977966376-1c8408f9f108?w=400&h=300&fit=crop', brand: 'Garuda', year: '2022', location: 'Bangalore, Karnataka', condition: 'Excellent' },
-    { id: 103, name: 'Custom Agri Drone 2020', category: 'Sprayer Drone', specs: '5L Tank • Fair Condition', price: '₹85,000', image: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400&h=300&fit=crop', brand: 'Custom', year: '2020', location: 'Chennai, Tamil Nadu', condition: 'Fair' },
+    { id: 103, name: 'Custom Agri Drone 2020', category: 'Sprayer Drone', specs: '5L Tank • Fair Condition', price: '₹85,000', image: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=400&h=300&fit=crop', brand: 'Custom', year: '2020', location: 'Chennai, Tamil Nadu', condition: 'Fair' },
 ];
 
 export default function DronesPage() {

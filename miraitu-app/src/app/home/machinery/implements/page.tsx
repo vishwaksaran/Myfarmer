@@ -15,16 +15,16 @@ const tabs = [
 ];
 
 const newItems = [
-    { id: 1, name: 'Fieldking Rotavator', category: 'Rotavator', specs: '5 ft • Heavy Duty Blades • Multi Speed', price: '₹85,000', image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=300&fit=crop', brand: 'Fieldking', warranty: '2 Years' },
-    { id: 2, name: 'Mahindra MB Plough', category: 'Plough', specs: '2 Bottom • Reversible • High Carbon Steel', price: '₹32,000', image: 'https://images.unsplash.com/photo-1605002623881-8ac1989da9d7?w=400&h=300&fit=crop', brand: 'Mahindra', warranty: '1 Year' },
-    { id: 3, name: 'Shaktiman Cultivator', category: 'Cultivator', specs: '9 Tyne • Spring Loaded • 7 ft Width', price: '₹48,000', image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=400&h=300&fit=crop', brand: 'Shaktiman', warranty: '2 Years' },
-    { id: 4, name: 'John Deere Disc Harrow', category: 'Harrow', specs: '16 Disc • Offset Type • Hydraulic', price: '₹1,25,000', image: 'https://images.unsplash.com/photo-1592805144716-feeccccef5ac?w=400&h=300&fit=crop', brand: 'John Deere', warranty: '2 Years' },
+    { id: 1, name: 'Fieldking Rotavator', category: 'Rotavator', specs: '5 ft • Heavy Duty Blades • Multi Speed', price: '₹85,000', image: 'https://images.pexels.com/photos/2933243/pexels-photo-2933243.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop', brand: 'Fieldking', warranty: '2 Years' },
+    { id: 2, name: 'Mahindra MB Plough', category: 'Plough', specs: '2 Bottom • Reversible • High Carbon Steel', price: '₹32,000', image: 'https://images.pexels.com/photos/2253412/pexels-photo-2253412.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop', brand: 'Mahindra', warranty: '1 Year' },
+    { id: 3, name: 'Shaktiman Cultivator', category: 'Cultivator', specs: '9 Tyne • Spring Loaded • 7 ft Width', price: '₹48,000', image: 'https://images.pexels.com/photos/7728672/pexels-photo-7728672.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop', brand: 'Shaktiman', warranty: '2 Years' },
+    { id: 4, name: 'John Deere Disc Harrow', category: 'Harrow', specs: '16 Disc • Offset Type • Hydraulic', price: '₹1,25,000', image: 'https://images.pexels.com/photos/11870839/pexels-photo-11870839.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop', brand: 'John Deere', warranty: '2 Years' },
 ];
 
 const usedItems = [
-    { id: 101, name: 'Landforce Rotavator 2020', category: 'Rotavator', specs: '5 ft • Good Condition', price: '₹55,000', image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=300&fit=crop', brand: 'Landforce', year: '2020', location: 'Pune', condition: 'Good' },
-    { id: 102, name: 'Fieldking Plough 2019', category: 'Plough', specs: '3 Bottom • Well Maintained', price: '₹22,000', image: 'https://images.unsplash.com/photo-1605002623881-8ac1989da9d7?w=400&h=300&fit=crop', brand: 'Fieldking', year: '2019', location: 'Nashik', condition: 'Excellent' },
-    { id: 103, name: 'Khedut Cultivator', category: 'Cultivator', specs: '7 Tyne • Like New', price: '₹28,000', image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=400&h=300&fit=crop', brand: 'Khedut', year: '2021', location: 'Sangli', condition: 'Excellent' },
+    { id: 101, name: 'Landforce Rotavator 2020', category: 'Rotavator', specs: '5 ft • Good Condition', price: '₹55,000', image: 'https://images.pexels.com/photos/2933243/pexels-photo-2933243.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop', brand: 'Landforce', year: '2020', location: 'Pune', condition: 'Good' },
+    { id: 102, name: 'Fieldking Plough 2019', category: 'Plough', specs: '3 Bottom • Well Maintained', price: '₹22,000', image: 'https://images.pexels.com/photos/2253412/pexels-photo-2253412.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop', brand: 'Fieldking', year: '2019', location: 'Nashik', condition: 'Excellent' },
+    { id: 103, name: 'Khedut Cultivator', category: 'Cultivator', specs: '7 Tyne • Like New', price: '₹28,000', image: 'https://images.pexels.com/photos/7728672/pexels-photo-7728672.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop', brand: 'Khedut', year: '2021', location: 'Sangli', condition: 'Excellent' },
 ];
 
 export default function ImplementsPage() {

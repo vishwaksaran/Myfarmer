@@ -140,7 +140,7 @@ export default function FertilizerGuidePage() {
                     <nav className="flex items-center gap-1 mb-6 text-xs md:text-sm">
                         <Link href="/home" className="text-gray-500 hover:text-primary font-medium">Home</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">Toolbox</Link>
+                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">Agri Calculators</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
                         <span className="text-primary font-bold">Fertilizer Guide</span>
                     </nav>

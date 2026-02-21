@@ -197,11 +197,11 @@ export default function ServicesCalculations() {
                 </div>
             </div>
 
-            {/* Agri-Toolbox - Calculators Section */}
+            {/* Agri Calculators Section */}
             <div>
                 <h3 className="text-xl font-bold text-primary-dark mb-4 flex items-center gap-2">
                     <span className="material-symbols-outlined text-primary">calculate</span>
-                    Agri-Toolbox
+                    Agri Calculators
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {calculators.map((calc) => (

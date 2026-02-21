@@ -32,7 +32,7 @@ const searchableItems = [
     { name: 'Fencing', path: '/home/fencing', icon: 'fence', keywords: ['fencing', 'farm fencing', 'barbed wire', 'chain link'] },
     { name: 'CCTV & Security', path: '/home/cctv', icon: 'videocam', keywords: ['cctv', 'camera', 'security', 'surveillance', 'farm security'] },
     { name: 'Crop Protection', path: '/home/protection', icon: 'shield', keywords: ['protection', 'crop protection', 'pest control', 'disease'] },
-    { name: 'Toolbox', path: '/home/toolbox', icon: 'handyman', keywords: ['toolbox', 'tools', 'calculator', 'weather', 'mandi prices'] },
+    { name: 'Agri Calculators', path: '/home/toolbox', icon: 'calculate', keywords: ['agri calculators', 'tools', 'calculator', 'weather', 'mandi prices'] },
     { name: 'Community', path: '/home/community', icon: 'groups', keywords: ['community', 'farmer forum', 'discussion', 'help', 'connect'] },
     { name: 'Become a Seller', path: '/home/become-seller', icon: 'storefront', keywords: ['seller', 'dealer', 'sell', 'register as seller', 'become dealer'] },
     { name: 'Settings', path: '/home/settings', icon: 'settings', keywords: ['settings', 'profile', 'notification', 'language', 'account'] },
@@ -54,7 +54,7 @@ const moreNavItems = [
     { tKey: 'nav.veterinary', path: '/home/veterinary', icon: 'vaccines' },
     { tKey: 'nav.land', path: '/home/land', icon: 'landscape' },
     { tKey: 'nav.services', path: '/home/services', icon: 'home_repair_service' },
-    { tKey: 'nav.toolbox', path: '/home/toolbox', icon: 'handyman' },
+    { tKey: 'nav.toolbox', path: '/home/toolbox', icon: 'calculate' },
     { tKey: 'nav.community', path: '/home/community', icon: 'groups' },
 ];
 
@@ -422,15 +422,21 @@ export default function Header() {
                                 <div className="relative" ref={profileMenuRef}>
                                     <button
                                         onClick={() => setIsProfileOpen(!isProfileOpen)}
-                                        className="flex items-center gap-2 rounded-xl bg-gray-100 dark:bg-gray-800 px-2.5 py-1.5 text-sm font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:scale-95"
+                                        className="relative flex items-center gap-2 rounded-xl bg-gray-100 dark:bg-gray-800 px-2.5 py-1.5 text-sm font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:scale-95"
                                     >
-                                        {user.photoURL ? (
-                                            <img src={user.photoURL} alt="User" className="size-8 rounded-full ring-2 ring-primary/20" />
-                                        ) : (
-                                            <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary ring-2 ring-primary/20">
-                                                <span className="material-symbols-outlined text-xl">person</span>
+                                        <div className="relative">
+                                            {user.photoURL ? (
+                                                <img src={user.photoURL} alt="User" className="size-8 rounded-full ring-2 ring-primary/30" />
+                                            ) : (
+                                                <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary ring-2 ring-primary/30">
+                                                    <span className="material-symbols-outlined text-xl">person</span>
+                                                </div>
+                                            )}
+                                            {/* Verified badge */}
+                                            <div className="absolute -bottom-0.5 -right-0.5 size-4 bg-green-500 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-gray-800">
+                                                <span className="material-symbols-outlined text-[10px] text-white font-bold">check</span>
                                             </div>
-                                        )}
+                                        </div>
                                         <span className="hidden sm:inline max-w-[100px] truncate text-gray-700 dark:text-gray-200">{user.displayName || 'User'}</span>
                                         <span className={`material-symbols-outlined text-sm text-gray-400 hidden sm:inline transition-transform ${isProfileOpen ? 'rotate-180' : ''}`}>expand_more</span>
                                     </button>
@@ -459,12 +465,20 @@ export default function Header() {
                                                 {/* Menu Items */}
                                                 <div className="p-2">
                                                     <Link
-                                                        href="/home/profile"
+                                                        href="/home/settings"
                                                         onClick={() => setIsProfileOpen(false)}
                                                         className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
                                                     >
                                                         <span className="material-symbols-outlined text-lg text-primary">account_circle</span>
                                                         My Profile
+                                                    </Link>
+                                                    <Link
+                                                        href="/dashboard"
+                                                        onClick={() => setIsProfileOpen(false)}
+                                                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
+                                                    >
+                                                        <span className="material-symbols-outlined text-lg text-primary">dashboard</span>
+                                                        Dashboard
                                                     </Link>
                                                     <Link
                                                         href="/home/shop/checkout"

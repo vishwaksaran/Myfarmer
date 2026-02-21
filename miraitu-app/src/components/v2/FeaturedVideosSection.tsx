@@ -5,35 +5,39 @@ import { useState } from 'react';
 const videos = [
     {
         id: 'v1',
-        title: 'Shiva Kumar - Verified Seller',
+        title: 'Shiva Kumar \u2013 Verified Seller',
         role: 'Seller',
         thumbnail: 'https://images.unsplash.com/photo-1595246140625-573b715d11dc?w=400&h=300&fit=crop',
-        videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', // Placeholder video
-        views: '1.2K views'
+        youtubeId: 'dQw4w9WgXcQ',
+        views: '1.2K views',
+        duration: '3:45'
     },
     {
         id: 'v2',
-        title: 'Ramesh - Tractor Dealer',
+        title: 'Ramesh \u2013 Tractor Dealer',
         role: 'Dealer',
         thumbnail: 'https://images.unsplash.com/photo-1530507629858-e4977d01e975?w=400&h=300&fit=crop',
-        videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-        views: '3.4K views'
+        youtubeId: '9bZkp7q19f0',
+        views: '3.4K views',
+        duration: '4:12'
     },
     {
         id: 'v3',
-        title: 'Lakshmi - Organic Farmer',
+        title: 'Lakshmi \u2013 Organic Farmer',
         role: 'Farmer',
         thumbnail: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400&h=300&fit=crop',
-        videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-        views: '5.1K views'
+        youtubeId: 'L_jWHffIx5E',
+        views: '5.1K views',
+        duration: '5:30'
     },
     {
         id: 'v4',
-        title: 'Venkat - Drone Service',
+        title: 'Venkat \u2013 Drone Service',
         role: 'Service Provider',
         thumbnail: 'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=400&h=300&fit=crop',
-        videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-        views: '890 views'
+        youtubeId: 'ZZ5LpwO-An4',
+        views: '890 views',
+        duration: '2:58'
     }
 ];
 
@@ -63,12 +67,12 @@ export default function FeaturedVideosSection() {
                         >
                             <div className="aspect-video relative bg-black">
                                 {playingVideo === video.id ? (
-                                    <video
-                                        src={video.videoUrl}
-                                        controls
-                                        autoPlay
-                                        className="w-full h-full object-cover"
-                                        onEnded={() => setPlayingVideo(null)}
+                                    <iframe
+                                        src={`https://www.youtube.com/embed/${video.youtubeId}?autoplay=1&rel=0`}
+                                        title={video.title}
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                        className="w-full h-full"
                                     />
                                 ) : (
                                     <div
@@ -88,7 +92,7 @@ export default function FeaturedVideosSection() {
                                             </div>
                                         </div>
                                         <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded backdrop-blur-md">
-                                            2:30
+                                            {video.duration}
                                         </div>
                                     </div>
                                 )}

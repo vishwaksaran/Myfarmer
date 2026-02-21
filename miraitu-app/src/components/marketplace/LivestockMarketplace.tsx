@@ -62,7 +62,7 @@ export default function LivestockMarketplace({ categoryFilter = 'Livestock' }: L
         {
             id: 1,
             name: 'Mahindra 575 DI Tractor',
-            image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop',
+            image: 'https://images.unsplash.com/photo-1592805723127-004b174a1d03?w=400&h=300&fit=crop',
             price: '₹5,50,000',
             priceValue: 550000,
             category: 'Machinery',
@@ -90,7 +90,7 @@ export default function LivestockMarketplace({ categoryFilter = 'Livestock' }: L
         {
             id: 3,
             name: 'Organic Wheat Seeds',
-            image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&h=300&fit=crop',
+            image: 'https://images.pexels.com/photos/11870839/pexels-photo-11870839.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',
             price: '₹3,200',
             priceValue: 3200,
             category: 'Crops & Seeds',
@@ -103,7 +103,7 @@ export default function LivestockMarketplace({ categoryFilter = 'Livestock' }: L
         {
             id: 4,
             name: 'Agri-Spray Drone V2',
-            image: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400&h=300&fit=crop',
+            image: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=400&h=300&fit=crop',
             price: '₹4,20,000',
             priceValue: 420000,
             category: 'Machinery',
@@ -129,7 +129,7 @@ export default function LivestockMarketplace({ categoryFilter = 'Livestock' }: L
         {
             id: 6,
             name: 'Claas Combine Harvester',
-            image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=300&fit=crop',
+            image: 'https://images.unsplash.com/photo-1635174815612-fd9636f70146?w=400&h=300&fit=crop',
             price: '₹2,500',
             priceValue: 2500,
             category: 'Machinery',
@@ -142,7 +142,7 @@ export default function LivestockMarketplace({ categoryFilter = 'Livestock' }: L
         {
             id: 7,
             name: 'John Deere 5055E',
-            image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop',
+            image: 'https://images.unsplash.com/photo-1589771145485-d2e7e9b9de35?w=400&h=300&fit=crop',
             price: '₹6,20,000',
             priceValue: 620000,
             category: 'Machinery',

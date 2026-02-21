@@ -31,7 +31,7 @@ export default function MachineryMarketPage() {
         {
             id: 1,
             name: 'Mahindra 575 DI',
-            image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop',
+            image: 'https://images.unsplash.com/photo-1592805723127-004b174a1d03?w=400&h=300&fit=crop',
             price: '₹5,50,000',
             priceValue: 550000,
             category: 'Tractors',
@@ -60,7 +60,7 @@ export default function MachineryMarketPage() {
         {
             id: 3,
             name: 'New Holland TT75',
-            image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=300&fit=crop',
+            image: 'https://images.pexels.com/photos/2332736/pexels-photo-2332736.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',
             price: '₹7,80,000',
             priceValue: 780000,
             category: 'Tractors',
@@ -103,7 +103,7 @@ export default function MachineryMarketPage() {
         {
             id: 6,
             name: 'Preet 987',
-            image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=300&fit=crop',
+            image: 'https://images.unsplash.com/photo-1635174815612-fd9636f70146?w=400&h=300&fit=crop',
             price: '₹25,00,000',
             priceValue: 2500000,
             category: 'Harvesters',

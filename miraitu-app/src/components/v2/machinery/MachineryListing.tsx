@@ -167,7 +167,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                                 }}
                                                 className="flex-1 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-1"
                                             >
-                                                <span className="material-symbols-outlined text-sm">request_quote</span>
+                                                <span className="material-symbols-outlined text-sm">currency_rupee</span>
                                                 {type === 'new' ? 'Get Price' : 'Request Quote'}
                                             </button>
                                         </div>
@@ -280,7 +280,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                                 }}
                                                 className="flex-1 sm:flex-none px-3 md:px-4 py-2 rounded-lg md:rounded-xl bg-primary text-white text-xs md:text-sm font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-1"
                                             >
-                                                <span className="material-symbols-outlined text-sm">request_quote</span>
+                                                <span className="material-symbols-outlined text-sm">currency_rupee</span>
                                                 {type === 'new' ? 'Get Price' : 'Request Quote'}
                                             </button>
                                         </div>

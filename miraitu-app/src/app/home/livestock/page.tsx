@@ -14,7 +14,7 @@ const categories = [
     { id: 'cattle', name: 'Cattle', image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=200&h=200&fit=crop', count: 245, path: '/home/livestock/cattle' },
     { id: 'goats-sheep', name: 'Goats & Sheep', image: 'https://images.unsplash.com/photo-1524024973431-2ad916746881?w=200&h=200&fit=crop', count: 189, path: '/home/livestock/goats-sheep' },
     { id: 'poultry', name: 'Poultry', image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=200&h=200&fit=crop', count: 312, path: '/home/livestock/poultry' },
-    { id: 'fish', name: 'Fish & Aquaculture', image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=200&h=200&fit=crop', count: 156, path: '/home/livestock/fish' },
+    { id: 'fish', name: 'Fish & Aquaculture', image: 'https://images.unsplash.com/photo-1731552466988-26d1dbeff4ee?w=200&h=200&fit=crop', count: 156, path: '/home/livestock/fish' },
     { id: 'others', name: 'Others', image: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=200&h=200&fit=crop', count: 78, path: '/home/livestock/others' },
 ];
 
@@ -27,17 +27,17 @@ const tabs = [
 // Featured listings
 const featuredListings = [
     { id: 101, name: 'Premium Gir Cow', category: 'Cattle', breed: 'Gir', age: '3 Years', milkYield: '14 L/day', price: '₹95,000', location: 'Rajkot, Gujarat', image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=400&h=300&fit=crop', verified: true, seller: 'Shyam Patel', phone: '+91 99887 76655', featured: true },
-    { id: 102, name: 'Murrah Buffalo Pair', category: 'Cattle', breed: 'Murrah', age: '4 Years', milkYield: '18 L/day', price: '₹2,40,000', location: 'Karnal, Haryana', image: 'https://images.unsplash.com/photo-1564466809058-bf4114d55352?w=400&h=300&fit=crop', verified: true, seller: 'Hardev Singh', phone: '+91 88776 65544', featured: true },
+    { id: 102, name: 'Murrah Buffalo Pair', category: 'Cattle', breed: 'Murrah', age: '4 Years', milkYield: '18 L/day', price: '₹2,40,000', location: 'Karnal, Haryana', image: 'https://images.unsplash.com/photo-1619452104266-0d23df2119ac?w=400&h=300&fit=crop', verified: true, seller: 'Hardev Singh', phone: '+91 88776 65544', featured: true },
     { id: 103, name: 'Kadaknath Breeding Stock', category: 'Poultry', breed: 'Kadaknath', age: '1 Year', milkYield: '-', price: '₹12,000', location: 'Jhabua, MP', image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=400&h=300&fit=crop', verified: true, seller: 'Mohan Bhil', phone: '+91 77665 54433', featured: true },
 ];
 
 const allListings = [
     { id: 1, name: 'Pure Gir Cow', category: 'Cattle', breed: 'Gir', age: '4 Years', milkYield: '12 L/day', price: '₹85,000', location: 'Rajkot, Gujarat', image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=400&h=300&fit=crop', verified: true, seller: 'Ramesh Patel', phone: '+91 98765 43210' },
-    { id: 2, name: 'Murrah Buffalo', category: 'Cattle', breed: 'Murrah', age: '5 Years', milkYield: '15 L/day', price: '₹1,20,000', location: 'Karnal, Haryana', image: 'https://images.unsplash.com/photo-1564466809058-bf4114d55352?w=400&h=300&fit=crop', verified: true, seller: 'Sukhdev Singh', phone: '+91 87654 32109' },
+    { id: 2, name: 'Murrah Buffalo', category: 'Cattle', breed: 'Murrah', age: '5 Years', milkYield: '15 L/day', price: '₹1,20,000', location: 'Karnal, Haryana', image: 'https://images.unsplash.com/photo-1619452104266-0d23df2119ac?w=400&h=300&fit=crop', verified: true, seller: 'Sukhdev Singh', phone: '+91 87654 32109' },
     { id: 3, name: 'Osmanabadi Goat Pair', category: 'Goats & Sheep', breed: 'Osmanabadi', age: '2 Years', milkYield: '-', price: '₹25,000', location: 'Osmanabad, Maharashtra', image: 'https://images.unsplash.com/photo-1524024973431-2ad916746881?w=400&h=300&fit=crop', verified: false, seller: 'Vijay Jadhav', phone: '+91 76543 21098' },
     { id: 4, name: 'Country Chicken - 50 Birds', category: 'Poultry', breed: 'Country', age: '6 Months', milkYield: '-', price: '₹15,000', location: 'Coimbatore, TN', image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=400&h=300&fit=crop', verified: true, seller: 'Murugan K', phone: '+91 65432 10987' },
     { id: 5, name: 'Rabbits - 10 Pairs', category: 'Others', breed: 'White Giant', age: '6 Months', milkYield: '-', price: '₹8,000', location: 'Pune, Maharashtra', image: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=400&h=300&fit=crop', verified: true, seller: 'Amit Kulkarni', phone: '+91 54321 09876' },
-    { id: 6, name: 'Rohu Fingerlings - 10000', category: 'Fish', breed: 'Rohu', age: 'Fresh', milkYield: '-', price: '₹25,000', location: 'Kolkata, WB', image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop', verified: false, seller: 'Pranab Das', phone: '+91 43210 98765' },
+    { id: 6, name: 'Rohu Fingerlings - 10000', category: 'Fish', breed: 'Rohu', age: 'Fresh', milkYield: '-', price: '₹25,000', location: 'Kolkata, WB', image: 'https://images.unsplash.com/photo-1731552466988-26d1dbeff4ee?w=400&h=300&fit=crop', verified: false, seller: 'Pranab Das', phone: '+91 43210 98765' },
     { id: 7, name: 'Sahiwal Cow', category: 'Cattle', breed: 'Sahiwal', age: '3 Years', milkYield: '10 L/day', price: '₹75,000', location: 'Amritsar, Punjab', image: 'https://images.unsplash.com/photo-1527153857715-3908f2bae5e8?w=400&h=300&fit=crop', verified: true, seller: 'Gurpreet Kaur', phone: '+91 32109 87654' },
     { id: 8, name: 'Layer Hens - 100 Birds', category: 'Poultry', breed: 'Layer', age: '8 Months', milkYield: '-', price: '₹35,000', location: 'Namakkal, TN', image: 'https://images.unsplash.com/photo-1612170153139-6f881ff067e0?w=400&h=300&fit=crop', verified: true, seller: 'Selvam R', phone: '+91 21098 76543' },
 ];

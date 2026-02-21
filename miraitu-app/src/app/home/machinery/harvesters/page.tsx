@@ -15,16 +15,16 @@ const tabs = [
 ];
 
 const newItems = [
-    { id: 1, name: 'John Deere S780', category: 'Combine', specs: '473 HP • 12.8L Engine • Smart Tech', price: '₹2,85,00,000', image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=300&fit=crop', brand: 'John Deere', hp: '473', warranty: '3 Years' },
-    { id: 2, name: 'Kubota DC-70G Plus', category: 'Combine', specs: '70 HP • Track Type • Rice Specialist', price: '₹18,50,000', image: 'https://images.unsplash.com/photo-1605002623881-8ac1989da9d7?w=400&h=300&fit=crop', brand: 'Kubota', hp: '70', warranty: '2 Years' },
-    { id: 3, name: 'Preet 987 Deluxe', category: 'Combine', specs: '101 HP • Self Propelled • AC Cabin', price: '₹22,00,000', image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=400&h=300&fit=crop', brand: 'Preet', hp: '101', warranty: '2 Years' },
-    { id: 4, name: 'Claas Crop Tiger 40', category: 'Combine', specs: '125 HP • Terra Trac • Multi Crop', price: '₹35,00,000', image: 'https://images.unsplash.com/photo-1592805144716-feeccccef5ac?w=400&h=300&fit=crop', brand: 'Claas', hp: '125', warranty: '3 Years' },
+    { id: 1, name: 'John Deere S780', category: 'Combine', specs: '473 HP • 12.8L Engine • Smart Tech', price: '₹2,85,00,000', image: 'https://images.unsplash.com/photo-1635174815612-fd9636f70146?w=400&h=300&fit=crop', brand: 'John Deere', hp: '473', warranty: '3 Years' },
+    { id: 2, name: 'Kubota DC-70G Plus', category: 'Combine', specs: '70 HP • Track Type • Rice Specialist', price: '₹18,50,000', image: 'https://images.unsplash.com/photo-1602867741746-6df80f40b3f6?w=400&h=300&fit=crop', brand: 'Kubota', hp: '70', warranty: '2 Years' },
+    { id: 3, name: 'Preet 987 Deluxe', category: 'Combine', specs: '101 HP • Self Propelled • AC Cabin', price: '₹22,00,000', image: 'https://images.unsplash.com/photo-1635174815612-fd9636f70146?w=400&h=300&fit=crop', brand: 'Preet', hp: '101', warranty: '2 Years' },
+    { id: 4, name: 'Claas Crop Tiger 40', category: 'Combine', specs: '125 HP • Terra Trac • Multi Crop', price: '₹35,00,000', image: 'https://images.unsplash.com/photo-1602867741746-6df80f40b3f6?w=400&h=300&fit=crop', brand: 'Claas', hp: '125', warranty: '3 Years' },
 ];
 
 const usedItems = [
-    { id: 101, name: 'Preet 849 2020', category: 'Combine', specs: '85 HP • Good Condition • 1200 Hrs', price: '₹12,50,000', image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=300&fit=crop', brand: 'Preet', hp: '85', year: '2020', location: 'Ludhiana, Punjab', condition: 'Good' },
-    { id: 102, name: 'Dashmesh 912 2019', category: 'Combine', specs: '91 HP • Excellent Condition', price: '₹14,00,000', image: 'https://images.unsplash.com/photo-1605002623881-8ac1989da9d7?w=400&h=300&fit=crop', brand: 'Dashmesh', hp: '91', year: '2019', location: 'Amritsar, Punjab', condition: 'Excellent' },
-    { id: 103, name: 'New Holland TC5.30 2018', category: 'Combine', specs: '120 HP • Well Maintained', price: '₹18,00,000', image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=400&h=300&fit=crop', brand: 'New Holland', hp: '120', year: '2018', location: 'Karnal, Haryana', condition: 'Good' },
+    { id: 101, name: 'Preet 849 2020', category: 'Combine', specs: '85 HP • Good Condition • 1200 Hrs', price: '₹12,50,000', image: 'https://images.unsplash.com/photo-1635174815612-fd9636f70146?w=400&h=300&fit=crop', brand: 'Preet', hp: '85', year: '2020', location: 'Ludhiana, Punjab', condition: 'Good' },
+    { id: 102, name: 'Dashmesh 912 2019', category: 'Combine', specs: '91 HP • Excellent Condition', price: '₹14,00,000', image: 'https://images.unsplash.com/photo-1602867741746-6df80f40b3f6?w=400&h=300&fit=crop', brand: 'Dashmesh', hp: '91', year: '2019', location: 'Amritsar, Punjab', condition: 'Excellent' },
+    { id: 103, name: 'New Holland TC5.30 2018', category: 'Combine', specs: '120 HP • Well Maintained', price: '₹18,00,000', image: 'https://images.unsplash.com/photo-1635174815612-fd9636f70146?w=400&h=300&fit=crop', brand: 'New Holland', hp: '120', year: '2018', location: 'Karnal, Haryana', condition: 'Good' },
 ];
 
 export default function HarvestersPage() {

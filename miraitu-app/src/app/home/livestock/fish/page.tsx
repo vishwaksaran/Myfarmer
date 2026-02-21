@@ -8,10 +8,10 @@ import LoginModal from '@/components/auth/LoginModal';
 type TabType = 'buy' | 'sell';
 
 const listings = [
-    { id: 1, name: 'Rohu Fish Farm Setup', type: 'Rohu', quantity: '500 kg capacity', price: '₹1,50,000', location: 'Andhra Pradesh', image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop', verified: true, seller: 'Rao Aqua Farms', phone: '+91 99887 76655' },
-    { id: 2, name: 'Catla Fingerlings - 10000', type: 'Catla', quantity: '10,000 pcs', price: '₹25,000', location: 'West Bengal', image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop', verified: true, seller: 'Biswas Hatchery', phone: '+91 88776 65544' },
+    { id: 1, name: 'Rohu Fish Farm Setup', type: 'Rohu', quantity: '500 kg capacity', price: '₹1,50,000', location: 'Andhra Pradesh', image: 'https://images.unsplash.com/photo-1731552466988-26d1dbeff4ee?w=400&h=300&fit=crop', verified: true, seller: 'Rao Aqua Farms', phone: '+91 99887 76655' },
+    { id: 2, name: 'Catla Fingerlings - 10000', type: 'Catla', quantity: '10,000 pcs', price: '₹25,000', location: 'West Bengal', image: 'https://images.unsplash.com/photo-1731552466988-26d1dbeff4ee?w=400&h=300&fit=crop', verified: true, seller: 'Biswas Hatchery', phone: '+91 88776 65544' },
     { id: 3, name: 'Prawn Farm Ready', type: 'Vannamei', quantity: '2 acre', price: '₹8,00,000', location: 'Gujarat', image: 'https://images.unsplash.com/photo-1565680018093-ebb6e5f79f89?w=400&h=300&fit=crop', verified: false, seller: 'Patel Shrimp', phone: '+91 77665 54433' },
-    { id: 4, name: 'Tilapia Seeds', type: 'Tilapia', quantity: '5,000 pcs', price: '₹15,000', location: 'Tamil Nadu', image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop', verified: true, seller: 'Murugan Fisheries', phone: '+91 66554 43322' },
+    { id: 4, name: 'Tilapia Seeds', type: 'Tilapia', quantity: '5,000 pcs', price: '₹15,000', location: 'Tamil Nadu', image: 'https://images.unsplash.com/photo-1731552466988-26d1dbeff4ee?w=400&h=300&fit=crop', verified: true, seller: 'Murugan Fisheries', phone: '+91 66554 43322' },
 ];
 
 export default function FishPage() {

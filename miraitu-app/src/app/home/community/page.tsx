@@ -1,41 +1,69 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
-import MiraituLogo from '@/components/MiraituLogo';
+import LoginModal from '@/components/auth/LoginModal';
+
+interface Post {
+    id: number;
+    author: string;
+    avatar: string;
+    location: string;
+    time: string;
+    content: string;
+    image?: string;
+    likes: number;
+    comments: number;
+    shares: number;
+    tags: string[];
+    liked?: boolean;
+    showComments?: boolean;
+    commentList?: { author: string; text: string; time: string }[];
+}
 
 // Sample community posts
-const samplePosts = [
+const initialPosts: Post[] = [
     {
         id: 1,
         author: 'Rajesh Kumar',
-        avatar: '👨‍🌾',
+        avatar: '\uD83D\uDC68\u200D\uD83C\uDF3E',
         location: 'Punjab, India',
         time: '2 hours ago',
-        content: 'Just harvested my first organic wheat crop this season! The yield was 20% higher than last year thanks to the new irrigation techniques I learned from this community. 🌾✨',
+        content: 'Just harvested my first organic wheat crop this season! The yield was 20% higher than last year thanks to the new irrigation techniques I learned from this community. \uD83C\uDF3E\u2728',
         image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&h=400&fit=crop',
         likes: 245,
         comments: 32,
         shares: 15,
         tags: ['#OrganicFarming', '#WheatHarvest', '#Punjab'],
+        liked: false,
+        commentList: [
+            { author: 'Priya S.', text: 'Congratulations! What irrigation method did you use?', time: '1h ago' },
+            { author: 'Amit P.', text: 'Amazing yield! Keep it up \uD83D\uDC4F', time: '45m ago' },
+        ],
     },
     {
         id: 2,
         author: 'Priya Sharma',
-        avatar: '👩‍🌾',
+        avatar: '\uD83D\uDC69\u200D\uD83C\uDF3E',
         location: 'Maharashtra, India',
         time: '5 hours ago',
-        content: 'Has anyone tried using neem-based pesticides for cotton crops? Looking for natural alternatives to chemical pesticides. Would appreciate any recommendations! 🌱',
+        content: 'Has anyone tried using neem-based pesticides for cotton crops? Looking for natural alternatives to chemical pesticides. Would appreciate any recommendations! \uD83C\uDF31',
         likes: 89,
         comments: 56,
         shares: 8,
         tags: ['#NaturalPesticides', '#CottonFarming', '#Sustainable'],
+        liked: false,
+        commentList: [
+            { author: 'Karthik R.', text: 'Yes! Neem oil works great. Mix 2ml per litre of water.', time: '4h ago' },
+        ],
     },
     {
         id: 3,
         author: 'Amit Patel',
-        avatar: '🧑‍🌾',
+        avatar: '\uD83E\uDDD1\u200D\uD83C\uDF3E',
         location: 'Gujarat, India',
         time: '8 hours ago',
         content: 'Sharing my experience with drip irrigation! Saved 40% water this season and my tomato yield increased significantly. Here\'s my setup:',
@@ -44,23 +72,30 @@ const samplePosts = [
         comments: 78,
         shares: 45,
         tags: ['#DripIrrigation', '#WaterSaving', '#SmartFarming'],
+        liked: false,
+        commentList: [
+            { author: 'Sunita D.', text: 'How much did the setup cost?', time: '6h ago' },
+            { author: 'Rajesh K.', text: 'Drip irrigation is the way to go!', time: '5h ago' },
+        ],
     },
     {
         id: 4,
         author: 'Sunita Devi',
-        avatar: '👩‍🌾',
+        avatar: '\uD83D\uDC69\u200D\uD83C\uDF3E',
         location: 'Uttar Pradesh, India',
         time: '1 day ago',
-        content: 'Our women\'s farming cooperative just got approved for government subsidy! We\'re planning to buy a new tractor together. Community power! 💪🚜',
+        content: 'Our women\'s farming cooperative just got approved for government subsidy! We\'re planning to buy a new tractor together. Community power! \uD83D\uDCAA\uD83D\uDE9C',
         likes: 623,
         comments: 94,
         shares: 112,
         tags: ['#WomenInAgriculture', '#Cooperative', '#Success'],
+        liked: false,
+        commentList: [],
     },
     {
         id: 5,
         author: 'Karthik Reddy',
-        avatar: '👨‍🌾',
+        avatar: '\uD83D\uDC68\u200D\uD83C\uDF3E',
         location: 'Andhra Pradesh, India',
         time: '2 days ago',
         content: 'Weather prediction apps saved my rice crop from unexpected rainfall last week. Which weather apps do you all use for farming?',
@@ -69,24 +104,132 @@ const samplePosts = [
         comments: 65,
         shares: 23,
         tags: ['#AgriTech', '#WeatherForecast', '#RiceFarming'],
+        liked: false,
+        commentList: [
+            { author: 'Amit P.', text: 'I use Miraitu weather card - very accurate!', time: '1d ago' },
+        ],
     },
 ];
 
 const trendingTopics = [
     { tag: '#OrganicFarming', posts: '12.5K' },
-    { tag: '#MonsooonTips', posts: '8.3K' },
+    { tag: '#MonsoonTips', posts: '8.3K' },
     { tag: '#DroneAgriculture', posts: '6.1K' },
     { tag: '#SoilHealth', posts: '5.8K' },
     { tag: '#FarmersMarket', posts: '4.2K' },
 ];
 
-export default function CommunityPage() {
-    const [showAuthModal, setShowAuthModal] = useState(false);
-    const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
-    const [newPostText, setNewPostText] = useState('');
+const suggestedGroups = [
+    { name: 'Organic Farmers India', members: '45K', emoji: '\uD83C\uDF31', joined: false },
+    { name: 'Drone Agriculture', members: '12K', emoji: '\uD83D\uDE81', joined: false },
+    { name: 'Women in Farming', members: '28K', emoji: '\uD83D\uDC69\u200D\uD83C\uDF3E', joined: false },
+];
 
-    const handleInteraction = () => {
-        setShowAuthModal(true);
+export default function CommunityPage() {
+    const { user } = useAuth();
+    const router = useRouter();
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [posts, setPosts] = useState<Post[]>(initialPosts);
+    const [newPostText, setNewPostText] = useState('');
+    const [groups, setGroups] = useState(suggestedGroups);
+    const [commentInputs, setCommentInputs] = useState<Record<number, string>>({});
+    const [activeNav, setActiveNav] = useState('Feed');
+
+    // Check if user is logged in, show login modal if not
+    const requireAuth = useCallback((action: () => void) => {
+        if (!user) {
+            setShowLoginModal(true);
+        } else {
+            action();
+        }
+    }, [user]);
+
+    // Like/unlike a post
+    const handleLike = (postId: number) => {
+        requireAuth(() => {
+            setPosts(prev => prev.map(p =>
+                p.id === postId
+                    ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 }
+                    : p
+            ));
+        });
+    };
+
+    // Toggle comment section
+    const handleToggleComments = (postId: number) => {
+        setPosts(prev => prev.map(p =>
+            p.id === postId ? { ...p, showComments: !p.showComments } : p
+        ));
+    };
+
+    // Add a comment
+    const handleAddComment = (postId: number) => {
+        const text = commentInputs[postId]?.trim();
+        if (!text) return;
+        requireAuth(() => {
+            setPosts(prev => prev.map(p =>
+                p.id === postId
+                    ? {
+                        ...p,
+                        comments: p.comments + 1,
+                        commentList: [...(p.commentList || []), {
+                            author: user?.displayName || 'You',
+                            text,
+                            time: 'Just now',
+                        }],
+                    }
+                    : p
+            ));
+            setCommentInputs(prev => ({ ...prev, [postId]: '' }));
+        });
+    };
+
+    // Share post
+    const handleShare = (postId: number) => {
+        setPosts(prev => prev.map(p =>
+            p.id === postId ? { ...p, shares: p.shares + 1 } : p
+        ));
+        // Attempt native share
+        if (navigator.share) {
+            const post = posts.find(p => p.id === postId);
+            navigator.share({
+                title: `Post by ${post?.author}`,
+                text: post?.content?.slice(0, 100),
+                url: window.location.href,
+            }).catch(() => { /* user cancelled */ });
+        }
+    };
+
+    // Create new post
+    const handleCreatePost = () => {
+        if (!newPostText.trim()) return;
+        requireAuth(() => {
+            const newPost: Post = {
+                id: Date.now(),
+                author: user?.displayName || 'You',
+                avatar: '\uD83E\uDDD1\u200D\uD83C\uDF3E',
+                location: 'India',
+                time: 'Just now',
+                content: newPostText.trim(),
+                likes: 0,
+                comments: 0,
+                shares: 0,
+                tags: [],
+                liked: false,
+                commentList: [],
+            };
+            setPosts(prev => [newPost, ...prev]);
+            setNewPostText('');
+        });
+    };
+
+    // Join/leave group
+    const handleJoinGroup = (groupName: string) => {
+        requireAuth(() => {
+            setGroups(prev => prev.map(g =>
+                g.name === groupName ? { ...g, joined: !g.joined } : g
+            ));
+        });
     };
 
     return (
@@ -99,26 +242,48 @@ export default function CommunityPage() {
                         {/* Left Sidebar */}
                         <div className="hidden lg:block w-64 shrink-0">
                             <div className="sticky top-24 space-y-6">
-                                {/* User Card (Not Logged In) */}
+                                {/* User Card */}
                                 <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-6 border border-gray-100 dark:border-gray-800">
                                     <div className="text-center">
-                                        <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 mx-auto mb-4 flex items-center justify-center">
-                                            <span className="material-symbols-outlined text-3xl text-gray-400">person</span>
-                                        </div>
-                                        <h3 className="font-bold text-gray-900 dark:text-white mb-2">Join Our Community</h3>
-                                        <p className="text-sm text-gray-500 mb-4">Connect with farmers across India</p>
-                                        <button
-                                            onClick={() => { setAuthMode('signup'); setShowAuthModal(true); }}
-                                            className="w-full py-2.5 rounded-xl bg-primary text-white font-semibold hover:brightness-110 transition-all"
-                                        >
-                                            Sign Up
-                                        </button>
-                                        <button
-                                            onClick={() => { setAuthMode('login'); setShowAuthModal(true); }}
-                                            className="w-full py-2.5 mt-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
-                                        >
-                                            Log In
-                                        </button>
+                                        {user ? (
+                                            <>
+                                                <div className="w-16 h-16 rounded-full bg-primary/10 mx-auto mb-4 flex items-center justify-center overflow-hidden ring-2 ring-primary/20">
+                                                    {user.photoURL ? (
+                                                        <img src={user.photoURL} alt="User" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <span className="material-symbols-outlined text-3xl text-primary">person</span>
+                                                    )}
+                                                </div>
+                                                <h3 className="font-bold text-gray-900 dark:text-white mb-1">{user.displayName || 'Farmer'}</h3>
+                                                <p className="text-sm text-gray-500 mb-4">{user.email || 'Community Member'}</p>
+                                                <button
+                                                    onClick={() => router.push('/home/settings')}
+                                                    className="w-full py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-sm"
+                                                >
+                                                    Edit Profile
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 mx-auto mb-4 flex items-center justify-center">
+                                                    <span className="material-symbols-outlined text-3xl text-gray-400">person</span>
+                                                </div>
+                                                <h3 className="font-bold text-gray-900 dark:text-white mb-2">Join Our Community</h3>
+                                                <p className="text-sm text-gray-500 mb-4">Connect with farmers across India</p>
+                                                <button
+                                                    onClick={() => router.push('/user-register')}
+                                                    className="w-full py-2.5 rounded-xl bg-primary text-white font-semibold hover:brightness-110 transition-all"
+                                                >
+                                                    Sign Up
+                                                </button>
+                                                <button
+                                                    onClick={() => setShowLoginModal(true)}
+                                                    className="w-full py-2.5 mt-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+                                                >
+                                                    Log In
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
 
@@ -127,18 +292,24 @@ export default function CommunityPage() {
                                     <h4 className="font-bold text-gray-900 dark:text-white mb-3 px-2">Quick Links</h4>
                                     <nav className="space-y-1">
                                         {[
-                                            { icon: 'home', label: 'Feed', active: true },
-                                            { icon: 'people', label: 'My Network', active: false },
-                                            { icon: 'bookmark', label: 'Saved Posts', active: false },
-                                            { icon: 'groups', label: 'Groups', active: false },
-                                            { icon: 'event', label: 'Events', active: false },
+                                            { icon: 'home', label: 'Feed' },
+                                            { icon: 'people', label: 'My Network' },
+                                            { icon: 'bookmark', label: 'Saved Posts' },
+                                            { icon: 'groups', label: 'Groups' },
+                                            { icon: 'event', label: 'Events' },
                                         ].map((item) => (
                                             <button
                                                 key={item.label}
-                                                onClick={item.active ? undefined : handleInteraction}
-                                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${item.active
-                                                        ? 'bg-primary/10 text-primary'
-                                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                                onClick={() => {
+                                                    if (item.label === 'Feed') {
+                                                        setActiveNav(item.label);
+                                                    } else {
+                                                        requireAuth(() => setActiveNav(item.label));
+                                                    }
+                                                }}
+                                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${activeNav === item.label
+                                                    ? 'bg-primary/10 text-primary'
+                                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
                                                     }`}
                                             >
                                                 <span className="material-symbols-outlined text-lg">{item.icon}</span>
@@ -155,42 +326,38 @@ export default function CommunityPage() {
                             {/* Create Post */}
                             <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-4 border border-gray-100 dark:border-gray-800 mb-6">
                                 <div className="flex gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
-                                        <span className="material-symbols-outlined text-gray-400">person</span>
+                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
+                                        {user?.photoURL ? (
+                                            <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="material-symbols-outlined text-primary/60">person</span>
+                                        )}
                                     </div>
                                     <div className="flex-1">
                                         <textarea
                                             value={newPostText}
                                             onChange={(e) => setNewPostText(e.target.value)}
-                                            onFocus={handleInteraction}
+                                            onFocus={() => { if (!user) setShowLoginModal(true); }}
                                             placeholder="Share your farming experience, tips, or questions..."
-                                            className="w-full bg-gray-50 dark:bg-gray-800/50 rounded-xl px-4 py-3 text-sm resize-none border-0 focus:ring-2 focus:ring-primary/30"
+                                            className="w-full bg-gray-50 dark:bg-gray-800/50 rounded-xl px-4 py-3 text-sm resize-none border-0 focus:ring-2 focus:ring-primary/30 outline-none"
                                             rows={3}
                                         />
                                         <div className="flex items-center justify-between mt-3">
                                             <div className="flex items-center gap-2">
-                                                <button
-                                                    onClick={handleInteraction}
-                                                    className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                                                >
+                                                <button className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                                                     <span className="material-symbols-outlined">image</span>
                                                 </button>
-                                                <button
-                                                    onClick={handleInteraction}
-                                                    className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                                                >
+                                                <button className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                                                     <span className="material-symbols-outlined">videocam</span>
                                                 </button>
-                                                <button
-                                                    onClick={handleInteraction}
-                                                    className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                                                >
+                                                <button className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                                                     <span className="material-symbols-outlined">poll</span>
                                                 </button>
                                             </div>
                                             <button
-                                                onClick={handleInteraction}
-                                                className="px-5 py-2 rounded-xl bg-primary text-white text-sm font-semibold hover:brightness-110 transition-all"
+                                                onClick={handleCreatePost}
+                                                disabled={!newPostText.trim()}
+                                                className="px-5 py-2 rounded-xl bg-primary text-white text-sm font-semibold hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                                             >
                                                 Post
                                             </button>
@@ -201,7 +368,7 @@ export default function CommunityPage() {
 
                             {/* Posts Feed */}
                             <div className="space-y-6">
-                                {samplePosts.map((post) => (
+                                {posts.map((post) => (
                                     <article
                                         key={post.id}
                                         className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden"
@@ -214,7 +381,7 @@ export default function CommunityPage() {
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2">
                                                     <h4 className="font-bold text-gray-900 dark:text-white">{post.author}</h4>
-                                                    <span className="text-xs text-gray-400">•</span>
+                                                    <span className="text-xs text-gray-400">&bull;</span>
                                                     <span className="text-xs text-gray-500">{post.time}</span>
                                                 </div>
                                                 <p className="text-xs text-gray-500 flex items-center gap-1">
@@ -222,10 +389,7 @@ export default function CommunityPage() {
                                                     {post.location}
                                                 </p>
                                             </div>
-                                            <button
-                                                onClick={handleInteraction}
-                                                className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                                            >
+                                            <button className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                                                 <span className="material-symbols-outlined">more_horiz</span>
                                             </button>
                                         </div>
@@ -235,7 +399,7 @@ export default function CommunityPage() {
                                             <p className="text-gray-800 dark:text-gray-200 leading-relaxed">
                                                 {post.content}
                                             </p>
-                                            {post.tags && (
+                                            {post.tags.length > 0 && (
                                                 <div className="flex flex-wrap gap-2 mt-3">
                                                     {post.tags.map((tag) => (
                                                         <span
@@ -272,39 +436,95 @@ export default function CommunityPage() {
                                         {/* Post Actions */}
                                         <div className="px-4 py-2 flex items-center border-t border-gray-100 dark:border-gray-800">
                                             <button
-                                                onClick={handleInteraction}
-                                                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                                                onClick={() => handleLike(post.id)}
+                                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-colors ${post.liked
+                                                    ? 'text-primary bg-primary/5'
+                                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                                    }`}
                                             >
-                                                <span className="material-symbols-outlined">thumb_up</span>
-                                                <span className="text-sm font-medium">Like</span>
+                                                <span className="material-symbols-outlined">{post.liked ? 'thumb_up' : 'thumb_up'}</span>
+                                                <span className="text-sm font-medium">{post.liked ? 'Liked' : 'Like'}</span>
                                             </button>
                                             <button
-                                                onClick={handleInteraction}
-                                                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                                                onClick={() => handleToggleComments(post.id)}
+                                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-colors ${post.showComments
+                                                    ? 'text-primary bg-primary/5'
+                                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                                    }`}
                                             >
                                                 <span className="material-symbols-outlined">chat_bubble</span>
                                                 <span className="text-sm font-medium">Comment</span>
                                             </button>
                                             <button
-                                                onClick={handleInteraction}
+                                                onClick={() => handleShare(post.id)}
                                                 className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                                             >
                                                 <span className="material-symbols-outlined">share</span>
                                                 <span className="text-sm font-medium">Share</span>
                                             </button>
                                         </div>
+
+                                        {/* Comments Section */}
+                                        {post.showComments && (
+                                            <div className="px-4 pb-4 border-t border-gray-100 dark:border-gray-800">
+                                                {/* Existing comments */}
+                                                {(post.commentList || []).length > 0 && (
+                                                    <div className="pt-3 space-y-3 mb-3">
+                                                        {(post.commentList || []).map((comment, i) => (
+                                                            <div key={i} className="flex gap-2">
+                                                                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                                    <span className="material-symbols-outlined text-xs text-primary">person</span>
+                                                                </div>
+                                                                <div className="flex-1 bg-gray-50 dark:bg-gray-800/50 rounded-xl px-3 py-2">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="text-xs font-bold text-gray-900 dark:text-white">{comment.author}</span>
+                                                                        <span className="text-[10px] text-gray-400">{comment.time}</span>
+                                                                    </div>
+                                                                    <p className="text-xs text-gray-700 dark:text-gray-300 mt-0.5">{comment.text}</p>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                {/* Add comment input */}
+                                                <div className="flex gap-2 pt-2">
+                                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
+                                                        {user?.photoURL ? (
+                                                            <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <span className="material-symbols-outlined text-sm text-primary/60">person</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex-1 flex gap-2">
+                                                        <input
+                                                            type="text"
+                                                            value={commentInputs[post.id] || ''}
+                                                            onChange={(e) => setCommentInputs(prev => ({ ...prev, [post.id]: e.target.value }))}
+                                                            onFocus={() => { if (!user) setShowLoginModal(true); }}
+                                                            onKeyDown={(e) => { if (e.key === 'Enter') handleAddComment(post.id); }}
+                                                            placeholder="Write a comment..."
+                                                            className="flex-1 px-3 py-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 text-sm border-0 focus:ring-2 focus:ring-primary/30 outline-none"
+                                                        />
+                                                        <button
+                                                            onClick={() => handleAddComment(post.id)}
+                                                            disabled={!commentInputs[post.id]?.trim()}
+                                                            className="px-3 py-2 rounded-xl bg-primary text-white text-xs font-semibold hover:brightness-110 transition-all disabled:opacity-40"
+                                                        >
+                                                            <span className="material-symbols-outlined text-sm">send</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </article>
                                 ))}
                             </div>
 
                             {/* Load More */}
                             <div className="text-center mt-8">
-                                <button
-                                    onClick={handleInteraction}
-                                    className="px-8 py-3 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                                >
-                                    Load More Posts
-                                </button>
+                                <p className="text-sm text-gray-400 font-medium py-4">
+                                    You&apos;re all caught up! Check back later for new posts.
+                                </p>
                             </div>
                         </div>
 
@@ -321,7 +541,6 @@ export default function CommunityPage() {
                                         {trendingTopics.map((topic, index) => (
                                             <button
                                                 key={topic.tag}
-                                                onClick={handleInteraction}
                                                 className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
                                             >
                                                 <div>
@@ -341,11 +560,7 @@ export default function CommunityPage() {
                                         Suggested Groups
                                     </h4>
                                     <div className="space-y-3">
-                                        {[
-                                            { name: 'Organic Farmers India', members: '45K', emoji: '🌱' },
-                                            { name: 'Drone Agriculture', members: '12K', emoji: '🚁' },
-                                            { name: 'Women in Farming', members: '28K', emoji: '👩‍🌾' },
-                                        ].map((group) => (
+                                        {groups.map((group) => (
                                             <div
                                                 key={group.name}
                                                 className="flex items-center gap-3 p-2"
@@ -358,10 +573,13 @@ export default function CommunityPage() {
                                                     <p className="text-xs text-gray-500">{group.members} members</p>
                                                 </div>
                                                 <button
-                                                    onClick={handleInteraction}
-                                                    className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors"
+                                                    onClick={() => handleJoinGroup(group.name)}
+                                                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${group.joined
+                                                        ? 'bg-primary text-white'
+                                                        : 'bg-primary/10 text-primary hover:bg-primary/20'
+                                                        }`}
                                                 >
-                                                    Join
+                                                    {group.joined ? 'Joined' : 'Join'}
                                                 </button>
                                             </div>
                                         ))}
@@ -389,141 +607,8 @@ export default function CommunityPage() {
 
             <Footer />
 
-            {/* Auth Modal Overlay */}
-            {showAuthModal && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-                    {/* Backdrop */}
-                    <div
-                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                        onClick={() => setShowAuthModal(false)}
-                    />
-
-                    {/* Modal */}
-                    <div className="relative w-full max-w-md bg-white dark:bg-[#1a231a] rounded-3xl shadow-2xl overflow-hidden">
-                        {/* Close Button */}
-                        <button
-                            onClick={() => setShowAuthModal(false)}
-                            className="absolute top-4 right-4 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors z-10"
-                        >
-                            <span className="material-symbols-outlined text-gray-500">close</span>
-                        </button>
-
-                        {/* Header with Logo */}
-                        <div className="pt-8 pb-6 px-8 text-center border-b border-gray-100 dark:border-gray-800 bg-gradient-to-b from-primary/5 to-transparent">
-                            <div className="flex justify-center mb-4">
-                                <MiraituLogo size={60} />
-                            </div>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                {authMode === 'login' ? 'Welcome Back!' : 'Join Miraitu Community'}
-                            </h2>
-                            <p className="text-sm text-gray-500 mt-2">
-                                {authMode === 'login'
-                                    ? 'Log in to connect with fellow farmers'
-                                    : 'Create an account to share and collaborate'}
-                            </p>
-                        </div>
-
-                        {/* Form */}
-                        <div className="p-8">
-                            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-                                {authMode === 'signup' && (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                                            Full Name
-                                        </label>
-                                        <input
-                                            type="text"
-                                            placeholder="Enter your name"
-                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-                                        />
-                                    </div>
-                                )}
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                                        Phone Number or Email
-                                    </label>
-                                    <input
-                                        type="text"
-                                        placeholder="Enter phone or email"
-                                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                                        Password
-                                    </label>
-                                    <input
-                                        type="password"
-                                        placeholder="Enter password"
-                                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-                                    />
-                                </div>
-
-                                {authMode === 'login' && (
-                                    <div className="text-right">
-                                        <button type="button" className="text-sm text-primary hover:underline">
-                                            Forgot Password?
-                                        </button>
-                                    </div>
-                                )}
-
-                                <button
-                                    type="submit"
-                                    className="w-full py-3.5 rounded-xl bg-primary text-white font-bold text-lg hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/25"
-                                >
-                                    {authMode === 'login' ? 'Log In' : 'Create Account'}
-                                </button>
-                            </form>
-
-                            {/* Divider */}
-                            <div className="flex items-center gap-4 my-6">
-                                <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-                                <span className="text-sm text-gray-400">or continue with</span>
-                                <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-                            </div>
-
-                            {/* Social Login */}
-                            <div className="flex gap-3">
-                                <button className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                    <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Google</span>
-                                </button>
-                                <button className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                    <span className="material-symbols-outlined text-gray-600">phone_android</span>
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">OTP</span>
-                                </button>
-                            </div>
-
-                            {/* Switch Mode */}
-                            <p className="text-center text-sm text-gray-500 mt-6">
-                                {authMode === 'login' ? (
-                                    <>
-                                        Don&apos;t have an account?{' '}
-                                        <button
-                                            onClick={() => setAuthMode('signup')}
-                                            className="text-primary font-semibold hover:underline"
-                                        >
-                                            Sign Up
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        Already have an account?{' '}
-                                        <button
-                                            onClick={() => setAuthMode('login')}
-                                            className="text-primary font-semibold hover:underline"
-                                        >
-                                            Log In
-                                        </button>
-                                    </>
-                                )}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Login Modal - uses real auth */}
+            <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
         </div>
     );
 }

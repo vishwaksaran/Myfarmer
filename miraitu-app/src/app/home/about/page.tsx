@@ -18,11 +18,11 @@ const teamMembers = [
         description: 'Tech innovator driving Miraitu\'s platform architecture. VishwakSaran brings cutting-edge technology to simplify farming operations and create seamless digital experiences.',
     },
     {
-        name: 'C.A Manpreeth Singh',
+        name: 'CA Manpreet Singh',
         role: 'Director & CFO',
         image: '/team/manpreeth.jpeg',
         linkedin: 'https://www.linkedin.com/in/camanpreethsingh',
-        description: 'Financial strategist ensuring sustainable growth. Manpreeth oversees financial operations, investor relations, and strategic planning to fuel Miraitu\'s expansion.',
+        description: 'Financial strategist ensuring sustainable growth. Manpreet oversees financial operations, investor relations, and strategic planning to fuel Miraitu\'s expansion.',
     },
 ];
 

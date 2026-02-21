@@ -183,7 +183,7 @@ export default function HeroSection() {
                                     <span className="material-symbols-outlined text-lg group-hover:rotate-45 transition-transform">photo_library</span>
                                     {t('hero.exploreGallery')}
                                 </button>
-                                <a href="https://www.youtube.com/@miraituapp" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-white hover:bg-white/20 active:scale-[0.97] transition-all whitespace-nowrap" data-no-auth>
+                                <a href="https://www.youtube.com/@miraitu" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-white hover:bg-white/20 active:scale-[0.97] transition-all whitespace-nowrap" data-no-auth>
                                     <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">play_circle</span>
                                     {t('hero.watchFarmerVideos')}
                                 </a>
