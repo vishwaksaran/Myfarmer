@@ -54,5 +54,6 @@
       "label": "Miraitu Dashboard"
     }
   ],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "color_scheme": "light"
 }

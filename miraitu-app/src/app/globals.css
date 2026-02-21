@@ -38,11 +38,9 @@
   --font-display: "Plus Jakarta Sans", sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: var(--miraitu-background-dark);
-    --foreground: #ededed;
-  }
+/* Force light mode only - no dark mode */
+html {
+  color-scheme: light;
 }
 
 /* Base Styles */
