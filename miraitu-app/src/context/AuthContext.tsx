@@ -152,7 +152,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             setLoading(true);
             // Pre-check: verify Google provider is available by testing the auth endpoint
-            const checkUrl = `${supabase.supabaseUrl}/auth/v1/authorize?provider=google`;
+            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+            const checkUrl = `${supabaseUrl}/auth/v1/authorize?provider=google`;
             try {
                 const checkResp = await fetch(checkUrl, { method: 'HEAD', redirect: 'manual' });
                 // If the provider isn't enabled Supabase returns 400
