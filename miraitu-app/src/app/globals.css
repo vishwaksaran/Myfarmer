@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Override Tailwind's dark variant so dark: classes NEVER activate */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Miraitu Brand Color Variables */
 :root {
   /* Primary Brand Colors */
