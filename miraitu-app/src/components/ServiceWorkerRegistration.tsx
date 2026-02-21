@@ -109,17 +109,17 @@ export default function ServiceWorkerRegistration() {
           width: 44,
           height: 44,
           borderRadius: 12,
-          background: '#f0f9f0',
+          background: 'transparent',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontSize: 24,
           flexShrink: 0,
-          overflow: 'hidden',
+          overflow: 'visible',
         }}
       >
         <img
-          src="/logo-icon.png"
+          src="/miraitu-logo-icon.png"
           alt="Miraitu Logo"
           style={{
             width: '100%',

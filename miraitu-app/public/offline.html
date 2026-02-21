@@ -32,18 +32,19 @@
       width: 80px;
       height: 80px;
       margin: 0 auto 24px;
-      background: #f0f9f0;
+      background: transparent;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 36px;
-      overflow: hidden;
+      overflow: visible;
     }
     .icon img {
       width: 100%;
       height: 100%;
       object-fit: contain;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.2));
     }
     h1 {
       color: #2c5926;
@@ -104,7 +105,7 @@
 <body>
   <div class="container">
     <div class="icon">
-      <img src="/logo-icon.png" alt="Miraitu Logo">
+      <img src="/miraitu-logo-icon.png" alt="Miraitu Logo">
     </div>
     <h1>You're Offline</h1>
     <p>It seems you've lost your internet connection. Don't worry — reconnect and try again.</p>

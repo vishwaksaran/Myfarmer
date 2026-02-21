@@ -52,22 +52,23 @@ export default function SplashScreen() {
           width: 120,
           height: 120,
           borderRadius: '50%',
-          background: 'white',
+          background: 'transparent',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           marginBottom: 24,
           animation: 'scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s backwards',
-          overflow: 'hidden',
+          overflow: 'visible',
         }}
       >
         <img
-          src="/logo-icon.png"
+          src="/miraitu-logo-icon.png"
           alt="Miraitu Logo"
           style={{
             width: '100%',
             height: '100%',
             objectFit: 'contain',
+            filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.2))',
           }}
         />
       </div>
