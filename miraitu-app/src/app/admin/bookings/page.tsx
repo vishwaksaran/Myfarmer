@@ -1,0 +1,282 @@
+'use client';
+
+import { useEffect, useState, useCallback } from 'react';
+import { fetchAllBookings, updateBookingStatus, type BookingRecord } from '@/app/actions/bookings';
+import { downloadCSV } from '@/lib/csv-export';
+
+const MODULE_OPTIONS = [
+    { value: '', label: 'All Modules' },
+    { value: 'services', label: 'Services' },
+    { value: 'land', label: 'Land' },
+    { value: 'borewell', label: 'Borewell' },
+    { value: 'fencing', label: 'Fencing' },
+    { value: 'cctv', label: 'CCTV' },
+    { value: 'protection', label: 'Protection' },
+];
+
+const STATUS_OPTIONS = [
+    { value: '', label: 'All Status' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'contacted', label: 'Contacted' },
+    { value: 'confirmed', label: 'Confirmed' },
+    { value: 'completed', label: 'Completed' },
+    { value: 'cancelled', label: 'Cancelled' },
+];
+
+export default function AdminBookingsPage() {
+    const [bookings, setBookings] = useState<BookingRecord[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [moduleFilter, setModuleFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [expandedId, setExpandedId] = useState<string | null>(null);
+    const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+    const loadBookings = useCallback(async () => {
+        setLoading(true);
+        const result = await fetchAllBookings({
+            module: moduleFilter || undefined,
+            status: statusFilter || undefined,
+        });
+        setBookings(result.data);
+        setLoading(false);
+    }, [moduleFilter, statusFilter]);
+
+    useEffect(() => { loadBookings(); }, [loadBookings]);
+
+    const filteredBookings = bookings.filter(b => {
+        if (!searchQuery) return true;
+        const q = searchQuery.toLowerCase();
+        return (
+            b.full_name.toLowerCase().includes(q) ||
+            b.phone.includes(q) ||
+            b.location.toLowerCase().includes(q) ||
+            b.category.toLowerCase().includes(q)
+        );
+    });
+
+    const handleStatusChange = async (id: string, newStatus: string) => {
+        setUpdatingId(id);
+        const result = await updateBookingStatus(id, newStatus);
+        if (result.success) {
+            setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus } : b));
+        }
+        setUpdatingId(null);
+    };
+
+    const handleExportCSV = () => {
+        const rows = filteredBookings.map(b => ({
+            'ID': b.id,
+            'Name': b.full_name,
+            'Phone': b.phone,
+            'Location': b.location,
+            'Module': b.module,
+            'Category': b.category,
+            'Status': b.status,
+            'Preferred Date': b.preferred_date || '',
+            'Extra Data': JSON.stringify(b.extra_data),
+            'Admin Notes': b.admin_notes || '',
+            'Submitted On': new Date(b.created_at).toLocaleString(),
+        }));
+        const filename = `bookings${moduleFilter ? `_${moduleFilter}` : ''}${statusFilter ? `_${statusFilter}` : ''}_${new Date().toISOString().slice(0, 10)}`;
+        downloadCSV(rows, filename);
+    };
+
+    // Group by category for the module-specific CSV export
+    const categories = [...new Set(filteredBookings.map(b => b.category))];
+
+    const handleExportCategory = (category: string) => {
+        const rows = filteredBookings
+            .filter(b => b.category === category)
+            .map(b => ({
+                'ID': b.id,
+                'Name': b.full_name,
+                'Phone': b.phone,
+                'Location': b.location,
+                'Module': b.module,
+                'Category': b.category,
+                'Status': b.status,
+                'Preferred Date': b.preferred_date || '',
+                'Extra Data': JSON.stringify(b.extra_data),
+                'Admin Notes': b.admin_notes || '',
+                'Submitted On': new Date(b.created_at).toLocaleString(),
+            }));
+        downloadCSV(rows, `bookings_${category}_${new Date().toISOString().slice(0, 10)}`);
+    };
+
+    return (
+        <div>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <h1 className="text-2xl md:text-3xl font-black text-gray-900">Bookings</h1>
+                <button
+                    onClick={handleExportCSV}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-colors shadow-sm"
+                >
+                    <span className="material-symbols-outlined text-lg">download</span>
+                    Export All CSV
+                </button>
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-wrap gap-3 mb-6">
+                <div className="relative flex-1 min-w-[200px]">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
+                    <input
+                        type="text"
+                        placeholder="Search by name, phone, location..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500 transition-colors"
+                    />
+                </div>
+                <select
+                    value={moduleFilter}
+                    onChange={(e) => setModuleFilter(e.target.value)}
+                    className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-green-500"
+                >
+                    {MODULE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+                <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-green-500"
+                >
+                    {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+            </div>
+
+            {/* Category-specific CSV export */}
+            {categories.length > 1 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider self-center mr-2">Export by category:</span>
+                    {categories.map(cat => (
+                        <button
+                            key={cat}
+                            onClick={() => handleExportCategory(cat)}
+                            className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:bg-green-50 hover:text-green-700 hover:border-green-200 transition-colors capitalize"
+                        >
+                            {cat} ({filteredBookings.filter(b => b.category === cat).length})
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {/* Table */}
+            {loading ? (
+                <div className="flex items-center justify-center py-20">
+                    <span className="material-symbols-outlined text-4xl text-green-600 animate-spin">progress_activity</span>
+                </div>
+            ) : filteredBookings.length === 0 ? (
+                <div className="bg-white rounded-2xl p-12 border border-gray-100 text-center">
+                    <span className="material-symbols-outlined text-5xl text-gray-300 mb-3">inbox</span>
+                    <p className="text-gray-500 font-medium">No bookings found</p>
+                </div>
+            ) : (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                                    <th className="px-4 py-3">Name</th>
+                                    <th className="px-4 py-3">Phone</th>
+                                    <th className="px-4 py-3">Location</th>
+                                    <th className="px-4 py-3">Module</th>
+                                    <th className="px-4 py-3">Category</th>
+                                    <th className="px-4 py-3">Status</th>
+                                    <th className="px-4 py-3">Date</th>
+                                    <th className="px-4 py-3">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredBookings.map((b) => (
+                                    <>
+                                        <tr
+                                            key={b.id}
+                                            className="border-b border-gray-50 hover:bg-gray-50/50 cursor-pointer"
+                                            onClick={() => setExpandedId(expandedId === b.id ? null : b.id)}
+                                        >
+                                            <td className="px-4 py-3 font-semibold text-gray-900">{b.full_name}</td>
+                                            <td className="px-4 py-3 text-gray-600">
+                                                <a href={`tel:${b.phone}`} className="hover:text-green-600">{b.phone}</a>
+                                            </td>
+                                            <td className="px-4 py-3 text-gray-600 max-w-[150px] truncate">{b.location}</td>
+                                            <td className="px-4 py-3 capitalize">{b.module}</td>
+                                            <td className="px-4 py-3 capitalize">{b.category}</td>
+                                            <td className="px-4 py-3">
+                                                <select
+                                                    value={b.status}
+                                                    onChange={(e) => { e.stopPropagation(); handleStatusChange(b.id, e.target.value); }}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    disabled={updatingId === b.id}
+                                                    className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase border-0 outline-none cursor-pointer ${
+                                                        b.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                                                        b.status === 'contacted' ? 'bg-blue-100 text-blue-700' :
+                                                        b.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                                                        b.status === 'completed' ? 'bg-gray-100 text-gray-600' :
+                                                        'bg-red-100 text-red-700'
+                                                    }`}
+                                                >
+                                                    {STATUS_OPTIONS.filter(o => o.value).map(o => (
+                                                        <option key={o.value} value={o.value}>{o.label}</option>
+                                                    ))}
+                                                </select>
+                                            </td>
+                                            <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
+                                                {new Date(b.created_at).toLocaleDateString()}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span className="material-symbols-outlined text-gray-400 text-lg">
+                                                    {expandedId === b.id ? 'expand_less' : 'expand_more'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {expandedId === b.id && (
+                                            <tr key={`${b.id}-detail`} className="bg-gray-50/80">
+                                                <td colSpan={8} className="px-4 py-4">
+                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                                                        <div>
+                                                            <p className="font-bold text-gray-500 uppercase mb-1">Preferred Date</p>
+                                                            <p className="text-gray-900">{b.preferred_date || '—'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-gray-500 uppercase mb-1">User ID</p>
+                                                            <p className="text-gray-900 font-mono text-[10px]">{b.user_id || 'Guest'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-gray-500 uppercase mb-1">Admin Notes</p>
+                                                            <p className="text-gray-900">{b.admin_notes || '—'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-gray-500 uppercase mb-1">Updated</p>
+                                                            <p className="text-gray-900">{new Date(b.updated_at).toLocaleString()}</p>
+                                                        </div>
+                                                    </div>
+                                                    {Object.keys(b.extra_data).length > 0 && (
+                                                        <div className="mt-4">
+                                                            <p className="font-bold text-gray-500 uppercase text-[10px] mb-2">Extra Details</p>
+                                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                                {Object.entries(b.extra_data).map(([key, val]) => (
+                                                                    <div key={key} className="bg-white rounded-lg p-2.5 border border-gray-100">
+                                                                        <p className="text-[10px] font-bold text-gray-400 uppercase">{key.replace(/_/g, ' ')}</p>
+                                                                        <p className="text-xs font-semibold text-gray-800 mt-0.5">{String(val) || '—'}</p>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="px-4 py-3 border-t border-gray-100 text-xs text-gray-500">
+                        Showing {filteredBookings.length} booking{filteredBookings.length !== 1 ? 's' : ''}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

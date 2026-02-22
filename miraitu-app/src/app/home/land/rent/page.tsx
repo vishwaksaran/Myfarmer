@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
+import { useBookingSubmit } from '@/lib/useBookingSubmit';
 
 type TabType = 'browse' | 'list';
 
@@ -103,6 +104,7 @@ export default function RentFarmLandPage() {
         contactName: '',
         contactPhone: '',
     });
+    const { submit, submitting } = useBookingSubmit();
 
     const filteredListings = activePeriod === 'All'
         ? rentalListings
@@ -159,11 +161,29 @@ export default function RentFarmLandPage() {
         setPreviews(newPreviews);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
-        setShowSuccessModal(true);
-        setTimeout(() => setShowSuccessModal(false), 6000);
+        const result = await submit({
+            module: 'land',
+            category: 'rent',
+            full_name: formData.contactName,
+            phone: formData.contactPhone,
+            location: formData.location,
+            extra_data: {
+                title: formData.title,
+                area: formData.area,
+                rent_price: formData.rentPrice,
+                period: formData.period,
+                description: formData.description,
+            },
+        });
+        if (result.success) {
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 6000);
+        } else {
+            setErrors({ submit: result.error || 'Failed to submit' });
+        }
     };
 
     return (

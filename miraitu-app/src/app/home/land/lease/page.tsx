@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
+import { useBookingSubmit } from '@/lib/useBookingSubmit';
 
 type TabType = 'browse' | 'list';
 
@@ -85,6 +86,7 @@ export default function LeaseLandPage() {
         contactName: '',
         contactPhone: '',
     });
+    const { submit, submitting } = useBookingSubmit();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -137,11 +139,29 @@ export default function LeaseLandPage() {
         setPreviews(newPreviews);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
-        setShowSuccessModal(true);
-        setTimeout(() => setShowSuccessModal(false), 6000);
+        const result = await submit({
+            module: 'land',
+            category: 'lease',
+            full_name: formData.contactName,
+            phone: formData.contactPhone,
+            location: formData.location,
+            extra_data: {
+                title: formData.title,
+                area: formData.area,
+                lease_price: formData.leasePrice,
+                duration: formData.duration,
+                description: formData.description,
+            },
+        });
+        if (result.success) {
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 6000);
+        } else {
+            setErrors({ submit: result.error || 'Failed to submit' });
+        }
     };
 
     return (

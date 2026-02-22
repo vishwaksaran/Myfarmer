@@ -473,15 +473,7 @@ export default function Header() {
                                                         My Profile
                                                     </Link>
                                                     <Link
-                                                        href="/dashboard"
-                                                        onClick={() => setIsProfileOpen(false)}
-                                                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
-                                                    >
-                                                        <span className="material-symbols-outlined text-lg text-primary">dashboard</span>
-                                                        Dashboard
-                                                    </Link>
-                                                    <Link
-                                                        href="/home/shop/checkout"
+                                                        href="/home/orders"
                                                         onClick={() => setIsProfileOpen(false)}
                                                         className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
                                                     >

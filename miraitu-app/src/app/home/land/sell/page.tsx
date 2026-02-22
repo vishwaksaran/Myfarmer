@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useBookingSubmit } from '@/lib/useBookingSubmit';
 
 const landCategories = [
     { id: 'agriculture', name: 'Agriculture Land', icon: '🌾' },
@@ -30,6 +31,7 @@ export default function SellLandPage() {
         contactName: '',
         contactPhone: '',
     });
+    const { submit, submitting } = useBookingSubmit();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -86,11 +88,33 @@ export default function SellLandPage() {
         setPreviews(newPreviews);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
-        setShowSuccessModal(true);
-        setTimeout(() => setShowSuccessModal(false), 6000);
+        const result = await submit({
+            module: 'land',
+            category: 'sell',
+            full_name: formData.contactName,
+            phone: formData.contactPhone,
+            location: formData.location,
+            extra_data: {
+                title: formData.title,
+                district: formData.district,
+                state: formData.state,
+                area: formData.area,
+                price_per_acre: formData.pricePerAcre,
+                total_price: formData.totalPrice,
+                description: formData.description,
+                amenities: formData.amenities,
+                land_category: selectedCategory,
+            },
+        });
+        if (result.success) {
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 6000);
+        } else {
+            setErrors({ submit: result.error || 'Failed to submit' });
+        }
     };
 
     return (

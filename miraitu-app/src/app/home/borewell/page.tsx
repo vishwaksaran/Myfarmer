@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import MiraituLogo from '@/components/MiraituLogo';
+import { useBookingSubmit } from '@/lib/useBookingSubmit';
 
 export default function BorewellServicesPage() {
     const [headerVisible, setHeaderVisible] = useState(true);
@@ -29,8 +30,9 @@ export default function BorewellServicesPage() {
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+    const { submit, submitting } = useBookingSubmit();
 
-    const handleBookConsultation = () => {
+    const handleBookConsultation = async () => {
         const errs: Record<string, string> = {};
         if (!formData.name.trim()) errs.name = 'Name is required';
         const digits = formData.phone.replace(/\D/g, '');
@@ -40,7 +42,21 @@ export default function BorewellServicesPage() {
         if (!formData.preferredDate) errs.date = 'Please select a date';
         if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
         setFormErrors({});
-        setShowSuccessModal(true);
+        const result = await submit({
+            module: 'borewell',
+            category: 'borewell-drilling',
+            full_name: formData.name,
+            phone: formData.phone,
+            location: formData.location,
+            preferred_date: formData.preferredDate || undefined,
+            extra_data: {
+                depth: formData.depth,
+                diameter: formData.diameter,
+                soil_type: formData.soilType,
+            },
+        });
+        if (result.success) setShowSuccessModal(true);
+        else setFormErrors({ submit: result.error || 'Failed to submit' });
     };
 
     const services = [

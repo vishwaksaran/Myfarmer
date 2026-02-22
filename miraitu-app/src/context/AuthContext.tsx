@@ -120,12 +120,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
     }, [user, resetInactivityTimer]);
 
+    // Fetch profile avatar from profiles table and update user state
+    const loadProfileAvatar = useCallback(async (userId: string) => {
+        try {
+            const { data } = await supabase
+                .from('profiles')
+                .select('avatar_url, full_name, phone')
+                .eq('id', userId)
+                .single();
+            if (data?.avatar_url) {
+                setUser(prev => prev ? { ...prev, photoURL: data.avatar_url } : prev);
+            }
+            if (data?.full_name) {
+                setUser(prev => prev ? { ...prev, displayName: data.full_name || prev?.displayName } : prev);
+            }
+            if (data?.phone) {
+                setUser(prev => prev ? { ...prev, phone: data.phone || prev?.phone } : prev);
+            }
+        } catch (err) {
+            console.error('Error loading profile avatar:', err);
+        }
+    }, []);
+
     // Supabase auth state listener
     useEffect(() => {
         // Check current session on mount
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session?.user) {
                 setUser(toMiraituUser(session.user));
+                // Load profile data (including custom avatar) from DB
+                loadProfileAvatar(session.user.id);
             }
             setLoading(false);
         });
@@ -135,6 +159,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             (_event: string, session: Session | null) => {
                 if (session?.user) {
                     setUser(toMiraituUser(session.user));
+                    // Load profile data (including custom avatar) from DB
+                    loadProfileAvatar(session.user.id);
                 } else {
                     setUser(null);
                 }
@@ -145,41 +171,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => {
             subscription.unsubscribe();
         };
-    }, []);
+    }, [loadProfileAvatar]);
 
     // Google OAuth Sign-In
     const signInWithGoogle = async () => {
         try {
             setLoading(true);
-            // Pre-check: verify Google provider is available by testing the auth endpoint
-            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-            const checkUrl = `${supabaseUrl}/auth/v1/authorize?provider=google`;
-            try {
-                const checkResp = await fetch(checkUrl, { method: 'HEAD', redirect: 'manual' });
-                // If the provider isn't enabled Supabase returns 400
-                if (checkResp.status === 400) {
-                    setLoading(false);
-                    throw new Error('Google sign-in is not yet configured. Please use Phone OTP or Guest login.');
-                }
-            } catch (preCheckError: unknown) {
-                // If the pre-check itself failed with our custom message, rethrow
-                if (preCheckError instanceof Error && preCheckError.message.includes('not yet configured')) {
-                    throw preCheckError;
-                }
-                // Network errors on pre-check are ok — let the main flow handle it
-            }
-
-            const { error } = await supabase.auth.signInWithOAuth({
+            const { data, error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
                     redirectTo: `${window.location.origin}/auth/callback`,
                     queryParams: {
-                        prompt: 'select_account',
+                        access_type: 'offline',
+                        prompt: 'consent',
                     },
                 },
             });
             if (error) throw error;
-            // Browser will redirect — loading stays true until redirect completes
+            // Browser will redirect to Google — loading stays true until redirect completes
         } catch (error) {
             console.error('Error signing in with Google:', error);
             setLoading(false);
@@ -290,17 +299,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const uploadAvatar = async (file: File): Promise<{ url: string | null; error: string | null }> => {
         if (!user || user.isGuest) return { url: null, error: 'Not authenticated' };
         try {
+            // Verify we have an active auth session (needed for storage RLS)
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return { url: null, error: 'No active session. Please sign out and sign in again.' };
+
             const fileExt = file.name.split('.').pop();
-            const filePath = `avatars/${user.id}.${fileExt}`;
+            const filePath = `${user.id}/avatar.${fileExt}`;
+
+            // Upload to dedicated avatars bucket (path must start with userId/)
             const { error: uploadError } = await supabase.storage
-                .from('seller-images')
+                .from('avatars')
                 .upload(filePath, file, { upsert: true });
-            if (uploadError) return { url: null, error: uploadError.message };
+            if (uploadError) {
+                console.error('Storage upload error:', uploadError);
+                return { url: null, error: uploadError.message };
+            }
+
             const { data: { publicUrl } } = supabase.storage
-                .from('seller-images')
+                .from('avatars')
                 .getPublicUrl(filePath);
+
             // Update the profile with the new avatar URL
-            await updateProfile({ avatar_url: publicUrl });
+            const profileResult = await updateProfile({ avatar_url: publicUrl });
+            if (profileResult.error) {
+                console.error('Profile update error after avatar upload:', profileResult.error);
+                // Still return the URL since the file was uploaded successfully
+            }
             return { url: publicUrl, error: null };
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : 'Failed to upload avatar';

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import MiraituLogo from '@/components/MiraituLogo';
+import { useBookingSubmit } from '@/lib/useBookingSubmit';
 
 export default function FencingInfrastructurePage() {
     const [headerVisible, setHeaderVisible] = useState(true);
@@ -15,6 +16,7 @@ export default function FencingInfrastructurePage() {
         fencing_length: '',
         preferred_timeline: 'Within 1 week',
     });
+    const { submit, submitting } = useBookingSubmit();
 
     useEffect(() => {
         const onScroll = () => {
@@ -26,7 +28,7 @@ export default function FencingInfrastructurePage() {
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
-    const handleRequestFencingQuote = () => {
+    const handleRequestFencingQuote = async () => {
         const errs: Record<string, string> = {};
         if (!formData.full_name.trim()) errs.full_name = 'Name is required';
         const digits = formData.phone.replace(/\D/g, '');
@@ -35,7 +37,20 @@ export default function FencingInfrastructurePage() {
         if (!formData.location.trim()) errs.location = 'Location is required';
         if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
         setFormErrors({});
-        setShowSuccessModal(true);
+        const result = await submit({
+            module: 'fencing',
+            category: selectedFencingType || 'chain-link',
+            full_name: formData.full_name,
+            phone: formData.phone,
+            location: formData.location,
+            extra_data: {
+                fencing_length: formData.fencing_length,
+                preferred_timeline: formData.preferred_timeline,
+                fencing_type: selectedFencingType,
+            },
+        });
+        if (result.success) setShowSuccessModal(true);
+        else setFormErrors({ submit: result.error || 'Failed to submit' });
     };
 
     const [selectedFencingType, setSelectedFencingType] = useState<string>('chain-link');

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import MiraituLogo from '@/components/MiraituLogo';
+import { useBookingSubmit } from '@/lib/useBookingSubmit';
 
 export default function StoragePage() {
     const [headerVisible, setHeaderVisible] = useState(true);
@@ -31,8 +32,9 @@ export default function StoragePage() {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [estimatedCost, setEstimatedCost] = useState<string | null>(null);
+    const { submit, submitting } = useBookingSubmit();
 
-    const handleFindGodown = () => {
+    const handleFindGodown = async () => {
         const errs: Record<string, string> = {};
         if (!formData.full_name.trim()) errs.full_name = 'Name is required';
         const digits = formData.phone.replace(/\D/g, '');
@@ -41,7 +43,21 @@ export default function StoragePage() {
         if (!formData.location.trim()) errs.location = 'Location is required';
         if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
         setFormErrors({});
-        setShowSuccessModal(true);
+        const result = await submit({
+            module: 'services',
+            category: 'storage-godown',
+            full_name: formData.full_name,
+            phone: formData.phone,
+            location: formData.location,
+            extra_data: {
+                crop_type: formData.crop_type,
+                storage_type: formData.storage_type,
+                quantity: formData.quantity,
+                duration: formData.duration,
+            },
+        });
+        if (result.success) setShowSuccessModal(true);
+        else setFormErrors({ submit: result.error || 'Failed to submit' });
     };
 
     const handleCalculate = () => {

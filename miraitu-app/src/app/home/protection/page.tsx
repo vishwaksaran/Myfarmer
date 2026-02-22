@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import MiraituLogo from '@/components/MiraituLogo';
+import { useBookingSubmit } from '@/lib/useBookingSubmit';
 
 export default function ProtectionServicesPage() {
     const [headerVisible, setHeaderVisible] = useState(true);
@@ -15,6 +16,7 @@ export default function ProtectionServicesPage() {
         pond_area: '',
         pond_depth: '',
     });
+    const { submit, submitting } = useBookingSubmit();
 
     useEffect(() => {
         const onScroll = () => {
@@ -26,7 +28,7 @@ export default function ProtectionServicesPage() {
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
-    const handleGetQuotation = () => {
+    const handleGetQuotation = async () => {
         const errs: Record<string, string> = {};
         if (!formData.full_name.trim()) errs.full_name = 'Name is required';
         const digits = formData.phone.replace(/\D/g, '');
@@ -35,7 +37,20 @@ export default function ProtectionServicesPage() {
         if (!formData.location.trim()) errs.location = 'Location is required';
         if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
         setFormErrors({});
-        setShowSuccessModal(true);
+        const result = await submit({
+            module: 'protection',
+            category: selectedSheet || 'tarpaulin',
+            full_name: formData.full_name,
+            phone: formData.phone,
+            location: formData.location,
+            extra_data: {
+                pond_area: formData.pond_area,
+                pond_depth: formData.pond_depth,
+                selected_sheet: selectedSheet,
+            },
+        });
+        if (result.success) setShowSuccessModal(true);
+        else setFormErrors({ submit: result.error || 'Failed to submit' });
     };
 
     const [selectedSheet, setSelectedSheet] = useState<string | null>(null);

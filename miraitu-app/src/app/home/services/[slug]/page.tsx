@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import MiraituLogo from '@/components/MiraituLogo';
+import { useBookingSubmit } from '@/lib/useBookingSubmit';
 
 const serviceData: Record<string, any> = {
     'harvester': {
@@ -112,6 +113,7 @@ export default function GenericServicePage() {
         location: '',
         date: '',
     });
+    const { submit, submitting } = useBookingSubmit();
 
     useEffect(() => {
         const onScroll = () => {
@@ -123,7 +125,7 @@ export default function GenericServicePage() {
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
-    const handleFindProviders = () => {
+    const handleFindProviders = async () => {
         const errs: Record<string, string> = {};
         if (!formData.name.trim()) errs.name = 'Name is required';
         const digits = formData.phone.replace(/\D/g, '');
@@ -132,7 +134,19 @@ export default function GenericServicePage() {
         if (!formData.location.trim()) errs.location = 'Location is required';
         if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
         setFormErrors({});
-        setShowSuccessModal(true);
+        const result = await submit({
+            module: 'services',
+            category: slug,
+            full_name: formData.name,
+            phone: formData.phone,
+            location: formData.location,
+            preferred_date: formData.date || undefined,
+        });
+        if (result.success) setShowSuccessModal(true);
+        else {
+            console.error('[handleFindProviders] Submit failed:', result.error);
+            setFormErrors({ submit: result.error || 'Failed to submit booking. Please try again.' });
+        }
     };
 
     if (!service) {
@@ -237,6 +251,12 @@ export default function GenericServicePage() {
                                 <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Book Service</h3>
                                 <p className="text-sm text-gray-500 mb-6">Fill details to get callbacks from providers</p>
 
+                                {formErrors.submit && (
+                                    <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                                        <p className="text-sm text-red-700 dark:text-red-400">{formErrors.submit}</p>
+                                    </div>
+                                )}
+
                                 <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                                     <div>
                                         <input 
@@ -279,7 +299,7 @@ export default function GenericServicePage() {
                                     <button 
                                         type="button"
                                         onClick={handleFindProviders}
-                                        disabled={!formData.name || !formData.phone || !formData.location}
+                                        disabled={submitting || !formData.name || !formData.phone || !formData.location}
                                         className={`w-full py-4 rounded-xl ${colors.bg} ${colors.hover} text-white font-bold text-lg transition-all shadow-lg mt-2 disabled:opacity-50 disabled:cursor-not-allowed`}>
                                         FIND PROVIDERS
                                     </button>

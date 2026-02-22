@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import MiraituLogo from '@/components/MiraituLogo';
+import { useBookingSubmit } from '@/lib/useBookingSubmit';
 
 export default function CCTVSurveillancePage() {
     const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
@@ -98,22 +99,28 @@ export default function CCTVSurveillancePage() {
         },
     ];
 
-    const handleSubmitRequest = () => {
+    const handleSubmitRequest = async () => {
         if (formData.name && formData.phone && formData.location && formData.installDate && selectedPackage) {
-            setShowSuccessModal(true);
-            // Reset form after showing modal
-            setTimeout(() => {
-                setFormData({
-                    name: '',
-                    phone: '',
-                    location: '',
-                    installDate: '',
-                });
-                setSelectedPackage(null);
-                setShowSuccessModal(false);
-            }, 3000);
+            const result = await submit({
+                module: 'cctv',
+                category: selectedPackage,
+                full_name: formData.name,
+                phone: formData.phone,
+                location: formData.location,
+                preferred_date: formData.installDate || undefined,
+                extra_data: { selected_package: selectedPackage },
+            });
+            if (result.success) {
+                setShowSuccessModal(true);
+                setTimeout(() => {
+                    setFormData({ name: '', phone: '', location: '', installDate: '' });
+                    setSelectedPackage(null);
+                    setShowSuccessModal(false);
+                }, 3000);
+            }
         }
     };
+    const { submit, submitting } = useBookingSubmit();
 
     return (
         <div className="min-h-screen bg-background-light dark:bg-background-dark">
