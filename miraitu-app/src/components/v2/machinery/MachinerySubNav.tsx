@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 
 // Category display names mapping
 const categoryLabels: Record<string, string> = {
@@ -15,7 +14,7 @@ const categoryLabels: Record<string, string> = {
 
 interface MachinerySubNavProps {
     category: string; // e.g., 'tractors', 'jcb', 'drones'
-    currentAction: 'new' | 'buy' | 'sell';
+    currentAction: 'new' | 'buy' | 'sell' | 'rent';
 }
 
 export default function MachinerySubNav({ category, currentAction }: MachinerySubNavProps) {
@@ -58,6 +57,18 @@ export default function MachinerySubNav({ category, currentAction }: MachinerySu
             activeRing: 'ring-orange-500',
             activeBg: 'bg-orange-50 dark:bg-orange-900/30',
             activeText: 'text-orange-700 dark:text-orange-300',
+        },
+        {
+            key: 'rent' as const,
+            label: `Rent ${categoryLabel}`,
+            shortLabel: 'Rent',
+            href: `${basePath}/rent`,
+            icon: 'handshake',
+            color: 'bg-primary',
+            hoverBg: 'hover:bg-primary/10 dark:hover:bg-primary/20',
+            activeRing: 'ring-primary',
+            activeBg: 'bg-primary/10 dark:bg-primary/20',
+            activeText: 'text-primary dark:text-primary',
         },
     ];
 

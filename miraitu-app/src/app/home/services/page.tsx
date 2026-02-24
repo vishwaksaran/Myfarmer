@@ -400,7 +400,7 @@ export default function ServicesPage() {
                                 <span className="material-symbols-outlined text-white text-2xl md:text-3xl">person_add</span>
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h2 className="text-lg md:text-2xl font-bold mb-1">Become a Provider</h2>
+                                <h2 className="text-lg md:text-2xl font-bold mb-1">Become a Service Provider</h2>
                                 <p className="text-xs md:text-sm text-white/90 line-clamp-2">Register and earn by offering your services.</p>
                             </div>
                         </div>

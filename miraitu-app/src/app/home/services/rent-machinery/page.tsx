@@ -1,12 +1,443 @@
 'use client';
 
-import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import MiraituLogo from '@/components/MiraituLogo';
+import { useBookingSubmit } from '@/lib/useBookingSubmit';
+
+// ─── Machinery catalogue ─────────────────────────────────────────────────────
+
+const GREEN = 'from-green-500 to-emerald-600';
+const GREEN_BG = 'from-green-100 to-emerald-100';
+
+const machineryTypes = [
+    {
+        key: 'tractor',
+        icon: 'agriculture',
+        title: 'Tractors (45–60 HP)',
+        description: 'Powerful tractors for plowing, tilling, and transport.',
+        features: ['4WD Options', 'AC Cabin Available', 'Operators Included', 'Fuel Inclusive'],
+        price: 'From ₹800/hr',
+        color: GREEN,
+        bg: GREEN_BG,
+    },
+    {
+        key: 'harvester',
+        icon: 'grass',
+        title: 'Combine Harvesters',
+        description: 'Efficient harvesting for wheat, paddy, and soy.',
+        features: ['Multi-crop Support', 'Track/Wheel Type', 'Grain Tank', 'Straw Management'],
+        price: 'From ₹2,500/hr',
+        color: GREEN,
+        bg: GREEN_BG,
+    },
+    {
+        key: 'small_machines',
+        icon: 'precision_manufacturing',
+        title: 'Small Machines',
+        description: 'Compact equipment for small plots and precision work.',
+        features: ['Power Weeder', 'Thresher', 'Seed Drill', 'Easy Transport'],
+        price: 'From ₹400/hr',
+        color: GREEN,
+        bg: GREEN_BG,
+    },
+    {
+        key: 'implements',
+        icon: 'handyman',
+        title: 'Farm Implements',
+        description: 'Essential attachments for various farm operations.',
+        features: ['Plough Attachment', 'Harrow', 'Rotavator', 'Disc Harrow'],
+        price: 'From ₹350/hr',
+        color: GREEN,
+        bg: GREEN_BG,
+    },
+    {
+        key: 'spray_machine',
+        icon: 'water_drop',
+        title: 'Spray Machines',
+        description: 'Precision spraying for pesticides and fertilizers.',
+        features: ['3–5 Ltr Tank', 'Adjustable Nozzles', 'Backpack Design', 'Lightweight'],
+        price: 'From ₹500/hr',
+        color: GREEN,
+        bg: GREEN_BG,
+    },
+    {
+        key: 'agri_drone',
+        icon: 'flight',
+        title: 'Agri Drones',
+        description: 'Advanced drone technology for crop monitoring and spraying.',
+        features: ['10L Tank Capacity', 'GPS Mapping', 'Real-time Monitoring', '25 min Flight Time'],
+        price: 'From ₹1,500/hr',
+        color: GREEN,
+        bg: GREEN_BG,
+    },
+];
+
+const hourlyRates: Record<string, number> = {
+    tractor: 800,
+    harvester: 2500,
+    rotavator: 600,
+    small_machines: 400,
+    implements: 350,
+    spray_machine: 500,
+    agri_drone: 1500,
+};
+
+// ─── Booking Modal ───────────────────────────────────────────────────────────
+
+interface ModalFormData {
+    full_name: string;
+    phone: string;
+    location: string;
+    machinery_type: string;
+    preferred_date: string;
+    duration_value: string;
+    duration_type: string;
+    extra_notes: string;
+}
+
+function BookingModal({
+    machine,
+    onClose,
+}: {
+    machine: (typeof machineryTypes)[0];
+    onClose: () => void;
+}) {
+    const { submit, submitting } = useBookingSubmit();
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [form, setForm] = useState<ModalFormData>({
+        full_name: '',
+        phone: '',
+        location: '',
+        machinery_type: machine.key,
+        preferred_date: '',
+        duration_value: '',
+        duration_type: 'hours',
+        extra_notes: '',
+    });
+
+    // Trap focus inside modal
+    const firstFocusRef = useRef<HTMLInputElement>(null);
+    useEffect(() => {
+        firstFocusRef.current?.focus();
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = ''; };
+    }, []);
+
+    const estimatedCost = () => {
+        const dur = parseFloat(form.duration_value) || 0;
+        if (!dur) return null;
+        const rate = hourlyRates[form.machinery_type] || 800;
+        const multiplier = form.duration_type === 'days' ? 8 : 1;
+        return (rate * dur * multiplier).toLocaleString('en-IN');
+    };
+
+    const validate = () => {
+        const errs: Record<string, string> = {};
+        if (!form.full_name.trim()) errs.full_name = 'Name is required';
+        if (!form.phone.trim()) errs.phone = 'Phone is required';
+        else if (form.phone.replace(/\D/g, '').length !== 10) errs.phone = 'Enter a valid 10-digit number';
+        if (!form.location.trim()) errs.location = 'Location is required';
+        if (!form.preferred_date) errs.preferred_date = 'Please pick a preferred date';
+        setErrors(errs);
+        return Object.keys(errs).length === 0;
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!validate()) return;
+
+        const result = await submit({
+            module: 'services',
+            category: 'rent-machinery',
+            full_name: form.full_name,
+            phone: form.phone,
+            location: form.location,
+            preferred_date: form.preferred_date,
+            extra_data: {
+                machinery_type: form.machinery_type,
+                duration_value: form.duration_value,
+                duration_type: form.duration_type,
+                extra_notes: form.extra_notes,
+                estimated_cost: estimatedCost(),
+            },
+        });
+
+        if (result.success) {
+            setShowSuccess(true);
+        } else {
+            setErrors({ submit: result.error || 'Submission failed. Please try again.' });
+        }
+    };
+
+    const field = (id: string) => `form.${id}` as keyof ModalFormData;
+
+    // ── Success screen ──
+    if (showSuccess) {
+        return (
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+                <div
+                    className="bg-white dark:bg-[#141f14] rounded-3xl p-8 md:p-10 shadow-2xl max-w-sm w-full text-center"
+                    style={{ animation: 'successPop 0.45s cubic-bezier(.22,1.2,.36,1) both' }}
+                    onClick={e => e.stopPropagation()}
+                >
+                    {/* Animated checkmark */}
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-xl shadow-green-500/30">
+                        <span className="material-symbols-outlined text-4xl text-white" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2">Booking Request Sent!</h2>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base mb-5">
+                        Thank you, <strong className="text-gray-700 dark:text-gray-200">{form.full_name}</strong>! Your rental request for <strong className="text-green-600">{machine.title}</strong> has been received.
+                    </p>
+                    <div className="flex items-center gap-3 bg-green-50 dark:bg-green-900/25 border border-green-200 dark:border-green-800 rounded-2xl px-4 py-3 mb-6 text-left">
+                        <span className="material-symbols-outlined text-green-600 text-2xl flex-shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>support_agent</span>
+                        <p className="text-sm text-green-700 dark:text-green-300 font-semibold">Our team will reach you within 24 hours at {form.phone}.</p>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-all active:scale-[0.98]"
+                    >
+                        Done
+                    </button>
+                </div>
+                <style>{`@keyframes successPop{0%{transform:scale(.8);opacity:0}60%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}`}</style>
+            </div>
+        );
+    }
+
+    const cost = estimatedCost();
+
+    return (
+        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+            <div
+                className="bg-white dark:bg-[#141f14] w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-y-auto max-h-[95dvh]"
+                style={{ animation: 'slideUp 0.35s cubic-bezier(.22,1.2,.36,1) both' }}
+                onClick={e => e.stopPropagation()}
+            >
+                {/* Modal header */}
+                <div className="bg-primary px-6 pt-6 pb-8 relative">
+                    <button
+                        onClick={onClose}
+                        className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+                        aria-label="Close modal"
+                    >
+                        <span className="material-symbols-outlined text-white text-lg">close</span>
+                    </button>
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="size-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                            <span className="material-symbols-outlined text-2xl text-white" style={{ fontVariationSettings: "'FILL' 1" }}>{machine.icon}</span>
+                        </div>
+                        <div>
+                            <p className="text-white/70 text-xs font-semibold uppercase tracking-wider">Book Rental</p>
+                            <h2 className="text-xl font-black text-white">{machine.title}</h2>
+                        </div>
+                    </div>
+                    <p className="text-white/80 text-sm">{machine.description}</p>
+                </div>
+
+                {/* Form body */}
+                <form onSubmit={handleSubmit} noValidate className="px-6 py-6 space-y-4" id="book-machinery-form">
+
+                    {/* Full name */}
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                            <span className="flex items-center gap-1.5">
+                                <span className="material-symbols-outlined text-base text-gray-400">person</span>
+                                Full Name
+                            </span>
+                        </label>
+                        <input
+                            ref={firstFocusRef}
+                            type="text"
+                            value={form.full_name}
+                            onChange={e => setForm({ ...form, full_name: e.target.value })}
+                            placeholder="Enter your full name"
+                            className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${errors.full_name ? 'border-red-400' : 'border-transparent focus:border-green-500'} outline-none transition-colors dark:text-white text-sm`}
+                        />
+                        {errors.full_name && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-sm">error</span>{errors.full_name}</p>}
+                    </div>
+
+                    {/* Phone */}
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                            <span className="flex items-center gap-1.5">
+                                <span className="material-symbols-outlined text-base text-gray-400">phone</span>
+                                Phone Number
+                            </span>
+                        </label>
+                        <input
+                            type="tel"
+                            value={form.phone}
+                            onChange={e => setForm({ ...form, phone: e.target.value })}
+                            placeholder="+91 XXXXX XXXXX"
+                            className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${errors.phone ? 'border-red-400' : 'border-transparent focus:border-green-500'} outline-none transition-colors dark:text-white text-sm`}
+                        />
+                        {errors.phone && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-sm">error</span>{errors.phone}</p>}
+                    </div>
+
+                    {/* Location */}
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                            <span className="flex items-center gap-1.5">
+                                <span className="material-symbols-outlined text-base text-gray-400">location_on</span>
+                                Location
+                            </span>
+                        </label>
+                        <input
+                            type="text"
+                            value={form.location}
+                            onChange={e => setForm({ ...form, location: e.target.value })}
+                            placeholder="Village, District, State"
+                            className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${errors.location ? 'border-red-400' : 'border-transparent focus:border-green-500'} outline-none transition-colors dark:text-white text-sm`}
+                        />
+                        {errors.location && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-sm">error</span>{errors.location}</p>}
+                    </div>
+
+                    {/* Machinery type */}
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                            <span className="flex items-center gap-1.5">
+                                <span className="material-symbols-outlined text-base text-gray-400">agriculture</span>
+                                Equipment Type
+                            </span>
+                        </label>
+                        <select
+                            value={form.machinery_type}
+                            onChange={e => setForm({ ...form, machinery_type: e.target.value })}
+                            className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm appearance-none"
+                        >
+                            {machineryTypes.map(m => (
+                                <option key={m.key} value={m.key}>{m.title} ({m.price})</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Preferred date */}
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                            <span className="flex items-center gap-1.5">
+                                <span className="material-symbols-outlined text-base text-gray-400">calendar_month</span>
+                                Preferred Start Date
+                            </span>
+                        </label>
+                        <input
+                            type="date"
+                            value={form.preferred_date}
+                            min={new Date().toISOString().split('T')[0]}
+                            onChange={e => setForm({ ...form, preferred_date: e.target.value })}
+                            className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${errors.preferred_date ? 'border-red-400' : 'border-transparent focus:border-green-500'} outline-none transition-colors dark:text-white text-sm`}
+                        />
+                        {errors.preferred_date && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-sm">error</span>{errors.preferred_date}</p>}
+                    </div>
+
+                    {/* Duration */}
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                            <span className="flex items-center gap-1.5">
+                                <span className="material-symbols-outlined text-base text-gray-400">schedule</span>
+                                Rental Duration <span className="font-normal text-gray-400">(optional)</span>
+                            </span>
+                        </label>
+                        <div className="flex gap-3">
+                            <input
+                                type="number"
+                                min="1"
+                                value={form.duration_value}
+                                onChange={e => setForm({ ...form, duration_value: e.target.value })}
+                                placeholder="e.g. 4"
+                                className="flex-1 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm"
+                            />
+                            <select
+                                value={form.duration_type}
+                                onChange={e => setForm({ ...form, duration_type: e.target.value })}
+                                className="rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm appearance-none"
+                            >
+                                <option value="hours">Hours</option>
+                                <option value="days">Days (8h)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Live cost estimate */}
+                    {cost && (
+                        <div className="rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/10 border-2 border-green-200 dark:border-green-800 px-4 py-3 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-green-600 text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>calculate</span>
+                                <span className="text-sm font-bold text-gray-600 dark:text-gray-300">Estimated Cost</span>
+                            </div>
+                            <span className="text-xl font-black text-green-600 dark:text-green-400">₹{cost}</span>
+                        </div>
+                    )}
+
+                    {/* Extra notes */}
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                            <span className="flex items-center gap-1.5">
+                                <span className="material-symbols-outlined text-base text-gray-400">notes</span>
+                                Additional Notes <span className="font-normal text-gray-400">(optional)</span>
+                            </span>
+                        </label>
+                        <textarea
+                            value={form.extra_notes}
+                            onChange={e => setForm({ ...form, extra_notes: e.target.value })}
+                            placeholder="Mention field size, crop type, special requirements…"
+                            rows={3}
+                            className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm resize-none"
+                        />
+                    </div>
+
+                    {/* Server error */}
+                    {errors.submit && (
+                        <div className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-red-500 text-xl">error</span>
+                            <p className="text-sm text-red-600 dark:text-red-400">{errors.submit}</p>
+                        </div>
+                    )}
+
+                    {/* Submit */}
+                    <button
+                        type="submit"
+                        disabled={submitting}
+                        className="w-full rounded-xl py-4 bg-primary text-white font-black text-base shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+                    >
+                        {submitting ? (
+                            <>
+                                <span className="material-symbols-outlined text-xl animate-spin">progress_activity</span>
+                                Submitting…
+                            </>
+                        ) : (
+                            <>
+                                <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>handshake</span>
+                                Confirm Booking Request
+                            </>
+                        )}
+                    </button>
+
+                    <p className="text-center text-xs text-gray-400 pb-2">
+                        <span className="material-symbols-outlined text-xs align-middle mr-0.5">lock</span>
+                        Your details are safe with us
+                    </p>
+                </form>
+            </div>
+            <style>{`@keyframes slideUp{0%{transform:translateY(60px);opacity:0}100%{transform:translateY(0);opacity:1}}`}</style>
+        </div>
+    );
+}
+
+// ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function RentMachineryPage() {
     const [headerVisible, setHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
+    const [activeMachine, setActiveMachine] = useState<(typeof machineryTypes)[0] | null>(null);
+
+    // Calculator state (kept on page)
+    const [calcForm, setCalcForm] = useState({
+        machinery_type: 'tractor',
+        duration_value: '',
+        duration_type: 'hours',
+        start_date: '',
+    });
 
     useEffect(() => {
         const onScroll = () => {
@@ -18,87 +449,25 @@ export default function RentMachineryPage() {
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
-    const [formData, setFormData] = useState({
-        full_name: '',
-        phone: '',
-        location: '',
-        machinery_type: 'tractor',
-        duration_type: 'hours',
-        duration_value: '',
-        start_date: '',
-    });
-
     const calculateCost = () => {
-        const duration = parseFloat(formData.duration_value) || 1;
-
-        // Rates per Hour/Day (approx)
-        const hourlyRates: Record<string, number> = {
-            'tractor': 800,
-            'harvester': 2500,
-            'rotavator': 600,
-            'small_machines': 400,
-            'implements': 350,
-            'spray_machine': 500,
-            'agri_drone': 1500,
-        };
-
-        // Assume 8 hours work day for day conversion if needed, but let's keep it simple
-        const rate = hourlyRates[formData.machinery_type] || 800;
-        const multiplier = formData.duration_type === 'days' ? 8 : 1;
-
-        const total = rate * duration * multiplier;
-
-        return Math.max(0, total).toLocaleString('en-IN');
+        const duration = parseFloat(calcForm.duration_value) || 1;
+        const rate = hourlyRates[calcForm.machinery_type] || 800;
+        const multiplier = calcForm.duration_type === 'days' ? 8 : 1;
+        return Math.max(0, rate * duration * multiplier).toLocaleString('en-IN');
     };
-
-    const machineryTypes = [
-        {
-            icon: 'agriculture',
-            title: 'Tractors (45-60 HP)',
-            description: 'Powerful tractors for plowing, tilling, and transport.',
-            features: ['4WD Options', 'AC Cabin Available', 'Operators Included', 'Fuel Inclusive'],
-            price: 'From ₹800/hr',
-        },
-        {
-            icon: 'grass',
-            title: 'Combine Harvesters',
-            description: 'Efficient harvesting for wheat, paddy, and soy.',
-            features: ['Multi-crop Support', 'Track/Wheel Type', 'Grain Tank', 'Straw Management'],
-            price: 'From ₹2,500/hr',
-        },
-        {
-            icon: 'settings',
-            title: 'Small Machines',
-            description: 'Compact equipment for small plots and precision work.',
-            features: ['Power Weeder', 'Thresher', 'Seed Drill', 'Easy Transport'],
-            price: 'From ₹400/hr',
-        },
-        {
-            icon: 'build',
-            title: 'Farm Implements',
-            description: 'Essential attachments for various farm operations.',
-            features: ['Plough Attachment', 'Harrow', 'Rotavator', 'Disc Harrow'],
-            price: 'From ₹350/hr',
-        },
-        {
-            icon: 'water_droplet',
-            title: 'Spray Machines',
-            description: 'Precision spraying for pesticides and fertilizers.',
-            features: ['3-5 Ltr Tank', 'Adjustable Nozzles', 'Backpack Design', 'Lightweight'],
-            price: 'From ₹500/hr',
-        },
-        {
-            icon: 'airplanes',
-            title: 'Agri Drones',
-            description: 'Advanced drone technology for crop monitoring and spraying.',
-            features: ['10L Tank Capacity', 'GPS Mapping', 'Real-time Monitoring', '25 mins Flight Time'],
-            price: 'From ₹1,500/hr',
-        },
-    ];
 
     return (
         <div className="min-h-screen bg-background-light dark:bg-background-dark">
-            {/* Header */}
+
+            {/* ── Booking Modal ── */}
+            {activeMachine && (
+                <BookingModal
+                    machine={activeMachine}
+                    onClose={() => setActiveMachine(null)}
+                />
+            )}
+
+            {/* ── Header ── */}
             <header className={`sticky top-0 z-50 w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md transition-transform duration-300 ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}>
                 <div className="mx-auto max-w-[1280px] px-4 md:px-6 py-3 md:py-4">
                     <div className="flex items-center gap-2">
@@ -117,37 +486,35 @@ export default function RentMachineryPage() {
                 </div>
             </header>
 
-            {/* Hero Section */}
-            <section className="relative px-4 md:px-6 py-12 md:py-16 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
-                <div className="mx-auto max-w-[1280px]">
-                    <div className="text-center">
-                        <div className="inline-flex items-center justify-center size-16 md:size-20 rounded-2xl md:rounded-3xl bg-gradient-to-br from-green-600 to-emerald-700 text-white mb-6 md:mb-8 shadow-lg md:shadow-2xl">
-                            <span className="material-symbols-outlined text-4xl md:text-5xl">agriculture</span>
-                        </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-4 leading-tight">Farm Machinery Rentals</h1>
-                        <p className="text-base md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-                            Modern equipment at affordable hourly rates. Book tractors, harvesters, drones, and more instantly.
-                        </p>
+            {/* ── Hero ── */}
+            <section className="relative px-4 md:px-6 py-12 md:py-16 bg-primary/5">
+                <div className="mx-auto max-w-[1280px] text-center">
+                    <div className="inline-flex items-center justify-center size-16 md:size-20 rounded-2xl md:rounded-3xl bg-primary text-white mb-6 md:mb-8 shadow-lg md:shadow-2xl">
+                        <span className="material-symbols-outlined text-4xl md:text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>agriculture</span>
                     </div>
+                    <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-4 leading-tight">Farm Machinery Rentals</h1>
+                    <p className="text-base md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
+                        Modern equipment at affordable hourly rates. Book tractors, harvesters, drones, and more instantly.
+                    </p>
                 </div>
             </section>
 
-            {/* Machinery Grid */}
-            <section className="px-4 md:px-6 py-12 md:py-16 bg-gradient-to-b from-white to-green-50/30 dark:from-gray-900 dark:to-green-900/10">
+            {/* ── Machinery Grid ── */}
+            <section className="px-4 md:px-6 py-12 md:py-16 bg-white dark:bg-gray-900">
                 <div className="mx-auto max-w-[1280px]">
                     <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-2">Available Equipment</h2>
                     <p className="text-gray-600 dark:text-gray-400 mb-8 md:mb-12">Everything you need for efficient farm operations</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                        {machineryTypes.map((machine, index) => (
-                            <div key={index} className="skeuo-card rounded-2xl md:rounded-3xl p-6 md:p-8 border-2 md:border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-xl transition-all duration-300">
+                        {machineryTypes.map((machine) => (
+                            <div key={machine.key} className="rounded-2xl md:rounded-3xl p-6 md:p-8 border-2 border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary hover:shadow-xl transition-all duration-300 group">
                                 {/* Icon & Price */}
                                 <div className="flex items-start justify-between gap-4 mb-6">
-                                    <div className="size-14 md:size-16 rounded-2xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30">
-                                        <span className="material-symbols-outlined text-3xl md:text-4xl text-green-600 dark:text-green-400">{machine.icon}</span>
+                                    <div className="size-14 md:size-16 rounded-2xl flex items-center justify-center flex-shrink-0 bg-primary/10 dark:bg-primary/20">
+                                        <span className="material-symbols-outlined text-3xl md:text-4xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>{machine.icon}</span>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Starting from</p>
-                                        <p className="text-xl md:text-2xl font-black text-green-600 dark:text-green-400">{machine.price}</p>
+                                        <p className="text-xl md:text-2xl font-black text-primary">{machine.price}</p>
                                     </div>
                                 </div>
 
@@ -155,18 +522,23 @@ export default function RentMachineryPage() {
                                 <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white mb-2">{machine.title}</h3>
                                 <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-6">{machine.description}</p>
 
-                                {/* Features Grid */}
-                                <div className="grid grid-cols-1 gap-3 mb-8">
+                                {/* Features */}
+                                <div className="grid grid-cols-1 gap-2.5 mb-8">
                                     {machine.features.map((feature, idx) => (
-                                        <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-green-50/50 dark:bg-green-900/20">
-                                            <span className="material-symbols-outlined text-sm text-green-600 dark:text-green-400 flex-shrink-0">check_circle</span>
+                                        <div key={idx} className="flex items-center gap-3 p-2.5 rounded-lg bg-primary/5 dark:bg-primary/10">
+                                            <span className="material-symbols-outlined text-sm text-primary flex-shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                                             <span className="text-sm md:text-base font-medium text-gray-700 dark:text-gray-200">{feature}</span>
                                         </div>
                                     ))}
                                 </div>
 
-                                {/* CTA Button */}
-                                <button className="w-full rounded-lg md:rounded-xl py-3 md:py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-black text-base md:text-lg shadow-lg hover:shadow-green-600/30 active:scale-[0.98] transition-all">
+                                {/* Book Now CTA */}
+                                <button
+                                    id={`book-now-${machine.key}`}
+                                    onClick={() => setActiveMachine(machine)}
+                                    className="w-full rounded-lg md:rounded-xl py-3 md:py-4 bg-primary hover:bg-primary/90 text-white font-black text-base md:text-lg shadow-lg hover:shadow-xl group-hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                >
+                                    <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>event_available</span>
                                     Book Now
                                 </button>
                             </div>
@@ -175,124 +547,75 @@ export default function RentMachineryPage() {
                 </div>
             </section>
 
-            {/* Booking Form */}
-            <section className="px-4 md:px-6 py-12 md:py-16 bg-linear-to-b from-green-50/30 to-transparent dark:from-green-900/10">
-                <div className="mx-auto max-w-[1280px]">
-                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-3">Get Started Today</h2>
-                    <p className="text-gray-600 dark:text-gray-400 mb-12">Choose your equipment and schedule a rental</p>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Cost Calculator */}
-                        <div className="skeuo-card rounded-2xl md:rounded-3xl p-6 md:p-8 bg-white dark:bg-gray-800 border-2 md:border border-gray-200 dark:border-gray-700">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="size-10 rounded-lg bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-900/10 flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-lg text-blue-600 dark:text-blue-400">calculate</span>
-                                </div>
-                                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">Rental Estimator</h3>
+            {/* ── Cost Estimator ── */}
+            <section className="px-4 md:px-6 py-12 md:py-16 bg-gradient-to-b from-green-50/30 to-transparent dark:from-green-900/10">
+                <div className="mx-auto max-w-[640px]">
+                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-3">Estimate Your Cost</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mb-8">Quick rental cost calculator before you book</p>
+
+                    <div className="skeuo-card rounded-2xl md:rounded-3xl p-6 md:p-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="size-10 rounded-lg bg-gradient-to-br from-green-100 to-emerald-50 dark:from-green-900/30 dark:to-green-900/10 flex items-center justify-center">
+                                <span className="material-symbols-outlined text-lg text-green-600 dark:text-green-400" style={{ fontVariationSettings: "'FILL' 1" }}>calculate</span>
                             </div>
-                            <div className="space-y-4">
+                            <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">Rental Estimator</h3>
+                        </div>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Equipment Type</label>
+                                <select
+                                    value={calcForm.machinery_type}
+                                    onChange={e => setCalcForm({ ...calcForm, machinery_type: e.target.value })}
+                                    className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm md:text-base appearance-none"
+                                >
+                                    <option value="tractor">Tractor (₹800/hr)</option>
+                                    <option value="harvester">Harvester (₹2,500/hr)</option>
+                                    <option value="small_machines">Small Machines (₹400/hr)</option>
+                                    <option value="implements">Farm Implements (₹350/hr)</option>
+                                    <option value="spray_machine">Spray Machine (₹500/hr)</option>
+                                    <option value="agri_drone">Agri Drone (₹1,500/hr)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Start Date</label>
+                                <input
+                                    type="date"
+                                    value={calcForm.start_date}
+                                    onChange={e => setCalcForm({ ...calcForm, start_date: e.target.value })}
+                                    className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm md:text-base"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 md:gap-4">
                                 <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Start Date</label>
+                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Duration</label>
                                     <input
-                                        type="date"
-                                        value={formData.start_date}
-                                        onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                                        className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 outline-none transition-colors dark:text-white text-sm md:text-base"
+                                        type="number"
+                                        value={calcForm.duration_value}
+                                        onChange={e => setCalcForm({ ...calcForm, duration_value: e.target.value })}
+                                        className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm md:text-base"
+                                        placeholder="e.g. 4"
+                                        min="1"
                                     />
                                 </div>
-                                <div className="grid grid-cols-2 gap-3 md:gap-4">
-                                    <div>
-                                        <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Duration</label>
-                                        <input
-                                            type="number"
-                                            value={formData.duration_value}
-                                            onChange={(e) => setFormData({ ...formData, duration_value: e.target.value })}
-                                            className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 outline-none transition-colors dark:text-white text-sm md:text-base"
-                                            placeholder="e.g. 4"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Unit</label>
-                                        <select
-                                            value={formData.duration_type}
-                                            onChange={(e) => setFormData({ ...formData, duration_type: e.target.value })}
-                                            className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 outline-none transition-colors dark:text-white text-sm md:text-base appearance-none"
-                                        >
-                                            <option value="hours">Hours</option>
-                                            <option value="days">Days (8h shift)</option>
-                                        </select>
-                                    </div>
-                                </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Equipment Type</label>
+                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Unit</label>
                                     <select
-                                        value={formData.machinery_type}
-                                        onChange={(e) => setFormData({ ...formData, machinery_type: e.target.value })}
-                                        className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 outline-none transition-colors dark:text-white text-sm md:text-base appearance-none"
+                                        value={calcForm.duration_type}
+                                        onChange={e => setCalcForm({ ...calcForm, duration_type: e.target.value })}
+                                        className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm md:text-base appearance-none"
                                     >
-                                        <option value="tractor">Tractor (₹800/hr)</option>
-                                        <option value="harvester">Harvester (₹2500/hr)</option>
-                                        <option value="rotavator">Rotavator (₹600/hr)</option>
-                                        <option value="small_machines">Small Machines (₹400/hr)</option>
-                                        <option value="implements">Farm Implements (₹350/hr)</option>
-                                        <option value="spray_machine">Spray Machine (₹500/hr)</option>
-                                        <option value="agri_drone">Agri Drone (₹1500/hr)</option>
+                                        <option value="hours">Hours</option>
+                                        <option value="days">Days (8h shift)</option>
                                     </select>
                                 </div>
-                                {formData.duration_value && (
-                                    <div className="mt-6 p-4 md:p-6 rounded-lg md:rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10 border-2 border-blue-200 dark:border-blue-800">
-                                        <p className="text-xs md:text-sm font-bold text-gray-600 dark:text-gray-400 mb-2">Estimated Total</p>
-                                        <p className="text-3xl md:text-4xl font-black text-blue-600 dark:text-blue-400">₹{calculateCost()}</p>
-                                        <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-500 mt-3">*Fuel & Operator charges may vary</p>
-                                    </div>
-                                )}
                             </div>
-                        </div>
-
-                        {/* Request Form */}
-                        <div className="skeuo-card rounded-2xl md:rounded-3xl p-6 md:p-8 bg-white dark:bg-gray-800 border-2 md:border border-gray-200 dark:border-gray-700">
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="size-10 rounded-lg bg-gradient-to-br from-green-100 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/10 flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-lg text-green-600 dark:text-green-400">calendar_month</span>
+                            {calcForm.duration_value && (
+                                <div className="mt-2 p-4 md:p-6 rounded-lg md:rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100/50 dark:from-green-900/20 dark:to-emerald-900/10 border-2 border-green-200 dark:border-green-800">
+                                    <p className="text-xs md:text-sm font-bold text-gray-600 dark:text-gray-400 mb-2">Estimated Total</p>
+                                    <p className="text-3xl md:text-4xl font-black text-green-600 dark:text-green-400">₹{calculateCost()}</p>
+                                    <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-500 mt-3">*Fuel & Operator charges may vary</p>
                                 </div>
-                                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">Confirm Booking</h3>
-                            </div>
-                            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mb-6 ml-13">We'll connect you with the nearest equipment owner</p>
-                            <div className="space-y-3 md:space-y-4">
-                                <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Full Name</label>
-                                    <input
-                                        type="text"
-                                        value={formData.full_name}
-                                        onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                                        className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm md:text-base"
-                                        placeholder="Enter your name"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Phone Number</label>
-                                    <input
-                                        type="tel"
-                                        value={formData.phone}
-                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm md:text-base"
-                                        placeholder="+91 XXXXX XXXXX"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Location</label>
-                                    <input
-                                        type="text"
-                                        value={formData.location}
-                                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                        className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm md:text-base"
-                                        placeholder="Village, District"
-                                    />
-                                </div>
-                                <button className="w-full rounded-lg md:rounded-xl py-3 md:py-4 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-black text-base md:text-lg shadow-lg hover:shadow-green-600/30 active:scale-[0.98] transition-all mt-6">
-                                    REQUEST MACHINERY
-                                </button>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>

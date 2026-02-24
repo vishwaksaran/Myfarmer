@@ -138,7 +138,7 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className="light">
+    <html lang="en" className="light" suppressHydrationWarning>
       <head>
         <link
           rel="preconnect"
@@ -204,6 +204,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </head>
       <body
         className={`${plusJakartaSans.variable} ${notoSans.variable} font-display antialiased`}
+        suppressHydrationWarning
       >
         <SplashScreen />
         <AuthProvider>

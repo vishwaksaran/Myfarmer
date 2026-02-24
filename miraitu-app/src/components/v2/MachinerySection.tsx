@@ -27,6 +27,14 @@ const services = [
         color: 'text-green-600',
         bg: 'bg-green-50 dark:bg-green-900/20',
         href: '/home/machinery'
+    },
+    {
+        name: 'Rent Machinery',
+        icon: 'handshake',
+        desc: 'Hire by hour, day or season',
+        color: 'text-green-600',
+        bg: 'bg-green-50 dark:bg-green-900/20',
+        href: '/home/services/rent-machinery'
     }
 ];
 
@@ -61,7 +69,7 @@ export default function MachinerySection() {
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
                     {services.map((service, index) => (
                         <Link
                             href={service.href}

@@ -11,6 +11,21 @@ import { categoryProducts, categoryMeta } from '../categoryData';
 
 type SortOption = 'popular' | 'price-low' | 'price-high' | 'rating';
 
+const bannerGradients: Record<string, string> = {
+    'from-blue-600 to-blue-800': 'linear-gradient(to right, #2563eb, #1e40af)',
+    'from-amber-500 to-amber-700': 'linear-gradient(to right, #f59e0b, #b45309)',
+    'from-purple-600 to-purple-800': 'linear-gradient(to right, #9333ea, #6b21a8)',
+    'from-green-600 to-green-800': 'linear-gradient(to right, #16a34a, #166534)',
+    'from-orange-500 to-orange-700': 'linear-gradient(to right, #f97316, #c2410c)',
+    'from-slate-600 to-slate-800': 'linear-gradient(to right, #475569, #1e293b)',
+    'from-yellow-600 to-yellow-800': 'linear-gradient(to right, #ca8a04, #854d0e)',
+    'from-red-500 to-red-700': 'linear-gradient(to right, #ef4444, #b91c1c)',
+    'from-lime-600 to-lime-800': 'linear-gradient(to right, #65a30d, #3f6212)',
+    'from-emerald-600 to-emerald-800': 'linear-gradient(to right, #059669, #065f46)',
+    'from-rose-600 to-rose-800': 'linear-gradient(to right, #e11d48, #9f1239)',
+    'from-sky-500 to-sky-700': 'linear-gradient(to right, #0ea5e9, #0369a1)',
+};
+
 export default function CategoryPage() {
     const params = useParams();
     const slug = params.category as string;
@@ -75,7 +90,10 @@ export default function CategoryPage() {
                     </nav>
 
                     {/* Category Banner */}
-                    <div className={`relative rounded-2xl md:rounded-3xl overflow-hidden bg-gradient-to-r ${meta.bannerColor} p-6 md:p-10 mb-8`}>
+                    <div
+                        className="relative rounded-2xl md:rounded-3xl overflow-hidden p-6 md:p-10 mb-8"
+                        style={{ background: bannerGradients[meta.bannerColor] || 'linear-gradient(to right, #16a34a, #166534)' }}
+                    >
                         <div className="relative z-10">
                             <div className="flex items-center gap-3 mb-3">
                                 {catInfo?.isMatIcon ? (

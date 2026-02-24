@@ -6,7 +6,7 @@ import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import SellMachineryForm from '@/components/v2/machinery/SellMachineryForm';
 import CompareModal from '@/components/v2/machinery/CompareModal';
 
-type TabType = 'new' | 'sell' | 'buy';
+type TabType = 'new' | 'sell' | 'buy' | 'rent';
 
 const tabs = [
     {
@@ -32,6 +32,14 @@ const tabs = [
         icon: 'shopping_cart',
         description: 'Find pre-owned JCB machines',
         bgColor: 'bg-blue-500',
+    },
+    {
+        id: 'rent' as TabType,
+        title: 'Rent',
+        shortTitle: 'Rent',
+        icon: 'handshake',
+        description: 'Hire JCB by the hour or week',
+        bgColor: 'bg-yellow-500',
     },
 ];
 
@@ -163,14 +171,14 @@ export default function JCBPage() {
                 </div>
 
                 {/* Navigation Tabs */}
-                <div className="grid grid-cols-3 gap-3 mb-8">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`relative flex items-center gap-3 p-4 rounded-2xl border-2 transition-all duration-300 ${activeTab === tab.id
-                                    ? 'border-primary bg-primary/5 shadow-lg'
-                                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a231a] hover:border-primary/30'
+                                ? 'border-primary bg-primary/5 shadow-lg'
+                                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a231a] hover:border-primary/30'
                                 }`}
                         >
                             {activeTab === tab.id && (
@@ -222,8 +230,8 @@ export default function JCBPage() {
                                         key={condition}
                                         onClick={() => setSelectedCondition(condition)}
                                         className={`px-5 py-2.5 rounded-xl font-medium transition-all ${selectedCondition === condition
-                                                ? 'bg-primary text-white'
-                                                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100'
+                                            ? 'bg-primary text-white'
+                                            : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100'
                                             }`}
                                     >
                                         {condition}
@@ -236,6 +244,23 @@ export default function JCBPage() {
                                 </p>
                             </div>
                             <MachineryListing items={filteredUsedItems} type="used" onCompare={toggleSelection} selectedForCompare={selectedItems} />
+                        </div>
+                    )}
+
+                    {activeTab === 'rent' && (
+                        <div className="animate-fadeIn flex flex-col items-center justify-center py-12 text-center">
+                            <div className="w-20 h-20 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center mb-4">
+                                <span className="material-symbols-outlined text-yellow-600 text-4xl">construction</span>
+                            </div>
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Rent JCB</h2>
+                            <p className="text-gray-500 mb-6 max-w-sm">Hire JCB & earthmoving equipment by the hour, day, or week. All machines come with certified operators.</p>
+                            <Link
+                                href="/home/machinery/jcb/rent"
+                                className="flex items-center gap-2 px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-bold rounded-2xl transition-colors"
+                            >
+                                <span className="material-symbols-outlined">handshake</span>
+                                Browse JCB Rentals
+                            </Link>
                         </div>
                     )}
                 </div>

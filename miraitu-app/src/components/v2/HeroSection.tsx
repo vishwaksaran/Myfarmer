@@ -146,205 +146,229 @@ export default function HeroSection() {
 
     return (
         <>
-        <section className="relative px-4 md:px-6 pt-6 pb-4">
-            <div className="mx-auto max-w-[1400px]">
-                {/* Main Hero Container */}
-                <div className="relative overflow-hidden rounded-tl-[2rem] rounded-tr-[2rem] rounded-bl-none rounded-br-none md:rounded-tl-[2.5rem] md:rounded-tr-[2.5rem] md:rounded-bl-none md:rounded-br-none min-h-[480px] md:min-h-[600px] lg:min-h-[680px]">
-                    {/* Background Image with Parallax Feel */}
-                    <div className="absolute inset-0 z-0">
-                        <div className="hero-gradient-overlay absolute inset-0 z-10"></div>
-                        <div
-                            className="h-full w-full bg-cover bg-center scale-105 transition-transform duration-[2000ms] hover:scale-110"
-                            style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDSBSarPJ_9uXmRvF0oViNMT9n8Kpr6mE6sYtDfNqvZQy4KY7B11aZ7EQFFb4Fo-NoH4961IGbY1cktD3WJ-2djyiUCg5pSHK2BGZ8Jo-nXEV7m8gAxbLSnjHIFHIHFBNq8-qmBTxQQHabiJPvPN32sY4HhOwim9zHPLDZ0OXM1clp10QoE2vwQMKbvE2vzMP0LPfSDeyvgc-A6YJ_pu8mfrqnXThxayo-7JD4F4lyjozHfZVytK_TXUoltcPQsPJ9qeip5VAPPrvY2')" }}
-                        ></div>
-                    </div>
-
-                    {/* Floating Decorative Orbs */}
-                    <div className="absolute top-20 right-20 w-32 h-32 bg-accent/10 rounded-full blur-3xl animate-float" aria-hidden="true"></div>
-                    <div className="absolute bottom-20 left-10 w-48 h-48 bg-primary/10 rounded-full blur-3xl animate-float stagger-3" aria-hidden="true"></div>
-
-                    {/* Content Grid */}
-                    <div className="relative z-20 flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-10 w-full items-center p-6 md:p-10 lg:p-12 min-h-[480px] md:min-h-[600px] lg:min-h-[680px]">
-                        {/* Left Content - Text & CTA */}
-                        <div className="text-white lg:col-span-7 flex flex-col justify-center animate-fade-in-left">
-                            <span className="mb-5 inline-flex items-center gap-2 w-fit rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-5 py-2 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-orange-500/30">
-                                <span className="material-symbols-outlined text-sm">bolt</span>
-                                {t('hero.badge')}
-                            </span>
-                            <h1 className="mb-5 text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.05] tracking-tight">
-                                {t('hero.mainTitle1')} <br />
-                                <span className="bg-gradient-to-r from-accent via-yellow-400 to-accent bg-clip-text text-transparent animate-gradient bg-[length:200%_200%]">{t('hero.mainTitle2')}</span>
-                            </h1>
-                            <p className="mb-8 text-base md:text-lg font-medium leading-relaxed opacity-85 max-w-xl">
-                                {t('hero.mainSubtitle')}
-                            </p>
-                            <div className="flex flex-col sm:flex-row gap-3 mb-8">
-                                <button onClick={() => setShowGallery(true)} className="group flex items-center gap-2 rounded-2xl bg-white px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-primary shadow-xl hover:shadow-2xl hover:bg-gray-50 active:scale-[0.97] transition-all whitespace-nowrap">
-                                    <span className="material-symbols-outlined text-lg group-hover:rotate-45 transition-transform">photo_library</span>
-                                    {t('hero.exploreGallery')}
-                                </button>
-                                <a href="https://www.youtube.com/@miraitu" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-white hover:bg-white/20 active:scale-[0.97] transition-all whitespace-nowrap" data-no-auth>
-                                    <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">play_circle</span>
-                                    {t('hero.watchFarmerVideos')}
-                                </a>
-                            </div>
-
-                            {/* Stats Row */}
-                            <div className="hidden md:grid grid-cols-4 gap-3">
-                                {stats.map((stat, i) => (
-                                    <div key={i} className={`stat-card rounded-2xl px-4 py-3 text-center opacity-0 animate-fade-in-up stagger-${i + 3}`}>
-                                        <p className="text-xl lg:text-2xl font-black text-white">{stat.value}</p>
-                                        <p className="text-[11px] font-semibold text-white/60 mt-0.5">{stat.label}</p>
-                                    </div>
-                                ))}
-                            </div>
+            <section className="relative px-4 md:px-6 pt-6 pb-4">
+                <div className="mx-auto max-w-[1400px]">
+                    {/* Main Hero Container */}
+                    <div className="relative overflow-hidden rounded-tl-[2rem] rounded-tr-[2rem] rounded-bl-none rounded-br-none md:rounded-tl-[2.5rem] md:rounded-tr-[2.5rem] md:rounded-bl-none md:rounded-br-none min-h-[480px] md:min-h-[600px] lg:min-h-[680px]">
+                        {/* Background Image with Parallax Feel */}
+                        <div className="absolute inset-0 z-0">
+                            <div className="hero-gradient-overlay absolute inset-0 z-10"></div>
+                            <div
+                                className="h-full w-full bg-cover bg-center scale-105 transition-transform duration-[2000ms] hover:scale-110"
+                                style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDSBSarPJ_9uXmRvF0oViNMT9n8Kpr6mE6sYtDfNqvZQy4KY7B11aZ7EQFFb4Fo-NoH4961IGbY1cktD3WJ-2djyiUCg5pSHK2BGZ8Jo-nXEV7m8gAxbLSnjHIFHIHFBNq8-qmBTxQQHabiJPvPN32sY4HhOwim9zHPLDZ0OXM1clp10QoE2vwQMKbvE2vzMP0LPfSDeyvgc-A6YJ_pu8mfrqnXThxayo-7JD4F4lyjozHfZVytK_TXUoltcPQsPJ9qeip5VAPPrvY2')" }}
+                            ></div>
                         </div>
 
-                        {/* Right Content - Sell Form */}
-                        <div className="lg:col-span-5 hidden lg:flex justify-center lg:justify-end w-full animate-fade-in-right">
-                            <div className="glass-card w-full max-w-md rounded-3xl p-6 md:p-8 shadow-2xl">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="size-10 rounded-xl bg-gradient-to-br from-primary to-lush-green flex items-center justify-center shadow-lg">
-                                        <span className="material-symbols-outlined text-white text-xl">sell</span>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xl font-black text-primary">{t('hero.sellTitle')}</h3>
-                                        <p className="text-xs text-gray-500 font-medium">{t('hero.sellSubtitle')}</p>
-                                    </div>
+                        {/* Floating Decorative Orbs */}
+                        <div className="absolute top-20 right-20 w-32 h-32 bg-accent/10 rounded-full blur-3xl animate-float" aria-hidden="true"></div>
+                        <div className="absolute bottom-20 left-10 w-48 h-48 bg-primary/10 rounded-full blur-3xl animate-float stagger-3" aria-hidden="true"></div>
+
+                        {/* Content Grid */}
+                        <div className="relative z-20 flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-10 w-full items-center p-6 md:p-10 lg:p-12 min-h-[480px] md:min-h-[600px] lg:min-h-[680px]">
+                            {/* Left Content - Text & CTA */}
+                            <div className="text-white lg:col-span-7 flex flex-col justify-center animate-fade-in-left">
+                                <span className="mb-5 inline-flex items-center gap-2 w-fit rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-5 py-2 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-orange-500/30">
+                                    <span className="material-symbols-outlined text-sm">bolt</span>
+                                    {t('hero.badge')}
+                                </span>
+                                <h1 className="mb-5 text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.05] tracking-tight">
+                                    {t('hero.mainTitle1')} <br />
+                                    <span className="bg-gradient-to-r from-accent via-yellow-400 to-accent bg-clip-text text-transparent animate-gradient bg-[length:200%_200%]">{t('hero.mainTitle2')}</span>
+                                </h1>
+                                <p className="mb-8 text-base md:text-lg font-medium leading-relaxed opacity-85 max-w-xl">
+                                    {t('hero.mainSubtitle')}
+                                </p>
+                                <div className="flex flex-col sm:flex-row gap-3 mb-8">
+                                    <button onClick={() => setShowGallery(true)} className="group flex items-center gap-2 rounded-2xl bg-white px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-primary shadow-xl hover:shadow-2xl hover:bg-gray-50 active:scale-[0.97] transition-all whitespace-nowrap">
+                                        <span className="material-symbols-outlined text-lg group-hover:rotate-45 transition-transform">photo_library</span>
+                                        {t('hero.exploreGallery')}
+                                    </button>
+                                    <a href="https://www.youtube.com/@miraitu" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-white hover:bg-white/20 active:scale-[0.97] transition-all whitespace-nowrap" data-no-auth>
+                                        <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">play_circle</span>
+                                        {t('hero.watchFarmerVideos')}
+                                    </a>
                                 </div>
-                                <div className="space-y-3.5">
-                                    {/* Image Upload */}
-                                    <div>
-                                        <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">{t('hero.productImages')} <span className="text-gray-500 normal-case">({images.length}/{MAX_IMAGES})</span></label>
-                                        <div
-                                            onDrop={handleDrop}
-                                            onDragOver={(e) => e.preventDefault()}
-                                            className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-4 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-primary/50 transition-colors text-center cursor-pointer relative group"
-                                        >
-                                            {images.length < MAX_IMAGES && (
-                                                <>
-                                                    <input
-                                                        ref={fileInputRef}
-                                                        type="file"
-                                                        multiple
-                                                        accept="image/*"
-                                                        onChange={handleFileChange}
-                                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                                    />
-                                                    <span className="material-symbols-outlined text-2xl text-gray-500 mb-1 group-hover:text-primary transition-colors">add_photo_alternate</span>
-                                                    <p className="text-xs font-bold text-gray-600 dark:text-gray-400">{t('hero.dragPhotos')}</p>
-                                                    <p className="text-[10px] font-semibold text-gray-500 mt-0.5">Max {MAX_IMAGES} photos allowed</p>
-                                                </>
-                                            )}
-                                            {images.length >= MAX_IMAGES && (
-                                                <p className="text-xs font-bold text-primary py-1">✓ Maximum {MAX_IMAGES} images uploaded</p>
+
+                                {/* Stats Row */}
+                                <div className="hidden md:grid grid-cols-4 gap-3">
+                                    {stats.map((stat, i) => (
+                                        <div key={i} className={`stat-card rounded-2xl px-4 py-3 text-center animate-fade-in-up stagger-${i + 1}`}>
+                                            <p className="text-xl lg:text-2xl font-black text-white">{stat.value}</p>
+                                            <p className="text-[11px] font-semibold text-white/60 mt-0.5">{stat.label}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Right Content - Sell Form */}
+                            <div className="lg:col-span-5 hidden lg:flex justify-center lg:justify-end w-full animate-fade-in-right">
+                                <div className="glass-card w-full max-w-md rounded-3xl p-6 md:p-8 shadow-2xl">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="size-10 rounded-xl bg-gradient-to-br from-primary to-lush-green flex items-center justify-center shadow-lg">
+                                            <span className="material-symbols-outlined text-white text-xl">sell</span>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-black text-primary">{t('hero.sellTitle')}</h3>
+                                            <p className="text-xs text-gray-500 font-medium">{t('hero.sellSubtitle')}</p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3.5">
+                                        {/* Image Upload */}
+                                        <div>
+                                            <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">{t('hero.productImages')} <span className="text-gray-500 normal-case">({images.length}/{MAX_IMAGES})</span></label>
+                                            <div
+                                                onDrop={handleDrop}
+                                                onDragOver={(e) => e.preventDefault()}
+                                                className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-4 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-primary/50 transition-colors text-center cursor-pointer relative group"
+                                            >
+                                                {images.length < MAX_IMAGES && (
+                                                    <>
+                                                        <input
+                                                            ref={fileInputRef}
+                                                            type="file"
+                                                            multiple
+                                                            accept="image/*"
+                                                            onChange={handleFileChange}
+                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                        />
+                                                        <span className="material-symbols-outlined text-2xl text-gray-500 mb-1 group-hover:text-primary transition-colors">add_photo_alternate</span>
+                                                        <p className="text-xs font-bold text-gray-600 dark:text-gray-400">{t('hero.dragPhotos')}</p>
+                                                        <p className="text-[10px] font-semibold text-gray-500 mt-0.5">Max {MAX_IMAGES} photos allowed</p>
+                                                    </>
+                                                )}
+                                                {images.length >= MAX_IMAGES && (
+                                                    <p className="text-xs font-bold text-primary py-1">✓ Maximum {MAX_IMAGES} images uploaded</p>
+                                                )}
+                                            </div>
+                                            {/* Image Previews */}
+                                            {images.length > 0 && (
+                                                <div className="mt-2 flex gap-2 flex-wrap">
+                                                    {images.map((img, i) => (
+                                                        <div key={i} className="relative group/thumb rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-600 shadow-sm" style={{ width: '72px', height: '72px' }}>
+                                                            <img
+                                                                src={img.url}
+                                                                alt={`Preview ${i + 1}`}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeImage(i)}
+                                                                className="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-bl-lg p-0.5 opacity-0 group-hover/thumb:opacity-100 transition-opacity shadow-md"
+                                                                title="Remove image"
+                                                            >
+                                                                <span className="material-symbols-outlined text-sm">close</span>
+                                                            </button>
+                                                            <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[8px] font-bold text-center py-0.5 truncate px-1">
+                                                                {img.file.name}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             )}
                                         </div>
-                                        {/* Image Previews */}
-                                        {images.length > 0 && (
-                                            <div className="mt-2 flex gap-2 flex-wrap">
-                                                {images.map((img, i) => (
-                                                    <div key={i} className="relative group/thumb rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-600 shadow-sm" style={{ width: '72px', height: '72px' }}>
-                                                        <img
-                                                            src={img.url}
-                                                            alt={`Preview ${i + 1}`}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => removeImage(i)}
-                                                            className="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-bl-lg p-0.5 opacity-0 group-hover/thumb:opacity-100 transition-opacity shadow-md"
-                                                            title="Remove image"
-                                                        >
-                                                            <span className="material-symbols-outlined text-sm">close</span>
-                                                        </button>
-                                                        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[8px] font-bold text-center py-0.5 truncate px-1">
-                                                            {img.file.name}
+
+                                        <div>
+                                            <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">{t('hero.productName')}</label>
+                                            <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5">
+                                                <input
+                                                    className="w-full border-none bg-transparent p-0 text-sm font-bold text-gray-800 dark:text-gray-200 focus:ring-0 placeholder:text-gray-500"
+                                                    placeholder={t('hero.productPlaceholder')}
+                                                    type="text"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">{t('hero.category')}</label>
+                                                <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5">
+                                                    <select
+                                                        value={selectedCategory}
+                                                        onChange={(e) => {
+                                                            setSelectedCategory(e.target.value);
+                                                            setSubCategory('');
+                                                            setDynamicValue('');
+                                                            setSecondaryValue('');
+                                                            setDynamicUnit(categoryDynamicFields[e.target.value]?.unit || '');
+                                                        }}
+                                                        className="w-full border-none bg-transparent p-0 text-sm font-bold text-gray-800 dark:text-gray-200 focus:ring-0 cursor-pointer"
+                                                    >
+                                                        {Object.keys(categories).map((catKey) => (
+                                                            <option key={catKey} value={catKey}>{t(catKey)}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">{t('hero.type')}</label>
+                                                <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5">
+                                                    <select
+                                                        value={subCategory}
+                                                        onChange={(e) => setSubCategory(e.target.value)}
+                                                        className="w-full border-none bg-transparent p-0 text-sm font-bold text-gray-800 dark:text-gray-200 focus:ring-0 cursor-pointer"
+                                                    >
+                                                        <option value="">{t('hero.selectType')}</option>
+                                                        {categories[selectedCategory]?.map((sub) => (
+                                                            <option key={sub} value={sub}>{sub}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Category-Specific Dynamic Field(s) */}
+                                        {currentDynamicField && (
+                                            currentDynamicField.secondField ? (
+                                                /* Dual fields side by side for Machinery / Livestock */
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    {/* Secondary field (Brand / Breed) — shown first visually */}
+                                                    <div>
+                                                        <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">
+                                                            {currentDynamicField.secondField.label}
+                                                        </label>
+                                                        <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5 flex items-center gap-2">
+                                                            <span className="material-symbols-outlined text-primary/60 text-base shrink-0">
+                                                                {currentDynamicField.secondField.icon}
+                                                            </span>
+                                                            <input
+                                                                type={currentDynamicField.secondField.type || 'text'}
+                                                                placeholder={currentDynamicField.secondField.placeholder}
+                                                                value={secondaryValue}
+                                                                onChange={(e) => setSecondaryValue(e.target.value)}
+                                                                className="flex-1 border-none bg-transparent p-0 text-sm font-bold text-gray-800 dark:text-gray-200 focus:ring-0 placeholder:text-gray-500 min-w-0"
+                                                            />
                                                         </div>
                                                     </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">{t('hero.productName')}</label>
-                                        <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5">
-                                            <input
-                                                className="w-full border-none bg-transparent p-0 text-sm font-bold text-gray-800 dark:text-gray-200 focus:ring-0 placeholder:text-gray-500"
-                                                placeholder={t('hero.productPlaceholder')}
-                                                type="text"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">{t('hero.category')}</label>
-                                            <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5">
-                                                <select
-                                                    value={selectedCategory}
-                                                    onChange={(e) => {
-                                                        setSelectedCategory(e.target.value);
-                                                        setSubCategory('');
-                                                        setDynamicValue('');
-                                                        setSecondaryValue('');
-                                                        setDynamicUnit(categoryDynamicFields[e.target.value]?.unit || '');
-                                                    }}
-                                                    className="w-full border-none bg-transparent p-0 text-sm font-bold text-gray-800 dark:text-gray-200 focus:ring-0 cursor-pointer"
-                                                >
-                                                    {Object.keys(categories).map((catKey) => (
-                                                        <option key={catKey} value={catKey}>{t(catKey)}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">{t('hero.type')}</label>
-                                            <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5">
-                                                <select
-                                                    value={subCategory}
-                                                    onChange={(e) => setSubCategory(e.target.value)}
-                                                    className="w-full border-none bg-transparent p-0 text-sm font-bold text-gray-800 dark:text-gray-200 focus:ring-0 cursor-pointer"
-                                                >
-                                                    <option value="">{t('hero.selectType')}</option>
-                                                    {categories[selectedCategory]?.map((sub) => (
-                                                        <option key={sub} value={sub}>{sub}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Category-Specific Dynamic Field(s) */}
-                                    {currentDynamicField && (
-                                        currentDynamicField.secondField ? (
-                                            /* Dual fields side by side for Machinery / Livestock */
-                                            <div className="grid grid-cols-2 gap-3">
-                                                {/* Secondary field (Brand / Breed) — shown first visually */}
-                                                <div>
-                                                    <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">
-                                                        {currentDynamicField.secondField.label}
-                                                    </label>
-                                                    <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5 flex items-center gap-2">
-                                                        <span className="material-symbols-outlined text-primary/60 text-base shrink-0">
-                                                            {currentDynamicField.secondField.icon}
-                                                        </span>
-                                                        <input
-                                                            type={currentDynamicField.secondField.type || 'text'}
-                                                            placeholder={currentDynamicField.secondField.placeholder}
-                                                            value={secondaryValue}
-                                                            onChange={(e) => setSecondaryValue(e.target.value)}
-                                                            className="flex-1 border-none bg-transparent p-0 text-sm font-bold text-gray-800 dark:text-gray-200 focus:ring-0 placeholder:text-gray-500 min-w-0"
-                                                        />
+                                                    {/* Primary field (HP / No. of Animals) */}
+                                                    <div>
+                                                        <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">
+                                                            {currentDynamicField.label}
+                                                        </label>
+                                                        <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5 flex items-center gap-2">
+                                                            <span className="material-symbols-outlined text-primary/60 text-base shrink-0">
+                                                                {currentDynamicField.icon}
+                                                            </span>
+                                                            <input
+                                                                type="number"
+                                                                inputMode="decimal"
+                                                                placeholder={currentDynamicField.placeholder}
+                                                                value={dynamicValue}
+                                                                onChange={(e) => setDynamicValue(e.target.value)}
+                                                                className="flex-1 border-none bg-transparent p-0 text-sm font-bold text-gray-800 dark:text-gray-200 focus:ring-0 placeholder:text-gray-500 min-w-0"
+                                                            />
+                                                            <span className="text-xs font-bold text-primary/60 shrink-0">
+                                                                {currentDynamicField.unit}
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                {/* Primary field (HP / No. of Animals) */}
+                                            ) : (
+                                                /* Single field for Agri Products / Farmer Land / Crops */
                                                 <div>
                                                     <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">
                                                         {currentDynamicField.label}
                                                     </label>
                                                     <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5 flex items-center gap-2">
-                                                        <span className="material-symbols-outlined text-primary/60 text-base shrink-0">
+                                                        <span className="material-symbols-outlined text-primary/60 text-lg shrink-0">
                                                             {currentDynamicField.icon}
                                                         </span>
                                                         <input
@@ -355,84 +379,60 @@ export default function HeroSection() {
                                                             onChange={(e) => setDynamicValue(e.target.value)}
                                                             className="flex-1 border-none bg-transparent p-0 text-sm font-bold text-gray-800 dark:text-gray-200 focus:ring-0 placeholder:text-gray-500 min-w-0"
                                                         />
-                                                        <span className="text-xs font-bold text-primary/60 shrink-0">
-                                                            {currentDynamicField.unit}
-                                                        </span>
+                                                        {currentDynamicField.options ? (
+                                                            <select
+                                                                value={dynamicUnit || currentDynamicField.unit}
+                                                                onChange={(e) => setDynamicUnit(e.target.value)}
+                                                                className="border-none bg-primary/10 rounded-lg px-2 py-1 text-xs font-bold text-primary focus:ring-0 cursor-pointer appearance-none shrink-0"
+                                                            >
+                                                                {currentDynamicField.options.map(opt => (
+                                                                    <option key={opt} value={opt}>{opt}</option>
+                                                                ))}
+                                                            </select>
+                                                        ) : (
+                                                            <span className="text-xs font-bold text-primary/60 shrink-0">
+                                                                {currentDynamicField.unit}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ) : (
-                                            /* Single field for Agri Products / Farmer Land / Crops */
-                                            <div>
-                                                <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">
-                                                    {currentDynamicField.label}
-                                                </label>
-                                                <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5 flex items-center gap-2">
-                                                    <span className="material-symbols-outlined text-primary/60 text-lg shrink-0">
-                                                        {currentDynamicField.icon}
-                                                    </span>
-                                                    <input
-                                                        type="number"
-                                                        inputMode="decimal"
-                                                        placeholder={currentDynamicField.placeholder}
-                                                        value={dynamicValue}
-                                                        onChange={(e) => setDynamicValue(e.target.value)}
-                                                        className="flex-1 border-none bg-transparent p-0 text-sm font-bold text-gray-800 dark:text-gray-200 focus:ring-0 placeholder:text-gray-500 min-w-0"
-                                                    />
-                                                    {currentDynamicField.options ? (
-                                                        <select
-                                                            value={dynamicUnit || currentDynamicField.unit}
-                                                            onChange={(e) => setDynamicUnit(e.target.value)}
-                                                            className="border-none bg-primary/10 rounded-lg px-2 py-1 text-xs font-bold text-primary focus:ring-0 cursor-pointer appearance-none shrink-0"
-                                                        >
-                                                            {currentDynamicField.options.map(opt => (
-                                                                <option key={opt} value={opt}>{opt}</option>
-                                                            ))}
-                                                        </select>
-                                                    ) : (
-                                                        <span className="text-xs font-bold text-primary/60 shrink-0">
-                                                            {currentDynamicField.unit}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )
-                                    )}
+                                            )
+                                        )}
 
-                                    <div>
-                                        <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">{t('hero.price')}</label>
-                                        <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5">
-                                            <input
-                                                className="w-full border-none bg-transparent p-0 text-sm font-bold text-gray-800 dark:text-gray-200 focus:ring-0 placeholder:text-gray-500"
-                                                placeholder={t('hero.enterAmount')}
-                                                type="number"
-                                            />
+                                        <div>
+                                            <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">{t('hero.price')}</label>
+                                            <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5">
+                                                <input
+                                                    className="w-full border-none bg-transparent p-0 text-sm font-bold text-gray-800 dark:text-gray-200 focus:ring-0 placeholder:text-gray-500"
+                                                    placeholder={t('hero.enterAmount')}
+                                                    type="number"
+                                                />
+                                            </div>
                                         </div>
+                                        <button className="glossy-button w-full rounded-2xl py-3.5 mt-1 text-white font-black text-base tracking-wide flex items-center justify-center gap-2 group">
+                                            <span className="material-symbols-outlined group-hover:rotate-12 transition-transform">check_circle</span>
+                                            {t('hero.submitBtn')}
+                                        </button>
                                     </div>
-                                    <button className="glossy-button w-full rounded-2xl py-3.5 mt-1 text-white font-black text-base tracking-wide flex items-center justify-center gap-2 group">
-                                        <span className="material-symbols-outlined group-hover:rotate-12 transition-transform">check_circle</span>
-                                        {t('hero.submitBtn')}
-                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Scrolling Trust Strip */}
-                <div className="trust-strip rounded-b-2xl py-3 px-4 overflow-hidden">
-                    <div className="flex animate-marquee whitespace-nowrap">
-                        {[...Array(2)].map((_, j) => (
-                            <div key={j} className="flex items-center gap-8 mr-8">
-                                {['🌾 Trusted by 50,000+ Farmers', '🐄 10,000+ Livestock Listed', '🚜 Best Machinery Deals', '🌍 Covering 500+ Villages', '⭐ 4.8 Star Rating', '🔒 100% Secure Transactions', '📱 Available on Android & iOS'].map((item, i) => (
-                                    <span key={i} className="text-white/80 text-xs font-semibold tracking-wide">{item}</span>
-                                ))}
-                            </div>
-                        ))}
+                    {/* Scrolling Trust Strip */}
+                    <div className="trust-strip rounded-b-2xl py-3 px-4 overflow-hidden">
+                        <div className="flex animate-marquee whitespace-nowrap">
+                            {[...Array(2)].map((_, j) => (
+                                <div key={j} className="flex items-center gap-8 mr-8">
+                                    {['🌾 Trusted by 50,000+ Farmers', '🐄 10,000+ Livestock Listed', '🚜 Best Machinery Deals', '🌍 Covering 500+ Villages', '⭐ 4.8 Star Rating', '🔒 100% Secure Transactions', '📱 Available on Android & iOS'].map((item, i) => (
+                                        <span key={i} className="text-white/80 text-xs font-semibold tracking-wide">{item}</span>
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
             {/* Gallery Modal */}
             {showGallery && (
@@ -482,38 +482,38 @@ export default function HeroSection() {
 
                         {/* Gallery Grid */}
                         {expandedItem === null && (
-                        <div className="overflow-y-auto max-h-[calc(90vh-80px)] p-4 md:p-8">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                                {galleryItems.map((item, index) => (
-                                    <div key={index} onClick={() => setExpandedItem(index)} className="group rounded-2xl overflow-hidden bg-gray-50 dark:bg-[#1a2318] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
-                                        <div className="relative aspect-[4/3] overflow-hidden">
-                                            <img
-                                                src={item.image}
-                                                alt={item.title}
-                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                            />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                            <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-between">
-                                                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/90 text-primary text-[10px] font-bold">
-                                                    <span className="material-symbols-outlined text-xs">eco</span>
-                                                    Agriculture
-                                                </span>
-                                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-white/90 text-gray-700 text-[10px] font-bold">
-                                                    <span className="material-symbols-outlined text-xs">open_in_full</span>
+                            <div className="overflow-y-auto max-h-[calc(90vh-80px)] p-4 md:p-8">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                                    {galleryItems.map((item, index) => (
+                                        <div key={index} onClick={() => setExpandedItem(index)} className="group rounded-2xl overflow-hidden bg-gray-50 dark:bg-[#1a2318] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                                            <div className="relative aspect-[4/3] overflow-hidden">
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.title}
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                                <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-between">
+                                                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/90 text-primary text-[10px] font-bold">
+                                                        <span className="material-symbols-outlined text-xs">eco</span>
+                                                        Agriculture
+                                                    </span>
+                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-white/90 text-gray-700 text-[10px] font-bold">
+                                                        <span className="material-symbols-outlined text-xs">open_in_full</span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="p-3 md:p-4">
+                                                <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white mb-1">{item.title}</h3>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">{item.desc}</p>
+                                                <span className="inline-flex items-center gap-1 text-primary text-[11px] font-bold mt-2">
+                                                    Read More <span className="material-symbols-outlined text-xs">arrow_forward</span>
                                                 </span>
                                             </div>
                                         </div>
-                                        <div className="p-3 md:p-4">
-                                            <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white mb-1">{item.title}</h3>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">{item.desc}</p>
-                                            <span className="inline-flex items-center gap-1 text-primary text-[11px] font-bold mt-2">
-                                                Read More <span className="material-symbols-outlined text-xs">arrow_forward</span>
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
                         )}
                     </div>
                 </div>

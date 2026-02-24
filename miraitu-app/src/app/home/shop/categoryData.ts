@@ -119,6 +119,16 @@ export const categoryProducts: Record<string, Product[]> = {
         { id: 1207, name: 'Dried Moringa Leaves 200g', price: '₹180', originalPrice: '₹240', rating: 4.4, reviews: 123, image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400&h=400&fit=crop', badge: 'Superfood', description: 'Solar dried, powder-ready, rich in iron & calcium' },
         { id: 1208, name: 'Kitchen Spice Box Set (12 spices)', price: '₹799', originalPrice: '₹999', rating: 4.8, reviews: 189, image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400&h=400&fit=crop', badge: 'Bundle', description: 'Farm-fresh: turmeric, chilli, pepper, cumin, coriander & 7 more' },
     ],
+    'dairy-products': [
+        { id: 1301, name: 'Fresh Full-Cream Milk 1L', price: '₹65', originalPrice: '₹75', rating: 4.8, reviews: 512, image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&h=400&fit=crop', badge: 'Fresh Daily', description: 'Farm-fresh, pasteurized, 3.5% fat, sourced from local dairy farms' },
+        { id: 1302, name: 'Pure Cow Ghee 500ml', price: '₹420', originalPrice: '₹500', rating: 4.9, reviews: 389, image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&h=400&fit=crop', badge: 'Best Seller', description: 'Bilona churned A2 cow ghee, golden color, rich aroma' },
+        { id: 1303, name: 'Natural Paneer (Cottage Cheese) 200g', price: '₹90', originalPrice: '₹110', rating: 4.7, reviews: 234, image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=400&h=400&fit=crop', badge: 'Fresh', description: 'Soft, fresh-made paneer from pure cow milk, 72hr shelf life' },
+        { id: 1304, name: 'Dahi (Curd) 500g', price: '₹45', originalPrice: '₹55', rating: 4.6, reviews: 445, image: 'https://images.unsplash.com/photo-1579954115545-a95591f28bfc?w=400&h=400&fit=crop', badge: 'Popular', description: 'Set curd, thick & creamy, probiotic-rich, natural culture' },
+        { id: 1305, name: 'Butter (White Makhan) 200g', price: '₹110', originalPrice: '₹135', rating: 4.5, reviews: 178, image: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400&h=400&fit=crop', badge: 'Traditional', description: 'Hand-churned table butter from cultured cream, unsalted' },
+        { id: 1306, name: 'Lassi (Sweet) 500ml', price: '₹55', originalPrice: '₹70', rating: 4.7, reviews: 267, image: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=400&fit=crop', badge: 'Refreshing', description: 'Thick Punjabi-style sweet lassi, made with full-fat dahi' },
+        { id: 1307, name: 'Chenna / Fresh Cheese 250g', price: '₹80', originalPrice: '₹100', rating: 4.4, reviews: 98, image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=400&h=400&fit=crop', badge: null, description: 'Soft, moist chenna ideal for sweets like rasgulla & sandesh' },
+        { id: 1308, name: 'Cheese Blocks Assorted 200g', price: '₹180', originalPrice: '₹220', rating: 4.6, reviews: 145, image: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=400&h=400&fit=crop', badge: 'New', description: 'Farm-made aged cheese, cheddar-style, mild flavor' },
+    ],
 };
 
 export const categoryMeta: Record<string, { title: string; icon: string; description: string; bannerColor: string }> = {
@@ -134,4 +144,5 @@ export const categoryMeta: Record<string, { title: string; icon: string; descrip
     'millets-grains': { title: 'Millets & Grains', icon: 'grain', description: 'Farm-fresh millets and traditional grains \u2014 ragi, foxtail, bajra, jowar & more. Nutrient-dense superfoods.', bannerColor: 'from-emerald-600 to-emerald-800' },
     'honey-products': { title: 'Honey & Bee Products', icon: 'hive', description: 'Raw forest honey, bee pollen, beeswax & beekeeping kits. Unprocessed, straight from the hive.', bannerColor: 'from-amber-500 to-amber-700' },
     'spices-herbs': { title: 'Spices & Herbs', icon: 'spa', description: 'Farm-direct Indian spices & medicinal herbs. Turmeric, pepper, cardamom, moringa & more \u2014 pure & aromatic.', bannerColor: 'from-rose-600 to-rose-800' },
+    'dairy-products': { title: 'Dairy Products', icon: '🥛', description: 'Fresh farm dairy — milk, ghee, paneer, curd, butter & more. Sourced daily from local dairy farms near you.', bannerColor: 'from-sky-500 to-sky-700' },
 };

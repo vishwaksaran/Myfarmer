@@ -6,12 +6,13 @@ import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import SellMachineryForm from '@/components/v2/machinery/SellMachineryForm';
 import CompareModal from '@/components/v2/machinery/CompareModal';
 
-type TabType = 'new' | 'sell' | 'buy';
+type TabType = 'new' | 'sell' | 'buy' | 'rent';
 
 const tabs = [
     { id: 'new' as TabType, title: 'New Harvesters', shortTitle: 'New', icon: 'add_circle', description: 'Browse brand new harvesters', bgColor: 'bg-emerald-500' },
     { id: 'sell' as TabType, title: 'Sell Used', shortTitle: 'Sell', icon: 'sell', description: 'List your harvester for sale', bgColor: 'bg-orange-500' },
     { id: 'buy' as TabType, title: 'Buy Used', shortTitle: 'Buy', icon: 'shopping_cart', description: 'Find pre-owned harvesters', bgColor: 'bg-blue-500' },
+    { id: 'rent' as TabType, title: 'Rent', shortTitle: 'Rent', icon: 'handshake', description: 'Hire harvesters per acre or season', bgColor: 'bg-amber-500' },
 ];
 
 const newItems = [
@@ -62,7 +63,7 @@ export default function HarvestersPage() {
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 mb-8">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
                     {tabs.map((tab) => (
                         <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                             className={`relative flex items-center gap-3 p-4 rounded-2xl border-2 transition-all duration-300 ${activeTab === tab.id ? 'border-primary bg-primary/5 shadow-lg' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a231a] hover:border-primary/30'}`}>
@@ -99,6 +100,19 @@ export default function HarvestersPage() {
                             </div>
                             <div className="mb-6"><p className="text-gray-600 dark:text-gray-400">Showing <span className="font-semibold text-gray-900 dark:text-white">{filteredUsedItems.length}</span> used harvesters</p></div>
                             <MachineryListing items={filteredUsedItems} type="used" onCompare={toggleSelection} selectedForCompare={selectedItems} />
+                        </div>
+                    )}
+                    {activeTab === 'rent' && (
+                        <div className="animate-fadeIn flex flex-col items-center justify-center py-12 text-center">
+                            <div className="w-20 h-20 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-4">
+                                <span className="material-symbols-outlined text-amber-600 text-4xl">grass</span>
+                            </div>
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Rent Harvesters</h2>
+                            <p className="text-gray-500 mb-6 max-w-sm">Hire combine harvesters priced per acre, per day, or for the entire season. All with certified operators.</p>
+                            <Link href="/home/machinery/harvesters/rent" className="flex items-center gap-2 px-8 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl transition-colors">
+                                <span className="material-symbols-outlined">handshake</span>
+                                Browse Harvester Rentals
+                            </Link>
                         </div>
                     )}
                 </div>

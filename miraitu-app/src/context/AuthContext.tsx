@@ -60,9 +60,29 @@ function toMiraituUser(supabaseUser: SupabaseUser): MiraituUser {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+    // Start with null to match server render (avoids hydration mismatch)
     const [user, setUser] = useState<MiraituUser | null>(null);
     const [loading, setLoading] = useState(true);
     const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Restore cached user from sessionStorage after mount (client-only)
+    useEffect(() => {
+        try {
+            const cached = sessionStorage.getItem('miraitu_user');
+            if (cached) {
+                setUser(JSON.parse(cached));
+            }
+        } catch { /* ignore */ }
+    }, []);
+
+    // Persist user to sessionStorage whenever it changes
+    useEffect(() => {
+        if (user) {
+            try { sessionStorage.setItem('miraitu_user', JSON.stringify(user)); } catch { }
+        } else {
+            try { sessionStorage.removeItem('miraitu_user'); } catch { }
+        }
+    }, [user]);
 
     // Sign out handler
     const handleSignOut = useCallback(async () => {
@@ -233,9 +253,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Guest login (local only, no Supabase session)
     const loginAsGuest = async () => {
-        setLoading(true);
-        await new Promise(resolve => setTimeout(resolve, 800));
-
         const guestUser: MiraituUser = {
             id: 'guest-123',
             uid: 'guest-123',

@@ -188,4 +188,14 @@ export const shopCategories = [
         path: '/home/shop/spices-herbs',
         color: 'from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/10',
     },
+    {
+        id: 'dairy-products',
+        name: 'Dairy Products',
+        icon: '🥛',
+        isMatIcon: false,
+        description: 'Fresh milk, cheese & dairy',
+        count: 62,
+        path: '/home/shop/dairy-products',
+        color: 'from-sky-50 to-sky-100 dark:from-sky-900/20 dark:to-sky-800/10',
+    },
 ];

@@ -63,7 +63,7 @@ export default function Header() {
     const router = useRouter();
     const { lang, setLang, t } = useLanguage();
     const { totalItems } = useCart();
-    const { user, signOut } = useAuth();
+    const { user, loading: authLoading, signOut } = useAuth();
     const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
@@ -288,15 +288,13 @@ export default function Header() {
                                             <button
                                                 key={`${item.path}-${item.name}`}
                                                 onClick={() => handleResultClick(item.path)}
-                                                className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors text-left ${
-                                                    activeResultIndex === index
-                                                        ? 'bg-primary/10 text-primary'
-                                                        : 'text-gray-700 dark:text-gray-200 hover:bg-primary/5 hover:text-primary'
-                                                }`}
+                                                className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors text-left ${activeResultIndex === index
+                                                    ? 'bg-primary/10 text-primary'
+                                                    : 'text-gray-700 dark:text-gray-200 hover:bg-primary/5 hover:text-primary'
+                                                    }`}
                                             >
-                                                <span className={`material-symbols-outlined text-lg shrink-0 ${
-                                                    activeResultIndex === index ? 'text-primary' : 'text-gray-400'
-                                                }`}>{item.icon}</span>
+                                                <span className={`material-symbols-outlined text-lg shrink-0 ${activeResultIndex === index ? 'text-primary' : 'text-gray-400'
+                                                    }`}>{item.icon}</span>
                                                 <span className="flex-1 min-w-0 truncate">{item.name}</span>
                                                 <span className="material-symbols-outlined text-sm text-gray-300 shrink-0">arrow_forward</span>
                                             </button>
@@ -418,7 +416,13 @@ export default function Header() {
                                 )}
                             </Link>
 
-                            {user ? (
+                            {authLoading ? (
+                                /* Skeleton placeholder while auth state is resolving */
+                                <div className="flex items-center gap-2 rounded-xl bg-gray-100 px-3 py-2 animate-pulse">
+                                    <div className="size-8 rounded-full bg-gray-200" />
+                                    <div className="hidden sm:block w-16 h-4 bg-gray-200 rounded" />
+                                </div>
+                            ) : user ? (
                                 <div className="relative" ref={profileMenuRef}>
                                     <button
                                         onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -548,15 +552,13 @@ export default function Header() {
                                         <button
                                             key={`${item.path}-${item.name}`}
                                             onClick={() => handleResultClick(item.path)}
-                                            className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors text-left ${
-                                                activeResultIndex === index
-                                                    ? 'bg-primary/10 text-primary'
-                                                    : 'text-gray-700 dark:text-gray-200 hover:bg-primary/5 hover:text-primary'
-                                            }`}
+                                            className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors text-left ${activeResultIndex === index
+                                                ? 'bg-primary/10 text-primary'
+                                                : 'text-gray-700 dark:text-gray-200 hover:bg-primary/5 hover:text-primary'
+                                                }`}
                                         >
-                                            <span className={`material-symbols-outlined text-lg shrink-0 ${
-                                                activeResultIndex === index ? 'text-primary' : 'text-gray-400'
-                                            }`}>{item.icon}</span>
+                                            <span className={`material-symbols-outlined text-lg shrink-0 ${activeResultIndex === index ? 'text-primary' : 'text-gray-400'
+                                                }`}>{item.icon}</span>
                                             <span className="flex-1 min-w-0 truncate">{item.name}</span>
                                             <span className="material-symbols-outlined text-sm text-gray-300 shrink-0">arrow_forward</span>
                                         </button>

@@ -145,7 +145,7 @@ export default function MachineryPage() {
             // Hide bottom nav
             const bottomNav = document.querySelector('nav');
             if (bottomNav) bottomNav.style.display = 'none';
-            
+
             // Hide WhatsApp icon with specific z-50 class
             const whatsappIcon = document.querySelector('.fixed.z-50.flex.flex-col.items-end.gap-4');
             if (whatsappIcon) {
@@ -167,7 +167,7 @@ export default function MachineryPage() {
             // Show bottom nav
             const bottomNav = document.querySelector('nav');
             if (bottomNav) bottomNav.style.display = '';
-            
+
             // Restore WhatsApp icon z-index
             const whatsappIcon = document.querySelector('.fixed.z-50.flex.flex-col.items-end.gap-4');
             if (whatsappIcon) {
@@ -246,12 +246,12 @@ export default function MachineryPage() {
                         >
                             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
                             <div
-                                className="relative bg-white dark:bg-[#1a231a] rounded-3xl p-0 max-w-md w-full shadow-2xl overflow-hidden"
+                                className="relative bg-white dark:bg-[#1a231a] rounded-3xl max-w-md w-full shadow-2xl flex flex-col"
+                                style={{ maxHeight: '90vh', animation: 'zoomIn95 0.3s ease-out' }}
                                 onClick={(e) => e.stopPropagation()}
-                                style={{ animation: 'zoomIn95 0.3s ease-out' }}
                             >
-                                {/* Modal Header with Image */}
-                                <div className="relative h-40 overflow-hidden">
+                                {/* Modal Header with Image - fixed height */}
+                                <div className="relative h-32 overflow-hidden rounded-t-3xl shrink-0">
                                     <img
                                         src={modalCategory.image}
                                         alt={modalCategory.name}
@@ -270,51 +270,72 @@ export default function MachineryPage() {
                                     </div>
                                 </div>
 
-                                {/* Action Options */}
-                                <div className="p-6 space-y-3">
-                                    <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">What would you like to do?</p>
+                                {/* Action Options - scrollable */}
+                                <div className="overflow-y-auto p-4 pb-6">
+                                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">What would you like to do?</p>
+                                    <div className="space-y-2">
 
-                                    <Link
-                                        href={`${modalCategory.path}/new`}
-                                        className="flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary hover:bg-primary/5 transition-all group/opt"
-                                    >
-                                        <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center shrink-0">
-                                            <span className="material-symbols-outlined text-white text-2xl">add_circle</span>
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="font-bold text-gray-900 dark:text-white">New {modalCategory.name}</p>
-                                            <p className="text-xs text-gray-500">Browse brand new equipment</p>
-                                        </div>
-                                        <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-primary group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
-                                    </Link>
+                                        <Link
+                                            href={`${modalCategory.path}/new`}
+                                            onClick={() => setModalCategory(null)}
+                                            className="flex items-center gap-3 p-3 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group/opt"
+                                        >
+                                            <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center shrink-0">
+                                                <span className="material-symbols-outlined text-white text-xl">add_circle</span>
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="font-bold text-gray-900 dark:text-white text-sm">New {modalCategory.name}</p>
+                                                <p className="text-xs text-gray-500">Browse brand new equipment</p>
+                                            </div>
+                                            <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-blue-500 group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
+                                        </Link>
 
-                                    <Link
-                                        href={`${modalCategory.path}/buy`}
-                                        className="flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary hover:bg-primary/5 transition-all group/opt"
-                                    >
-                                        <div className="w-12 h-12 rounded-xl bg-emerald-500 flex items-center justify-center shrink-0">
-                                            <span className="material-symbols-outlined text-white text-2xl">shopping_cart</span>
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="font-bold text-gray-900 dark:text-white">Buy Used {modalCategory.name}</p>
-                                            <p className="text-xs text-gray-500">Find pre-owned at great prices</p>
-                                        </div>
-                                        <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-primary group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
-                                    </Link>
+                                        <Link
+                                            href={`${modalCategory.path}/buy`}
+                                            onClick={() => setModalCategory(null)}
+                                            className="flex items-center gap-3 p-3 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all group/opt"
+                                        >
+                                            <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shrink-0">
+                                                <span className="material-symbols-outlined text-white text-xl">shopping_cart</span>
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="font-bold text-gray-900 dark:text-white text-sm">Buy Used {modalCategory.name}</p>
+                                                <p className="text-xs text-gray-500">Find pre-owned at great prices</p>
+                                            </div>
+                                            <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-emerald-500 group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
+                                        </Link>
 
-                                    <Link
-                                        href={`${modalCategory.path}/sell`}
-                                        className="flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary hover:bg-primary/5 transition-all group/opt"
-                                    >
-                                        <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center shrink-0">
-                                            <span className="material-symbols-outlined text-white text-2xl">sell</span>
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="font-bold text-gray-900 dark:text-white">Sell Used {modalCategory.name}</p>
-                                            <p className="text-xs text-gray-500">List your equipment for sale</p>
-                                        </div>
-                                        <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-primary group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
-                                    </Link>
+                                        <Link
+                                            href={`${modalCategory.path}/sell`}
+                                            onClick={() => setModalCategory(null)}
+                                            className="flex items-center gap-3 p-3 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all group/opt"
+                                        >
+                                            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center shrink-0">
+                                                <span className="material-symbols-outlined text-white text-xl">sell</span>
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="font-bold text-gray-900 dark:text-white text-sm">Sell Used {modalCategory.name}</p>
+                                                <p className="text-xs text-gray-500">List your equipment for sale</p>
+                                            </div>
+                                            <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-orange-500 group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
+                                        </Link>
+
+                                        <Link
+                                            href={`${modalCategory.path}/rent`}
+                                            onClick={() => setModalCategory(null)}
+                                            className="flex items-center gap-3 p-3 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary hover:bg-primary/5 dark:hover:bg-primary/10 transition-all group/opt"
+                                        >
+                                            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shrink-0">
+                                                <span className="material-symbols-outlined text-white text-xl">handshake</span>
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="font-bold text-gray-900 dark:text-white text-sm">Rent {modalCategory.name}</p>
+                                                <p className="text-xs text-gray-500">Hire by the hour, day or season</p>
+                                            </div>
+                                            <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-gray-500 group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
+                                        </Link>
+
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -140,13 +140,13 @@ export default function SoilTestingPage() {
                 <div className="mx-auto max-w-[1280px]">
                     <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-3">Get Started Today</h2>
                     <p className="text-gray-600 dark:text-gray-400 mb-12">Choose your package and schedule a sample collection visit</p>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Cost Calculator */}
                         <div className="skeuo-card rounded-2xl md:rounded-3xl p-6 md:p-8 bg-white dark:bg-gray-800 border-2 md:border border-gray-200 dark:border-gray-700">
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="size-10 rounded-lg bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-900/10 flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-lg text-blue-600 dark:text-blue-400">calculate</span>
+                                <div className="size-10 rounded-lg bg-gradient-to-br from-green-100 to-emerald-50 dark:from-green-900/30 dark:to-green-900/10 flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-lg text-green-600 dark:text-green-400">calculate</span>
                                 </div>
                                 <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">Estimate Cost</h3>
                             </div>
@@ -157,7 +157,7 @@ export default function SoilTestingPage() {
                                         type="number"
                                         value={formData.area_size}
                                         onChange={(e) => setFormData({ ...formData, area_size: e.target.value })}
-                                        className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 outline-none transition-colors dark:text-white text-sm md:text-base"
+                                        className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm md:text-base"
                                         placeholder="Enter total acres"
                                     />
                                 </div>
@@ -166,7 +166,7 @@ export default function SoilTestingPage() {
                                     <select
                                         value={formData.service_type}
                                         onChange={(e) => setFormData({ ...formData, service_type: e.target.value })}
-                                        className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-blue-500 outline-none transition-colors dark:text-white text-sm md:text-base appearance-none"
+                                        className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm md:text-base appearance-none"
                                     >
                                         <option value="basic">Basic Analysis (₹500)</option>
                                         <option value="comprehensive">Comprehensive (₹1200)</option>
@@ -174,9 +174,9 @@ export default function SoilTestingPage() {
                                     </select>
                                 </div>
                                 {formData.area_size && (
-                                    <div className="mt-6 p-4 md:p-6 rounded-lg md:rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10 border-2 border-blue-200 dark:border-blue-800">
+                                    <div className="mt-6 p-4 md:p-6 rounded-lg md:rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100/50 dark:from-green-900/20 dark:to-emerald-900/10 border-2 border-green-200 dark:border-green-800">
                                         <p className="text-xs md:text-sm font-bold text-gray-600 dark:text-gray-400 mb-2">Estimated Total</p>
-                                        <p className="text-3xl md:text-4xl font-black text-blue-600 dark:text-blue-400">₹{calculateCost()}</p>
+                                        <p className="text-3xl md:text-4xl font-black text-green-600 dark:text-green-400">₹{calculateCost()}</p>
                                         <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-500 mt-3">*Includes sample collection charges</p>
                                     </div>
                                 )}

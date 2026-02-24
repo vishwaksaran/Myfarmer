@@ -97,6 +97,22 @@ const serviceData: Record<string, any> = {
         price: 'From ₹1.5/kg/mo',
         stats: [{ label: 'Facilities', value: '20+' }, { label: 'Capacity', value: '10k Tons' }],
     },
+    'register-provider': {
+        title: 'Become a Service Provider',
+        icon: 'handshake',
+        description: 'Register with Miraitu and start earning by offering your farm services to thousands of farmers near you.',
+        features: [
+            'Free Registration',
+            'Verified Badge for your Profile',
+            'Connect with 10,000+ Farmers',
+            'Flexible Working Hours',
+            'Timely Payments',
+            'WhatsApp Booking Alerts',
+        ],
+        color: 'green',
+        price: 'Free to Join',
+        stats: [{ label: 'Providers', value: '500+' }, { label: 'Earnings Avg.', value: '₹18k/mo' }],
+    },
 };
 
 export default function GenericServicePage() {
@@ -248,8 +264,15 @@ export default function GenericServicePage() {
                         {/* Booking Form Side Panel */}
                         <div className="lg:col-span-1">
                             <div className="sticky top-24 p-6 rounded-3xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl">
-                                <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Book Service</h3>
-                                <p className="text-sm text-gray-500 mb-6">Fill details to get callbacks from providers</p>
+                                <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">
+                                    {slug === 'register-provider' ? 'Register Now' : 'Book Service'}
+                                </h3>
+                                <p className="text-sm text-gray-500 mb-6">
+                                    {slug === 'register-provider'
+                                        ? 'Fill in your details and our team will get you onboarded'
+                                        : 'Fill details to get callbacks from providers'
+                                    }
+                                </p>
 
                                 {formErrors.submit && (
                                     <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
@@ -259,49 +282,49 @@ export default function GenericServicePage() {
 
                                 <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                                     <div>
-                                        <input 
-                                            type="text" 
+                                        <input
+                                            type="text"
                                             placeholder="Your Name *"
                                             value={formData.name}
-                                            onChange={(e) => { setFormData({...formData, name: e.target.value}); setFormErrors(prev => { const {name, ...r} = prev; return r; }); }}
+                                            onChange={(e) => { setFormData({ ...formData, name: e.target.value }); setFormErrors(prev => { const { name, ...r } = prev; return r; }); }}
                                             className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 ${formErrors.name ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none`}
                                         />
                                         {formErrors.name && <p className="text-red-500 text-xs mt-1 ml-1">{formErrors.name}</p>}
                                     </div>
                                     <div>
-                                        <input 
-                                            type="tel" 
+                                        <input
+                                            type="tel"
                                             placeholder="Phone Number (10 digits) *"
                                             value={formData.phone}
-                                            onChange={(e) => { setFormData({...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10)}); setFormErrors(prev => { const {phone, ...r} = prev; return r; }); }}
+                                            onChange={(e) => { setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const { phone, ...r } = prev; return r; }); }}
                                             className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 ${formErrors.phone ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none`}
                                             maxLength={10}
                                         />
                                         {formErrors.phone && <p className="text-red-500 text-xs mt-1 ml-1">{formErrors.phone}</p>}
                                     </div>
                                     <div>
-                                        <input 
-                                            type="text" 
+                                        <input
+                                            type="text"
                                             placeholder="Location/Village *"
                                             value={formData.location}
-                                            onChange={(e) => { setFormData({...formData, location: e.target.value}); setFormErrors(prev => { const {location, ...r} = prev; return r; }); }}
+                                            onChange={(e) => { setFormData({ ...formData, location: e.target.value }); setFormErrors(prev => { const { location, ...r } = prev; return r; }); }}
                                             className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 ${formErrors.location ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none`}
                                         />
                                         {formErrors.location && <p className="text-red-500 text-xs mt-1 ml-1">{formErrors.location}</p>}
                                     </div>
-                                    <input 
+                                    <input
                                         type="date"
                                         value={formData.date}
-                                        onChange={(e) => setFormData({...formData, date: e.target.value})}
-                                        className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-primary outline-none" 
+                                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                        className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-primary outline-none"
                                     />
 
-                                    <button 
+                                    <button
                                         type="button"
                                         onClick={handleFindProviders}
                                         disabled={submitting || !formData.name || !formData.phone || !formData.location}
                                         className={`w-full py-4 rounded-xl ${colors.bg} ${colors.hover} text-white font-bold text-lg transition-all shadow-lg mt-2 disabled:opacity-50 disabled:cursor-not-allowed`}>
-                                        FIND PROVIDERS
+                                        {submitting ? 'SUBMITTING…' : slug === 'register-provider' ? 'REGISTER AS PROVIDER' : 'FIND PROVIDERS'}
                                     </button>
                                 </form>
                             </div>

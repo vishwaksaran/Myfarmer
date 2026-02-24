@@ -397,7 +397,7 @@ export default function BuyCropsPage() {
 
                 {/* Selected Crop Order Panel */}
                 {selectedCrops.length > 0 && (
-                    <div className="mb-8 rounded-3xl overflow-hidden border-2 border-green-200 dark:border-green-800 bg-white dark:bg-[#1a231a] shadow-xl"
+                    <div id="order-panel" className="mb-8 rounded-3xl overflow-hidden border-2 border-green-200 dark:border-green-800 bg-white dark:bg-[#1a231a] shadow-xl"
                         style={{ animation: 'slideDown 0.3s ease-out' }}
                     >
                         {/* Order Header */}

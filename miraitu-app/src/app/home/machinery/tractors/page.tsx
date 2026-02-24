@@ -6,7 +6,7 @@ import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import SellMachineryForm from '@/components/v2/machinery/SellMachineryForm';
 import CompareModal from '@/components/v2/machinery/CompareModal';
 
-type TabType = 'new' | 'sell' | 'buy';
+type TabType = 'new' | 'sell' | 'buy' | 'rent';
 
 const tabs = [
     {
@@ -38,6 +38,16 @@ const tabs = [
         color: 'from-blue-500 to-blue-600',
         bgColor: 'bg-blue-500',
         lightBg: 'bg-blue-50 dark:bg-blue-900/20',
+    },
+    {
+        id: 'rent' as TabType,
+        title: 'Rent',
+        shortTitle: 'Rent',
+        icon: 'handshake',
+        description: 'Hire tractors by hour or season',
+        color: 'from-primary to-primary',
+        bgColor: 'bg-primary',
+        lightBg: 'bg-primary/10 dark:bg-primary/20',
     },
 ];
 
@@ -245,14 +255,14 @@ export default function TractorsPage() {
                 </div>
 
                 {/* Navigation Tabs - Compact Cards */}
-                <div className="grid grid-cols-3 gap-3 mb-8">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`relative flex items-center gap-3 p-4 rounded-2xl border-2 transition-all duration-300 ${activeTab === tab.id
-                                    ? 'border-primary bg-primary/5 shadow-lg'
-                                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a231a] hover:border-primary/30 hover:shadow-md'
+                                ? 'border-primary bg-primary/5 shadow-lg'
+                                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a231a] hover:border-primary/30 hover:shadow-md'
                                 }`}
                         >
                             {/* Active Indicator */}
@@ -428,6 +438,24 @@ export default function TractorsPage() {
                                 onCompare={toggleSelection}
                                 selectedForCompare={selectedItems}
                             />
+                        </div>
+                    )}
+
+                    {/* Rent Content */}
+                    {activeTab === 'rent' && (
+                        <div className="animate-fadeIn flex flex-col items-center justify-center py-12 text-center">
+                            <div className="w-20 h-20 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center mb-4">
+                                <span className="material-symbols-outlined text-primary text-4xl">handshake</span>
+                            </div>
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Rent Tractors</h2>
+                            <p className="text-gray-500 mb-6 max-w-sm">Hire tractors by the hour, day, or season. Browse available tractors near you with certified operators.</p>
+                            <Link
+                                href="/home/machinery/tractors/rent"
+                                className="flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-2xl transition-colors"
+                            >
+                                <span className="material-symbols-outlined">handshake</span>
+                                Browse Rental Tractors
+                            </Link>
                         </div>
                     )}
                 </div>
