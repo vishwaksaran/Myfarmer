@@ -1,12 +1,16 @@
 'use client';
 
-import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import MiraituLogo from '@/components/MiraituLogo';
+import { useBookingSubmit } from '@/lib/useBookingSubmit';
 
 export default function SoilTestingPage() {
     const [headerVisible, setHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+    const { submit, submitting } = useBookingSubmit();
+    const bookingFormRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const onScroll = () => {
@@ -35,12 +39,46 @@ export default function SoilTestingPage() {
             'micro_nutrient': 800,
         };
         const rate = rates[formData.service_type] || 500;
-        // Basic calculation: rate per sample/acre roughly
         return Math.max(rate, rate * (Math.ceil(area / 5))).toLocaleString('en-IN');
+    };
+
+    const handleBookTest = (serviceType: string) => {
+        setFormData(prev => ({ ...prev, service_type: serviceType }));
+        // Scroll to booking form
+        setTimeout(() => {
+            bookingFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    };
+
+    const handleScheduleVisit = async () => {
+        const errs: Record<string, string> = {};
+        if (!formData.full_name.trim()) errs.full_name = 'Name is required';
+        const digits = formData.phone.replace(/\D/g, '');
+        if (!digits) errs.phone = 'Phone number is required';
+        else if (digits.length !== 10) errs.phone = 'Enter a valid 10-digit number';
+        if (!formData.location.trim()) errs.location = 'Location is required';
+        if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
+        setFormErrors({});
+        const result = await submit({
+            module: 'services',
+            category: 'soil-testing',
+            full_name: formData.full_name,
+            phone: formData.phone,
+            location: formData.location,
+            extra_data: {
+                soil_type: formData.soil_type,
+                service_type: formData.service_type,
+                area_size: formData.area_size,
+                estimated_cost: `₹${calculateCost()}`,
+            },
+        });
+        if (result.success) setShowSuccessModal(true);
+        else setFormErrors({ submit: result.error || 'Failed to submit' });
     };
 
     const soilServices = [
         {
+            id: 'basic',
             icon: 'science',
             title: 'Basic Soil Analysis',
             description: 'Essential testing for pH, electrical conductivity, and organic carbon.',
@@ -48,6 +86,7 @@ export default function SoilTestingPage() {
             price: '₹500/sample',
         },
         {
+            id: 'comprehensive',
             icon: 'biotech',
             title: 'Comprehensive Package',
             description: 'Complete analysis including major nutrients (N, P, K) and micro-nutrients.',
@@ -55,6 +94,12 @@ export default function SoilTestingPage() {
             price: '₹1,200/sample',
         },
     ];
+
+    const packageLabels: Record<string, string> = {
+        basic: 'Basic Analysis',
+        comprehensive: 'Comprehensive Package',
+        micro_nutrient: 'Micro-Nutrients Only',
+    };
 
     return (
         <div className="min-h-screen bg-background-light dark:bg-background-dark">
@@ -96,10 +141,13 @@ export default function SoilTestingPage() {
             <section className="px-4 md:px-6 py-12 bg-gradient-to-b from-white to-green-50/30 dark:from-gray-900 dark:to-green-900/10">
                 <div className="mx-auto max-w-[1280px]">
                     <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-2">Testing Packages</h2>
-                    <p className="text-gray-600 dark:text-gray-400 mb-8 md:mb-12">Choose the package that fits your farm's needs</p>
+                    <p className="text-gray-600 dark:text-gray-400 mb-8 md:mb-12">Choose the package that fits your farm&apos;s needs</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                        {soilServices.map((service, index) => (
-                            <div key={index} className="skeuo-card rounded-2xl md:rounded-3xl p-6 md:p-8 border-2 md:border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-xl transition-all duration-300">
+                        {soilServices.map((service) => (
+                            <div key={service.id} className={`skeuo-card rounded-2xl md:rounded-3xl p-6 md:p-8 border-2 md:border transition-all duration-300 ${formData.service_type === service.id
+                                ? 'border-primary shadow-2xl shadow-primary/30 bg-white dark:bg-gray-800'
+                                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-xl'
+                                }`}>
                                 {/* Icon & Price */}
                                 <div className="flex items-start justify-between gap-4 mb-6">
                                     <div className="size-14 md:size-16 rounded-2xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30">
@@ -126,8 +174,14 @@ export default function SoilTestingPage() {
                                 </div>
 
                                 {/* CTA Button */}
-                                <button className="w-full rounded-lg md:rounded-xl py-3 md:py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-black text-base md:text-lg shadow-lg hover:shadow-green-600/30 active:scale-[0.98] transition-all">
-                                    Book Test
+                                <button
+                                    onClick={() => handleBookTest(service.id)}
+                                    className={`w-full rounded-lg md:rounded-xl py-3 md:py-4 font-black text-base md:text-lg shadow-lg active:scale-[0.98] transition-all ${formData.service_type === service.id
+                                        ? 'glossy-button text-white'
+                                        : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white hover:shadow-green-600/30'
+                                        }`}
+                                >
+                                    {formData.service_type === service.id ? '✓ SELECTED' : 'Book Test'}
                                 </button>
                             </div>
                         ))}
@@ -136,7 +190,7 @@ export default function SoilTestingPage() {
             </section>
 
             {/* Booking Form */}
-            <section className="px-4 md:px-6 py-12 md:py-16 bg-linear-to-b from-green-50/30 to-transparent dark:from-green-900/10">
+            <section className="px-4 md:px-6 py-12 md:py-16 bg-gradient-to-b from-green-50/30 to-transparent dark:from-green-900/10">
                 <div className="mx-auto max-w-[1280px]">
                     <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-3">Get Started Today</h2>
                     <p className="text-gray-600 dark:text-gray-400 mb-12">Choose your package and schedule a sample collection visit</p>
@@ -184,53 +238,114 @@ export default function SoilTestingPage() {
                         </div>
 
                         {/* Request Form */}
-                        <div className="skeuo-card rounded-2xl md:rounded-3xl p-6 md:p-8 bg-white dark:bg-gray-800 border-2 md:border border-gray-200 dark:border-gray-700">
+                        <div ref={bookingFormRef} className="skeuo-card rounded-2xl md:rounded-3xl p-6 md:p-8 bg-white dark:bg-gray-800 border-2 md:border border-gray-200 dark:border-gray-700">
                             <div className="flex items-center gap-3 mb-2">
-                                <div className="size-10 rounded-lg bg-gradient-to-br from-green-100 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/10 flex items-center justify-center">
+                                <div className="size-10 rounded-lg bg-gradient-to-br from-green-100 to-emerald-50 dark:from-green-900/30 dark:to-green-900/10 flex items-center justify-center">
                                     <span className="material-symbols-outlined text-lg text-green-600 dark:text-green-400">location_on</span>
                                 </div>
                                 <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">Schedule Collection</h3>
                             </div>
                             <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mb-6 ml-13">Our agent will visit your farm to collect soil samples</p>
+
+                            {/* Selected Package Indicator */}
+                            <div className="mb-4 p-3 md:p-4 rounded-lg md:rounded-xl bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800">
+                                <p className="text-xs md:text-sm font-bold text-gray-600 dark:text-gray-400 mb-0.5">Selected Package:</p>
+                                <p className="text-base md:text-lg font-black text-green-600 dark:text-green-400">
+                                    {packageLabels[formData.service_type] || 'Basic Analysis'}
+                                </p>
+                            </div>
+
+                            {formErrors.submit && (
+                                <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800">
+                                    <p className="text-sm font-bold text-red-600 dark:text-red-400">{formErrors.submit}</p>
+                                </div>
+                            )}
+
                             <div className="space-y-3 md:space-y-4">
                                 <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Full Name</label>
+                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Full Name *</label>
                                     <input
                                         type="text"
                                         value={formData.full_name}
-                                        onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                                        className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm md:text-base"
+                                        onChange={(e) => { setFormData({ ...formData, full_name: e.target.value }); setFormErrors(prev => { const { full_name, ...r } = prev; return r; }); }}
+                                        className={`w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 outline-none transition-colors dark:text-white text-sm md:text-base ${formErrors.full_name ? 'border-red-400' : 'border-transparent focus:border-green-500'}`}
                                         placeholder="Enter your name"
                                     />
+                                    {formErrors.full_name && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.full_name}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Phone Number</label>
+                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Phone Number *</label>
                                     <input
                                         type="tel"
                                         value={formData.phone}
-                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm md:text-base"
-                                        placeholder="+91 XXXXX XXXXX"
+                                        onChange={(e) => { setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const { phone, ...r } = prev; return r; }); }}
+                                        className={`w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 outline-none transition-colors dark:text-white text-sm md:text-base ${formErrors.phone ? 'border-red-400' : 'border-transparent focus:border-green-500'}`}
+                                        placeholder="10-digit number"
+                                        maxLength={10}
                                     />
+                                    {formErrors.phone && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.phone}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Farm Location</label>
+                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Farm Location *</label>
                                     <input
                                         type="text"
                                         value={formData.location}
-                                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                        className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm md:text-base"
+                                        onChange={(e) => { setFormData({ ...formData, location: e.target.value }); setFormErrors(prev => { const { location, ...r } = prev; return r; }); }}
+                                        className={`w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 outline-none transition-colors dark:text-white text-sm md:text-base ${formErrors.location ? 'border-red-400' : 'border-transparent focus:border-green-500'}`}
                                         placeholder="Village, District"
                                     />
+                                    {formErrors.location && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.location}</p>}
                                 </div>
-                                <button className="w-full rounded-lg md:rounded-xl py-3 md:py-4 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-black text-base md:text-lg shadow-lg hover:shadow-green-600/30 active:scale-[0.98] transition-all mt-6">
-                                    SCHEDULE VISIT
+                                <button
+                                    onClick={handleScheduleVisit}
+                                    disabled={submitting}
+                                    className="w-full rounded-lg md:rounded-xl py-3 md:py-4 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-black text-base md:text-lg shadow-lg hover:shadow-green-600/30 active:scale-[0.98] transition-all mt-6 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {submitting ? (
+                                        <>
+                                            <span className="material-symbols-outlined text-xl animate-spin">progress_activity</span>
+                                            SUBMITTING...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="material-symbols-outlined text-xl">send</span>
+                                            SCHEDULE VISIT
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
+
+            {/* Success Modal */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowSuccessModal(false)}>
+                    <div className="mx-4 max-w-md rounded-3xl bg-white dark:bg-gray-800 p-6 md:p-8 text-center shadow-2xl" onClick={e => e.stopPropagation()} style={{ animation: 'successPop 0.5s ease-out' }}>
+                        <div className="flex justify-center mb-4 md:mb-6">
+                            <div className="inline-flex items-center justify-center size-16 md:size-20 rounded-full bg-gradient-to-br from-green-400 to-primary">
+                                <span className="material-symbols-outlined text-4xl md:text-5xl text-white">check_circle</span>
+                            </div>
+                        </div>
+                        <h2 className="text-2xl md:text-3xl font-black text-primary-dark dark:text-white mb-2 md:mb-3">Visit Scheduled!</h2>
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4">Your soil testing request has been submitted successfully.</p>
+                        <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
+                            <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will contact you soon to schedule the soil sample collection</p>
+                        </div>
+                        <button
+                            onClick={() => {
+                                setShowSuccessModal(false);
+                                setFormData({ full_name: '', phone: '', location: '', soil_type: 'clay', service_type: formData.service_type, area_size: '' });
+                            }}
+                            className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors"
+                        >
+                            Done
+                        </button>
+                    </div>
+                    <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>
+                </div>
+            )}
         </div>
     );
 }

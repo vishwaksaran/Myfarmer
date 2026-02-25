@@ -7,7 +7,8 @@ import MiraituLogo from '@/components/MiraituLogo';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { LangCode } from '@/i18n/translations';
 import { useCart } from '@/context/CartContext';
-import { useAuth } from '@/context/AuthContext';
+import HeaderAuthSection from './HeaderAuthSection';
+
 
 // Searchable items across the entire app
 const searchableItems = [
@@ -63,16 +64,16 @@ export default function Header() {
     const router = useRouter();
     const { lang, setLang, t } = useLanguage();
     const { totalItems } = useCart();
-    const { user, loading: authLoading, signOut } = useAuth();
+
     const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
-    const [isProfileOpen, setIsProfileOpen] = useState(false);
+
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [selectedLang, setSelectedLang] = useState<LangCode>(lang);
     const [isHeaderVisible, setIsHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
     const moreMenuRef = useRef<HTMLDivElement>(null);
-    const profileMenuRef = useRef<HTMLDivElement>(null);
+
 
     // Search state
     const [searchQuery, setSearchQuery] = useState('');
@@ -415,103 +416,8 @@ export default function Header() {
                                     </span>
                                 )}
                             </Link>
-
-                            {authLoading ? (
-                                /* Skeleton placeholder while auth state is resolving */
-                                <div className="flex items-center gap-2 rounded-xl bg-gray-100 px-3 py-2 animate-pulse">
-                                    <div className="size-8 rounded-full bg-gray-200" />
-                                    <div className="hidden sm:block w-16 h-4 bg-gray-200 rounded" />
-                                </div>
-                            ) : user ? (
-                                <div className="relative" ref={profileMenuRef}>
-                                    <button
-                                        onClick={() => setIsProfileOpen(!isProfileOpen)}
-                                        className="relative flex items-center gap-2 rounded-xl bg-gray-100 dark:bg-gray-800 px-2.5 py-1.5 text-sm font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:scale-95"
-                                    >
-                                        <div className="relative">
-                                            {user.photoURL ? (
-                                                <img src={user.photoURL} alt="User" className="size-8 rounded-full ring-2 ring-primary/30" />
-                                            ) : (
-                                                <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary ring-2 ring-primary/30">
-                                                    <span className="material-symbols-outlined text-xl">person</span>
-                                                </div>
-                                            )}
-                                            {/* Verified badge */}
-                                            <div className="absolute -bottom-0.5 -right-0.5 size-4 bg-green-500 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-gray-800">
-                                                <span className="material-symbols-outlined text-[10px] text-white font-bold">check</span>
-                                            </div>
-                                        </div>
-                                        <span className="hidden sm:inline max-w-[100px] truncate text-gray-700 dark:text-gray-200">{user.displayName || 'User'}</span>
-                                        <span className={`material-symbols-outlined text-sm text-gray-400 hidden sm:inline transition-transform ${isProfileOpen ? 'rotate-180' : ''}`}>expand_more</span>
-                                    </button>
-
-                                    {/* Profile Dropdown */}
-                                    {isProfileOpen && (
-                                        <>
-                                            <div className="fixed inset-0 z-40" onClick={() => setIsProfileOpen(false)} />
-                                            <div className="fixed right-4 top-16 w-64 bg-white dark:bg-[#1e2a1c] rounded-2xl shadow-2xl border border-black/5 dark:border-white/10 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                                {/* User Info */}
-                                                <div className="p-4 bg-gradient-to-br from-primary/5 to-transparent border-b border-black/5 dark:border-white/10">
-                                                    <div className="flex items-center gap-3">
-                                                        {user.photoURL ? (
-                                                            <img src={user.photoURL} alt="Profile" className="size-12 rounded-full ring-2 ring-primary/30 shadow-md" />
-                                                        ) : (
-                                                            <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center text-primary ring-2 ring-primary/30">
-                                                                <span className="material-symbols-outlined text-2xl">person</span>
-                                                            </div>
-                                                        )}
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="font-bold text-gray-900 dark:text-white truncate">{user.displayName || 'User'}</p>
-                                                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email || ''}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                {/* Menu Items */}
-                                                <div className="p-2">
-                                                    <Link
-                                                        href="/home/settings"
-                                                        onClick={() => setIsProfileOpen(false)}
-                                                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
-                                                    >
-                                                        <span className="material-symbols-outlined text-lg text-primary">account_circle</span>
-                                                        My Profile
-                                                    </Link>
-                                                    <Link
-                                                        href="/home/orders"
-                                                        onClick={() => setIsProfileOpen(false)}
-                                                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
-                                                    >
-                                                        <span className="material-symbols-outlined text-lg text-primary">shopping_bag</span>
-                                                        My Orders
-                                                    </Link>
-                                                    <Link
-                                                        href="/home/settings"
-                                                        onClick={() => setIsProfileOpen(false)}
-                                                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
-                                                    >
-                                                        <span className="material-symbols-outlined text-lg text-primary">settings</span>
-                                                        Settings
-                                                    </Link>
-                                                </div>
-                                                {/* Logout */}
-                                                <div className="p-2 border-t border-black/5 dark:border-white/10">
-                                                    <button
-                                                        onClick={() => { setIsProfileOpen(false); signOut(); }}
-                                                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                                                    >
-                                                        <span className="material-symbols-outlined text-lg">logout</span>
-                                                        Logout
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-                            ) : (
-                                <Link href="/user-login" className="flex items-center justify-center rounded-xl bg-primary px-5 py-2 text-sm font-bold text-white shadow-lg hover:brightness-110 active:scale-95 transition-all">
-                                    {t('header.login')}
-                                </Link>
-                            )}
+                            {/* Auth section: dynamically loaded with ssr:false to prevent hydration mismatch */}
+                            <HeaderAuthSection />
                             {/* Mobile Hamburger */}
                             <button
                                 onClick={() => { if (!isMobileMenuOpen) setIsHeaderVisible(true); setIsMobileMenuOpen(!isMobileMenuOpen); }}

@@ -58,7 +58,7 @@ export default function FencingInfrastructurePage() {
     const fencingTypes = [
         {
             id: 'chain-link',
-            icon: 'fence',
+            icon: 'grid_on',
             title: 'Rough/Chain-Link Fencing',
             description: 'Cost-effective boundary marking and perimeter security for farms.',
             price: '₹45/ft',
@@ -73,7 +73,7 @@ export default function FencingInfrastructurePage() {
         },
         {
             id: 'electric',
-            icon: 'electric_bolt',
+            icon: 'bolt',
             title: 'Electrical/Power Fencing',
             description: 'Advanced protection against wild animals with certified shock-safe technology.',
             price: '₹120/ft',
@@ -235,15 +235,15 @@ export default function FencingInfrastructurePage() {
                                         <span className="text-xl md:text-2xl font-black text-primary">{material.price}</span>
                                     </div>
                                     <div className="flex gap-2 mt-3">
-                                        <a 
-                                            href="tel:+919876543210"
+                                        <a
+                                            href="tel:+919380306475"
                                             className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-primary text-white px-2 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-bold hover:bg-primary-dark transition-colors"
                                         >
                                             <span className="material-symbols-outlined text-sm md:text-base">call</span>
                                             Call for Details
                                         </a>
-                                        <a 
-                                            href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer"
+                                        <a
+                                            href="https://wa.me/919380306475" target="_blank" rel="noopener noreferrer"
                                             className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-green-600 text-white px-2 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-bold hover:bg-green-700 transition-colors"
                                         >
                                             <span className="material-symbols-outlined text-sm md:text-base">chat</span>
@@ -276,7 +276,7 @@ export default function FencingInfrastructurePage() {
                                         <input
                                             type="text"
                                             value={formData.full_name}
-                                            onChange={(e) => { setFormData({ ...formData, full_name: e.target.value }); setFormErrors(prev => { const {full_name, ...r} = prev; return r; }); }}
+                                            onChange={(e) => { setFormData({ ...formData, full_name: e.target.value }); setFormErrors(prev => { const { full_name, ...r } = prev; return r; }); }}
                                             className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.full_name ? 'ring-2 ring-red-400' : ''}`}
                                             placeholder="Enter your name"
                                         />
@@ -287,7 +287,7 @@ export default function FencingInfrastructurePage() {
                                         <input
                                             type="tel"
                                             value={formData.phone}
-                                            onChange={(e) => { setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const {phone, ...r} = prev; return r; }); }}
+                                            onChange={(e) => { setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const { phone, ...r } = prev; return r; }); }}
                                             className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.phone ? 'ring-2 ring-red-400' : ''}`}
                                             placeholder="10-digit number"
                                             maxLength={10}
@@ -300,7 +300,7 @@ export default function FencingInfrastructurePage() {
                                     <input
                                         type="text"
                                         value={formData.location}
-                                        onChange={(e) => { setFormData({ ...formData, location: e.target.value }); setFormErrors(prev => { const {location, ...r} = prev; return r; }); }}
+                                        onChange={(e) => { setFormData({ ...formData, location: e.target.value }); setFormErrors(prev => { const { location, ...r } = prev; return r; }); }}
                                         className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.location ? 'ring-2 ring-red-400' : ''}`}
                                         placeholder="Village, District, State"
                                     />
@@ -319,7 +319,7 @@ export default function FencingInfrastructurePage() {
                                     </div>
                                     <div>
                                         <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700">Preferred Timeline</label>
-                                        <select 
+                                        <select
                                             value={formData.preferred_timeline}
                                             onChange={(e) => setFormData({ ...formData, preferred_timeline: e.target.value })}
                                             className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none">
@@ -336,7 +336,7 @@ export default function FencingInfrastructurePage() {
                                         {fencingTypes.find(f => f.id === selectedFencingType)?.title}
                                     </p>
                                 </div>
-                                <button 
+                                <button
                                     onClick={handleRequestFencingQuote}
                                     disabled={!formData.full_name || !formData.phone || !formData.location}
                                     className="vibrant-gradient w-full rounded-lg md:rounded-xl py-3 md:py-5 text-white font-black text-base md:text-xl shadow-2xl shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
