@@ -582,7 +582,7 @@ export default function BuyCropsPage() {
                                     </div>
                                 </div>
                                 <a
-                                    href={`https://wa.me/917448410198?text=Hi, I want to buy: ${orderSummaryText}. Please help.`}
+                                    href={`https://wa.me/919380306475?text=Hi, I want to buy: ${orderSummaryText}. Please help.`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="px-5 py-2.5 rounded-xl bg-[#25D366] text-white font-bold text-sm hover:bg-[#1da851] transition-colors flex items-center gap-2"

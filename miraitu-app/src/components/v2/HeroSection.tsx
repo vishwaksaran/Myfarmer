@@ -84,20 +84,20 @@ export default function HeroSection() {
     // Category-specific field configurations
     // Categories with secondField get two inputs side by side
     const categoryDynamicFields: Record<string, {
-        label: string; placeholder: string; unit: string; icon: string; options?: string[];
-        secondField?: { label: string; placeholder: string; icon: string; type?: string };
+        tLabel: string; placeholder: string; unit: string; icon: string; options?: string[];
+        secondField?: { tLabel: string; placeholder: string; icon: string; type?: string };
     }> = {
         'hero.catLivestock': {
-            label: 'No. of Animals', placeholder: 'e.g. 5', unit: 'Head', icon: 'pets',
-            secondField: { label: 'Breed Name', placeholder: 'e.g. Holstein', icon: 'genetics', type: 'text' },
+            tLabel: 'hero.noOfAnimals', placeholder: 'e.g. 5', unit: 'Head', icon: 'pets',
+            secondField: { tLabel: 'hero.breedName', placeholder: 'e.g. Holstein', icon: 'genetics', type: 'text' },
         },
         'hero.catMachinery': {
-            label: 'Horsepower / Capacity', placeholder: 'e.g. 45', unit: 'HP', icon: 'speed',
-            secondField: { label: 'Brand Name', placeholder: 'e.g. Mahindra', icon: 'factory', type: 'text' },
+            tLabel: 'hero.horsepowerCapacity', placeholder: 'e.g. 45', unit: 'HP', icon: 'speed',
+            secondField: { tLabel: 'hero.brandName', placeholder: 'e.g. Mahindra', icon: 'factory', type: 'text' },
         },
-        'hero.catAgriProducts': { label: 'Quantity', placeholder: 'e.g. 50', unit: 'Kg', icon: 'scale', options: ['Kg', 'Quintals', 'Tonnes', 'Bags'] },
-        'hero.catFarmersLand': { label: 'Land Area', placeholder: 'e.g. 5', unit: 'Acres', icon: 'landscape', options: ['Acres', 'Hectares', 'Bigha', 'Guntha'] },
-        'hero.catCrops': { label: 'Quantity Available', placeholder: 'e.g. 100', unit: 'Kg', icon: 'eco', options: ['Kg', 'Quintals', 'Tonnes', 'Bags'] },
+        'hero.catAgriProducts': { tLabel: 'hero.quantity', placeholder: 'e.g. 50', unit: 'Kg', icon: 'scale', options: ['Kg', 'Quintals', 'Tonnes', 'Bags'] },
+        'hero.catFarmersLand': { tLabel: 'hero.landArea', placeholder: 'e.g. 5', unit: 'Acres', icon: 'landscape', options: ['Acres', 'Hectares', 'Bigha', 'Guntha'] },
+        'hero.catCrops': { tLabel: 'hero.quantityAvailable', placeholder: 'e.g. 100', unit: 'Kg', icon: 'eco', options: ['Kg', 'Quintals', 'Tonnes', 'Bags'] },
     };
 
     const currentDynamicField = categoryDynamicFields[selectedCategory];
@@ -138,10 +138,10 @@ export default function HeroSection() {
     };
 
     const stats = [
-        { value: '50K+', label: 'Active Farmers' },
-        { value: '₹2Cr+', label: 'Trade Volume' },
-        { value: '500+', label: 'Villages Covered' },
-        { value: '4.8★', label: 'User Rating' },
+        { value: '50K+', tLabel: 'hero.statActiveFarmers' },
+        { value: '₹2Cr+', tLabel: 'hero.statTradeVolume' },
+        { value: '500+', tLabel: 'hero.statVillagesCovered' },
+        { value: '4.8★', tLabel: 'hero.statUserRating' },
     ];
 
     return (
@@ -194,7 +194,7 @@ export default function HeroSection() {
                                     {stats.map((stat, i) => (
                                         <div key={i} className={`stat-card rounded-2xl px-4 py-3 text-center animate-fade-in-up stagger-${i + 1}`}>
                                             <p className="text-xl lg:text-2xl font-black text-white">{stat.value}</p>
-                                            <p className="text-[11px] font-semibold text-white/60 mt-0.5">{stat.label}</p>
+                                            <p className="text-[11px] font-semibold text-white/60 mt-0.5">{t(stat.tLabel)}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -233,11 +233,11 @@ export default function HeroSection() {
                                                         />
                                                         <span className="material-symbols-outlined text-2xl text-gray-500 mb-1 group-hover:text-primary transition-colors">add_photo_alternate</span>
                                                         <p className="text-xs font-bold text-gray-600 dark:text-gray-400">{t('hero.dragPhotos')}</p>
-                                                        <p className="text-[10px] font-semibold text-gray-500 mt-0.5">Max {MAX_IMAGES} photos allowed</p>
+                                                        <p className="text-[10px] font-semibold text-gray-500 mt-0.5">{t('hero.maxPhotos').replace('{count}', String(MAX_IMAGES))}</p>
                                                     </>
                                                 )}
                                                 {images.length >= MAX_IMAGES && (
-                                                    <p className="text-xs font-bold text-primary py-1">✓ Maximum {MAX_IMAGES} images uploaded</p>
+                                                    <p className="text-xs font-bold text-primary py-1">{t('hero.maxUploaded').replace('{count}', String(MAX_IMAGES))}</p>
                                                 )}
                                             </div>
                                             {/* Image Previews */}
@@ -323,7 +323,7 @@ export default function HeroSection() {
                                                     {/* Secondary field (Brand / Breed) — shown first visually */}
                                                     <div>
                                                         <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">
-                                                            {currentDynamicField.secondField.label}
+                                                            {t(currentDynamicField.secondField.tLabel)}
                                                         </label>
                                                         <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5 flex items-center gap-2">
                                                             <span className="material-symbols-outlined text-primary/60 text-base shrink-0">
@@ -341,7 +341,7 @@ export default function HeroSection() {
                                                     {/* Primary field (HP / No. of Animals) */}
                                                     <div>
                                                         <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">
-                                                            {currentDynamicField.label}
+                                                            {t(currentDynamicField.tLabel)}
                                                         </label>
                                                         <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5 flex items-center gap-2">
                                                             <span className="material-symbols-outlined text-primary/60 text-base shrink-0">
@@ -365,7 +365,7 @@ export default function HeroSection() {
                                                 /* Single field for Agri Products / Farmer Land / Crops */
                                                 <div>
                                                     <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1 ml-1">
-                                                        {currentDynamicField.label}
+                                                        {t(currentDynamicField.tLabel)}
                                                     </label>
                                                     <div className="skeuo-inset rounded-xl bg-white dark:bg-[#121811] px-4 py-2.5 flex items-center gap-2">
                                                         <span className="material-symbols-outlined text-primary/60 text-lg shrink-0">
@@ -424,7 +424,7 @@ export default function HeroSection() {
                         <div className="flex animate-marquee whitespace-nowrap">
                             {[...Array(2)].map((_, j) => (
                                 <div key={j} className="flex items-center gap-8 mr-8">
-                                    {['🌾 Trusted by 50,000+ Farmers', '🐄 10,000+ Livestock Listed', '🚜 Best Machinery Deals', '🌍 Covering 500+ Villages', '⭐ 4.8 Star Rating', '🔒 100% Secure Transactions', '📱 Available on Android & iOS'].map((item, i) => (
+                                    {['🌾 ' + t('hero.trustFarmers'), '🐄 ' + t('hero.trustLivestock'), '🚜 ' + t('hero.trustMachinery'), '🌍 ' + t('hero.trustVillages'), '⭐ ' + t('hero.trustRating'), '🔒 ' + t('hero.trustSecure'), '📱 ' + t('hero.trustMobile')].map((item, i) => (
                                         <span key={i} className="text-white/80 text-xs font-semibold tracking-wide">{item}</span>
                                     ))}
                                 </div>
@@ -443,8 +443,8 @@ export default function HeroSection() {
                             <div className="flex items-center gap-3">
                                 <span className="material-symbols-outlined text-2xl">photo_library</span>
                                 <div>
-                                    <h2 className="text-lg md:text-2xl font-black tracking-tight">Explore Gallery</h2>
-                                    <p className="text-[11px] md:text-xs text-white/70 font-medium">Discover the importance of modern agriculture</p>
+                                    <h2 className="text-lg md:text-2xl font-black tracking-tight">{t('hero.galleryTitle')}</h2>
+                                    <p className="text-[11px] md:text-xs text-white/70 font-medium">{t('hero.gallerySubtitle')}</p>
                                 </div>
                             </div>
                             <button onClick={() => { setShowGallery(false); setExpandedItem(null); }} className="size-10 rounded-xl bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
@@ -465,7 +465,7 @@ export default function HeroSection() {
                                     <div className="absolute bottom-4 left-5 md:left-8 right-5 md:right-8">
                                         <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/90 text-primary text-[10px] font-bold mb-2">
                                             <span className="material-symbols-outlined text-xs">eco</span>
-                                            Agriculture
+                                            {t('hero.galleryAgriculture')}
                                         </span>
                                         <h3 className="text-2xl md:text-4xl font-black text-white tracking-tight">{galleryItems[expandedItem].title}</h3>
                                     </div>
@@ -474,7 +474,7 @@ export default function HeroSection() {
                                     <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed mb-6">{galleryItems[expandedItem].brief}</p>
                                     <button onClick={() => setExpandedItem(null)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary/10 text-primary font-bold text-sm hover:bg-primary/20 transition-colors">
                                         <span className="material-symbols-outlined text-lg">arrow_back</span>
-                                        Back to Gallery
+                                        {t('hero.galleryBackBtn')}
                                     </button>
                                 </div>
                             </div>
@@ -496,7 +496,7 @@ export default function HeroSection() {
                                                 <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-between">
                                                     <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/90 text-primary text-[10px] font-bold">
                                                         <span className="material-symbols-outlined text-xs">eco</span>
-                                                        Agriculture
+                                                        {t('hero.galleryAgriculture')}
                                                     </span>
                                                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-white/90 text-gray-700 text-[10px] font-bold">
                                                         <span className="material-symbols-outlined text-xs">open_in_full</span>
@@ -507,7 +507,7 @@ export default function HeroSection() {
                                                 <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white mb-1">{item.title}</h3>
                                                 <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">{item.desc}</p>
                                                 <span className="inline-flex items-center gap-1 text-primary text-[11px] font-bold mt-2">
-                                                    Read More <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                                                    {t('hero.galleryReadMore')} <span className="material-symbols-outlined text-xs">arrow_forward</span>
                                                 </span>
                                             </div>
                                         </div>

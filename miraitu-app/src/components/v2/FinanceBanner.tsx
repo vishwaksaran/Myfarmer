@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export default function FinanceBanner() {
+    const { t } = useLanguage();
     return (
         <section className="px-4 md:px-6 py-6 pb-0">
             <div className="mx-auto max-w-[1400px]">
@@ -22,10 +24,10 @@ export default function FinanceBanner() {
                         {/* Content */}
                         <div className="flex-1 text-center md:text-left">
                             <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-white mb-2">
-                                Farmer Finance Services
+                                {t('finance.title')}
                             </h2>
                             <p className="text-white/80 text-sm md:text-base max-w-2xl leading-relaxed">
-                                Get access to low-interest loans, crop insurance, and financial schemes tailored for farmers. Secure your future with our trusted financial partners.
+                                {t('finance.desc')}
                             </p>
                         </div>
 
@@ -36,7 +38,7 @@ export default function FinanceBanner() {
                                 className="group flex items-center gap-3 bg-white text-[#1a5c2e] font-black text-base px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 active:scale-[0.98] transition-all"
                             >
                                 <span className="material-symbols-outlined text-xl group-hover:rotate-12 transition-transform">info</span>
-                                Know More
+                                {t('finance.knowMore')}
                                 <span className="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
                             </Link>
                         </div>

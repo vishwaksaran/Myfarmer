@@ -17,7 +17,7 @@ export default function WaterEnergySection() {
             bgColor: 'bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20',
             iconBg: 'bg-blue-500',
             statValue: '200+',
-            statLabel: 'Borewells Drilled',
+            tStatLabel: 'water.borewellsDrilled',
         },
         {
             id: 'cctv',
@@ -30,7 +30,7 @@ export default function WaterEnergySection() {
             bgColor: 'bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20',
             iconBg: 'bg-orange-500',
             statValue: '1000+',
-            statLabel: 'Cameras Installed',
+            tStatLabel: 'water.camerasInstalled',
         },
     ];
 
@@ -68,7 +68,7 @@ export default function WaterEnergySection() {
                                     {/* Stat badge */}
                                     <div className="text-right">
                                         <p className="text-2xl font-black text-gray-800 dark:text-white">{category.statValue}</p>
-                                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{category.statLabel}</p>
+                                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{t(category.tStatLabel)}</p>
                                     </div>
                                 </div>
                                 <h3 className="text-2xl font-black mb-2">{t(category.tTitle)}</h3>

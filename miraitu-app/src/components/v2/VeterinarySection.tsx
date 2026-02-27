@@ -3,39 +3,17 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useLoginPrompt } from '@/context/LoginPromptContext';
+import { useLanguage } from '@/i18n/LanguageContext';
 
-const services = [
-    {
-        name: 'Treatment',
-        icon: 'medical_services',
-        desc: 'Expert diagnosis & care',
-        color: 'text-green-600',
-        bg: 'bg-green-50 dark:bg-green-900/20'
-    },
-    {
-        name: 'Vaccination',
-        icon: 'vaccines',
-        desc: 'Prevent diseases early',
-        color: 'text-green-600',
-        bg: 'bg-green-50 dark:bg-green-900/20'
-    },
-    {
-        name: 'Artificial Insemination',
-        icon: 'science',
-        desc: 'Elite genetics for better yield',
-        color: 'text-green-600',
-        bg: 'bg-green-50 dark:bg-green-900/20'
-    },
-    {
-        name: 'Deworming',
-        icon: 'medication',
-        desc: 'Regular health checkups',
-        color: 'text-green-600',
-        bg: 'bg-green-50 dark:bg-green-900/20'
-    }
+const serviceKeys = [
+    { tName: 'vet.treatment', icon: 'medical_services', tDesc: 'vet.treatmentDesc', color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20' },
+    { tName: 'vet.vaccination', icon: 'vaccines', tDesc: 'vet.vaccinationDesc', color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20' },
+    { tName: 'vet.ai', icon: 'science', tDesc: 'vet.aiDesc', color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20' },
+    { tName: 'vet.deworming', icon: 'medication', tDesc: 'vet.dewormingDesc', color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20' },
 ];
 
 export default function VeterinarySection() {
+    const { t } = useLanguage();
     const { requireLogin } = useLoginPrompt();
     const [selectedService, setSelectedService] = useState<string | null>(null);
     const [formData, setFormData] = useState({
@@ -52,11 +30,11 @@ export default function VeterinarySection() {
         if (!requireLogin()) return; // Enforce login
 
         const errs: Record<string, string> = {};
-        if (!formData.name.trim()) errs.name = 'Name is required';
+        if (!formData.name.trim()) errs.name = t('vet.nameRequired');
         const digits = formData.mobile.replace(/\D/g, '');
-        if (!digits) errs.mobile = 'Mobile number is required';
-        else if (digits.length !== 10) errs.mobile = 'Enter a valid 10-digit number';
-        if (!formData.location.trim()) errs.location = 'Location is required';
+        if (!digits) errs.mobile = t('vet.mobileRequired');
+        else if (digits.length !== 10) errs.mobile = t('vet.mobileInvalid');
+        if (!formData.location.trim()) errs.location = t('vet.locationRequired');
         if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
         setFormErrors({});
         setShowSuccess(true);
@@ -74,13 +52,13 @@ export default function VeterinarySection() {
                     <div>
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-bold uppercase tracking-wider mb-2">
                             <span className="material-symbols-outlined text-sm">health_and_safety</span>
-                            Animal Health
+                            {t('vet.badge')}
                         </div>
                         <h2 className="text-3xl md:text-4xl font-black text-[#121811] dark:text-[#f9fbf9] tracking-tight">
-                            Veterinary Services
+                            {t('vet.title')}
                         </h2>
                         <p className="text-gray-500 mt-2 text-lg max-w-xl">
-                            Verified veterinarians, 24/7 emergency support, and doorstep health services for your livestock.
+                            {t('vet.subtitle')}
                         </p>
                     </div>
 
@@ -88,14 +66,14 @@ export default function VeterinarySection() {
                         href="/home/veterinary"
                         className="hidden md:flex items-center gap-2 text-green-600 font-bold hover:gap-3 transition-all"
                     >
-                        View All Services <span className="material-symbols-outlined">arrow_forward</span>
+                        {t('vet.viewAll')} <span className="material-symbols-outlined">arrow_forward</span>
                     </Link>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                    {services.map((service, index) => (
+                    {serviceKeys.map((service, index) => (
                         <div
-                            onClick={() => setSelectedService(service.name)}
+                            onClick={() => setSelectedService(t(service.tName))}
                             key={index}
                             className="group relative p-6 rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-[#1a231a] hover:bg-white dark:hover:bg-[#222d21] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                         >
@@ -105,10 +83,10 @@ export default function VeterinarySection() {
                                 </span>
                             </div>
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-                                {service.name}
+                                {t(service.tName)}
                             </h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {service.desc}
+                                {t(service.tDesc)}
                             </p>
 
                             <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white dark:bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all">
@@ -121,11 +99,11 @@ export default function VeterinarySection() {
                 {/* Mobile CTA */}
                 <div className="mt-8 md:hidden">
                     <button
-                        onClick={() => setSelectedService('General Consultation')}
+                        onClick={() => setSelectedService(t('vet.treatment'))}
                         className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-green-600 text-white font-bold shadow-lg shadow-green-200 dark:shadow-none"
                         data-no-auth
                     >
-                        Book a Service <span className="material-symbols-outlined">calendar_month</span>
+                        {t('vet.bookService')} <span className="material-symbols-outlined">calendar_month</span>
                     </button>
                 </div>
             </div>
@@ -146,45 +124,45 @@ export default function VeterinarySection() {
                         {!showSuccess ? (
                             <div className="p-8">
                                 <div className="mb-6">
-                                    <span className="text-xs font-bold uppercase tracking-wider text-green-600 mb-1 block">Book Appointment</span>
+                                    <span className="text-xs font-bold uppercase tracking-wider text-green-600 mb-1 block">{t('vet.bookAppointment')}</span>
                                     <h3 className="text-2xl font-black text-gray-900 dark:text-white">{selectedService}</h3>
-                                    <p className="text-gray-500 text-sm">Fill details to get callbacks from providers</p>
+                                    <p className="text-gray-500 text-sm">{t('vet.fillDetails')}</p>
                                 </div>
 
                                 <form onSubmit={handleBookNow} className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-bold mb-1 text-gray-700 dark:text-gray-300">Name</label>
+                                        <label className="block text-sm font-bold mb-1 text-gray-700 dark:text-gray-300">{t('vet.name')}</label>
                                         <input
                                             required
                                             type="text"
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                             className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-green-500 outline-none transition-colors"
-                                            placeholder="Enter your name"
+                                            placeholder={t('vet.enterName')}
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold mb-1 text-gray-700 dark:text-gray-300">Mobile Number</label>
+                                        <label className="block text-sm font-bold mb-1 text-gray-700 dark:text-gray-300">{t('vet.mobileNumber')}</label>
                                         <input
                                             required
                                             type="tel"
                                             value={formData.mobile}
-                                            onChange={(e) => { setFormData({ ...formData, mobile: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const {mobile, ...r} = prev; return r; }); }}
+                                            onChange={(e) => { setFormData({ ...formData, mobile: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const { mobile, ...r } = prev; return r; }); }}
                                             className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${formErrors.mobile ? 'border-red-400' : 'border-transparent'} focus:border-green-500 outline-none transition-colors`}
-                                            placeholder="10-digit number"
+                                            placeholder={t('vet.tenDigit')}
                                             maxLength={10}
                                         />
                                         {formErrors.mobile && <p className="text-red-500 text-xs mt-1">{formErrors.mobile}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold mb-1 text-gray-700 dark:text-gray-300">Location</label>
+                                        <label className="block text-sm font-bold mb-1 text-gray-700 dark:text-gray-300">{t('vet.location')}</label>
                                         <input
                                             required
                                             type="text"
                                             value={formData.location}
                                             onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                                             className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-green-500 outline-none transition-colors"
-                                            placeholder="Village, District"
+                                            placeholder={t('vet.villageDistrict')}
                                         />
                                     </div>
 
@@ -192,7 +170,7 @@ export default function VeterinarySection() {
                                         type="submit"
                                         className="w-full py-4 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-lg shadow-lg hover:shadow-green-500/20 active:scale-[0.98] transition-all mt-4"
                                     >
-                                        Book Now
+                                        {t('vet.bookNow')}
                                     </button>
                                 </form>
                             </div>
@@ -201,18 +179,18 @@ export default function VeterinarySection() {
                                 <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600 dark:text-green-400">
                                     <span className="material-symbols-outlined text-4xl">check_circle</span>
                                 </div>
-                                <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Booking Confirmed!</h3>
+                                <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{t('vet.bookingConfirmed')}</h3>
                                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                                    Thank you for booking. We will assign a doctor shortly.
+                                    {t('vet.bookingDesc')}
                                 </p>
                                 <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
-                                    <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will contact you soon</p>
+                                    <p className="text-sm font-bold text-green-700 dark:text-green-400">{t('vet.teamContact')}</p>
                                 </div>
                                 <button
                                     onClick={() => { setSelectedService(null); setShowSuccess(false); setFormData({ name: '', mobile: '', location: '' }); }}
                                     className="w-full py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-all"
                                 >
-                                    Done
+                                    {t('vet.done')}
                                 </button>
                             </div>
                         )}

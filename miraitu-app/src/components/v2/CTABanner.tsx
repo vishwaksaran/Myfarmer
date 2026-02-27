@@ -15,7 +15,7 @@ export default function CTABanner() {
 
     // Placeholder contact details
     const contactNumber = "+91 74484 10198";
-    const whatsappLink = "https://wa.me/917448410198";
+    const whatsappLink = "https://wa.me/919380306475";
 
     const handleGetStarted = () => {
         // Redirect to community page
@@ -46,11 +46,11 @@ export default function CTABanner() {
                     <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
                         <div className="max-w-3xl">
                             <h2 className="text-3xl md:text-5xl font-black text-white mb-6 leading-tight tracking-tight">
-                                Ready to grow your <br className="hidden md:block" />
-                                <span className="text-green-300">farming business?</span>
+                                {t('cta.title1')} <br className="hidden md:block" />
+                                <span className="text-green-300">{t('cta.title2')}</span>
                             </h2>
                             <p className="text-white/80 text-lg md:text-xl font-medium max-w-2xl leading-relaxed">
-                                Join 50,000+ farmers who are already using Miraitu to buy, sell, and connect with India&apos;s largest agricultural community.
+                                {t('cta.subtitle')}
                             </p>
 
                             {/* Trust Indicators */}
@@ -74,7 +74,7 @@ export default function CTABanner() {
                                     <div className="flex text-yellow-400 text-lg">
                                         {'★'.repeat(5)}
                                     </div>
-                                    <span className="text-white font-bold text-sm">4.9/5 Rating</span>
+                                    <span className="text-white font-bold text-sm">{t('cta.rating')}</span>
                                 </div>
                             </div>
                         </div>
@@ -88,7 +88,7 @@ export default function CTABanner() {
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent w-full h-full -translate-x-full group-hover:animate-shimmer"></div>
                                 <span className="flex items-center gap-3">
                                     <span className="material-symbols-outlined text-2xl group-hover:rotate-12 transition-transform">rocket_launch</span>
-                                    Get Started Free
+                                    {t('cta.getStarted')}
                                 </span>
                             </button>
 
@@ -98,7 +98,7 @@ export default function CTABanner() {
                                 data-no-auth
                             >
                                 <span className="material-symbols-outlined text-2xl">call</span>
-                                Talk to Us
+                                {t('cta.talkToUs')}
                             </button>
                         </div>
                     </div>
@@ -122,8 +122,8 @@ export default function CTABanner() {
                             <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-[2rem] flex items-center justify-center mx-auto mb-4 text-white shadow-xl">
                                 <span className="material-symbols-outlined text-4xl">support_agent</span>
                             </div>
-                            <h3 className="text-2xl font-black text-white mb-2">We're Here to Help!</h3>
-                            <p className="text-white/80 text-sm">Choose how you'd like to reach us</p>
+                            <h3 className="text-2xl font-black text-white mb-2">{t('cta.helpTitle')}</h3>
+                            <p className="text-white/80 text-sm">{t('cta.helpSubtitle')}</p>
                         </div>
 
                         {/* Modal Body */}
@@ -133,12 +133,12 @@ export default function CTABanner() {
                                     <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600 dark:text-green-400">
                                         <span className="material-symbols-outlined text-4xl">check_circle</span>
                                     </div>
-                                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Request Received!</h4>
-                                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">Our expert will call you shortly.</p>
+                                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t('cta.requestReceived')}</h4>
+                                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">{t('cta.expertCallSoon')}</p>
                                     <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-4">
-                                        <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will contact you soon</p>
+                                        <p className="text-sm font-bold text-green-700 dark:text-green-400">{t('cta.teamContact')}</p>
                                     </div>
-                                    <button onClick={() => { setIsContactModalOpen(false); setCallbackSubmitted(false); setCbName(''); setCbPhone(''); }} className="w-full py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-colors">Done</button>
+                                    <button onClick={() => { setIsContactModalOpen(false); setCallbackSubmitted(false); setCbName(''); setCbPhone(''); }} className="w-full py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-colors">{t('cta.done')}</button>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
@@ -146,7 +146,7 @@ export default function CTABanner() {
                                     <div className="grid grid-cols-2 gap-4 mb-6">
                                         <a href={`tel:${contactNumber}`} className="flex flex-col items-center justify-center p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors group">
                                             <span className="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400 mb-2 group-hover:scale-110 transition-transform">call</span>
-                                            <span className="font-bold text-sm text-gray-800 dark:text-gray-200">Call Now</span>
+                                            <span className="font-bold text-sm text-gray-800 dark:text-gray-200">{t('cta.callNow')}</span>
                                         </a>
                                         <a href={whatsappLink} target="_blank" rel="noreferrer" className="flex flex-col items-center justify-center p-4 rounded-2xl bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors group">
                                             <span className="material-symbols-outlined text-3xl text-green-600 dark:text-green-400 mb-2 group-hover:scale-110 transition-transform">chat</span>
@@ -160,7 +160,7 @@ export default function CTABanner() {
                                             <div className="w-full border-t border-gray-200 dark:border-gray-800"></div>
                                         </div>
                                         <div className="relative flex justify-center text-xs uppercase">
-                                            <span className="bg-white dark:bg-gray-900 px-2 text-gray-400 font-bold tracking-wider">Or Request Callback</span>
+                                            <span className="bg-white dark:bg-gray-900 px-2 text-gray-400 font-bold tracking-wider">{t('cta.orCallback')}</span>
                                         </div>
                                     </div>
 
@@ -169,9 +169,9 @@ export default function CTABanner() {
                                             <div>
                                                 <input
                                                     type="text"
-                                                    placeholder="Your Name"
+                                                    placeholder={t('cta.yourName')}
                                                     value={cbName}
-                                                    onChange={e => { setCbName(e.target.value); setCbErrors(prev => { const {name, ...r} = prev; return r; }); }}
+                                                    onChange={e => { setCbName(e.target.value); setCbErrors(prev => { const { name, ...r } = prev; return r; }); }}
                                                     className={`w-full px-5 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-800 border-none outline-none focus:ring-2 focus:ring-primary/50 text-sm font-semibold text-gray-800 dark:text-white placeholder:text-gray-400 transition-all ${cbErrors.name ? 'ring-2 ring-red-400' : ''}`}
                                                     required
                                                 />
@@ -180,9 +180,9 @@ export default function CTABanner() {
                                             <div>
                                                 <input
                                                     type="tel"
-                                                    placeholder="Phone Number (10 digits)"
+                                                    placeholder={t('cta.phonePlaceholder')}
                                                     value={cbPhone}
-                                                    onChange={e => { setCbPhone(e.target.value.replace(/\D/g, '').slice(0, 10)); setCbErrors(prev => { const {phone, ...r} = prev; return r; }); }}
+                                                    onChange={e => { setCbPhone(e.target.value.replace(/\D/g, '').slice(0, 10)); setCbErrors(prev => { const { phone, ...r } = prev; return r; }); }}
                                                     className={`w-full px-5 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-800 border-none outline-none focus:ring-2 focus:ring-primary/50 text-sm font-semibold text-gray-800 dark:text-white placeholder:text-gray-400 transition-all ${cbErrors.phone ? 'ring-2 ring-red-400' : ''}`}
                                                     maxLength={10}
                                                     required
@@ -194,7 +194,7 @@ export default function CTABanner() {
                                             type="submit"
                                             className="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-primary-dark text-white font-bold text-sm shadow-lg shadow-primary/25 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
                                         >
-                                            Request Callback
+                                            {t('cta.requestCallback')}
                                         </button>
                                     </form>
                                 </div>

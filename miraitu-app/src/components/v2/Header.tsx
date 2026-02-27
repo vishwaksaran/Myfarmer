@@ -70,6 +70,8 @@ export default function Header() {
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [selectedLang, setSelectedLang] = useState<LangCode>(lang);
+    // Sync selectedLang when context lang changes (e.g., restored from localStorage)
+    useEffect(() => { setSelectedLang(lang); }, [lang]);
     const [isHeaderVisible, setIsHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
     const moreMenuRef = useRef<HTMLDivElement>(null);
@@ -284,7 +286,7 @@ export default function Header() {
                             {showSearchResults && searchResults.length > 0 && (
                                 <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1e2a1c] rounded-2xl shadow-2xl border border-black/5 dark:border-white/10 z-[100] animate-in fade-in slide-in-from-top-2 duration-200 min-w-[280px]" onClick={(e) => e.stopPropagation()}>
                                     <div className="p-2">
-                                        <p className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Suggestions</p>
+                                        <p className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('header.suggestions')}</p>
                                         {searchResults.map((item, index) => (
                                             <button
                                                 key={`${item.path}-${item.name}`}
@@ -309,7 +311,7 @@ export default function Header() {
                                 <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1e2a1c] rounded-2xl shadow-2xl border border-black/5 dark:border-white/10 z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
                                     <div className="p-6 text-center">
                                         <span className="material-symbols-outlined text-3xl text-gray-300 mb-2">search_off</span>
-                                        <p className="text-sm text-gray-500">No results for &ldquo;{debouncedQuery}&rdquo;</p>
+                                        <p className="text-sm text-gray-500">{t('header.noResults')} &ldquo;{debouncedQuery}&rdquo;</p>
                                     </div>
                                 </div>
                             )}
@@ -375,8 +377,8 @@ export default function Header() {
                                                     <span className="material-symbols-outlined text-white text-xl">storefront</span>
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-black text-white leading-tight">Become a Dealer / Seller</p>
-                                                    <p className="text-[11px] text-white/80 font-medium">Start selling on Miraitu today</p>
+                                                    <p className="text-sm font-black text-white leading-tight">{t('header.becomeDealer')}</p>
+                                                    <p className="text-[11px] text-white/80 font-medium">{t('header.startSelling')}</p>
                                                 </div>
                                                 <span className="material-symbols-outlined text-white/80 text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
                                             </div>
@@ -453,7 +455,7 @@ export default function Header() {
                         {showSearchResults && searchResults.length > 0 && (
                             <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1e2a1c] rounded-2xl shadow-2xl border border-black/5 dark:border-white/10 z-[100] animate-in fade-in slide-in-from-top-2 duration-200 min-w-[280px]" onClick={(e) => e.stopPropagation()}>
                                 <div className="p-2">
-                                    <p className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Suggestions</p>
+                                    <p className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('header.suggestions')}</p>
                                     {searchResults.map((item, index) => (
                                         <button
                                             key={`${item.path}-${item.name}`}
@@ -478,7 +480,7 @@ export default function Header() {
                             <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1e2a1c] rounded-2xl shadow-2xl border border-black/5 dark:border-white/10 z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
                                 <div className="p-6 text-center">
                                     <span className="material-symbols-outlined text-3xl text-gray-300 mb-2">search_off</span>
-                                    <p className="text-sm text-gray-500">No results for &ldquo;{debouncedQuery}&rdquo;</p>
+                                    <p className="text-sm text-gray-500">{t('header.noResults')} &ldquo;{debouncedQuery}&rdquo;</p>
                                 </div>
                             </div>
                         )}
@@ -519,8 +521,8 @@ export default function Header() {
                                     <span className="material-symbols-outlined text-white text-xl">storefront</span>
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-black text-white leading-tight">Become a Dealer / Seller</p>
-                                    <p className="text-[11px] text-white/80 font-medium">Start selling on Miraitu today</p>
+                                    <p className="text-sm font-black text-white leading-tight">{t('header.becomeDealer')}</p>
+                                    <p className="text-[11px] text-white/80 font-medium">{t('header.startSelling')}</p>
                                 </div>
                                 <span className="material-symbols-outlined text-white/80 text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
                             </div>

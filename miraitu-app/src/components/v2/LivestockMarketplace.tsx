@@ -72,7 +72,7 @@ export default function LivestockMarketplace() {
                     <div className="flex-1 animate-fade-in-left">
                         <span className="inline-flex items-center gap-1.5 mb-3 rounded-full bg-accent/15 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-accent">
                             <span className="material-symbols-outlined text-xs">pets</span>
-                            Marketplace
+                            {t('livestock.marketplace')}
                         </span>
                         <div className="flex items-center gap-4 mb-2">
                             <h2 className="text-3xl md:text-4xl font-black tracking-tight">{t('livestock.title')}</h2>
@@ -145,7 +145,7 @@ export default function LivestockMarketplace() {
                                 <div className="mb-3 md:mb-4 space-y-1.5 md:space-y-2">
                                     <div className="flex items-center justify-between text-[10px] md:text-xs">
                                         <span className="font-medium hidden md:inline">{t('livestock.healthStatus')}</span>
-                                        <span className="font-medium md:hidden">Health</span>
+                                        <span className="font-medium md:hidden">{t('livestock.health')}</span>
                                         <span className={`font-bold px-1.5 md:px-2 py-0.5 rounded-full text-[8px] md:text-[10px] ${item.health >= 95 ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
                                             {item.health}%
                                         </span>

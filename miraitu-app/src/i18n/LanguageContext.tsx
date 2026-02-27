@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, ReactNode } from 'react';
 import { translations, LangCode } from './translations';
 
 interface LanguageContextType {
@@ -15,8 +15,18 @@ const LanguageContext = createContext<LanguageContextType>({
     t: (key: string) => key,
 });
 
+const VALID_LANGS: LangCode[] = ['en', 'hi', 'mr', 'gu', 'te', 'ta', 'kn', 'pa', 'bn', 'ml'];
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
     const [lang, setLangState] = useState<LangCode>('en');
+
+    // Restore saved language from localStorage on mount
+    useEffect(() => {
+        const saved = localStorage.getItem('miraitu-lang');
+        if (saved && VALID_LANGS.includes(saved as LangCode)) {
+            setLangState(saved as LangCode);
+        }
+    }, []);
 
     const setLang = useCallback((code: LangCode) => {
         setLangState(code);
@@ -25,12 +35,19 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
-    const t = useCallback((key: string): string => {
-        return translations[lang]?.[key] || translations['en']?.[key] || key;
-    }, [lang]);
+    // Memoize the entire context value so it only changes when lang changes.
+    // The t function is recreated only when lang changes, ensuring all
+    // consumers get fresh translations without stale closure issues.
+    const contextValue = useMemo<LanguageContextType>(() => ({
+        lang,
+        setLang,
+        t: (key: string): string => {
+            return translations[lang]?.[key] || translations['en']?.[key] || key;
+        },
+    }), [lang, setLang]);
 
     return (
-        <LanguageContext.Provider value={{ lang, setLang, t }}>
+        <LanguageContext.Provider value={contextValue}>
             {children}
         </LanguageContext.Provider>
     );

@@ -13,7 +13,7 @@ export default function ServicesSection() {
                     <div className="animate-fade-in-left">
                         <span className="inline-flex items-center gap-1.5 mb-3 rounded-full bg-blue-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-blue-600">
                             <span className="material-symbols-outlined text-xs">handshake</span>
-                            Professional Help
+                            {t('services.professionalHelp')}
                         </span>
                         <h2 className="text-3xl md:text-4xl font-black tracking-tight">{t('services.title')}</h2>
                         <p className="text-gray-500 mt-1">{t('services.subtitle')}</p>
@@ -48,11 +48,11 @@ export default function ServicesSection() {
                                         <h4 className="text-2xl font-black">Rajesh Kumar</h4>
                                         <span className="rounded-full bg-green-100 px-3 py-1 text-[10px] font-black text-green-700 uppercase tracking-wider">{t('services.topRated')}</span>
                                     </div>
-                                    <p className="text-gray-500 font-medium text-sm mb-4">General Labor • Land Clearing • Harvest Help</p>
+                                    <p className="text-gray-500 font-medium text-sm mb-4">{t('services.generalLabor')}</p>
                                     <div className="flex flex-wrap items-center gap-3 lg:gap-6">
                                         <div className="text-center min-w-max">
                                             <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">{t('services.rate')}</p>
-                                            <p className="text-lg lg:text-xl font-black text-primary">₹500<span className="text-xs lg:text-sm font-semibold text-gray-400">/day</span></p>
+                                            <p className="text-lg lg:text-xl font-black text-primary">₹500<span className="text-xs lg:text-sm font-semibold text-gray-400">{t('services.perDay')}</span></p>
                                         </div>
                                         <div className="hidden lg:block w-px h-10 bg-gray-200 dark:bg-gray-700"></div>
                                         <div className="text-center min-w-max">
@@ -61,7 +61,7 @@ export default function ServicesSection() {
                                         </div>
                                         <div className="hidden lg:block w-px h-10 bg-gray-200 dark:bg-gray-700"></div>
                                         <div className="text-center min-w-max">
-                                            <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">Rating</p>
+                                            <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">{t('services.rating')}</p>
                                             <p className="text-lg lg:text-xl font-black text-accent">4.9★</p>
                                         </div>
                                     </div>

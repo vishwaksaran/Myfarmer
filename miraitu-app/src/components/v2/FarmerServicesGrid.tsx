@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const indianStates = [
     'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
@@ -77,6 +78,7 @@ const govSchemePortals: Record<string, string> = {
 };
 
 export default function FarmerServicesGrid() {
+    const { t } = useLanguage();
     const [farmerRegState, setFarmerRegState] = useState('');
     const [govSchemeState, setGovSchemeState] = useState('');
 
@@ -86,10 +88,10 @@ export default function FarmerServicesGrid() {
                 {/* Section Header */}
                 <div className="mb-8 text-center">
                     <h2 className="text-3xl md:text-4xl font-black text-[#0f1a11] dark:text-white mb-3">
-                        Essential Farmer Services
+                        {t('farmerServices.title')}
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400 text-base md:text-lg max-w-2xl mx-auto">
-                        Access government schemes, credit facilities, and business opportunities
+                        {t('farmerServices.subtitle')}
                     </p>
                 </div>
 
@@ -109,10 +111,10 @@ export default function FarmerServicesGrid() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-sm md:text-2xl font-black text-white mb-1 md:mb-2">
-                                        Farmer Registration Card
+                                        {t('farmerServices.regCard')}
                                     </h3>
                                     <p className="text-white/80 text-[11px] md:text-base leading-relaxed">
-                                        Get your official farmer registration card to access government schemes and subsidies.
+                                        {t('farmerServices.regCardDesc')}
                                     </p>
                                 </div>
                             </div>
@@ -123,7 +125,7 @@ export default function FarmerServicesGrid() {
                                     onChange={(e) => setFarmerRegState(e.target.value)}
                                     className="flex-1 px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
                                 >
-                                    <option value="" className="text-gray-800">Select State</option>
+                                    <option value="" className="text-gray-800">{t('farmerServices.selectState')}</option>
                                     {indianStates.map(state => (
                                         <option key={state} value={state} className="text-gray-800">{state}</option>
                                     ))}
@@ -136,7 +138,7 @@ export default function FarmerServicesGrid() {
                                     className={`px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl bg-white text-[#1a5c2e] font-black text-xs md:text-sm transition-all shadow-lg flex items-center justify-center gap-2 whitespace-nowrap ${!farmerRegState ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}`}
                                 >
                                     <span className="material-symbols-outlined text-base md:text-lg">open_in_new</span>
-                                    Portal
+                                    {t('farmerServices.portal')}
                                 </a>
                             </div>
                         </div>
@@ -156,10 +158,10 @@ export default function FarmerServicesGrid() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-sm md:text-2xl font-black text-white mb-1 md:mb-2">
-                                        My Government Schemes
+                                        {t('farmerServices.govSchemes')}
                                     </h3>
                                     <p className="text-white/80 text-[11px] md:text-base leading-relaxed">
-                                        Explore and apply for various government schemes designed specifically for farmers.
+                                        {t('farmerServices.govSchemesDesc')}
                                     </p>
                                 </div>
                             </div>
@@ -170,7 +172,7 @@ export default function FarmerServicesGrid() {
                                     onChange={(e) => setGovSchemeState(e.target.value)}
                                     className="flex-1 px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
                                 >
-                                    <option value="" className="text-gray-800">Select State</option>
+                                    <option value="" className="text-gray-800">{t('farmerServices.selectState')}</option>
                                     {indianStates.map(state => (
                                         <option key={state} value={state} className="text-gray-800">{state}</option>
                                     ))}
@@ -183,7 +185,7 @@ export default function FarmerServicesGrid() {
                                     className={`px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl bg-white text-[#1a5c2e] font-black text-xs md:text-sm transition-all shadow-lg flex items-center justify-center gap-2 whitespace-nowrap ${!govSchemeState ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}`}
                                 >
                                     <span className="material-symbols-outlined text-base md:text-lg">open_in_new</span>
-                                    Portal
+                                    {t('farmerServices.portal')}
                                 </a>
                             </div>
                         </div>
@@ -202,10 +204,10 @@ export default function FarmerServicesGrid() {
                             </div>
                             <div className="flex-1 min-w-0">
                                 <h3 className="text-sm md:text-2xl font-black text-white mb-1 md:mb-2">
-                                    Kisan Credit Card (KCC)
+                                    {t('farmerServices.kcc')}
                                 </h3>
                                 <p className="text-white/80 text-[11px] md:text-base leading-relaxed mb-3 md:mb-4">
-                                    Apply for KCC to get easy credit for your farming needs at subsidized interest rates.
+                                    {t('farmerServices.kccDesc')}
                                 </p>
 
                                 <a
@@ -215,8 +217,8 @@ export default function FarmerServicesGrid() {
                                     className="inline-flex items-center gap-1.5 md:gap-2 px-3 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl bg-white text-[#1a5c2e] font-black text-xs md:text-sm hover:scale-105 active:scale-95 transition-all shadow-lg"
                                 >
                                     <span className="material-symbols-outlined text-base md:text-lg">verified_user</span>
-                                    <span className="hidden md:inline">Check Eligibility</span>
-                                    <span className="md:hidden">Apply</span>
+                                    <span className="hidden md:inline">{t('farmerServices.checkEligibility')}</span>
+                                    <span className="md:hidden">{t('farmerServices.apply')}</span>
                                     <span className="material-symbols-outlined text-base md:text-lg">arrow_forward</span>
                                 </a>
                             </div>
@@ -239,14 +241,14 @@ export default function FarmerServicesGrid() {
                             </div>
                             <div className="flex-1 min-w-0">
                                 <h3 className="text-sm md:text-2xl font-black text-white mb-1 md:mb-2 group-hover:translate-x-1 transition-transform">
-                                    Become a Dealer/Seller
+                                    {t('farmerServices.becomeDealer')}
                                 </h3>
                                 <p className="text-white/80 text-[11px] md:text-base leading-relaxed mb-3 md:mb-4">
-                                    Join our platform as a dealer or seller to expand your business reach across India.
+                                    {t('farmerServices.becomeDealerDesc')}
                                 </p>
 
                                 <div className="flex items-center gap-2 text-white font-bold text-xs md:text-sm">
-                                    <span>Learn More</span>
+                                    <span>{t('farmerServices.learnMore')}</span>
                                     <span className="material-symbols-outlined text-base md:text-lg group-hover:translate-x-2 transition-transform">arrow_forward</span>
                                 </div>
                             </div>

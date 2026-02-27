@@ -162,7 +162,7 @@ export default function FinancePage() {
                                 <p className="text-white/90">Talk to our experts who understand agricultural financing.</p>
                             </div>
                             <a
-                                href="https://wa.me/917448410198?text=Hi%2C%20I%20need%20financial%20advice%20for%20agricultural%20services"
+                                href="https://wa.me/919380306475?text=Hi%2C%20I%20need%20financial%20advice%20for%20agricultural%20services"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="shrink-0 px-8 py-4 bg-white text-primary rounded-xl font-bold hover:bg-green-50 transition-colors shadow-lg flex items-center gap-2"

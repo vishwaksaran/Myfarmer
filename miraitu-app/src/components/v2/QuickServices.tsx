@@ -5,10 +5,10 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useRouter } from 'next/navigation';
 
 const buySellOptions = [
-    { label: 'Machinery', desc: 'Tractors, harvesters & farm equipment', icon: 'agriculture', link: '/home/machinery', color: 'from-green-500 to-emerald-600' },
-    { label: 'Crops', desc: 'Rice, vegetables, spices & more', icon: 'eco', link: '/home/crops', color: 'from-green-500 to-emerald-600' },
-    { label: 'Livestock', desc: 'Cattle, poultry, goats & sheep', icon: 'pets', link: '/home/livestock', color: 'from-green-500 to-emerald-600' },
-    { label: 'Shop', desc: 'Seeds, fertilizers & farm supplies', icon: 'storefront', link: '/home/shop', color: 'from-green-500 to-emerald-600' },
+    { tLabel: 'qs.catMachinery', tDesc: 'qs.catMachineryDesc', icon: 'agriculture', link: '/home/machinery', color: 'from-green-500 to-emerald-600' },
+    { tLabel: 'qs.catCrops', tDesc: 'qs.catCropsDesc', icon: 'eco', link: '/home/crops', color: 'from-green-500 to-emerald-600' },
+    { tLabel: 'qs.catLivestock', tDesc: 'qs.catLivestockDesc', icon: 'pets', link: '/home/livestock', color: 'from-green-500 to-emerald-600' },
+    { tLabel: 'qs.catShop', tDesc: 'qs.catShopDesc', icon: 'storefront', link: '/home/shop', color: 'from-green-500 to-emerald-600' },
 ];
 
 const services = [
@@ -43,7 +43,7 @@ export default function QuickServices() {
                     <div className="animate-fade-in-left">
                         <span className="inline-flex items-center gap-1.5 mb-3 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-primary">
                             <span className="material-symbols-outlined text-xs">grid_view</span>
-                            Quick Access
+                            {t('qs.quickAccess')}
                         </span>
                         <h2 className="text-3xl md:text-4xl font-black tracking-tight text-[#121811] dark:text-white mb-2">
                             {t('qs.title')}
@@ -54,7 +54,7 @@ export default function QuickServices() {
                     </div>
                     <a href="/home/services">
                         <button className="skeuo-button-3d flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-primary hover:scale-105 transition-transform">
-                            View All Services
+                            {t('qs.viewAllServices')}
                             <span className="material-symbols-outlined text-lg">arrow_forward_ios</span>
                         </button>
                     </a>
@@ -134,17 +134,17 @@ export default function QuickServices() {
                                     <span className="material-symbols-outlined text-white text-2xl">storefront</span>
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-black">Buy & Sell</h3>
-                                    <p className="text-white/80 text-sm">Choose a marketplace category</p>
+                                    <h3 className="text-xl font-black">{t('qs.buySellModalTitle')}</h3>
+                                    <p className="text-white/80 text-sm">{t('qs.buySellModalSubtitle')}</p>
                                 </div>
                             </div>
                         </div>
 
                         {/* Options Grid */}
                         <div className="p-6 grid grid-cols-2 gap-4">
-                            {buySellOptions.map((opt) => (
+                            {buySellOptions.map((opt, idx) => (
                                 <div
-                                    key={opt.label}
+                                    key={idx}
                                     className="group/card"
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -156,8 +156,8 @@ export default function QuickServices() {
                                         <div className={`h-14 w-14 rounded-2xl bg-gradient-to-br ${opt.color} flex items-center justify-center mb-3 shadow-lg group-hover/card:scale-110 transition-transform`}>
                                             <span className="material-symbols-outlined text-white text-2xl">{opt.icon}</span>
                                         </div>
-                                        <h4 className="font-black text-sm mb-1 group-hover/card:text-primary transition-colors">{opt.label}</h4>
-                                        <p className="text-[11px] text-gray-500 leading-snug">{opt.desc}</p>
+                                        <h4 className="font-black text-sm mb-1 group-hover/card:text-primary transition-colors">{t(opt.tLabel)}</h4>
+                                        <p className="text-[11px] text-gray-500 leading-snug">{t(opt.tDesc)}</p>
                                     </div>
                                 </div>
                             ))}

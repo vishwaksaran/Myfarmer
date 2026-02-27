@@ -423,7 +423,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                         value={quotePhone}
                                         onChange={e => { setQuotePhone(e.target.value.replace(/\D/g, '').slice(0, 10)); setQuoteErrors(prev => { const {phone, ...rest} = prev; return rest; }); }}
                                         className={`w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 ${quoteErrors.phone ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none transition-colors`}
-                                        placeholder="7448410198"
+                                        placeholder="9380306475"
                                         maxLength={10}
                                     />
                                     {quoteErrors.phone && <p className="text-red-500 text-xs mt-1">{quoteErrors.phone}</p>}
