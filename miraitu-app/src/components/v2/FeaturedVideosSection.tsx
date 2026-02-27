@@ -8,7 +8,7 @@ const videos = [
         title: 'Shiva Kumar \u2013 Verified Seller',
         role: 'Seller',
         thumbnail: 'https://images.unsplash.com/photo-1595246140625-573b715d11dc?w=400&h=300&fit=crop',
-        youtubeId: 'dQw4w9WgXcQ',
+        youtubeId: 'EZXkM7UXoDI',
         views: '1.2K views',
         duration: '3:45'
     },
@@ -17,7 +17,7 @@ const videos = [
         title: 'Ramesh \u2013 Tractor Dealer',
         role: 'Dealer',
         thumbnail: 'https://images.unsplash.com/photo-1530507629858-e4977d01e975?w=400&h=300&fit=crop',
-        youtubeId: '9bZkp7q19f0',
+        youtubeId: 'EZXkM7UXoDI',
         views: '3.4K views',
         duration: '4:12'
     },
@@ -26,7 +26,7 @@ const videos = [
         title: 'Lakshmi \u2013 Organic Farmer',
         role: 'Farmer',
         thumbnail: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400&h=300&fit=crop',
-        youtubeId: 'L_jWHffIx5E',
+        youtubeId: 'EZXkM7UXoDI',
         views: '5.1K views',
         duration: '5:30'
     },
@@ -35,7 +35,7 @@ const videos = [
         title: 'Venkat \u2013 Drone Service',
         role: 'Service Provider',
         thumbnail: 'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=400&h=300&fit=crop',
-        youtubeId: 'ZZ5LpwO-An4',
+        youtubeId: 'EZXkM7UXoDI',
         views: '890 views',
         duration: '2:58'
     }
@@ -68,7 +68,7 @@ export default function FeaturedVideosSection() {
                             <div className="aspect-video relative bg-black">
                                 {playingVideo === video.id ? (
                                     <iframe
-                                        src={`https://www.youtube.com/embed/${video.youtubeId}?autoplay=1&rel=0`}
+                                        src={`https://www.youtube.com/watch?v=EZXkM7UXoDI?autoplay=1&rel=0`}
                                         title={video.title}
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                         allowFullScreen
