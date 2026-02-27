@@ -68,7 +68,7 @@ export default function FeaturedVideosSection() {
                             <div className="aspect-video relative bg-black">
                                 {playingVideo === video.id ? (
                                     <iframe
-                                        src={`https://www.youtube.com/watch?v=EZXkM7UXoDI?autoplay=1&rel=0`}
+                                        src={`https://www.youtube.com/watch?v=EZXkM7UXoDI`}
                                         title={video.title}
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                         allowFullScreen
