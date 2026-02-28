@@ -109,9 +109,8 @@ export const metadata: Metadata = {
     images: ["/icon-512.png"],
     creator: "@Miraitu",
   },
-  alternates: {
-    canonical: "https://miraitu.in",
-  },
+  // Remove global canonical — each page sets its own via metadata
+  // alternates: { canonical: "..." } should NOT be set here
   robots: {
     index: true,
     follow: true,

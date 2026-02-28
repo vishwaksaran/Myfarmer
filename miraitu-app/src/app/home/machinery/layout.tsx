@@ -1,6 +1,20 @@
+import type { Metadata } from 'next';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import '../globals-v2.css';
+
+export const metadata: Metadata = {
+    title: 'Agricultural Machinery – Buy, Sell & Rent Farm Equipment',
+    description: 'Browse tractors, JCBs, harvesters, power tillers, drones & implements. Buy new, sell used, or rent farm machinery on Miraitu – India\'s #1 farming app.',
+    alternates: {
+        canonical: 'https://miraitu.in/home/machinery',
+    },
+    openGraph: {
+        title: 'Farm Machinery – Tractors, JCB, Harvesters & More',
+        description: 'Buy, sell or rent agricultural machinery from verified sellers across India.',
+        url: 'https://miraitu.in/home/machinery',
+    },
+};
 
 export default function MachineryLayout({
     children,
@@ -17,4 +31,3 @@ export default function MachineryLayout({
         </div>
     );
 }
-

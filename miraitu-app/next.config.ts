@@ -24,6 +24,19 @@ const nextConfig: NextConfig = {
     formats: ['image/webp', 'image/avif'],
   },
 
+  // Consistent URL structure (no trailing slashes)
+  trailingSlash: false,
+
+  // Permanent redirect: /home → / (fixes Google "Page with redirect" issue)
+  async redirects() {
+    return [
+      {
+        source: '/home',
+        destination: '/',
+        permanent: true,
+      },
+    ];
+  },
 
   // Enable compression
   compress: true,

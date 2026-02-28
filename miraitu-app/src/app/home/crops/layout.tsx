@@ -1,6 +1,20 @@
+import type { Metadata } from 'next';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import '../globals-v2.css';
+
+export const metadata: Metadata = {
+    title: 'Crops Market – Live Mandi Prices, Buy & Sell Produce',
+    description: 'Check live mandi prices, buy directly from farmers, or sell your harvest at the best rates. Real-time crop market data across India on Miraitu.',
+    alternates: {
+        canonical: 'https://miraitu.in/home/crops',
+    },
+    openGraph: {
+        title: 'Crop Marketplace – Live Prices & Direct Trading',
+        description: 'Buy and sell crops directly. Get live mandi prices from across India.',
+        url: 'https://miraitu.in/home/crops',
+    },
+};
 
 export default function CropsLayout({
     children,
@@ -17,4 +31,3 @@ export default function CropsLayout({
         </div>
     );
 }
-
