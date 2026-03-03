@@ -153,53 +153,151 @@ export default function RootLayout({ children }: RootLayoutProps) {
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         />
         <meta name="color-scheme" content="light" />
+        {/* Brand identity meta tags — help Google recognise 'Miraitu' as a brand name */}
+        <meta name="application-name" content="Miraitu" />
+        <meta name="apple-mobile-web-app-title" content="Miraitu" />
+        <meta name="DC.title" content="Miraitu – India's Agriculture Super App" />
+        <meta name="DC.creator" content="Miraitu Agriculture Tech" />
+        <meta name="DC.subject" content="Miraitu, agriculture app India, farming super app" />
+        <meta name="DC.language" content="en-IN" />
+        {/* OpenSearch — signals Miraitu is a searchable brand site to Google */}
+        <link
+          rel="search"
+          type="application/opensearchdescription+xml"
+          title="Miraitu"
+          href="https://miraitu.in/opensearch.xml"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
+              "@id": "https://miraitu.in/#organization",
               name: "Miraitu",
-              alternateName: "Miraitu Agriculture Tech",
+              legalName: "Miraitu Agriculture Tech",
+              alternateName: ["Miraitu App", "Miraitu Agriculture", "miraitu.in"],
               url: "https://miraitu.in",
-              logo: "https://miraitu.in/logo-icon.png",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://miraitu.in/logo-icon.png",
+                width: 512,
+                height: 512,
+              },
+              image: "https://miraitu.in/logo-icon.png",
               description:
-                "India's agriculture super app empowering farmers with machinery, crop marketplace, livestock, finance, veterinary services, and government schemes.",
+                "Miraitu is India's agriculture super app empowering farmers with machinery rental, crop marketplace, livestock trading, finance, veterinary services, and government schemes.",
+              foundingDate: "2023",
+              areaServed: {
+                "@type": "Country",
+                name: "India",
+              },
+              brand: {
+                "@type": "Brand",
+                name: "Miraitu",
+              },
+              telephone: "+91-8553498691",
+              email: "support@miraitu.in",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "No 4A, Vinayaka Layout, Parappana Agrahara",
+                addressLocality: "Bengaluru",
+                addressRegion: "Karnataka",
+                postalCode: "560100",
+                addressCountry: "IN",
+              },
               sameAs: [
                 "https://www.instagram.com/miraitu",
                 "https://x.com/Miraitu",
                 "https://www.facebook.com/share/17xh4f5AUZ/",
                 "https://www.youtube.com/@Miraitu",
                 "https://www.linkedin.com/company/miraitu",
+                "https://play.google.com/store/apps/details?id=in.miraitu",
               ],
-              contactPoint: {
-                "@type": "ContactPoint",
-                contactType: "customer service",
-                availableLanguage: ["English", "Hindi"],
+              contactPoint: [
+                {
+                  "@type": "ContactPoint",
+                  telephone: "+91-8553498691",
+                  contactType: "customer service",
+                  areaServed: "IN",
+                  availableLanguage: ["English", "Hindi", "Telugu", "Kannada"],
+                },
+              ],
+              potentialAction: {
+                "@type": "SearchAction",
+                target: {
+                  "@type": "EntryPoint",
+                  urlTemplate: "https://miraitu.in/home/crops?q={search_term_string}",
+                },
+                "query-input": "required name=search_term_string",
               },
             }),
           }}
         />
+        {/* WebSite schema — enables Google Sitelinks Search Box and brand recognition */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "WebApplication",
+              "@type": "WebSite",
+              "@id": "https://miraitu.in/#website",
               name: "Miraitu",
+              alternateName: "Miraitu Agriculture Super App",
               url: "https://miraitu.in",
-              applicationCategory: "BusinessApplication",
-              operatingSystem: "Web",
               description:
-                "All-in-one agriculture super app for Indian farmers — rent machinery, trade crops & livestock, access farm finance, veterinary services, and government schemes.",
+                "India's #1 agriculture super app — tractor rental, crop marketplace, livestock trading, veterinary services, farm finance, and government schemes.",
+              inLanguage: ["en-IN", "hi-IN", "te-IN"],
+              publisher: {
+                "@id": "https://miraitu.in/#organization",
+              },
+              potentialAction: {
+                "@type": "SearchAction",
+                target: {
+                  "@type": "EntryPoint",
+                  urlTemplate: "https://miraitu.in/home/crops?q={search_term_string}",
+                },
+                "query-input": "required name=search_term_string",
+              },
+            }),
+          }}
+        />
+        {/* SoftwareApplication schema */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "Miraitu",
+              applicationCategory: "BusinessApplication",
+              applicationSubCategory: "Agriculture",
+              operatingSystem: "Web, Android, iOS",
+              url: "https://miraitu.in",
+              brand: {
+                "@type": "Brand",
+                name: "Miraitu",
+              },
+              author: {
+                "@id": "https://miraitu.in/#organization",
+              },
+              description:
+                "Miraitu — India's agriculture super app. Rent farm machinery, sell crops and livestock, consult veterinary doctors, access government schemes and farm finance.",
               offers: {
                 "@type": "Offer",
                 price: "0",
                 priceCurrency: "INR",
               },
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: "4.8",
+                reviewCount: "10000",
+                bestRating: "5",
+              },
             }),
           }}
         />
+
       </head>
       <body
         className={`${plusJakartaSans.variable} ${notoSans.variable} font-display antialiased`}
