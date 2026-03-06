@@ -4,13 +4,9 @@ import crypto from 'crypto';
 
 const MSG91_AUTH_KEY = process.env.MSG91_AUTH_KEY!;
 const PHONE_AUTH_SECRET = process.env.PHONE_AUTH_SECRET!;
-
-// Admin client for user management (service role key bypasses RLS)
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-);
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 function generatePhonePassword(phone: string): string {
     return crypto
@@ -27,6 +23,12 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Phone and OTP are required' }, { status: 400 });
         }
 
+        // Validate env vars
+        if (!MSG91_AUTH_KEY || !PHONE_AUTH_SECRET || !SUPABASE_SERVICE_ROLE_KEY) {
+            console.error('[Verify OTP] Missing env vars');
+            return NextResponse.json({ error: 'Server configuration error. Please contact support.' }, { status: 500 });
+        }
+
         const mobile = phone.replace(/[+\s-]/g, '');
 
         if (!/^91\d{10}$/.test(mobile)) {
@@ -37,6 +39,7 @@ export async function POST(request: Request) {
         }
 
         // 1. Verify OTP with MSG91
+        console.log(`[Verify OTP] Verifying OTP for ${mobile}`);
         const verifyResponse = await fetch(
             `https://control.msg91.com/api/v5/otp/verify?otp=${otp}&mobile=${mobile}`,
             {
@@ -46,6 +49,7 @@ export async function POST(request: Request) {
         );
 
         const verifyData = await verifyResponse.json();
+        console.log('[Verify OTP] MSG91 verify response:', JSON.stringify(verifyData));
 
         if (verifyData.type !== 'success') {
             return NextResponse.json(
@@ -59,8 +63,13 @@ export async function POST(request: Request) {
         const syntheticEmail = `phone${mobile}@phone.miraitu.app`;
         const password = generatePhonePassword(phoneWithCode);
 
+        // Admin client — created per-request to avoid stale connections
+        const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+            auth: { autoRefreshToken: false, persistSession: false },
+        });
+
         // Try to create a new user
-        const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        const { error: createError } = await supabaseAdmin.auth.admin.createUser({
             email: syntheticEmail,
             email_confirm: true,
             phone: phoneWithCode,
@@ -73,30 +82,28 @@ export async function POST(request: Request) {
         });
 
         if (createError) {
+            console.log('[Verify OTP] User exists, finding and updating:', createError.message);
             // User already exists — find and update password
-            const { data: { users } } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
-            const existingUser = users.find(
+            const { data: listData } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+            const existingUser = listData?.users?.find(
                 u => u.phone === phoneWithCode || u.email === syntheticEmail
             );
 
             if (!existingUser) {
-                console.error('[Verify OTP] Cannot find or create user:', createError.message);
+                console.error('[Verify OTP] Cannot find existing user:', createError.message);
                 return NextResponse.json(
                     { error: 'Failed to create user account' },
                     { status: 500 }
                 );
             }
 
-            // Ensure password is set so we can sign in
             await supabaseAdmin.auth.admin.updateUserById(existingUser.id, { password });
         }
 
-        // 3. Sign in to generate session tokens
-        const authClient = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-            { auth: { autoRefreshToken: false, persistSession: false } }
-        );
+        // 3. Sign in to generate session tokens (use anon client)
+        const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: { autoRefreshToken: false, persistSession: false },
+        });
 
         const { data: signInData, error: signInError } = await authClient.auth.signInWithPassword({
             email: syntheticEmail,
@@ -111,6 +118,8 @@ export async function POST(request: Request) {
             );
         }
 
+        console.log('[Verify OTP] Session created successfully for:', phoneWithCode);
+
         // 4. Return session tokens to client
         return NextResponse.json({
             success: true,
@@ -120,7 +129,7 @@ export async function POST(request: Request) {
             },
         });
     } catch (error) {
-        console.error('[Verify OTP] Error:', error);
+        console.error('[Verify OTP] Unexpected error:', error);
         return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 });
     }
 }

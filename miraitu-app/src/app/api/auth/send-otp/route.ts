@@ -11,6 +11,12 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Phone number is required' }, { status: 400 });
         }
 
+        // Validate env vars are set
+        if (!MSG91_AUTH_KEY || !MSG91_TEMPLATE_ID) {
+            console.error('[Send OTP] Missing env vars: MSG91_AUTH_KEY or MSG91_TEMPLATE_ID');
+            return NextResponse.json({ error: 'OTP service not configured. Please contact support.' }, { status: 500 });
+        }
+
         // Format: remove + and spaces, ensure 91XXXXXXXXXX format
         const mobile = phone.replace(/[+\s-]/g, '');
 
@@ -20,6 +26,8 @@ export async function POST(request: Request) {
                 { status: 400 }
             );
         }
+
+        console.log(`[Send OTP] Sending to ${mobile} with template ${MSG91_TEMPLATE_ID}`);
 
         const response = await fetch('https://control.msg91.com/api/v5/otp', {
             method: 'POST',
@@ -36,14 +44,17 @@ export async function POST(request: Request) {
         });
 
         const data = await response.json();
+        console.log('[Send OTP] MSG91 response:', JSON.stringify(data));
 
-        if (data.type === 'success' || response.ok) {
+        // MSG91 returns { type: 'success' } on success - check this strictly
+        if (data.type === 'success') {
             return NextResponse.json({ success: true });
         }
 
+        // Any other response is a failure
         console.error('[Send OTP] MSG91 error:', data);
         return NextResponse.json(
-            { error: data.message || 'Failed to send OTP. Please try again.' },
+            { error: data.message || data.error || 'Failed to send OTP. Please try again.' },
             { status: 400 }
         );
     } catch (error) {
