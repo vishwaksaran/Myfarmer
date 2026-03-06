@@ -124,6 +124,27 @@ export default function UserLoginPage() {
         setError(null);
     };
 
+    const handleResendOtp = async () => {
+        const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+91${phoneNumber}`;
+        setError(null);
+        setIsSigningIn(true);
+        try {
+            const response = await fetch('/api/auth/resend-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: formattedPhone }),
+            });
+            const data = await response.json();
+            if (!response.ok || data.error) {
+                setError(data.error || 'Failed to resend OTP');
+            }
+        } catch {
+            setError('Failed to resend OTP. Please try again.');
+        } finally {
+            setIsSigningIn(false);
+        }
+    };
+
     if (loading) {
         return <LoadingSpinner />;
     }
@@ -392,7 +413,7 @@ export default function UserLoginPage() {
                                                 />
                                             </div>
                                             <div className="text-center">
-                                                <button type="button" className="text-xs text-gray-400 font-bold uppercase tracking-wider hover:text-[var(--miraitu-primary-green)]">{t('login.resendCode')}</button>
+                                                <button type="button" onClick={handleResendOtp} disabled={isSigningIn} className="text-xs text-gray-400 font-bold uppercase tracking-wider hover:text-[var(--miraitu-primary-green)] disabled:opacity-50">{t('login.resendCode')}</button>
                                             </div>
                                         </div>
                                     )}

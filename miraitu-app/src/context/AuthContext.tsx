@@ -48,13 +48,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
  */
 function toMiraituUser(supabaseUser: SupabaseUser): MiraituUser {
     const meta = supabaseUser.user_metadata || {};
+    // Filter out synthetic emails used for phone-only auth
+    const isSyntheticEmail = supabaseUser.email?.endsWith('@phone.miraitu.app');
     return {
         id: supabaseUser.id,
         uid: supabaseUser.id,
         displayName: meta.full_name || meta.name || meta.display_name || null,
-        email: supabaseUser.email || null,
+        email: isSyntheticEmail ? null : (supabaseUser.email || null),
         photoURL: meta.avatar_url || meta.picture || null,
-        phone: supabaseUser.phone || null,
+        phone: supabaseUser.phone || meta.phone || null,
         isGuest: false,
     };
 }
@@ -216,12 +218,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Phone OTP — send code
+    // Phone OTP — send code via MSG91
     const signInWithPhone = async (phone: string): Promise<{ error: string | null }> => {
         try {
-            const { error } = await supabase.auth.signInWithOtp({ phone });
-            if (error) {
-                return { error: error.message };
+            const response = await fetch('/api/auth/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone }),
+            });
+            const data = await response.json();
+            if (!response.ok || data.error) {
+                return { error: data.error || 'Failed to send OTP' };
             }
             return { error: null };
         } catch (err: unknown) {
@@ -230,19 +237,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Phone OTP — verify code
+    // Phone OTP — verify code via MSG91 + create Supabase session
     const verifyOtp = async (phone: string, token: string): Promise<{ error: string | null }> => {
         try {
-            const { data, error } = await supabase.auth.verifyOtp({
-                phone,
-                token,
-                type: 'sms',
+            const response = await fetch('/api/auth/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, otp: token }),
             });
-            if (error) {
-                return { error: error.message };
+            const data = await response.json();
+            if (!response.ok || data.error) {
+                return { error: data.error || 'Failed to verify OTP' };
             }
-            if (data?.user) {
-                setUser(toMiraituUser(data.user));
+            // Set the Supabase session from the server response
+            if (data.session) {
+                await supabase.auth.setSession({
+                    access_token: data.session.access_token,
+                    refresh_token: data.session.refresh_token,
+                });
             }
             return { error: null };
         } catch (err: unknown) {
