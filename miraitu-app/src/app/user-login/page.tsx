@@ -16,6 +16,7 @@ export default function UserLoginPage() {
     const { lang, setLang, t } = useLanguage();
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [isSigningIn, setIsSigningIn] = useState(false);
     const [isLangOpen, setIsLangOpen] = useState(false);
 
@@ -73,15 +74,14 @@ export default function UserLoginPage() {
 
     const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (phoneNumber.length < 10) {
-            setError("Please enter a valid phone number");
+        if (phoneNumber.length !== 10) {
+            setError('Please enter a valid 10-digit phone number');
             return;
         }
         setError(null);
         setIsSigningIn(true);
         try {
-            // Format phone with country code if not present
-            const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+91${phoneNumber}`;
+            const formattedPhone = `+91${phoneNumber}`;
             const result = await signInWithPhone(formattedPhone);
             if (result.error) {
                 setError(result.error);
@@ -95,24 +95,27 @@ export default function UserLoginPage() {
         }
     };
 
-    const handleVerifyOtp = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (otp.length < 4) {
-            setError("Please enter a valid OTP");
+    const handleVerifyOtp = async (e?: React.FormEvent) => {
+        e?.preventDefault();
+        if (otp.length !== 6) {
+            setError('Please enter the 6-digit OTP');
             return;
         }
         setError(null);
         setIsSigningIn(true);
         try {
-            const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+91${phoneNumber}`;
+            const formattedPhone = `+91${phoneNumber}`;
             const result = await verifyOtp(formattedPhone, otp);
             if (result.error) {
                 setError(result.error);
+                setOtp('');
             } else {
-                router.push('/home');
+                setSuccessMessage('✅ Login successful! Redirecting...');
+                setTimeout(() => router.push('/home'), 1500);
             }
         } catch {
             setError('Failed to verify OTP. Please try again.');
+            setOtp('');
         } finally {
             setIsSigningIn(false);
         }
@@ -321,9 +324,18 @@ export default function UserLoginPage() {
                                 </p>
                             </div>
 
+                            {/* Success Message */}
+                            {successMessage && (
+                                <div className="mb-6 p-4 bg-green-50 border border-green-300 rounded-xl text-green-700 text-sm font-semibold flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-green-600 text-lg">check_circle</span>
+                                    {successMessage}
+                                </div>
+                            )}
+
                             {/* Error Message */}
                             {error && (
-                                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm font-medium">
+                                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm font-medium flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-red-500 text-lg">error</span>
                                     {error}
                                 </div>
                             )}
@@ -380,14 +392,26 @@ export default function UserLoginPage() {
                                                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60">call</span>
                                                 <input
                                                     type="tel"
+                                                    inputMode="numeric"
                                                     value={phoneNumber}
-                                                    onChange={(e) => setPhoneNumber(e.target.value)}
+                                                    onChange={(e) => {
+                                                        // Only digits, max 10
+                                                        const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                                        setPhoneNumber(digits);
+                                                        setError(null);
+                                                    }}
                                                     className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-[var(--miraitu-primary-green)]/20 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none transition-all placeholder:text-gray-400 text-lg font-medium"
                                                     placeholder={t('login.mobilePlaceholder')}
                                                     autoFocus
                                                     required
-                                                    minLength={10}
+                                                    maxLength={10}
                                                 />
+                                                {phoneNumber.length > 0 && (
+                                                    <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold ${phoneNumber.length === 10 ? 'text-green-500' : 'text-gray-400'
+                                                        }`}>
+                                                        {phoneNumber.length}/10
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     )}
@@ -401,15 +425,24 @@ export default function UserLoginPage() {
                                             <div className="relative">
                                                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60">lock</span>
                                                 <input
-                                                    type="text"
+                                                    type="tel"
+                                                    inputMode="numeric"
                                                     value={otp}
-                                                    onChange={(e) => setOtp(e.target.value)}
+                                                    onChange={(e) => {
+                                                        // Only digits, max 6
+                                                        const digits = e.target.value.replace(/\D/g, '').slice(0, 6);
+                                                        setOtp(digits);
+                                                        setError(null);
+                                                        // Auto-submit when 6 digits entered
+                                                        if (digits.length === 6) {
+                                                            handleVerifyOtp();
+                                                        }
+                                                    }}
                                                     className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-[var(--miraitu-primary-green)]/20 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none transition-all placeholder:text-gray-400 text-lg font-medium tracking-widest text-center"
-                                                    placeholder={t('login.otpPlaceholder')}
+                                                    placeholder="● ● ● ● ● ●"
                                                     autoFocus
                                                     maxLength={6}
                                                     required
-                                                    minLength={4}
                                                 />
                                             </div>
                                             <div className="text-center">
