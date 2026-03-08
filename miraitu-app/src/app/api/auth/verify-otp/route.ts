@@ -82,22 +82,44 @@ export async function POST(request: Request) {
         });
 
         if (createError) {
-            console.log('[Verify OTP] User exists, finding and updating:', createError.message);
+            // Only fall back to "find existing user" if error is due to duplicate
+            const isDuplicate =
+                createError.message?.toLowerCase().includes('already') ||
+                createError.message?.toLowerCase().includes('unique') ||
+                createError.message?.toLowerCase().includes('duplicate') ||
+                (createError as any).status === 422;
+
+            if (!isDuplicate) {
+                console.error('[Verify OTP] createUser failed (not duplicate):', createError.message, (createError as any).status);
+                return NextResponse.json(
+                    { error: `Account creation failed: ${createError.message}` },
+                    { status: 500 }
+                );
+            }
+
             // User already exists — find and update password
-            const { data: listData } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+            const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+            if (listError) {
+                console.error('[Verify OTP] listUsers failed:', listError.message);
+                return NextResponse.json({ error: 'Failed to retrieve user account' }, { status: 500 });
+            }
             const existingUser = listData?.users?.find(
                 u => u.phone === phoneWithCode || u.email === syntheticEmail
             );
 
             if (!existingUser) {
-                console.error('[Verify OTP] Cannot find existing user:', createError.message);
+                console.error('[Verify OTP] User not found after createUser duplicate error. createError:', createError.message);
                 return NextResponse.json(
                     { error: 'Failed to create user account' },
                     { status: 500 }
                 );
             }
 
-            await supabaseAdmin.auth.admin.updateUserById(existingUser.id, { password });
+            // Ensure password is set so we can sign in
+            const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(existingUser.id, { password });
+            if (updateError) {
+                console.error('[Verify OTP] updateUserById failed:', updateError.message);
+            }
         }
 
         // 3. Sign in to generate session tokens (use anon client)

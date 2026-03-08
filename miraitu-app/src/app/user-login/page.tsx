@@ -95,9 +95,11 @@ export default function UserLoginPage() {
         }
     };
 
-    const handleVerifyOtp = async (e?: React.FormEvent) => {
+    // directOtp is passed when auto-submitting from onChange (avoids stale state)
+    const handleVerifyOtp = async (e?: React.FormEvent, directOtp?: string) => {
         e?.preventDefault();
-        if (otp.length !== 6) {
+        const otpToVerify = directOtp ?? otp;
+        if (otpToVerify.length !== 6) {
             setError('Please enter the 6-digit OTP');
             return;
         }
@@ -105,7 +107,7 @@ export default function UserLoginPage() {
         setIsSigningIn(true);
         try {
             const formattedPhone = `+91${phoneNumber}`;
-            const result = await verifyOtp(formattedPhone, otp);
+            const result = await verifyOtp(formattedPhone, otpToVerify);
             if (result.error) {
                 setError(result.error);
                 setOtp('');
@@ -385,7 +387,7 @@ export default function UserLoginPage() {
 
                             {/* PHONE LOGIN UI */}
                             {authMethod === 'phone' && (
-                                <form onSubmit={phoneState === 'input' ? handleSendOtp : handleVerifyOtp} className="space-y-6 animate-fade-in">
+                                <form onSubmit={phoneState === 'input' ? handleSendOtp : (e) => handleVerifyOtp(e)} className="space-y-6 animate-fade-in">
                                     {phoneState === 'input' && (
                                         <div className="space-y-2">
                                             <div className="relative">
@@ -433,9 +435,9 @@ export default function UserLoginPage() {
                                                         const digits = e.target.value.replace(/\D/g, '').slice(0, 6);
                                                         setOtp(digits);
                                                         setError(null);
-                                                        // Auto-submit when 6 digits entered
+                                                        // Auto-submit: pass digits directly to avoid stale state
                                                         if (digits.length === 6) {
-                                                            handleVerifyOtp();
+                                                            handleVerifyOtp(undefined, digits);
                                                         }
                                                     }}
                                                     className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-[var(--miraitu-primary-green)]/20 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none transition-all placeholder:text-gray-400 text-lg font-medium tracking-widest text-center"
