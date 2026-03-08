@@ -207,7 +207,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 addressCountry: "IN",
               },
               sameAs: [
-                "https://www.instagram.com/miraitu",
+                "https://www.instagram.com/miraituapp?igsh=MWRnMGV2OG9pYWljaw==",
                 "https://x.com/Miraitu",
                 "https://www.facebook.com/share/17xh4f5AUZ/",
                 "https://www.youtube.com/@Miraitu",
