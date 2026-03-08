@@ -77,15 +77,25 @@ export async function POST(request: Request) {
         }
 
         const existingUser = listData?.users?.find(
-            u => u.phone === phoneWithCode || u.email === syntheticEmail
+            u =>
+                u.phone === phoneWithCode ||
+                u.phone === mobile ||
+                u.email === syntheticEmail ||
+                (u.email && u.email.includes(mobile))
         );
 
         if (existingUser) {
             // User exists — update their password and sign in
-            console.log('[Verify OTP] Existing user found:', existingUser.id);
+            console.log('[Verify OTP] Existing user found:', existingUser.id, '| email:', existingUser.email, '| phone:', existingUser.phone);
             const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
                 existingUser.id,
-                { password }
+                {
+                    password,
+                    email: syntheticEmail, // ensure email is our synthetic one
+                    email_confirm: true,
+                    phone: phoneWithCode,
+                    phone_confirm: true,
+                }
             );
             if (updateError) {
                 console.error('[Verify OTP] updateUserById failed:', updateError.message);
@@ -107,11 +117,36 @@ export async function POST(request: Request) {
             });
 
             if (createError) {
-                console.error('[Verify OTP] createUser failed:', createError.message, JSON.stringify(createError));
-                return NextResponse.json(
-                    { error: `Failed to create account: ${createError.message}` },
-                    { status: 500 }
-                );
+                console.error('[Verify OTP] createUser failed:', createError.message);
+
+                // Phone registered to a different user — find and claim it
+                if (createError.message?.toLowerCase().includes('phone')) {
+                    console.log('[Verify OTP] Phone conflict — searching all users for phone:', phoneWithCode);
+                    const conflictUser = listData?.users?.find(
+                        u => u.phone === phoneWithCode || u.phone === mobile
+                    );
+                    if (conflictUser) {
+                        console.log('[Verify OTP] Found conflict user:', conflictUser.id, '| Updating...');
+                        await supabaseAdmin.auth.admin.updateUserById(conflictUser.id, {
+                            email: syntheticEmail,
+                            email_confirm: true,
+                            phone: phoneWithCode,
+                            phone_confirm: true,
+                            password,
+                        });
+                    } else {
+                        console.error('[Verify OTP] Cannot resolve phone conflict — user not in listUsers');
+                        return NextResponse.json(
+                            { error: 'This phone number is linked to another account. Please contact support.' },
+                            { status: 409 }
+                        );
+                    }
+                } else {
+                    return NextResponse.json(
+                        { error: `Failed to create account: ${createError.message}` },
+                        { status: 500 }
+                    );
+                }
             }
             console.log('[Verify OTP] New user created:', createData.user?.id);
         }
