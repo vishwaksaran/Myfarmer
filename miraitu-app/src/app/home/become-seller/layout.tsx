@@ -6,10 +6,22 @@ export const metadata: Metadata = {
     alternates: {
         canonical: 'https://miraitu.in/home/become-seller',
     },
+    robots: {
+        index: true,
+        follow: true,
+        googleBot: { index: true, follow: true },
+    },
     openGraph: {
         title: 'Become a Seller on Miraitu',
         description: 'Join India\'s leading agriculture platform as a seller, dealer, or service provider.',
         url: 'https://miraitu.in/home/become-seller',
+        type: 'website',
+        siteName: 'Miraitu',
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Become a Seller on Miraitu',
+        description: 'Register as a seller or dealer on India\'s #1 agriculture super app.',
     },
 };
 
@@ -18,5 +30,22 @@ export default function BecomeSellerLayout({
 }: {
     children: React.ReactNode;
 }) {
-    return <>{children}</>;
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: [
+                            { '@type': 'ListItem', position: 1, name: 'Miraitu', item: 'https://miraitu.in' },
+                            { '@type': 'ListItem', position: 2, name: 'Become a Seller', item: 'https://miraitu.in/home/become-seller' },
+                        ],
+                    }),
+                }}
+            />
+            {children}
+        </>
+    );
 }

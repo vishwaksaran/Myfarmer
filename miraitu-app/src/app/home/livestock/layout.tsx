@@ -9,10 +9,22 @@ export const metadata: Metadata = {
     alternates: {
         canonical: 'https://miraitu.in/home/livestock',
     },
+    robots: {
+        index: true,
+        follow: true,
+        googleBot: { index: true, follow: true },
+    },
     openGraph: {
         title: 'Livestock Marketplace – Cattle, Goats, Poultry & More',
         description: 'Buy and sell livestock from verified sellers across India.',
         url: 'https://miraitu.in/home/livestock',
+        type: 'website',
+        siteName: 'Miraitu',
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Livestock Marketplace – Cattle, Goats, Poultry & More',
+        description: 'Buy and sell livestock from verified sellers across India.',
     },
 };
 
@@ -23,6 +35,19 @@ export default function LivestockLayout({
 }) {
     return (
         <div className="min-h-screen bg-[#f8f9f7] dark:bg-[#161d15]">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: [
+                            { '@type': 'ListItem', position: 1, name: 'Miraitu', item: 'https://miraitu.in' },
+                            { '@type': 'ListItem', position: 2, name: 'Livestock Marketplace', item: 'https://miraitu.in/home/livestock' },
+                        ],
+                    }),
+                }}
+            />
             <Header />
             <main className="py-8 relative z-10">
                 {children}

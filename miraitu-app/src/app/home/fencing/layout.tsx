@@ -6,10 +6,22 @@ export const metadata: Metadata = {
     alternates: {
         canonical: 'https://miraitu.in/home/fencing',
     },
+    robots: {
+        index: true,
+        follow: true,
+        googleBot: { index: true, follow: true },
+    },
     openGraph: {
         title: 'Farm Fencing Solutions',
         description: 'Professional fencing installation services for agricultural land.',
         url: 'https://miraitu.in/home/fencing',
+        type: 'website',
+        siteName: 'Miraitu',
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Farm Fencing Solutions',
+        description: 'Professional fencing installation services for agricultural land.',
     },
 };
 
@@ -18,5 +30,23 @@ export default function FencingLayout({
 }: {
     children: React.ReactNode;
 }) {
-    return <>{children}</>;
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: [
+                            { '@type': 'ListItem', position: 1, name: 'Miraitu', item: 'https://miraitu.in' },
+                            { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://miraitu.in/home/services' },
+                            { '@type': 'ListItem', position: 3, name: 'Fencing', item: 'https://miraitu.in/home/fencing' },
+                        ],
+                    }),
+                }}
+            />
+            {children}
+        </>
+    );
 }
