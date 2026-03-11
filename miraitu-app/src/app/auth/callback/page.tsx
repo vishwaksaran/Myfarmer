@@ -37,7 +37,7 @@ export default function AuthCallbackPage() {
 
                 if (data.session) {
                     // Session established successfully — redirect to home
-                    router.replace('/home');
+                    router.replace('/');
                 } else {
                     // No session yet — listen for the auth state change
                     // (the client may still be processing the hash)
@@ -45,7 +45,7 @@ export default function AuthCallbackPage() {
                         (event, session) => {
                             if (event === 'SIGNED_IN' && session) {
                                 subscription.unsubscribe();
-                                router.replace('/home');
+                                router.replace('/');
                             }
                         }
                     );

@@ -42,7 +42,7 @@ export default function UserLoginPage() {
     // Redirect to home if already logged in
     useEffect(() => {
         if (user && !loading) {
-            router.push('/home');
+            router.push('/');
         }
     }, [user, loading, router]);
 
@@ -51,7 +51,7 @@ export default function UserLoginPage() {
             setIsSigningIn(true);
             setError(null);
             await signInWithGoogle();
-            router.push('/home');
+            router.push('/');
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to sign in with Google. Please try again.');
             console.error(err);
@@ -64,7 +64,7 @@ export default function UserLoginPage() {
         try {
             setIsSigningIn(true);
             await loginAsGuest();
-            router.push('/home');
+            router.push('/');
         } catch (err) {
             setError('Failed to continue as guest.');
         } finally {
@@ -113,7 +113,7 @@ export default function UserLoginPage() {
                 setOtp('');
             } else {
                 setSuccessMessage('✅ Login successful! Redirecting...');
-                setTimeout(() => router.push('/home'), 1500);
+                setTimeout(() => router.push('/'), 1500);
             }
         } catch {
             setError('Failed to verify OTP. Please try again.');

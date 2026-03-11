@@ -193,7 +193,7 @@ export default function UserRegisterPage() {
     useEffect(() => {
         if (showSuccessModal) {
             const timer = setTimeout(() => {
-                router.push('/home');
+                router.push('/');
             }, 4000);
             return () => clearTimeout(timer);
         }
@@ -641,7 +641,7 @@ export default function UserRegisterPage() {
 
                             {/* CTA Button */}
                             <button
-                                onClick={() => router.push('/home')}
+                                onClick={() => router.push('/')}
                                 className="w-full py-4 bg-gradient-to-r from-[var(--miraitu-primary-green)] to-[var(--miraitu-lime-green)] text-white font-bold text-base rounded-xl shadow-lg shadow-[var(--miraitu-primary-green)]/30 hover:shadow-xl hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                             >
                                 Start Exploring

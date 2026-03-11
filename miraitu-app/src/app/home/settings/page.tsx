@@ -338,7 +338,7 @@ export default function SettingsPage() {
                                     <span className="material-symbols-outlined text-green-500 text-lg">verified</span>
                                 </div>
                                 <button
-                                    onClick={() => { signOut(); router.push('/home'); }}
+                                    onClick={() => { signOut(); router.push('/'); }}
                                     className="w-full flex items-center gap-3 p-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                 >
                                     <span className="material-symbols-outlined">logout</span>
