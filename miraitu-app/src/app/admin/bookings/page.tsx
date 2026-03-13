@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { fetchAllBookings, updateBookingStatus, type BookingRecord } from '@/app/actions/bookings';
+import { fetchAllBookings, updateBookingStatus, deleteBooking, type BookingRecord } from '@/app/actions/bookings';
 import { downloadCSV } from '@/lib/csv-export';
 
 const MODULE_OPTIONS = [
@@ -31,6 +31,14 @@ export default function AdminBookingsPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<BookingRecord | null>(null);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    };
 
     const loadBookings = useCallback(async () => {
         setLoading(true);
@@ -80,6 +88,20 @@ export default function AdminBookingsPage() {
         }));
         const filename = `bookings${moduleFilter ? `_${moduleFilter}` : ''}${statusFilter ? `_${statusFilter}` : ''}_${new Date().toISOString().slice(0, 10)}`;
         downloadCSV(rows, filename);
+    };
+
+    const handleDeleteBooking = async () => {
+        if (!deleteTarget) return;
+        setActionLoading(true);
+        const result = await deleteBooking(deleteTarget.id);
+        if (result.success) {
+            setBookings(prev => prev.filter(b => b.id !== deleteTarget.id));
+            showToast(`Booking from "${deleteTarget.full_name}" deleted`);
+        } else {
+            showToast(result.error || 'Failed to delete booking', 'error');
+        }
+        setDeleteTarget(null);
+        setActionLoading(false);
     };
 
     // Group by category for the module-specific CSV export
@@ -225,9 +247,18 @@ export default function AdminBookingsPage() {
                                                 {new Date(b.created_at).toLocaleDateString()}
                                             </td>
                                             <td className="px-4 py-3">
-                                                <span className="material-symbols-outlined text-gray-400 text-lg">
-                                                    {expandedId === b.id ? 'expand_less' : 'expand_more'}
-                                                </span>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="material-symbols-outlined text-gray-400 text-lg">
+                                                        {expandedId === b.id ? 'expand_less' : 'expand_more'}
+                                                    </span>
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(b); }}
+                                                        className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                                                        title="Delete booking"
+                                                    >
+                                                        <span className="material-symbols-outlined text-lg">delete</span>
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                         {expandedId === b.id && (
@@ -274,6 +305,64 @@ export default function AdminBookingsPage() {
                     </div>
                     <div className="px-4 py-3 border-t border-gray-100 text-xs text-gray-500">
                         Showing {filteredBookings.length} booking{filteredBookings.length !== 1 ? 's' : ''}
+                    </div>
+                </div>
+            )}
+
+            {/* Toast */}
+            {toast && (
+                <div className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-bold flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+                    toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                }`}>
+                    <span className="material-symbols-outlined text-lg">
+                        {toast.type === 'success' ? 'check_circle' : 'error'}
+                    </span>
+                    {toast.message}
+                </div>
+            )}
+
+            {/* Delete Booking Modal */}
+            {deleteTarget && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => !actionLoading && setDeleteTarget(null)}>
+                    <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="size-12 rounded-xl bg-red-100 flex items-center justify-center">
+                                <span className="material-symbols-outlined text-red-600 text-2xl">warning</span>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900">Delete Booking</h3>
+                                <p className="text-sm text-gray-500">This action cannot be undone</p>
+                            </div>
+                        </div>
+                        <div className="bg-gray-50 rounded-xl p-3 mb-5">
+                            <p className="font-bold text-gray-900">{deleteTarget.full_name}</p>
+                            <p className="text-xs text-gray-500 capitalize">{deleteTarget.module} · {deleteTarget.category} · {deleteTarget.status}</p>
+                            <p className="text-xs text-gray-500">{deleteTarget.phone} · {deleteTarget.location}</p>
+                            <p className="text-[10px] font-mono text-gray-400 mt-1">{deleteTarget.id}</p>
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setDeleteTarget(null)}
+                                disabled={actionLoading}
+                                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDeleteBooking}
+                                disabled={actionLoading}
+                                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {actionLoading ? (
+                                    <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
+                                ) : (
+                                    <>
+                                        <span className="material-symbols-outlined text-lg">delete</span>
+                                        Delete
+                                    </>
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

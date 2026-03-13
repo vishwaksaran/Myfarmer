@@ -7,6 +7,7 @@ import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import { useAuth } from '@/context/AuthContext';
 import { createSeller, uploadImages } from '@/lib/supabase-db';
+import supabase from '@/lib/supabase';
 
 const sellerTypes = [
     {
@@ -255,6 +256,34 @@ export default function BecomeSellerPage() {
                     form_data: formValues,
                     images: imageUrls,
                 });
+
+                // For service providers, update profiles table with role & service types
+                if (selectedType === 'service-provider') {
+                    const serviceTypeMap: Record<string, string> = {
+                        'Drone Spraying': 'services',
+                        'Soil Testing': 'services',
+                        'Transportation': 'services',
+                        'Equipment Rental': 'machinery',
+                        'Veterinary': 'veterinary',
+                        'Consulting': 'services',
+                        'Multiple Services': 'services',
+                    };
+                    const selectedService = formValues.serviceType || '';
+                    const serviceModule = serviceTypeMap[selectedService] || 'services';
+
+                    await supabase
+                        .from('profiles')
+                        .update({
+                            role: 'service_provider',
+                            service_types: [serviceModule],
+                            address: formValues.location || '',
+                            whatsapp_number: formValues.phone || '',
+                            availability_status: 'available',
+                            bio: formValues.equipmentOwned ? `Equipment: ${formValues.equipmentOwned}` : '',
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq('id', user.id);
+                }
             }
 
             // Also keep localStorage as fallback for dashboard personalization
@@ -276,9 +305,9 @@ export default function BecomeSellerPage() {
 
     const handleGoToDashboard = () => {
         setShowSuccess(false);
-        if (selectedType === 'dealer') router.push('/home/become-seller/dashboard/dealer');
-        else if (selectedType === 'farmer-seller') router.push('/home/become-seller/dashboard/farmer');
-        else router.push('/home/become-seller/dashboard/service-provider');
+        if (selectedType === 'service-provider') router.push('/home/provider-dashboard');
+        else if (selectedType === 'dealer') router.push('/home/become-seller/dashboard/dealer');
+        else router.push('/home/become-seller/dashboard/farmer');
     };
 
     const startRegistration = () => {

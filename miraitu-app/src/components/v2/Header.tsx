@@ -37,6 +37,8 @@ const searchableItems = [
     { name: 'Community', path: '/home/community', icon: 'groups', keywords: ['community', 'farmer forum', 'discussion', 'help', 'connect'] },
     { name: 'Become a Seller', path: '/home/become-seller', icon: 'storefront', keywords: ['seller', 'dealer', 'sell', 'register as seller', 'become dealer'] },
     { name: 'Settings', path: '/home/settings', icon: 'settings', keywords: ['settings', 'profile', 'notification', 'language', 'account'] },
+    { name: 'Dashboard', path: '/home/dashboard', icon: 'dashboard', keywords: ['dashboard', 'bookings', 'my bookings', 'orders', 'status'] },
+    { name: 'Provider Dashboard', path: '/home/provider-dashboard', icon: 'engineering', keywords: ['provider', 'service provider', 'provider dashboard', 'earnings', 'jobs'] },
     { name: 'Weather', path: '/home/toolbox', icon: 'cloud', keywords: ['weather', 'forecast', 'rain', 'temperature', 'humidity'] },
     { name: 'Mandi Prices', path: '/home/toolbox', icon: 'trending_up', keywords: ['mandi', 'market price', 'mandi price', 'apmc', 'crop price'] },
     { name: 'Cart & Checkout', path: '/home/shop/checkout', icon: 'shopping_cart', keywords: ['cart', 'checkout', 'order', 'payment'] },

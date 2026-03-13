@@ -129,6 +129,33 @@ export default function UserLoginPage() {
         setError(null);
     };
 
+    // Dev-only login for localhost testing
+    const handleDevLogin = async () => {
+        try {
+            setIsSigningIn(true);
+            setError(null);
+            const response = await fetch('/api/auth/dev-login', { method: 'POST' });
+            const data = await response.json();
+            if (!response.ok || data.error) {
+                setError(data.error || 'Dev login failed');
+                return;
+            }
+            // Set the Supabase session from the API response
+            const { default: supabase } = await import('@/lib/supabase');
+            await supabase.auth.setSession({
+                access_token: data.session.access_token,
+                refresh_token: data.session.refresh_token,
+            });
+            setSuccessMessage('✅ Dev login successful! Redirecting to admin...');
+            setTimeout(() => router.push('/admin'), 1000);
+        } catch (err) {
+            setError('Dev login failed. Check console for details.');
+            console.error(err);
+        } finally {
+            setIsSigningIn(false);
+        }
+    };
+
     const handleResendOtp = async () => {
         const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+91${phoneNumber}`;
         setError(null);
@@ -382,6 +409,25 @@ export default function UserLoginPage() {
                                     >
                                         {t('login.skipGuest')}
                                     </button>
+
+                                    {/* Dev Login — localhost only */}
+                                    {typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && (
+                                        <>
+                                            <div className="flex items-center gap-4 my-2">
+                                                <div className="flex-1 h-px bg-red-200" />
+                                                <span className="text-[10px] text-red-400 font-bold uppercase tracking-widest">Dev Only</span>
+                                                <div className="flex-1 h-px bg-red-200" />
+                                            </div>
+                                            <button
+                                                onClick={handleDevLogin}
+                                                disabled={isSigningIn}
+                                                className="w-full h-12 flex items-center justify-center gap-2 bg-red-50 border-2 border-red-200 border-dashed rounded-xl font-bold text-red-600 text-sm hover:bg-red-100 transition-all disabled:opacity-50"
+                                            >
+                                                <span className="material-symbols-outlined text-lg">developer_mode</span>
+                                                Dev Admin Login (localhost)
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             )}
 

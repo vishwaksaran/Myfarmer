@@ -12,7 +12,7 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType>({
     lang: 'en',
     setLang: () => { },
-    t: (key: string) => key,
+    t: (key: string) => translations['en']?.[key] || key,
 });
 
 const VALID_LANGS: LangCode[] = ['en', 'hi', 'mr', 'gu', 'te', 'ta', 'kn', 'pa', 'bn', 'ml'];

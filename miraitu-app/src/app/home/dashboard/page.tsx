@@ -19,6 +19,11 @@ interface Booking {
     status: string;
     created_at: string;
     extra_data: Record<string, unknown>;
+    provider_id: string | null;
+    assigned_at: string | null;
+    accepted_at: string | null;
+    amount: number | null;
+    provider_profile?: { full_name: string | null }[] | { full_name: string | null } | null;
 }
 
 interface DashboardStats {
@@ -47,10 +52,10 @@ export default function UserDashboardPage() {
         const profile = await fetchProfile();
         if (profile) setProfileData(profile);
 
-        // Fetch user's bookings
+        // Fetch user's bookings with assigned provider name
         const { data: bookings, error } = await supabase
             .from('service_bookings')
-            .select('*')
+            .select('id, module, category, full_name, phone, location, preferred_date, status, created_at, extra_data, provider_id, assigned_at, accepted_at, amount, provider_profile:profiles!service_bookings_provider_id_fkey(full_name)')
             .eq('user_id', user.id)
             .order('created_at', { ascending: false })
             .limit(5);
@@ -59,7 +64,7 @@ export default function UserDashboardPage() {
             const all = bookings as Booking[];
             setStats({
                 totalBookings: all.length,
-                pendingBookings: all.filter(b => b.status === 'pending').length,
+                pendingBookings: all.filter(b => ['pending', 'assigned', 'accepted', 'in_progress'].includes(b.status)).length,
                 completedBookings: all.filter(b => b.status === 'completed').length,
                 recentBookings: all.slice(0, 5),
             });
@@ -85,10 +90,24 @@ export default function UserDashboardPage() {
 
     const statusColor: Record<string, string> = {
         pending: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+        assigned: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+        accepted: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
+        in_progress: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
         contacted: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
         confirmed: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
         completed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
         cancelled: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    };
+
+    const statusLabel: Record<string, string> = {
+        pending: 'Pending',
+        assigned: 'Provider Assigned',
+        accepted: 'Accepted',
+        in_progress: 'In Progress',
+        contacted: 'Contacted',
+        confirmed: 'Confirmed',
+        completed: 'Completed',
+        cancelled: 'Cancelled',
     };
 
     return (
@@ -198,21 +217,37 @@ export default function UserDashboardPage() {
                                 ) : (
                                     <div className="divide-y divide-gray-100 dark:divide-gray-800">
                                         {stats.recentBookings.map(b => (
-                                            <div key={b.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                                                        <span className="material-symbols-outlined text-primary text-lg">
-                                                            {b.module === 'services' ? 'handyman' : b.module === 'land' ? 'landscape' : b.module === 'borewell' ? 'water_pump' : 'build'}
-                                                        </span>
+                                            <div key={b.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                                                            <span className="material-symbols-outlined text-primary text-lg">
+                                                                {b.module === 'services' ? 'handyman' : b.module === 'land' ? 'landscape' : b.module === 'borewell' ? 'water_pump' : 'build'}
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-semibold text-gray-900 dark:text-white text-sm capitalize">{b.category.replace(/-/g, ' ')}</p>
+                                                            <p className="text-xs text-gray-500">{new Date(b.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="font-semibold text-gray-900 dark:text-white text-sm capitalize">{b.category.replace(/-/g, ' ')}</p>
-                                                        <p className="text-xs text-gray-500">{new Date(b.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                                                    </div>
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold capitalize ${statusColor[b.status] || 'bg-gray-100 text-gray-600'}`}>
+                                                        {statusLabel[b.status] || b.status}
+                                                    </span>
                                                 </div>
-                                                <span className={`px-3 py-1 rounded-full text-xs font-bold capitalize ${statusColor[b.status] || 'bg-gray-100 text-gray-600'}`}>
-                                                    {b.status}
-                                                </span>
+                                                {/* Provider assignment info */}
+                                                {b.provider_id && (
+                                                    <div className="mt-2 ml-14 flex items-center gap-2 text-xs">
+                                                        <span className="material-symbols-outlined text-green-500 text-sm">engineering</span>
+                                                        <span className="text-gray-500">
+                                                            Provider: <span className="font-bold text-gray-700 dark:text-gray-300">
+                                                                {Array.isArray(b.provider_profile) ? b.provider_profile[0]?.full_name : b.provider_profile?.full_name || 'Assigned'}
+                                                            </span>
+                                                        </span>
+                                                        {b.amount && (
+                                                            <span className="text-gray-400">• ₹{b.amount.toLocaleString('en-IN')}</span>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>

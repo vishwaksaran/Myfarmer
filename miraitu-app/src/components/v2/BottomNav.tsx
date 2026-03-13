@@ -1,18 +1,36 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
-const navItems = [
+const baseNavItems = [
     { label: 'Home', icon: 'home', path: '/home' },
     { label: 'Services', icon: 'home_repair_service', path: '/home/services' },
     { label: 'Sell', icon: 'add', path: '/home/become-seller', isCenterAction: true },
     { label: 'Shop', icon: 'shopping_bag', path: '/home/shop' },
-    { label: 'Community', icon: 'groups', path: '/home/community' },
+    { label: 'Dashboard', icon: 'dashboard', path: '/home/dashboard' },
 ];
 
 export default function BottomNav() {
     const pathname = usePathname();
+    const { user, fetchProfile } = useAuth();
+    const [userRole, setUserRole] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (user && !user.isGuest) {
+            fetchProfile().then(p => setUserRole(p?.role || null));
+        }
+    }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Build nav items — swap Dashboard path for service providers
+    const navItems = baseNavItems.map(item => {
+        if (item.label === 'Dashboard' && userRole === 'service_provider') {
+            return { ...item, path: '/home/provider-dashboard', icon: 'engineering' };
+        }
+        return item;
+    });
 
     const isActive = (path: string) => {
         if (path === '/home') return pathname === '/home';

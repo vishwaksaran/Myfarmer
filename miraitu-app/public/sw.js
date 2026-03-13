@@ -1,5 +1,5 @@
-// Miraitu Service Worker v1.0
-const CACHE_NAME = 'miraitu-v1';
+// Miraitu Service Worker v2.0
+const CACHE_NAME = 'miraitu-v2';
 const OFFLINE_URL = '/offline.html';
 
 // Static assets to pre-cache on install
@@ -51,6 +51,28 @@ self.addEventListener('fetch', (event) => {
 
   // Skip API routes and auth callbacks
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) return;
+
+  // Next.js framework assets (_next/) — always use network-first to avoid stale bundles
+  if (url.pathname.startsWith('/_next/')) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, clone);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          return caches.match(request).then((cached) => {
+            return cached || new Response('', { status: 408, statusText: 'Offline' });
+          });
+        })
+    );
+    return;
+  }
 
   // For navigation requests (HTML pages) - Network first, fallback to cache, then offline page
   if (request.mode === 'navigate') {

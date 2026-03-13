@@ -6,9 +6,7 @@ import '../globals-v2.css';
 export const metadata: Metadata = {
     title: 'Smart Farm Toolbox – Soil Testing, Weather & Calculators',
     description: 'Smart farming tools including soil testing, weather forecasts, crop calculators, and agricultural planning utilities on Miraitu.',
-    alternates: {
-        canonical: 'https://miraitu.in/home/toolbox',
-    },
+    // canonical removed from layout — set per-page to avoid children inheriting it
     robots: {
         index: true,
         follow: true,

@@ -13,8 +13,11 @@ export default function ServiceWorkerRegistration() {
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
-    // Register service worker
-    if ('serviceWorker' in navigator) {
+    // Skip service worker in development to prevent stale JS bundle caching
+    const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+    // Register service worker (production only)
+    if ('serviceWorker' in navigator && !isDev) {
       navigator.serviceWorker
         .register('/sw.js')
         .then(function (registration) {
@@ -27,6 +30,25 @@ export default function ServiceWorkerRegistration() {
         .catch(function (error) {
           console.log('SW registration failed:', error);
         });
+    }
+
+    // In development, unregister any existing service worker
+    if ('serviceWorker' in navigator && isDev) {
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        for (const registration of registrations) {
+          registration.unregister();
+          console.log('SW unregistered (dev mode)');
+        }
+      });
+      // Also clear all caches left by previous SW
+      if ('caches' in window) {
+        caches.keys().then(function (names) {
+          for (const name of names) {
+            caches.delete(name);
+            console.log('Cache cleared (dev mode):', name);
+          }
+        });
+      }
     }
 
     // Check if already installed

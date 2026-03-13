@@ -26,6 +26,17 @@ export interface UserProfile {
     avatar_url: string | null;
     farm_location: string | null;
     role: string;
+    // Extended profile fields
+    address: string | null;
+    pincode: string | null;
+    district: string | null;
+    state: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    service_types: string[];
+    availability_status: string;
+    whatsapp_number: string | null;
+    bio: string | null;
 }
 
 interface AuthContextType {
@@ -285,7 +296,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             const { data, error } = await supabase
                 .from('profiles')
-                .select('full_name, phone, avatar_url, farm_location, role')
+                .select('full_name, phone, avatar_url, farm_location, role, address, pincode, district, state, latitude, longitude, service_types, availability_status, whatsapp_number, bio')
                 .eq('id', user.id)
                 .single();
             if (error) {
