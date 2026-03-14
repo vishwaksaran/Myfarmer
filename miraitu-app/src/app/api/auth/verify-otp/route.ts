@@ -209,12 +209,28 @@ export async function POST(request: Request) {
 
         console.log('[Verify OTP] ✅ Session created for:', phoneWithCode);
 
+        // Check if user has completed onboarding
+        const userId = signInData.session.user.id;
+        let onboardingCompleted = false;
+        try {
+            const { data: profile } = await supabaseAdmin
+                .from('profiles')
+                .select('onboarding_completed')
+                .eq('id', userId)
+                .single();
+            onboardingCompleted = profile?.onboarding_completed === true;
+        } catch {
+            // Profile may not exist yet for new users
+        }
+
         return NextResponse.json({
             success: true,
             session: {
                 access_token: signInData.session.access_token,
                 refresh_token: signInData.session.refresh_token,
             },
+            user_id: userId,
+            onboarding_completed: onboardingCompleted,
         });
 
     } catch (error) {

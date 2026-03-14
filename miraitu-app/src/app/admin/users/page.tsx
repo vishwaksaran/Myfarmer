@@ -31,7 +31,7 @@ export default function AdminUsersPage() {
     }, []);
 
     const filteredUsers = users.filter(u => {
-        const matchesSearch = !searchQuery || [u.full_name, u.phone, u.farm_location, u.role]
+        const matchesSearch = !searchQuery || [u.full_name, u.phone, u.email, u.farm_location, u.role]
             .filter(Boolean)
             .some(f => f!.toLowerCase().includes(searchQuery.toLowerCase()));
         const matchesRole = !roleFilter || u.role === roleFilter;
@@ -44,6 +44,7 @@ export default function AdminUsersPage() {
         const rows = filteredUsers.map(u => ({
             'ID': u.id,
             'Full Name': u.full_name || '',
+            'Email': u.email || '',
             'Phone': u.phone || '',
             'Role': u.role || '',
             'Farm Location': u.farm_location || '',
@@ -159,6 +160,7 @@ export default function AdminUsersPage() {
                             <thead>
                                 <tr className="text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
                                     <th className="px-4 py-3">User</th>
+                                    <th className="px-4 py-3">Email</th>
                                     <th className="px-4 py-3">Phone</th>
                                     <th className="px-4 py-3">Role</th>
                                     <th className="px-4 py-3">Location</th>
@@ -189,6 +191,13 @@ export default function AdminUsersPage() {
                                                     <p className="text-[10px] text-gray-400 font-mono">{u.id.slice(0, 8)}...</p>
                                                 </div>
                                             </div>
+                                        </td>
+                                        <td className="px-4 py-3 text-gray-600 max-w-[180px]">
+                                            {u.email ? (
+                                                <span className="text-xs truncate block" title={u.email}>{u.email}</span>
+                                            ) : (
+                                                <span className="text-gray-400 text-xs">—</span>
+                                            )}
                                         </td>
                                         <td className="px-4 py-3 text-gray-600">{u.phone || '—'}</td>
                                         <td className="px-4 py-3">

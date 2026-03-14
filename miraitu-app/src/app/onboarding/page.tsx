@@ -370,13 +370,20 @@ export default function OnboardingPage() {
         phone: '',
     });
 
-    // Pre-fill name from auth if available
+    // Pre-fill name and phone from auth if available
     useEffect(() => {
         if (user) {
+            // Strip country code (+91) from phone if present for the 10-digit input
+            let phoneDigits = user.phone || '';
+            phoneDigits = phoneDigits.replace(/[+\s-]/g, ''); // remove +, spaces, dashes
+            if (phoneDigits.startsWith('91') && phoneDigits.length === 12) {
+                phoneDigits = phoneDigits.slice(2); // strip '91' prefix
+            }
+
             setFormData(prev => ({
                 ...prev,
                 full_name: user.displayName || prev.full_name,
-                phone: user.phone || prev.phone,
+                phone: phoneDigits || prev.phone,
             }));
         }
     }, [user]);
@@ -404,6 +411,14 @@ export default function OnboardingPage() {
             setError('Please enter your name');
             return;
         }
+        if (currentStep === 1 && !formData.phone) {
+            setError('Please enter your phone number');
+            return;
+        }
+        if (currentStep === 1 && formData.phone.length !== 10) {
+            setError('Please enter a valid 10-digit phone number');
+            return;
+        }
         if (currentStep === 1 && !formData.role) {
             setError('Please select your role');
             return;
@@ -414,6 +429,10 @@ export default function OnboardingPage() {
         }
         if (currentStep === 3 && !formData.state) {
             setError('Please select your state');
+            return;
+        }
+        if (currentStep === 3 && !formData.farm_location.trim() && !formData.district.trim()) {
+            setError('Please enter your village/city or use detect location');
             return;
         }
         animateStep('next');
@@ -477,6 +496,14 @@ export default function OnboardingPage() {
             setError('Please select your state');
             return;
         }
+        if (!formData.farm_location.trim() && !formData.district.trim()) {
+            setError('Please enter your village/town or district');
+            return;
+        }
+        if (!formData.phone || formData.phone.length !== 10) {
+            setError('Please provide a valid 10-digit phone number in Step 1');
+            return;
+        }
         setIsSubmitting(true);
         setError(null);
 
@@ -488,7 +515,7 @@ export default function OnboardingPage() {
                 district: formData.district,
                 state: formData.state,
                 pincode: formData.pincode,
-                phone: formData.phone || null,
+                phone: formData.phone ? `+91${formData.phone}` : null,
                 // These custom fields are stored as-is
                 interests: formData.interests,
                 farm_size: formData.farm_size,
@@ -596,27 +623,34 @@ export default function OnboardingPage() {
                                 </div>
                             </div>
 
-                            {/* Phone (optional if not from phone auth) */}
-                            {!user?.phone && (
-                                <div className="skeuo-card rounded-2xl p-5">
-                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">Phone Number <span className="text-gray-400">(optional)</span></label>
-                                    <div className="relative">
-                                        <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60 text-xl">call</span>
-                                        <input
-                                            type="tel"
-                                            inputMode="numeric"
-                                            value={formData.phone}
-                                            onChange={(e) => {
-                                                const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
-                                                setFormData(f => ({ ...f, phone: digits }));
-                                            }}
-                                            className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-green-200 bg-white focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-base font-medium placeholder:text-gray-400"
-                                            placeholder="10-digit mobile number"
-                                            maxLength={10}
-                                        />
-                                    </div>
+                            {/* Phone Number (mandatory for Google/email users, pre-filled for OTP users) */}
+                            <div className="skeuo-card rounded-2xl p-5">
+                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">
+                                    Phone Number <span className="text-red-500">*</span>
+                                </label>
+                                <div className="relative">
+                                    <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60 text-xl">call</span>
+                                    <input
+                                        type="tel"
+                                        inputMode="numeric"
+                                        value={formData.phone}
+                                        onChange={(e) => {
+                                            const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                            setFormData(f => ({ ...f, phone: digits }));
+                                        }}
+                                        className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-green-200 bg-white focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-base font-medium placeholder:text-gray-400"
+                                        placeholder="10-digit mobile number"
+                                        maxLength={10}
+                                        readOnly={!!user?.phone}
+                                    />
                                 </div>
-                            )}
+                                {user?.phone && (
+                                    <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-sm">verified</span>
+                                        Verified via OTP
+                                    </p>
+                                )}
+                            </div>
 
                             {/* Role Selection */}
                             <div className="skeuo-card rounded-2xl p-5">
@@ -746,7 +780,7 @@ export default function OnboardingPage() {
                             <div className="skeuo-card rounded-2xl p-5 space-y-4">
                                 {/* Village/Town/City */}
                                 <div>
-                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Village / Town / City</label>
+                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Village / Town / City <span className="text-red-500">*</span></label>
                                     <div className="relative">
                                         <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-green-500/60 text-lg">home</span>
                                         <input

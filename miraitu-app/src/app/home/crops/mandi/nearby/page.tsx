@@ -1,50 +1,257 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useMandiPrices } from '@/lib/useMandiPrices';
-import { formatPrice } from '@/lib/mandi-api';
+import { formatPrice, getCropEmoji } from '@/lib/mandi-api';
 
-const nearbyMandis = [
-    { id: 1, name: 'Pune APMC Market', distance: '12 km', address: 'Market Yard, Gultekdi, Pune', timings: '6:00 AM - 6:00 PM', commodities: ['Onion', 'Potato', 'Tomato', 'Vegetables'], rating: 4.2, market: 'Pune', district: 'Pune' },
-    { id: 2, name: 'Pimpri Chinchwad Mandi', distance: '18 km', address: 'Sector 24, PCMC, Pune', timings: '5:00 AM - 5:00 PM', commodities: ['Grains', 'Pulses', 'Vegetables'], rating: 4.0, market: 'Pimpri', district: 'Pune' },
-    { id: 3, name: 'Nashik APMC', distance: '145 km', address: 'Satpur, Nashik', timings: '6:00 AM - 7:00 PM', commodities: ['Onion', 'Grapes', 'Tomato'], rating: 4.5, market: 'Nashik', district: 'Nashik' },
-    { id: 4, name: 'Solapur Agricultural Market', distance: '230 km', address: 'Market Yard Rd, Solapur', timings: '5:30 AM - 6:00 PM', commodities: ['Jowar', 'Groundnut', 'Cotton'], rating: 3.8, market: 'Solapur', district: 'Solapur' },
-    { id: 5, name: 'Kolhapur Mandi', distance: '210 km', address: 'Shivaji Udyam Nagar, Kolhapur', timings: '6:00 AM - 6:30 PM', commodities: ['Sugarcane', 'Jaggery', 'Vegetables'], rating: 4.1, market: 'Kolhapur', district: 'Kolhapur' },
-    { id: 6, name: 'Sangli APMC', distance: '225 km', address: 'Market Yard, Sangli', timings: '5:00 AM - 5:00 PM', commodities: ['Turmeric', 'Grapes', 'Raisins'], rating: 4.3, market: 'Sangli', district: 'Sangli' },
+/* ── Indian states list (for suggestions) ─────────────────────────── */
+const INDIAN_STATES = [
+    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+    'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
+    'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
+    'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
+    'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+    'Chandigarh', 'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Puducherry',
 ];
 
+/* ── Types ────────────────────────────────────────────────────────── */
+interface MandiGroup {
+    market: string;
+    district: string;
+    commodities: { commodity: string; modalPrice: number; variety: string }[];
+    totalCommodities: number;
+}
+
+interface LocationSuggestion {
+    label: string;
+    state: string;
+    district: string;
+    type: 'state' | 'place';
+}
+
 export default function NearbyMandisPage() {
-    const [searchLocation, setSearchLocation] = useState('Pune, Maharashtra');
-    const [sortBy, setSortBy] = useState('distance');
+    const [searchInput, setSearchInput] = useState('');
+    const [selectedState, setSelectedState] = useState('Maharashtra');
+    const [selectedDistrict, setSelectedDistrict] = useState('');
+    const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [geoLoading, setGeoLoading] = useState(false);
+    const [sortBy, setSortBy] = useState<'commodities' | 'name'>('commodities');
+    const suggestionsRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const autoDetectedRef = useRef(false);
 
-    // Fetch Maharashtra market data to enrich nearby mandis with live prices
-    const { data: liveData, loading: liveLoading } = useMandiPrices({ state: 'Maharashtra', limit: 100 });
+    // Auto-detect location on first load
+    useEffect(() => {
+        if (autoDetectedRef.current) return;
+        autoDetectedRef.current = true;
 
-    // Build a map: market name → top commodities with prices
-    const marketPrices = useMemo(() => {
-        const map: Record<string, { commodity: string; price: string }[]> = {};
-        for (const r of liveData) {
-            const key = r.market.toLowerCase();
-            if (!map[key]) map[key] = [];
-            if (map[key].length < 4) {
-                map[key].push({ commodity: r.commodity, price: formatPrice(r.modalPrice) });
-            }
-        }
-        return map;
-    }, [liveData]);
+        if (!navigator.geolocation) return;
+        setGeoLoading(true);
 
-    const sortedMandis = [...nearbyMandis].sort((a, b) => {
-        if (sortBy === 'distance') {
-            return parseInt(a.distance) - parseInt(b.distance);
-        } else if (sortBy === 'rating') {
-            return b.rating - a.rating;
-        }
-        return 0;
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+                try {
+                    const { latitude, longitude } = pos.coords;
+                    const res = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`,
+                        { headers: { 'Accept-Language': 'en' } }
+                    );
+                    if (res.ok) {
+                        const data = await res.json();
+                        const state = data.address?.state || 'Maharashtra';
+                        const district = data.address?.state_district || data.address?.county || '';
+                        const city = data.address?.city || data.address?.town || data.address?.village || '';
+                        setSelectedState(state);
+                        setSelectedDistrict(district);
+                        setSearchInput([city, district, state].filter(Boolean).join(', '));
+                    }
+                } catch { /* fallback to default Maharashtra */ }
+                setGeoLoading(false);
+            },
+            () => setGeoLoading(false),
+            { enableHighAccuracy: false, timeout: 8000 }
+        );
+    }, []);
+
+    // Fetch market data for the selected state
+    const { data: liveData, loading, error, source, refetch } = useMandiPrices({
+        state: selectedState,
+        limit: 500,
+        enabled: !!selectedState,
     });
 
+    // Group data by market → create mandi cards
+    const mandis: MandiGroup[] = useMemo(() => {
+        const map = new Map<string, MandiGroup>();
+
+        for (const r of liveData) {
+            // Filter by district if selected
+            if (selectedDistrict && r.district.toLowerCase() !== selectedDistrict.toLowerCase()) continue;
+
+            const key = `${r.market}__${r.district}`;
+            if (!map.has(key)) {
+                map.set(key, {
+                    market: r.market,
+                    district: r.district,
+                    commodities: [],
+                    totalCommodities: 0,
+                });
+            }
+            const group = map.get(key)!;
+            group.totalCommodities++;
+            if (group.commodities.length < 6) {
+                group.commodities.push({
+                    commodity: r.commodity,
+                    modalPrice: r.modalPrice,
+                    variety: r.variety,
+                });
+            }
+        }
+
+        let arr = Array.from(map.values());
+
+        // Sort
+        if (sortBy === 'commodities') {
+            arr.sort((a, b) => b.totalCommodities - a.totalCommodities);
+        } else {
+            arr.sort((a, b) => a.market.localeCompare(b.market));
+        }
+
+        return arr;
+    }, [liveData, selectedDistrict, sortBy]);
+
+    // Available districts for the current state (from live data)
+    const availableDistricts = useMemo(() => {
+        const set = new Set<string>();
+        for (const r of liveData) set.add(r.district);
+        return Array.from(set).sort();
+    }, [liveData]);
+
+    /* ── Search suggestions (debounced) ───────────────────────────── */
+    useEffect(() => {
+        const query = searchInput.trim().toLowerCase();
+        if (query.length < 2) {
+            setSuggestions([]);
+            return;
+        }
+
+        // 1. Match Indian states
+        const stateMatches: LocationSuggestion[] = INDIAN_STATES
+            .filter(s => s.toLowerCase().includes(query))
+            .slice(0, 5)
+            .map(s => ({ label: s, state: s, district: '', type: 'state' }));
+
+        // 2. Match districts from current data
+        const districtMatches: LocationSuggestion[] = availableDistricts
+            .filter(d => d.toLowerCase().includes(query))
+            .slice(0, 5)
+            .map(d => ({ label: `${d}, ${selectedState}`, state: selectedState, district: d, type: 'place' }));
+
+        // 3. Debounced Nominatim geocoding for broader places
+        const timer = setTimeout(async () => {
+            let nominatimResults: LocationSuggestion[] = [];
+            try {
+                const res = await fetch(
+                    `https://nominatim.openstreetmap.org/search?` +
+                    `q=${encodeURIComponent(query + ', India')}&format=json&limit=5&addressdetails=1&countrycodes=in`,
+                    { headers: { 'Accept-Language': 'en' } }
+                );
+                if (res.ok) {
+                    const places = await res.json();
+                    nominatimResults = places
+                        .filter((p: { address?: { state?: string } }) => p.address?.state)
+                        .map((p: { display_name: string; address: { state?: string; county?: string; state_district?: string } }) => ({
+                            label: p.display_name.split(',').slice(0, 3).join(',').trim(),
+                            state: p.address.state || '',
+                            district: p.address.state_district || p.address.county || '',
+                            type: 'place' as const,
+                        }));
+                }
+            } catch { /* Nominatim might be rate-limited */ }
+
+            // Combine and deduplicate
+            const combined = [...stateMatches, ...districtMatches, ...nominatimResults];
+            const seen = new Set<string>();
+            const deduped = combined.filter(s => {
+                const key = `${s.state}__${s.district}`.toLowerCase();
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+
+            setSuggestions(deduped.slice(0, 8));
+        }, 350);
+
+        // Immediately show state + district matches
+        setSuggestions([...stateMatches, ...districtMatches].slice(0, 8));
+
+        return () => clearTimeout(timer);
+    }, [searchInput, availableDistricts, selectedState]);
+
+    /* ── Handle suggestion click ──────────────────────────────────── */
+    const handleSelectSuggestion = useCallback((s: LocationSuggestion) => {
+        setSearchInput(s.label);
+        setSelectedState(s.state);
+        setSelectedDistrict(s.district);
+        setShowSuggestions(false);
+    }, []);
+
+    /* ── Use Current Location ─────────────────────────────────────── */
+    const handleUseCurrentLocation = useCallback(async () => {
+        if (!navigator.geolocation) return;
+        setGeoLoading(true);
+
+        try {
+            const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: false, timeout: 10000,
+                })
+            );
+
+            const { latitude, longitude } = pos.coords;
+
+            // Reverse geocode via Nominatim
+            const res = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`,
+                { headers: { 'Accept-Language': 'en' } }
+            );
+
+            if (res.ok) {
+                const data = await res.json();
+                const state = data.address?.state || 'Maharashtra';
+                const district = data.address?.state_district || data.address?.county || '';
+                const city = data.address?.city || data.address?.town || data.address?.village || '';
+
+                setSelectedState(state);
+                setSelectedDistrict(district);
+                setSearchInput([city, district, state].filter(Boolean).join(', '));
+            }
+        } catch (err) {
+            console.warn('Geolocation error:', err);
+            // Fallback
+            setSelectedState('Maharashtra');
+            setSearchInput('Maharashtra');
+        } finally {
+            setGeoLoading(false);
+        }
+    }, []);
+
+    /* ── Close suggestions on outside click ───────────────────────── */
+    useEffect(() => {
+        function handleClick(e: MouseEvent) {
+            if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node)
+                && inputRef.current && !inputRef.current.contains(e.target as Node)) {
+                setShowSuggestions(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
+
     return (
-        <div className="px-6">
+        <div className="px-4 sm:px-6">
             <div className="mx-auto max-w-[1280px]">
                 <div className="py-6">
                     <Link
@@ -55,121 +262,236 @@ export default function NearbyMandisPage() {
                         Back to Crops
                     </Link>
                 </div>
+
                 {/* Page Header */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Nearby Mandis</h1>
-                    <p className="text-gray-500">Find agricultural markets near your location.</p>
+                <div className="mb-6">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1">Nearby Mandis</h1>
+                    <p className="text-gray-500 text-sm">Live APMC market data from data.gov.in</p>
                 </div>
 
-                {/* Location Search */}
-                <div className="flex flex-wrap items-center gap-4 mb-8">
-                    <div className="relative flex-1 min-w-[250px]">
-                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">location_on</span>
+                {/* ── Location Search ──────────────────────────────── */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
+                    <div className="relative flex-1 min-w-0">
+                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">location_on</span>
                         <input
+                            ref={inputRef}
                             type="text"
-                            placeholder="Enter your location..."
-                            value={searchLocation}
-                            onChange={(e) => setSearchLocation(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                            placeholder="Search state, district, city..."
+                            value={searchInput}
+                            onChange={(e) => { setSearchInput(e.target.value); setShowSuggestions(true); }}
+                            onFocus={() => searchInput.length >= 2 && setShowSuggestions(true)}
+                            className="w-full pl-12 pr-4 py-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
                         />
+                        {/* Suggestions dropdown */}
+                        {showSuggestions && suggestions.length > 0 && (
+                            <div ref={suggestionsRef} className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 max-h-72 overflow-y-auto">
+                                {suggestions.map((s, i) => (
+                                    <button
+                                        key={`${s.state}-${s.district}-${i}`}
+                                        onClick={() => handleSelectSuggestion(s)}
+                                        className="w-full text-left px-4 py-3 hover:bg-green-50 dark:hover:bg-gray-700 flex items-center gap-3 border-b border-gray-50 dark:border-gray-750 last:border-0 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-lg text-gray-400">
+                                            {s.type === 'state' ? 'map' : 'location_on'}
+                                        </span>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{s.label}</p>
+                                            <p className="text-[10px] text-gray-400 uppercase tracking-wider">{s.type === 'state' ? 'State' : 'Place'}</p>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
-                    <button className="px-6 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors flex items-center gap-2">
-                        <span className="material-symbols-outlined">my_location</span>
-                        Use Current Location
+                    <button
+                        onClick={handleUseCurrentLocation}
+                        disabled={geoLoading}
+                        className="px-5 py-3 rounded-xl bg-[var(--miraitu-primary-green)] text-white font-semibold hover:opacity-90 transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-60 whitespace-nowrap"
+                    >
+                        {geoLoading ? (
+                            <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
+                        ) : (
+                            <span className="material-symbols-outlined text-lg">my_location</span>
+                        )}
+                        {geoLoading ? 'Detecting...' : 'Current Location'}
                     </button>
+                </div>
+
+                {/* ── Active Filters ──────────────────────────────── */}
+                <div className="flex flex-wrap items-center gap-3 mb-6">
+                    <div className="flex items-center gap-2 text-sm">
+                        <span className="text-gray-500">State:</span>
+                        <span className="px-3 py-1 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 font-bold text-xs">
+                            {selectedState || 'All India'}
+                        </span>
+                    </div>
+
+                    {/* District filter */}
+                    {availableDistricts.length > 0 && (
+                        <select
+                            value={selectedDistrict}
+                            onChange={(e) => setSelectedDistrict(e.target.value)}
+                            className="px-3 py-1.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-medium outline-none focus:border-green-500"
+                        >
+                            <option value="">All Districts ({availableDistricts.length})</option>
+                            {availableDistricts.map(d => <option key={d} value={d}>{d}</option>)}
+                        </select>
+                    )}
+
                     <select
                         value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        className="px-4 py-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium"
+                        onChange={(e) => setSortBy(e.target.value as 'commodities' | 'name')}
+                        className="px-3 py-1.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-medium outline-none focus:border-green-500"
                     >
-                        <option value="distance">Sort by Distance</option>
-                        <option value="rating">Sort by Rating</option>
+                        <option value="commodities">Most Active</option>
+                        <option value="name">A → Z</option>
                     </select>
+
+                    {source && (
+                        <span className="ml-auto text-[10px] text-gray-400 font-mono">
+                            src: {source}
+                        </span>
+                    )}
                 </div>
 
-                {/* Results */}
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                    Showing <span className="font-semibold text-gray-900 dark:text-white">{sortedMandis.length}</span> mandis near {searchLocation}
+                {/* ── Results count ───────────────────────────────── */}
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                    {loading ? 'Loading mandis...' : (
+                        <>
+                            Showing <span className="font-bold text-gray-900 dark:text-white">{mandis.length}</span> mandis
+                            {selectedDistrict ? ` in ${selectedDistrict}` : ''} · {selectedState}
+                            {' '}({liveData.length} commodity records)
+                        </>
+                    )}
                 </p>
 
-                {/* Mandi Cards */}
-                <div className="grid md:grid-cols-2 gap-6 mb-8">
-                    {sortedMandis.map((mandi) => (
-                        <div
-                            key={mandi.id}
-                            className="p-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all"
-                        >
-                            <div className="flex items-start justify-between mb-4">
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{mandi.name}</h3>
-                                    <p className="text-sm text-gray-500 flex items-center gap-1">
-                                        <span className="material-symbols-outlined text-lg">location_on</span>
-                                        {mandi.address}
-                                    </p>
+                {/* ── Loading State ───────────────────────────────── */}
+                {loading && (
+                    <div className="grid md:grid-cols-2 gap-5 mb-8">
+                        {[1, 2, 3, 4, 5, 6].map(i => (
+                            <div key={i} className="p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 animate-pulse">
+                                <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded-lg w-2/3 mb-3" />
+                                <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded w-1/2 mb-4" />
+                                <div className="flex gap-2 mb-4">
+                                    {[1, 2, 3].map(j => <div key={j} className="h-7 bg-gray-100 dark:bg-gray-700 rounded-full w-24" />)}
                                 </div>
-                                <div className="px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-sm">
-                                    {mandi.distance}
-                                </div>
+                                <div className="h-9 bg-gray-100 dark:bg-gray-700 rounded-xl" />
                             </div>
+                        ))}
+                    </div>
+                )}
 
-                            <div className="flex items-center gap-6 mb-4 text-sm">
-                                <div className="flex items-center gap-1 text-gray-600 dark:text-gray-300">
-                                    <span className="material-symbols-outlined text-lg text-gray-400">schedule</span>
-                                    {mandi.timings}
-                                </div>
-                                <div className="flex items-center gap-1 text-amber-500">
-                                    <span className="material-symbols-outlined text-lg">star</span>
-                                    <span className="font-semibold">{mandi.rating}</span>
-                                </div>
-                            </div>
+                {/* ── Error State ─────────────────────────────────── */}
+                {!loading && error && (
+                    <div className="bg-red-50 dark:bg-red-900/20 rounded-2xl p-8 text-center mb-8 border border-red-100 dark:border-red-800">
+                        <span className="material-symbols-outlined text-4xl text-red-400 mb-2">error</span>
+                        <p className="text-red-600 dark:text-red-400 font-medium mb-3">
+                            {error === 'NO_API_KEY' ? 'API key not configured' : 'Failed to load mandi data'}
+                        </p>
+                        <button onClick={refetch} className="px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700">
+                            Retry
+                        </button>
+                    </div>
+                )}
 
-                            <div className="mb-4">
-                                <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Main Commodities</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {(() => {
-                                        const live = marketPrices[mandi.market.toLowerCase()];
-                                        if (live && live.length > 0) {
-                                            return live.map((c) => (
-                                                <span
-                                                    key={c.commodity}
-                                                    className="px-3 py-1 rounded-full bg-green-50 dark:bg-green-900/20 text-sm text-green-700 dark:text-green-300 font-medium"
-                                                >
-                                                    {c.commodity} <span className="text-xs opacity-75">{c.price}</span>
-                                                </span>
-                                            ));
-                                        }
-                                        return mandi.commodities.map((commodity) => (
+                {/* ── Empty State ─────────────────────────────────── */}
+                {!loading && !error && mandis.length === 0 && (
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-12 text-center mb-8 border border-gray-100 dark:border-gray-700">
+                        <span className="material-symbols-outlined text-6xl text-gray-300 mb-3">storefront</span>
+                        <p className="text-gray-500 font-medium mb-2">No mandis found</p>
+                        <p className="text-gray-400 text-sm">
+                            {selectedDistrict
+                                ? `Try removing the district filter or search for a different location`
+                                : `Try searching for a different state`}
+                        </p>
+                    </div>
+                )}
+
+                {/* ── Mandi Cards ─────────────────────────────────── */}
+                {!loading && mandis.length > 0 && (
+                    <div className="grid md:grid-cols-2 gap-5 mb-8">
+                        {mandis.map((mandi) => (
+                            <div
+                                key={`${mandi.market}-${mandi.district}`}
+                                className="p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:border-green-200 dark:hover:border-green-700 transition-all group"
+                            >
+                                {/* Header */}
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="size-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
+                                            <span className="material-symbols-outlined text-xl text-green-600 dark:text-green-400">storefront</span>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
+                                                {mandi.market}
+                                            </h3>
+                                            <p className="text-xs text-gray-500 flex items-center gap-1">
+                                                <span className="material-symbols-outlined text-sm">location_on</span>
+                                                {mandi.district}, {selectedState}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span className="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-[10px] font-bold">
+                                        {mandi.totalCommodities} items
+                                    </span>
+                                </div>
+
+                                {/* Live Commodity Prices */}
+                                <div className="mb-4">
+                                    <p className="text-[10px] text-gray-400 uppercase tracking-wider font-bold mb-2">Today&apos;s Prices</p>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {mandi.commodities.map((c, i) => (
                                             <span
-                                                key={commodity}
-                                                className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-sm text-gray-600 dark:text-gray-300"
+                                                key={`${c.commodity}-${i}`}
+                                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-green-50 dark:bg-green-900/20 text-xs font-medium"
                                             >
-                                                {commodity}
+                                                <span>{getCropEmoji(c.commodity)}</span>
+                                                <span className="text-gray-700 dark:text-gray-300">{c.commodity}</span>
+                                                <span className="text-green-600 dark:text-green-400 font-bold">{formatPrice(c.modalPrice)}</span>
                                             </span>
-                                        ));
-                                    })()}
+                                        ))}
+                                        {mandi.totalCommodities > 6 && (
+                                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-[10px] font-bold text-gray-500">
+                                                +{mandi.totalCommodities - 6} more
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
-                                {liveLoading && <div className="h-2 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mt-2" />}
-                            </div>
 
-                            <div className="flex gap-3">
-                                <button className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-2">
-                                    <span className="material-symbols-outlined text-lg">directions</span>
-                                    Get Directions
-                                </button>
-                                <button className="px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
-                                    <span className="material-symbols-outlined text-lg">call</span>
-                                    Contact
-                                </button>
+                                {/* Actions */}
+                                <div className="flex gap-2">
+                                    <Link
+                                        href={`/home/crops/mandi/prices?state=${encodeURIComponent(selectedState)}&market=${encodeURIComponent(mandi.market)}`}
+                                        className="flex-1 px-4 py-2.5 rounded-xl bg-[var(--miraitu-primary-green)] text-white font-semibold hover:opacity-90 transition-all flex items-center justify-center gap-2 text-sm"
+                                    >
+                                        <span className="material-symbols-outlined text-lg">monitoring</span>
+                                        View All Prices
+                                    </Link>
+                                    <a
+                                        href={`https://www.google.com/maps/search/${encodeURIComponent(mandi.market + ' APMC ' + mandi.district)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2 text-sm"
+                                    >
+                                        <span className="material-symbols-outlined text-lg">directions</span>
+                                    </a>
+                                </div>
                             </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* ── Info Footer ─────────────────────────────────── */}
+                <div className="rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 p-5 mb-8">
+                    <div className="flex items-start gap-3">
+                        <span className="material-symbols-outlined text-blue-500 text-xl mt-0.5">info</span>
+                        <div>
+                            <p className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-1">About Mandi Data</p>
+                            <p className="text-xs text-blue-600 dark:text-blue-400 leading-relaxed">
+                                Live market prices are sourced from <strong>data.gov.in</strong> (Government of India Open Data Platform).
+                                Prices update daily as APMC markets report their transactions. Prices shown are modal (most traded) prices per quintal.
+                            </p>
                         </div>
-                    ))}
-                </div>
-
-                {/* Map Placeholder */}
-                <div className="rounded-2xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 h-80 flex items-center justify-center">
-                    <div className="text-center">
-                        <span className="material-symbols-outlined text-6xl text-gray-400 mb-3">map</span>
-                        <p className="text-gray-500">Interactive map coming soon</p>
                     </div>
                 </div>
             </div>

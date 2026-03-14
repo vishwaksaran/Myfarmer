@@ -259,6 +259,24 @@ export async function fetchAllUsers(): Promise<{ data: UserRecord[]; error?: str
             return { data: [], error: error.message };
         }
 
+        // Merge email from auth.users (SSO users have email there)
+        try {
+            const { data: authData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+            if (authData?.users) {
+                const emailMap = new Map<string, string>();
+                for (const u of authData.users) {
+                    if (u.email) emailMap.set(u.id, u.email);
+                }
+                const merged = (data as UserRecord[]).map(profile => ({
+                    ...profile,
+                    email: emailMap.get(profile.id) || profile.email || undefined,
+                }));
+                return { data: merged };
+            }
+        } catch (authErr) {
+            console.warn('[fetchAllUsers] Could not fetch auth emails:', authErr);
+        }
+
         return { data: data as UserRecord[] };
     } catch (err) {
         console.error('[fetchAllUsers] Unexpected error:', err);
@@ -283,7 +301,18 @@ export async function fetchUserById(userId: string): Promise<{ data: UserRecord 
             return { data: null, error: error.message };
         }
 
-        return { data: data as UserRecord };
+        // Merge email from auth.users if not in profile yet
+        const profile = data as UserRecord;
+        if (!profile.email) {
+            try {
+                const { data: authData } = await supabase.auth.admin.getUserById(userId);
+                if (authData?.user?.email) {
+                    profile.email = authData.user.email;
+                }
+            } catch { /* auth lookup optional */ }
+        }
+
+        return { data: profile };
     } catch (err) {
         console.error('[fetchUserById] Unexpected error:', err);
         return { data: null, error: 'Failed to fetch user' };

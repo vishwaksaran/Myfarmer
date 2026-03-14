@@ -12,7 +12,7 @@ import { LangCode } from '@/i18n/translations';
  * UserLoginPage - Login page with Google SSO and Phone Auth
  */
 export default function UserLoginPage() {
-    const { user, loading, signInWithGoogle, signInWithPhone, verifyOtp, loginAsGuest, checkOnboardingStatus } = useAuth();
+    const { user, loading, signInWithGoogle, signInWithPhone, loginAsGuest } = useAuth();
     const { lang, setLang, t } = useLanguage();
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
@@ -107,14 +107,32 @@ export default function UserLoginPage() {
         setIsSigningIn(true);
         try {
             const formattedPhone = `+91${phoneNumber}`;
-            const result = await verifyOtp(formattedPhone, otpToVerify);
-            if (result.error) {
-                setError(result.error);
+
+            // Call verify-otp API directly to get onboarding status from server
+            const response = await fetch('/api/auth/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: formattedPhone, otp: otpToVerify }),
+            });
+            const data = await response.json();
+
+            if (!response.ok || data.error) {
+                setError(data.error || 'Failed to verify OTP');
                 setOtp('');
             } else {
+                // Set Supabase session
+                if (data.session) {
+                    const { default: supabase } = await import('@/lib/supabase');
+                    await supabase.auth.setSession({
+                        access_token: data.session.access_token,
+                        refresh_token: data.session.refresh_token,
+                    });
+                }
+
                 setSuccessMessage('✅ Login successful! Redirecting...');
-                // Check if onboarding is needed
-                const onboarded = await checkOnboardingStatus();
+
+                // Use server-side onboarding check (not AuthContext which may have stale user)
+                const onboarded = data.onboarding_completed === true;
                 setTimeout(() => router.push(onboarded ? '/' : '/onboarding'), 1500);
             }
         } catch {
