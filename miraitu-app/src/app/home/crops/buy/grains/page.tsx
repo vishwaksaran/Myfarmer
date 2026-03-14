@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useMandiPrices } from '@/lib/useMandiPrices';
+import { formatPrice } from '@/lib/mandi-api';
 
 const grainListings = [
     { id: 1, crop: 'Wheat', variety: 'Sharbati MP', quantity: '50 Quintals', price: '₹2,450/qtl', location: 'Indore, MP', seller: 'Ramesh Patel', rating: 4.5, image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&h=200&fit=crop', verified: true },
@@ -15,6 +17,27 @@ const grainListings = [
 export default function BuyGrainsPage() {
     const [selectedCrop, setSelectedCrop] = useState('All');
     const [priceRange, setPriceRange] = useState('All');
+
+    // Fetch live prices for grain commodities
+    const { data: liveData } = useMandiPrices({ limit: 50 });
+
+    // Build commodity → latest modal price map
+    const livePriceMap = useMemo(() => {
+        const map: Record<string, number> = {};
+        for (const r of liveData) {
+            if (!map[r.commodity]) map[r.commodity] = r.modalPrice;
+        }
+        return map;
+    }, [liveData]);
+
+    // Enrich listings with live prices where available
+    const enrichedListings = grainListings.map(listing => {
+        const livePrice = livePriceMap[listing.crop];
+        return {
+            ...listing,
+            price: livePrice ? formatPrice(livePrice) : listing.price,
+        };
+    });
 
     return (
         <div className="px-6">
@@ -85,12 +108,12 @@ export default function BuyGrainsPage() {
 
                 {/* Results */}
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
-                    Showing <span className="font-semibold text-gray-900 dark:text-white">{grainListings.length}</span> listings
+                    Showing <span className="font-semibold text-gray-900 dark:text-white">{enrichedListings.length}</span> listings
                 </p>
 
                 {/* Listings Grid */}
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                    {grainListings.map((listing) => (
+                    {enrichedListings.map((listing) => (
                         <div
                             key={listing.id}
                             className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all group"

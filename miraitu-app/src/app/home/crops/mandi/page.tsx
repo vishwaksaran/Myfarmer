@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useMandiPrices } from '@/lib/useMandiPrices';
 
 export default function MandiPage() {
     const mandiOptions = [
@@ -8,7 +9,7 @@ export default function MandiPage() {
             title: 'Live Prices',
             description: 'Real-time commodity prices from agricultural markets across India',
             icon: 'trending_up',
-            href: '/home/crops/mandi',
+            href: '/home/crops/mandi/prices',
             color: 'bg-green-500',
         },
         {
@@ -22,10 +23,25 @@ export default function MandiPage() {
             title: 'Price Trends',
             description: 'Analyze historical price trends for better selling decisions',
             icon: 'analytics',
-            href: '/home/crops/mandi',
+            href: '/home/crops/mandi/trends',
             color: 'bg-green-700',
         },
     ];
+
+    // Fetch a small batch to compute summary stats
+    const { data, total, loading, error } = useMandiPrices({ limit: 50 });
+
+    // Compute live stats
+    const uniqueMarkets = new Set(data.map(r => `${r.market}-${r.district}`)).size;
+    const uniqueCommodities = new Set(data.map(r => r.commodity)).size;
+    const avgChange = data.length > 0
+        ? +(data.reduce((s, r) => {
+            const mid = (r.minPrice + r.maxPrice) / 2;
+            return s + (mid ? ((r.maxPrice - r.minPrice) / mid * 50) : 0);
+        }, 0) / data.length).toFixed(1)
+        : 0;
+
+    const useFallback = (error || data.length === 0) && !loading;
 
     return (
         <div className="px-6 py-8">
@@ -70,25 +86,44 @@ export default function MandiPage() {
 
                 {/* Quick Stats - Green theme */}
                 <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-3xl p-8 text-white shadow-xl shadow-green-500/20">
-                    <h2 className="text-2xl font-bold mb-6">Today's Market Summary</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        <div>
-                            <p className="text-white/70 text-sm">Markets Reporting</p>
-                            <p className="text-3xl font-bold">2,456</p>
-                        </div>
-                        <div>
-                            <p className="text-white/70 text-sm">Commodities Tracked</p>
-                            <p className="text-3xl font-bold">156</p>
-                        </div>
-                        <div>
-                            <p className="text-white/70 text-sm">Total Arrivals</p>
-                            <p className="text-3xl font-bold">45.2K qtl</p>
-                        </div>
-                        <div>
-                            <p className="text-white/70 text-sm">Avg. Price Change</p>
-                            <p className="text-3xl font-bold">+1.2%</p>
-                        </div>
+                    <div className="flex items-center gap-3 mb-6">
+                        <h2 className="text-2xl font-bold">Today&apos;s Market Summary</h2>
+                        {!useFallback && !loading && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/20 text-white text-xs font-bold">
+                                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                                LIVE
+                            </span>
+                        )}
                     </div>
+                    {loading ? (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            {[...Array(4)].map((_, i) => (
+                                <div key={i} className="animate-pulse">
+                                    <div className="h-3 w-24 bg-white/30 rounded mb-2" />
+                                    <div className="h-8 w-16 bg-white/30 rounded" />
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            <div>
+                                <p className="text-white/70 text-sm">Markets Reporting</p>
+                                <p className="text-3xl font-bold">{useFallback ? '2,456' : uniqueMarkets.toLocaleString('en-IN')}</p>
+                            </div>
+                            <div>
+                                <p className="text-white/70 text-sm">Commodities Tracked</p>
+                                <p className="text-3xl font-bold">{useFallback ? '156' : uniqueCommodities}</p>
+                            </div>
+                            <div>
+                                <p className="text-white/70 text-sm">Total Records</p>
+                                <p className="text-3xl font-bold">{useFallback ? '45.2K' : total > 1000 ? `${(total / 1000).toFixed(1)}K` : total}</p>
+                            </div>
+                            <div>
+                                <p className="text-white/70 text-sm">Avg. Price Spread</p>
+                                <p className="text-3xl font-bold">{useFallback ? '+1.2%' : `${avgChange >= 0 ? '+' : ''}${avgChange}%`}</p>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

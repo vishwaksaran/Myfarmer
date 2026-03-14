@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useMandiPrices } from '@/lib/useMandiPrices';
+import { getMSP, getCropEmoji, spreadPercent } from '@/lib/mandi-api';
 
 interface CropPrice {
     crop: string;
@@ -9,83 +11,20 @@ interface CropPrice {
     msp: number;
     mandi: number;
     unit: string;
-    change: number; // % change from yesterday
+    change: number;
     markets: { name: string; price: number; trend: 'up' | 'down' | 'stable' }[];
 }
 
-const cropPrices: CropPrice[] = [
-    {
-        crop: 'Wheat', icon: '🌾', msp: 2275, mandi: 2350, unit: 'quintal', change: 1.2,
-        markets: [
-            { name: 'Indore Mandi', price: 2380, trend: 'up' },
-            { name: 'Delhi APMC', price: 2350, trend: 'stable' },
-            { name: 'Ludhiana', price: 2310, trend: 'down' },
-            { name: 'Bhopal', price: 2340, trend: 'up' },
-        ],
-    },
-    {
-        crop: 'Rice (Paddy)', icon: '🍚', msp: 2300, mandi: 2180, unit: 'quintal', change: -0.5,
-        markets: [
-            { name: 'Karnal', price: 2200, trend: 'up' },
-            { name: 'Cuttack', price: 2150, trend: 'stable' },
-            { name: 'Guntur', price: 2180, trend: 'down' },
-            { name: 'Patna', price: 2160, trend: 'stable' },
-        ],
-    },
-    {
-        crop: 'Soybean', icon: '🫘', msp: 4600, mandi: 4850, unit: 'quintal', change: 2.3,
-        markets: [
-            { name: 'Indore', price: 4900, trend: 'up' },
-            { name: 'Nagpur', price: 4800, trend: 'up' },
-            { name: 'Kota', price: 4780, trend: 'stable' },
-            { name: 'Ujjain', price: 4820, trend: 'up' },
-        ],
-    },
-    {
-        crop: 'Cotton', icon: '🏵️', msp: 7121, mandi: 7350, unit: 'quintal', change: 0.8,
-        markets: [
-            { name: 'Rajkot', price: 7400, trend: 'up' },
-            { name: 'Nagpur', price: 7300, trend: 'stable' },
-            { name: 'Guntur', price: 7280, trend: 'down' },
-            { name: 'Surendranagar', price: 7350, trend: 'up' },
-        ],
-    },
-    {
-        crop: 'Mustard', icon: '🌼', msp: 5650, mandi: 5800, unit: 'quintal', change: 1.5,
-        markets: [
-            { name: 'Alwar', price: 5850, trend: 'up' },
-            { name: 'Jaipur', price: 5780, trend: 'stable' },
-            { name: 'Kota', price: 5750, trend: 'down' },
-            { name: 'Bharatpur', price: 5820, trend: 'up' },
-        ],
-    },
-    {
-        crop: 'Onion', icon: '🧅', msp: 0, mandi: 1800, unit: 'quintal', change: -3.2,
-        markets: [
-            { name: 'Nashik (Lasalgaon)', price: 1850, trend: 'down' },
-            { name: 'Delhi Azadpur', price: 1900, trend: 'down' },
-            { name: 'Bengaluru', price: 1750, trend: 'stable' },
-            { name: 'Indore', price: 1680, trend: 'down' },
-        ],
-    },
-    {
-        crop: 'Tomato', icon: '🍅', msp: 0, mandi: 2200, unit: 'quintal', change: 5.1,
-        markets: [
-            { name: 'Kolar', price: 2300, trend: 'up' },
-            { name: 'Nashik', price: 2150, trend: 'up' },
-            { name: 'Madanapalle', price: 2250, trend: 'up' },
-            { name: 'Delhi Azadpur', price: 2100, trend: 'stable' },
-        ],
-    },
-    {
-        crop: 'Chana (Gram)', icon: '🫛', msp: 5440, mandi: 5600, unit: 'quintal', change: 0.3,
-        markets: [
-            { name: 'Indore', price: 5650, trend: 'stable' },
-            { name: 'Bikaner', price: 5580, trend: 'up' },
-            { name: 'Jalgaon', price: 5550, trend: 'stable' },
-            { name: 'Gulbarga', price: 5520, trend: 'down' },
-        ],
-    },
+/* ── Fallback data ──────────────────────────────────────────── */
+const fallbackPrices: CropPrice[] = [
+    { crop: 'Wheat', icon: '🌾', msp: 2275, mandi: 2350, unit: 'quintal', change: 1.2, markets: [{ name: 'Indore Mandi', price: 2380, trend: 'up' }, { name: 'Delhi APMC', price: 2350, trend: 'stable' }, { name: 'Ludhiana', price: 2310, trend: 'down' }, { name: 'Bhopal', price: 2340, trend: 'up' }] },
+    { crop: 'Rice (Paddy)', icon: '🍚', msp: 2300, mandi: 2180, unit: 'quintal', change: -0.5, markets: [{ name: 'Karnal', price: 2200, trend: 'up' }, { name: 'Cuttack', price: 2150, trend: 'stable' }, { name: 'Guntur', price: 2180, trend: 'down' }, { name: 'Patna', price: 2160, trend: 'stable' }] },
+    { crop: 'Soybean', icon: '🫘', msp: 4600, mandi: 4850, unit: 'quintal', change: 2.3, markets: [{ name: 'Indore', price: 4900, trend: 'up' }, { name: 'Nagpur', price: 4800, trend: 'up' }, { name: 'Kota', price: 4780, trend: 'stable' }, { name: 'Ujjain', price: 4820, trend: 'up' }] },
+    { crop: 'Cotton', icon: '🏵️', msp: 7121, mandi: 7350, unit: 'quintal', change: 0.8, markets: [{ name: 'Rajkot', price: 7400, trend: 'up' }, { name: 'Nagpur', price: 7300, trend: 'stable' }, { name: 'Guntur', price: 7280, trend: 'down' }, { name: 'Surendranagar', price: 7350, trend: 'up' }] },
+    { crop: 'Mustard', icon: '🌼', msp: 5650, mandi: 5800, unit: 'quintal', change: 1.5, markets: [{ name: 'Alwar', price: 5850, trend: 'up' }, { name: 'Jaipur', price: 5780, trend: 'stable' }, { name: 'Kota', price: 5750, trend: 'down' }, { name: 'Bharatpur', price: 5820, trend: 'up' }] },
+    { crop: 'Onion', icon: '🧅', msp: 0, mandi: 1800, unit: 'quintal', change: -3.2, markets: [{ name: 'Nashik (Lasalgaon)', price: 1850, trend: 'down' }, { name: 'Delhi Azadpur', price: 1900, trend: 'down' }, { name: 'Bengaluru', price: 1750, trend: 'stable' }, { name: 'Indore', price: 1680, trend: 'down' }] },
+    { crop: 'Tomato', icon: '🍅', msp: 0, mandi: 2200, unit: 'quintal', change: 5.1, markets: [{ name: 'Kolar', price: 2300, trend: 'up' }, { name: 'Nashik', price: 2150, trend: 'up' }, { name: 'Madanapalle', price: 2250, trend: 'up' }, { name: 'Delhi Azadpur', price: 2100, trend: 'stable' }] },
+    { crop: 'Chana (Gram)', icon: '🫛', msp: 5440, mandi: 5600, unit: 'quintal', change: 0.3, markets: [{ name: 'Indore', price: 5650, trend: 'stable' }, { name: 'Bikaner', price: 5580, trend: 'up' }, { name: 'Jalgaon', price: 5550, trend: 'stable' }, { name: 'Gulbarga', price: 5520, trend: 'down' }] },
 ];
 
 type SortBy = 'name' | 'price' | 'change';
@@ -94,6 +33,46 @@ export default function MarketRatesPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCrop, setSelectedCrop] = useState<CropPrice | null>(null);
     const [sortBy, setSortBy] = useState<SortBy>('name');
+
+    // Fetch broad set of records — 200 across all India
+    const { data: rawData, loading, error } = useMandiPrices({ limit: 200 });
+
+    // Transform live data → CropPrice[] grouped by commodity
+    const liveCrops = useMemo<CropPrice[]>(() => {
+        if (rawData.length === 0) return [];
+
+        const grouped: Record<string, typeof rawData> = {};
+        for (const r of rawData) {
+            if (!grouped[r.commodity]) grouped[r.commodity] = [];
+            grouped[r.commodity].push(r);
+        }
+
+        return Object.entries(grouped).map(([commodity, records]) => {
+            const avgModal = Math.round(records.reduce((s, r) => s + r.modalPrice, 0) / records.length);
+            const pct = spreadPercent(
+                Math.min(...records.map(r => r.minPrice)),
+                Math.max(...records.map(r => r.maxPrice)),
+            );
+            const markets = records.slice(0, 4).map(r => ({
+                name: `${r.market}, ${r.district}`,
+                price: r.modalPrice,
+                trend: (r.modalPrice > avgModal ? 'up' : r.modalPrice < avgModal ? 'down' : 'stable') as 'up' | 'down' | 'stable',
+            }));
+
+            return {
+                crop: commodity,
+                icon: getCropEmoji(commodity),
+                msp: getMSP(commodity),
+                mandi: avgModal,
+                unit: 'quintal',
+                change: pct,
+                markets,
+            };
+        });
+    }, [rawData]);
+
+    const useFallback = (error || liveCrops.length === 0) && !loading;
+    const cropPrices = useFallback ? fallbackPrices : liveCrops;
 
     let filtered = cropPrices.filter(c =>
         c.crop.toLowerCase().includes(searchTerm.toLowerCase())
@@ -128,8 +107,18 @@ export default function MarketRatesPage() {
                                 <span className="material-symbols-outlined text-2xl">trending_up</span>
                             </div>
                             <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">Market Rates</h1>
+                            {!useFallback && !loading && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-bold">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                    LIVE
+                                </span>
+                            )}
                         </div>
-                        <p className="text-sm md:text-base text-gray-500">Live mandi prices, MSP comparisons, and market trends for major crops.</p>
+                        <p className="text-sm md:text-base text-gray-500">
+                            {useFallback && !loading
+                                ? 'Sample mandi prices. Add your free data.gov.in API key for real-time data.'
+                                : 'Live mandi prices, MSP comparisons, and market trends for major crops.'}
+                        </p>
                     </div>
 
                     {/* Search & Sort */}
@@ -163,6 +152,22 @@ export default function MarketRatesPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Crop Price Cards */}
                         <div className="lg:col-span-2">
+                          {loading ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {[...Array(6)].map((_, i) => (
+                                    <div key={i} className="skeuo-card rounded-2xl p-5 animate-pulse">
+                                        <div className="flex items-start justify-between mb-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded" />
+                                                <div><div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded mb-1" /><div className="h-3 w-12 bg-gray-200 dark:bg-gray-700 rounded" /></div>
+                                            </div>
+                                            <div className="h-4 w-12 bg-gray-200 dark:bg-gray-700 rounded" />
+                                        </div>
+                                        <div className="h-8 w-28 bg-gray-200 dark:bg-gray-700 rounded" />
+                                    </div>
+                                ))}
+                            </div>
+                          ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {filtered.map(crop => (
                                     <button
@@ -208,13 +213,14 @@ export default function MarketRatesPage() {
                                         )}
                                     </button>
                                 ))}
+                                {filtered.length === 0 && (
+                                    <div className="skeuo-card rounded-2xl p-10 text-center col-span-full">
+                                        <span className="material-symbols-outlined text-4xl text-gray-300 mb-3">search_off</span>
+                                        <p className="font-bold text-gray-500">No crops found matching &quot;{searchTerm}&quot;</p>
+                                    </div>
+                                )}
                             </div>
-                            {filtered.length === 0 && (
-                                <div className="skeuo-card rounded-2xl p-10 text-center">
-                                    <span className="material-symbols-outlined text-4xl text-gray-300 mb-3">search_off</span>
-                                    <p className="font-bold text-gray-500">No crops found matching &quot;{searchTerm}&quot;</p>
-                                </div>
-                            )}
+                          )}
                         </div>
 
                         {/* Detail Panel */}
@@ -271,7 +277,7 @@ export default function MarketRatesPage() {
                     <div className="mt-8 skeuo-card rounded-2xl p-5 border-l-4 border-amber-400">
                         <p className="text-xs text-gray-500 flex items-start gap-2">
                             <span className="material-symbols-outlined text-amber-500 text-sm mt-0.5">info</span>
-                            <span>Prices are sourced from AGMARKNET and various state APMC portals. MSP figures are for Kharif/Rabi 2025-26. Always verify with your local mandi before selling. Miraitu is not responsible for pricing inaccuracies.</span>
+                            <span>Prices are sourced from AGMARKNET via data.gov.in (Government Open Data) and various state APMC portals. MSP figures are for Kharif/Rabi 2025-26. Always verify with your local mandi before selling. Miraitu is not responsible for pricing inaccuracies.</span>
                         </p>
                     </div>
                 </div>

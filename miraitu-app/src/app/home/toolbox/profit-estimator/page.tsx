@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useMandiPrices } from '@/lib/useMandiPrices';
+import { formatPrice } from '@/lib/mandi-api';
 
 interface CostItem {
     id: number;
@@ -62,6 +64,13 @@ const presets: Record<string, { costs: Omit<CostItem, 'id'>[]; yieldQty: string;
     },
 };
 
+/* Map preset keys → API commodity names */
+const PRESET_TO_COMMODITY: Record<string, string> = {
+    wheat: 'Wheat',
+    rice: 'Paddy(Dhan)(Common)',
+    cotton: 'Cotton',
+};
+
 let nextId = 100;
 
 export default function ProfitEstimatorPage() {
@@ -73,13 +82,54 @@ export default function ProfitEstimatorPage() {
         presets.wheat.costs.map((c, i) => ({ ...c, id: i + 1 }))
     );
 
+    /* Fetch live mandi prices for all commodities */
+    const { data: liveData, loading: livePriceLoading } = useMandiPrices({ limit: 100 });
+
+    /* Build commodity → modal price map */
+    const livePriceMap = useMemo(() => {
+        const map: Record<string, number> = {};
+        liveData.forEach(r => {
+            const key = r.commodity.toLowerCase();
+            if (!map[key] || r.modalPrice > map[key]) map[key] = r.modalPrice;
+        });
+        return map;
+    }, [liveData]);
+
+    /* Get live price for a preset key */
+    const getLivePrice = useCallback((presetKey: string): number | null => {
+        const commodity = PRESET_TO_COMMODITY[presetKey];
+        if (!commodity) return null;
+        const key = commodity.toLowerCase();
+        /* exact match first, then startsWith fallback */
+        if (livePriceMap[key]) return livePriceMap[key];
+        for (const [k, v] of Object.entries(livePriceMap)) {
+            if (k.startsWith(presetKey) || k.includes(presetKey)) return v;
+        }
+        return null;
+    }, [livePriceMap]);
+
+    /* Live price for the currently active crop */
+    const activeLivePrice = getLivePrice(cropName.toLowerCase());
+
+    /* Auto-update selling price from live data on first load */
+    const [liveApplied, setLiveApplied] = useState(false);
+    useEffect(() => {
+        if (!liveApplied && liveData.length > 0) {
+            const liveWheat = getLivePrice('wheat');
+            if (liveWheat) setPricePerUnit(String(Math.round(liveWheat)));
+            setLiveApplied(true);
+        }
+    }, [liveData, liveApplied, getLivePrice]);
+
     const loadPreset = (key: string) => {
         const p = presets[key];
         if (!p) return;
         setCropName(key.charAt(0).toUpperCase() + key.slice(1));
         setArea(p.area);
         setYieldQty(p.yieldQty);
-        setPricePerUnit(p.pricePerUnit);
+        /* Use live price if available, otherwise preset default */
+        const live = getLivePrice(key);
+        setPricePerUnit(live ? String(Math.round(live)) : p.pricePerUnit);
         setCosts(p.costs.map((c, i) => ({ ...c, id: i + 1 })));
     };
 
@@ -184,6 +234,17 @@ export default function ProfitEstimatorPage() {
                                     <div>
                                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Selling ₹/Qtl</label>
                                         <input type="number" value={pricePerUnit} onChange={e => setPricePerUnit(e.target.value)} className="skeuo-inset rounded-xl px-4 py-3 w-full text-sm font-bold" />
+                                        {livePriceLoading && <p className="text-[10px] text-gray-400 mt-1 animate-pulse">Fetching live rate…</p>}
+                                        {!livePriceLoading && activeLivePrice && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setPricePerUnit(String(Math.round(activeLivePrice)))}
+                                                className="text-[10px] text-primary font-bold mt-1 hover:underline flex items-center gap-0.5"
+                                            >
+                                                <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                                                Live mandi: {formatPrice(activeLivePrice)}/qtl — use this
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>

@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-
 import NearbyLocation from '@/components/v2/NearbyLocation';
+import { useMandiPrices } from '@/lib/useMandiPrices';
+import { formatPrice, getCropIcon, spreadPercent } from '@/lib/mandi-api';
 
-const marketHighlights = [
+/* ── Fallback data (shown when API key is missing or API fails) ─── */
+const fallbackHighlights = [
     { crop: 'Wheat', price: '₹2,450/qtl', change: '+2.3%', trend: 'up' },
     { crop: 'Rice (Basmati)', price: '₹3,850/qtl', change: '+1.8%', trend: 'up' },
     { crop: 'Soybean', price: '₹4,200/qtl', change: '-0.5%', trend: 'down' },
@@ -14,7 +16,7 @@ const marketHighlights = [
     { crop: 'Groundnut', price: '₹5,800/qtl', change: '-1.2%', trend: 'down' },
 ];
 
-const popularCrops = [
+const fallbackPopular = [
     { name: 'Wheat', icon: 'grain', listings: 245, avgPrice: '₹2,450/qtl' },
     { name: 'Rice', icon: 'rice_bowl', listings: 312, avgPrice: '₹3,200/qtl' },
     { name: 'Tomato', icon: 'eco', listings: 189, avgPrice: '₹45/kg' },
@@ -32,6 +34,39 @@ const quickActions = [
 
 export default function CropsPage() {
     const [selectedRegion, setSelectedRegion] = useState('Maharashtra');
+
+    // Fetch market highlights — top 50 records for selected state, grouped by commodity
+    const { data: rawData, loading, error } = useMandiPrices({ state: selectedRegion, limit: 50 });
+
+    // Group by commodity → pick latest / most-reported for each
+    const grouped = rawData.reduce((acc, r) => {
+        if (!acc[r.commodity]) acc[r.commodity] = [];
+        acc[r.commodity].push(r);
+        return acc;
+    }, {} as Record<string, typeof rawData>);
+
+    const liveHighlights = Object.entries(grouped).slice(0, 6).map(([commodity, records]) => {
+        const latest = records[0];
+        const pct = spreadPercent(latest.minPrice, latest.maxPrice);
+        const trend = pct >= 0 ? 'up' : 'down';
+        return {
+            crop: commodity,
+            price: formatPrice(latest.modalPrice),
+            change: `${pct >= 0 ? '+' : ''}${pct}%`,
+            trend,
+        };
+    });
+
+    const livePopular = Object.entries(grouped).slice(0, 6).map(([commodity, records]) => ({
+        name: commodity,
+        icon: getCropIcon(commodity),
+        listings: records.length,
+        avgPrice: formatPrice(Math.round(records.reduce((s, r) => s + r.modalPrice, 0) / records.length)),
+    }));
+
+    const useFallback = error || liveHighlights.length === 0;
+    const highlights = useFallback && !loading ? fallbackHighlights : liveHighlights;
+    const popular = useFallback && !loading ? fallbackPopular : livePopular;
 
     return (
         <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-[#121811] dark:text-[#f9fbf9] transition-colors duration-300">
@@ -72,7 +107,18 @@ export default function CropsPage() {
                     {/* Market Highlights */}
                     <div className="mb-10">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Market Highlights</h2>
+                            <div className="flex items-center gap-3">
+                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Market Highlights</h2>
+                                {!useFallback && !loading && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-bold">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                        LIVE
+                                    </span>
+                                )}
+                                {useFallback && !loading && (
+                                    <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">Sample data</span>
+                                )}
+                            </div>
                             <select
                                 value={selectedRegion}
                                 onChange={(e) => setSelectedRegion(e.target.value)}
@@ -83,25 +129,47 @@ export default function CropsPage() {
                                 <option>Madhya Pradesh</option>
                                 <option>Uttar Pradesh</option>
                                 <option>Karnataka</option>
+                                <option>Rajasthan</option>
+                                <option>Gujarat</option>
+                                <option>Haryana</option>
+                                <option>Tamil Nadu</option>
+                                <option>Andhra Pradesh</option>
+                                <option>Telangana</option>
+                                <option>West Bengal</option>
+                                <option>Bihar</option>
+                                <option>Kerala</option>
                             </select>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                            {marketHighlights.map((item) => (
-                                <div
-                                    key={item.crop}
-                                    className="p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
-                                >
-                                    <p className="text-sm text-gray-500 mb-1">{item.crop}</p>
-                                    <p className="text-xl font-bold text-gray-900 dark:text-white">{item.price}</p>
-                                    <p className={`text-sm font-semibold mt-1 flex items-center gap-1 ${item.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-                                        <span className="material-symbols-outlined text-sm">
-                                            {item.trend === 'up' ? 'trending_up' : 'trending_down'}
-                                        </span>
-                                        {item.change}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
+
+                        {loading ? (
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                                {[...Array(6)].map((_, i) => (
+                                    <div key={i} className="p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 animate-pulse">
+                                        <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+                                        <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+                                        <div className="h-3 w-12 bg-gray-200 dark:bg-gray-700 rounded" />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                                {highlights.map((item) => (
+                                    <div
+                                        key={item.crop}
+                                        className="p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                                    >
+                                        <p className="text-sm text-gray-500 mb-1">{item.crop}</p>
+                                        <p className="text-xl font-bold text-gray-900 dark:text-white">{item.price}</p>
+                                        <p className={`text-sm font-semibold mt-1 flex items-center gap-1 ${item.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
+                                            <span className="material-symbols-outlined text-sm">
+                                                {item.trend === 'up' ? 'trending_up' : 'trending_down'}
+                                            </span>
+                                            {item.change}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Popular Crops */}
@@ -112,22 +180,36 @@ export default function CropsPage() {
                                 View All →
                             </Link>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                            {popularCrops.map((crop) => (
-                                <Link
-                                    key={crop.name}
-                                    href={`/home/crops/buy?crop=${crop.name.toLowerCase()}`}
-                                    className="p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all group"
-                                >
-                                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                        <span className="material-symbols-outlined text-primary text-2xl">{crop.icon}</span>
+
+                        {loading ? (
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                                {[...Array(6)].map((_, i) => (
+                                    <div key={i} className="p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 animate-pulse">
+                                        <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-xl mb-3" />
+                                        <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+                                        <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded mb-1" />
+                                        <div className="h-3 w-24 bg-gray-200 dark:bg-gray-700 rounded" />
                                     </div>
-                                    <h3 className="font-bold text-gray-900 dark:text-white">{crop.name}</h3>
-                                    <p className="text-sm text-gray-500">{crop.listings} listings</p>
-                                    <p className="text-sm font-semibold text-primary mt-1">{crop.avgPrice}</p>
-                                </Link>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                                {popular.map((crop) => (
+                                    <Link
+                                        key={crop.name}
+                                        href={`/home/crops/buy?crop=${crop.name.toLowerCase()}`}
+                                        className="p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all group"
+                                    >
+                                        <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                            <span className="material-symbols-outlined text-primary text-2xl">{crop.icon}</span>
+                                        </div>
+                                        <h3 className="font-bold text-gray-900 dark:text-white">{crop.name}</h3>
+                                        <p className="text-sm text-gray-500">{crop.listings} {!useFallback ? 'markets' : 'listings'}</p>
+                                        <p className="text-sm font-semibold text-primary mt-1">{crop.avgPrice}</p>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Call to Action - Green theme */}

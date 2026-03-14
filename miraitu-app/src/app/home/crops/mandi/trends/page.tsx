@@ -1,20 +1,44 @@
 'use client';
 
 import { useState } from 'react';
+import { useMandiPrices } from '@/lib/useMandiPrices';
+import { formatPrice, spreadPercent } from '@/lib/mandi-api';
 
 export default function PriceTrendsPage() {
     const [selectedCrop, setSelectedCrop] = useState('Wheat');
     const [timeRange, setTimeRange] = useState('1M');
 
-    const crops = ['Wheat', 'Rice', 'Soybean', 'Cotton', 'Maize', 'Onion'];
+    const crops = ['Wheat', 'Rice', 'Soyabean', 'Cotton', 'Maize', 'Onion'];
+
+    // Fetch records for selected commodity
+    const { data, loading, error } = useMandiPrices({ commodity: selectedCrop, limit: 50 });
+
+    // Compute stats from live data
+    const modalPrices = data.map(r => r.modalPrice).filter(Boolean);
+    const currentPrice = modalPrices.length > 0 ? modalPrices[0] : 0;
+    const highPrice = modalPrices.length > 0 ? Math.max(...modalPrices) : 0;
+    const lowPrice = modalPrices.length > 0 ? Math.min(...modalPrices) : 0;
+    const avgPct = data.length > 0
+        ? +(data.reduce((s, r) => s + spreadPercent(r.minPrice, r.maxPrice), 0) / data.length).toFixed(1)
+        : 0;
+
+    const useFallback = (error || data.length === 0) && !loading;
 
     return (
         <div className="px-6">
             <div className="mx-auto max-w-[1280px]">
                 {/* Page Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Price Trends</h1>
-                    <p className="text-gray-500">Analyze historical price trends to make informed selling decisions.</p>
+                    <div className="flex items-center gap-3 mb-2">
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Price Trends</h1>
+                        {!useFallback && !loading && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-bold">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                LIVE
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-gray-500">Analyze price data to make informed selling decisions.</p>
                 </div>
 
                 {/* Crop Selection */}
@@ -50,10 +74,11 @@ export default function PriceTrendsPage() {
                         ))}
                     </div>
                     <select className="px-4 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
-                        <option>Indore Mandi</option>
-                        <option>All India Average</option>
-                        <option>Pune Mandi</option>
-                        <option>Delhi Mandi</option>
+                        <option>All India</option>
+                        <option>Maharashtra</option>
+                        <option>Madhya Pradesh</option>
+                        <option>Punjab</option>
+                        <option>Delhi</option>
                     </select>
                 </div>
 
@@ -70,29 +95,49 @@ export default function PriceTrendsPage() {
 
                 {/* Stats Cards */}
                 <div className="grid md:grid-cols-4 gap-4 mb-8">
-                    <div className="p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                        <p className="text-sm text-gray-500 mb-1">Current Price</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">₹2,450/qtl</p>
-                        <p className="text-sm text-green-500 font-medium mt-1 flex items-center gap-1">
-                            <span className="material-symbols-outlined text-sm">trending_up</span>
-                            +2.3% from yesterday
-                        </p>
-                    </div>
-                    <div className="p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                        <p className="text-sm text-gray-500 mb-1">30-Day High</p>
-                        <p className="text-2xl font-bold text-green-500">₹2,580/qtl</p>
-                        <p className="text-sm text-gray-500 mt-1">Feb 15, 2026</p>
-                    </div>
-                    <div className="p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                        <p className="text-sm text-gray-500 mb-1">30-Day Low</p>
-                        <p className="text-2xl font-bold text-red-500">₹2,280/qtl</p>
-                        <p className="text-sm text-gray-500 mt-1">Jan 28, 2026</p>
-                    </div>
-                    <div className="p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                        <p className="text-sm text-gray-500 mb-1">Avg. Change</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">+1.8%</p>
-                        <p className="text-sm text-gray-500 mt-1">Per week average</p>
-                    </div>
+                    {loading ? (
+                        [...Array(4)].map((_, i) => (
+                            <div key={i} className="p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 animate-pulse">
+                                <div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+                                <div className="h-7 w-28 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+                                <div className="h-3 w-24 bg-gray-200 dark:bg-gray-700 rounded" />
+                            </div>
+                        ))
+                    ) : (
+                        <>
+                            <div className="p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                                <p className="text-sm text-gray-500 mb-1">Current Price</p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                                    {useFallback ? '₹2,450/qtl' : formatPrice(currentPrice)}
+                                </p>
+                                <p className="text-sm text-green-500 font-medium mt-1 flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-sm">trending_up</span>
+                                    {useFallback ? '+2.3% from yesterday' : `${avgPct >= 0 ? '+' : ''}${avgPct}% spread`}
+                                </p>
+                            </div>
+                            <div className="p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                                <p className="text-sm text-gray-500 mb-1">Highest Price</p>
+                                <p className="text-2xl font-bold text-green-500">
+                                    {useFallback ? '₹2,580/qtl' : formatPrice(highPrice)}
+                                </p>
+                                <p className="text-sm text-gray-500 mt-1">{useFallback ? 'Feb 15, 2026' : `across ${data.length} records`}</p>
+                            </div>
+                            <div className="p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                                <p className="text-sm text-gray-500 mb-1">Lowest Price</p>
+                                <p className="text-2xl font-bold text-red-500">
+                                    {useFallback ? '₹2,280/qtl' : formatPrice(lowPrice)}
+                                </p>
+                                <p className="text-sm text-gray-500 mt-1">{useFallback ? 'Jan 28, 2026' : `across ${data.length} records`}</p>
+                            </div>
+                            <div className="p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                                <p className="text-sm text-gray-500 mb-1">Avg. Spread</p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                                    {useFallback ? '+1.8%' : `${avgPct >= 0 ? '+' : ''}${avgPct}%`}
+                                </p>
+                                <p className="text-sm text-gray-500 mt-1">Min↔Max variance</p>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* Analysis */}
@@ -104,7 +149,11 @@ export default function PriceTrendsPage() {
                             <p className="text-gray-600 dark:text-gray-300">
                                 Based on historical trends, government procurement, and market demand, <strong>{selectedCrop}</strong> prices
                                 are expected to remain <span className="text-green-500 font-semibold">stable to slightly bullish</span> over
-                                the next 2 weeks. Consider selling if you can get above ₹2,500/qtl.
+                                the next 2 weeks.
+                                {!useFallback && currentPrice > 0 && (
+                                    <> Consider selling if you can get above {formatPrice(Math.round(currentPrice * 1.03))}.</>
+                                )}
+                                {useFallback && <> Consider selling if you can get above ₹2,500/qtl.</>}
                             </p>
                             <button className="mt-4 text-primary font-semibold hover:underline flex items-center gap-1">
                                 View detailed analysis

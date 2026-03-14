@@ -1,20 +1,38 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useMandiPrices } from '@/lib/useMandiPrices';
+import { formatPrice } from '@/lib/mandi-api';
 
 const nearbyMandis = [
-    { id: 1, name: 'Pune APMC Market', distance: '12 km', address: 'Market Yard, Gultekdi, Pune', timings: '6:00 AM - 6:00 PM', commodities: ['Onion', 'Potato', 'Tomato', 'Vegetables'], rating: 4.2 },
-    { id: 2, name: 'Pimpri Chinchwad Mandi', distance: '18 km', address: 'Sector 24, PCMC, Pune', timings: '5:00 AM - 5:00 PM', commodities: ['Grains', 'Pulses', 'Vegetables'], rating: 4.0 },
-    { id: 3, name: 'Nashik APMC', distance: '145 km', address: 'Satpur, Nashik', timings: '6:00 AM - 7:00 PM', commodities: ['Onion', 'Grapes', 'Tomato'], rating: 4.5 },
-    { id: 4, name: 'Solapur Agricultural Market', distance: '230 km', address: 'Market Yard Rd, Solapur', timings: '5:30 AM - 6:00 PM', commodities: ['Jowar', 'Groundnut', 'Cotton'], rating: 3.8 },
-    { id: 5, name: 'Kolhapur Mandi', distance: '210 km', address: 'Shivaji Udyam Nagar, Kolhapur', timings: '6:00 AM - 6:30 PM', commodities: ['Sugarcane', 'Jaggery', 'Vegetables'], rating: 4.1 },
-    { id: 6, name: 'Sangli APMC', distance: '225 km', address: 'Market Yard, Sangli', timings: '5:00 AM - 5:00 PM', commodities: ['Turmeric', 'Grapes', 'Raisins'], rating: 4.3 },
+    { id: 1, name: 'Pune APMC Market', distance: '12 km', address: 'Market Yard, Gultekdi, Pune', timings: '6:00 AM - 6:00 PM', commodities: ['Onion', 'Potato', 'Tomato', 'Vegetables'], rating: 4.2, market: 'Pune', district: 'Pune' },
+    { id: 2, name: 'Pimpri Chinchwad Mandi', distance: '18 km', address: 'Sector 24, PCMC, Pune', timings: '5:00 AM - 5:00 PM', commodities: ['Grains', 'Pulses', 'Vegetables'], rating: 4.0, market: 'Pimpri', district: 'Pune' },
+    { id: 3, name: 'Nashik APMC', distance: '145 km', address: 'Satpur, Nashik', timings: '6:00 AM - 7:00 PM', commodities: ['Onion', 'Grapes', 'Tomato'], rating: 4.5, market: 'Nashik', district: 'Nashik' },
+    { id: 4, name: 'Solapur Agricultural Market', distance: '230 km', address: 'Market Yard Rd, Solapur', timings: '5:30 AM - 6:00 PM', commodities: ['Jowar', 'Groundnut', 'Cotton'], rating: 3.8, market: 'Solapur', district: 'Solapur' },
+    { id: 5, name: 'Kolhapur Mandi', distance: '210 km', address: 'Shivaji Udyam Nagar, Kolhapur', timings: '6:00 AM - 6:30 PM', commodities: ['Sugarcane', 'Jaggery', 'Vegetables'], rating: 4.1, market: 'Kolhapur', district: 'Kolhapur' },
+    { id: 6, name: 'Sangli APMC', distance: '225 km', address: 'Market Yard, Sangli', timings: '5:00 AM - 5:00 PM', commodities: ['Turmeric', 'Grapes', 'Raisins'], rating: 4.3, market: 'Sangli', district: 'Sangli' },
 ];
 
 export default function NearbyMandisPage() {
     const [searchLocation, setSearchLocation] = useState('Pune, Maharashtra');
     const [sortBy, setSortBy] = useState('distance');
+
+    // Fetch Maharashtra market data to enrich nearby mandis with live prices
+    const { data: liveData, loading: liveLoading } = useMandiPrices({ state: 'Maharashtra', limit: 100 });
+
+    // Build a map: market name → top commodities with prices
+    const marketPrices = useMemo(() => {
+        const map: Record<string, { commodity: string; price: string }[]> = {};
+        for (const r of liveData) {
+            const key = r.market.toLowerCase();
+            if (!map[key]) map[key] = [];
+            if (map[key].length < 4) {
+                map[key].push({ commodity: r.commodity, price: formatPrice(r.modalPrice) });
+            }
+        }
+        return map;
+    }, [liveData]);
 
     const sortedMandis = [...nearbyMandis].sort((a, b) => {
         if (sortBy === 'distance') {
@@ -108,15 +126,29 @@ export default function NearbyMandisPage() {
                             <div className="mb-4">
                                 <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Main Commodities</p>
                                 <div className="flex flex-wrap gap-2">
-                                    {mandi.commodities.map((commodity) => (
-                                        <span
-                                            key={commodity}
-                                            className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-sm text-gray-600 dark:text-gray-300"
-                                        >
-                                            {commodity}
-                                        </span>
-                                    ))}
+                                    {(() => {
+                                        const live = marketPrices[mandi.market.toLowerCase()];
+                                        if (live && live.length > 0) {
+                                            return live.map((c) => (
+                                                <span
+                                                    key={c.commodity}
+                                                    className="px-3 py-1 rounded-full bg-green-50 dark:bg-green-900/20 text-sm text-green-700 dark:text-green-300 font-medium"
+                                                >
+                                                    {c.commodity} <span className="text-xs opacity-75">{c.price}</span>
+                                                </span>
+                                            ));
+                                        }
+                                        return mandi.commodities.map((commodity) => (
+                                            <span
+                                                key={commodity}
+                                                className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-sm text-gray-600 dark:text-gray-300"
+                                            >
+                                                {commodity}
+                                            </span>
+                                        ));
+                                    })()}
                                 </div>
+                                {liveLoading && <div className="h-2 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mt-2" />}
                             </div>
 
                             <div className="flex gap-3">

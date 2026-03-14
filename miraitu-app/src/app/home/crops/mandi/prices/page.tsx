@@ -2,8 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useMandiPrices } from '@/lib/useMandiPrices';
+import { formatPrice, spreadPercent } from '@/lib/mandi-api';
 
-const mandiPrices = [
+/* ── Fallback (shown while loading or when API is unavailable) ─── */
+const fallbackPrices = [
     { id: 1, crop: 'Wheat', variety: 'Sharbati', mandi: 'Indore Mandi', price: '₹2,450', unit: 'qtl', change: '+2.3%', trend: 'up', arrival: '1,250 qtl' },
     { id: 2, crop: 'Rice', variety: 'Basmati 1121', mandi: 'Karnal Mandi', price: '₹3,850', unit: 'qtl', change: '+1.8%', trend: 'up', arrival: '890 qtl' },
     { id: 3, crop: 'Soybean', variety: 'Yellow', mandi: 'Ujjain Mandi', price: '₹4,200', unit: 'qtl', change: '-0.5%', trend: 'down', arrival: '560 qtl' },
@@ -21,12 +24,44 @@ export default function MandiPricesPage() {
     const [selectedCrop, setSelectedCrop] = useState('All Crops');
     const [searchQuery, setSearchQuery] = useState('');
 
-    const filteredPrices = mandiPrices.filter(item => {
-        if (selectedCrop !== 'All Crops' && item.crop !== selectedCrop) return false;
+    const { data: liveData, loading, error, updated, refetch } = useMandiPrices({
+        state: selectedState,
+        commodity: selectedCrop,
+        limit: 50,
+    });
+
+    // Map live API data → same shape as UI
+    const livePrices = liveData.map((r, idx) => {
+        const pct = spreadPercent(r.minPrice, r.maxPrice);
+        return {
+            id: idx + 1,
+            crop: r.commodity,
+            variety: r.variety || '—',
+            mandi: `${r.market}, ${r.district}`,
+            price: formatPrice(r.modalPrice).replace('/qtl', ''),
+            unit: 'qtl',
+            change: `${pct >= 0 ? '+' : ''}${pct}%`,
+            trend: pct >= 0 ? 'up' : 'down',
+            arrival: r.arrivalDate
+                ? new Date(r.arrivalDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+                : '—',
+        };
+    });
+
+    const useFallback = (error || livePrices.length === 0) && !loading;
+    const allPrices = useFallback ? fallbackPrices : livePrices;
+
+    // Client-side search filter
+    const filteredPrices = allPrices.filter(item => {
         if (searchQuery && !item.crop.toLowerCase().includes(searchQuery.toLowerCase()) &&
             !item.mandi.toLowerCase().includes(searchQuery.toLowerCase())) return false;
         return true;
     });
+
+    // Format "Last updated" time
+    const lastUpdated = updated
+        ? new Date(updated).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
+        : 'Today, 2:30 PM IST';
 
     return (
         <div className="px-6">
@@ -42,8 +77,20 @@ export default function MandiPricesPage() {
                 </div>
                 {/* Page Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Live Mandi Prices</h1>
-                    <p className="text-gray-500">Real-time commodity prices from agricultural markets across India.</p>
+                    <div className="flex items-center gap-3 mb-2">
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Live Mandi Prices</h1>
+                        {!useFallback && !loading && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-bold">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                LIVE
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-gray-500">
+                        {useFallback
+                            ? 'Sample commodity prices. Add your free data.gov.in API key for real-time data.'
+                            : 'Real-time commodity prices from agricultural markets across India via data.gov.in.'}
+                    </p>
                 </div>
 
                 {/* Filters */}
@@ -109,19 +156,27 @@ export default function MandiPricesPage() {
                         <option>All Crops</option>
                         <option>Wheat</option>
                         <option>Rice</option>
-                        <option>Soybean</option>
+                        <option>Soyabean</option>
                         <option>Cotton</option>
                         <option>Maize</option>
                         <option>Onion</option>
                         <option>Tomato</option>
+                        <option>Potato</option>
+                        <option>Groundnut</option>
+                        <option>Mustard</option>
+                        <option>Gram</option>
+                        <option>Chilli(Green)</option>
                     </select>
                 </div>
 
                 {/* Last Updated */}
                 <div className="flex items-center gap-2 mb-4 text-sm text-gray-500">
                     <span className="material-symbols-outlined text-lg">schedule</span>
-                    Last updated: Today, 2:30 PM IST
-                    <button className="ml-2 text-primary font-semibold hover:underline flex items-center gap-1">
+                    Last updated: {lastUpdated}
+                    <button
+                        onClick={refetch}
+                        className="ml-2 text-primary font-semibold hover:underline flex items-center gap-1"
+                    >
                         <span className="material-symbols-outlined text-lg">refresh</span>
                         Refresh
                     </button>
@@ -142,33 +197,53 @@ export default function MandiPricesPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                {filteredPrices.map((item) => (
-                                    <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <span className="font-semibold text-gray-900 dark:text-white">{item.crop}</span>
+                                {loading ? (
+                                    [...Array(8)].map((_, i) => (
+                                        <tr key={i} className="animate-pulse">
+                                            <td className="px-6 py-4"><div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded" /></td>
+                                            <td className="px-6 py-4"><div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded" /></td>
+                                            <td className="px-6 py-4"><div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded" /></td>
+                                            <td className="px-6 py-4 text-right"><div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded ml-auto" /></td>
+                                            <td className="px-6 py-4 text-right"><div className="h-4 w-12 bg-gray-200 dark:bg-gray-700 rounded ml-auto" /></td>
+                                            <td className="px-6 py-4 text-right"><div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded ml-auto" /></td>
+                                        </tr>
+                                    ))
+                                ) : filteredPrices.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                                            <span className="material-symbols-outlined text-4xl text-gray-300 mb-2 block">search_off</span>
+                                            No prices found for this combination. Try different filters.
                                         </td>
-                                        <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{item.variety}</td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
-                                                <span className="material-symbols-outlined text-gray-400 text-lg">store</span>
-                                                <span className="text-gray-600 dark:text-gray-300">{item.mandi}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <span className="font-bold text-gray-900 dark:text-white">{item.price}</span>
-                                            <span className="text-gray-500 text-sm">/{item.unit}</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <span className={`inline-flex items-center gap-1 font-semibold ${item.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-                                                <span className="material-symbols-outlined text-sm">
-                                                    {item.trend === 'up' ? 'trending_up' : 'trending_down'}
-                                                </span>
-                                                {item.change}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right text-gray-600 dark:text-gray-300">{item.arrival}</td>
                                     </tr>
-                                ))}
+                                ) : (
+                                    filteredPrices.map((item) => (
+                                        <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <span className="font-semibold text-gray-900 dark:text-white">{item.crop}</span>
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{item.variety}</td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="material-symbols-outlined text-gray-400 text-lg">store</span>
+                                                    <span className="text-gray-600 dark:text-gray-300">{item.mandi}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <span className="font-bold text-gray-900 dark:text-white">{item.price}</span>
+                                                <span className="text-gray-500 text-sm">/{item.unit}</span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <span className={`inline-flex items-center gap-1 font-semibold ${item.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
+                                                    <span className="material-symbols-outlined text-sm">
+                                                        {item.trend === 'up' ? 'trending_up' : 'trending_down'}
+                                                    </span>
+                                                    {item.change}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right text-gray-600 dark:text-gray-300">{item.arrival}</td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -180,7 +255,7 @@ export default function MandiPricesPage() {
                         <span className="material-symbols-outlined text-primary text-3xl mb-3">info</span>
                         <h3 className="font-bold text-gray-900 dark:text-white mb-2">About Mandi Prices</h3>
                         <p className="text-sm text-gray-600 dark:text-gray-300">
-                            Prices shown are modal prices (most common transaction price) reported by respective Agricultural Produce Market Committees (APMCs).
+                            Prices shown are modal prices (most common transaction price) reported by respective Agricultural Produce Market Committees (APMCs) via data.gov.in.
                         </p>
                     </div>
                     <div className="p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
