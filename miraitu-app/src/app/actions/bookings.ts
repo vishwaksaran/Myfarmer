@@ -174,6 +174,8 @@ export interface UserRecord {
     created_at: string;
     updated_at: string;
     email?: string;
+    auth_provider?: 'google' | 'phone' | 'email' | string; // Sign-in method
+    last_sign_in?: string; // ISO timestamp
     // Provider-specific fields (populated when role = service_provider)
     service_types?: string[];
     availability_status?: string;
@@ -259,18 +261,29 @@ export async function fetchAllUsers(): Promise<{ data: UserRecord[]; error?: str
             return { data: [], error: error.message };
         }
 
-        // Merge email from auth.users (SSO users have email there)
+        // Merge email + auth provider from auth.users
         try {
             const { data: authData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
             if (authData?.users) {
-                const emailMap = new Map<string, string>();
+                const authMap = new Map<string, { email?: string; provider: string; lastSignIn?: string }>();
                 for (const u of authData.users) {
-                    if (u.email) emailMap.set(u.id, u.email);
+                    const provider = u.app_metadata?.provider ||
+                        (u.identities?.[0]?.provider) || 'email';
+                    authMap.set(u.id, {
+                        email: u.email || undefined,
+                        provider,
+                        lastSignIn: u.last_sign_in_at || undefined,
+                    });
                 }
-                const merged = (data as UserRecord[]).map(profile => ({
-                    ...profile,
-                    email: emailMap.get(profile.id) || profile.email || undefined,
-                }));
+                const merged = (data as UserRecord[]).map(profile => {
+                    const auth = authMap.get(profile.id);
+                    return {
+                        ...profile,
+                        email: auth?.email || profile.email || undefined,
+                        auth_provider: auth?.provider || undefined,
+                        last_sign_in: auth?.lastSignIn || undefined,
+                    };
+                });
                 return { data: merged };
             }
         } catch (authErr) {
@@ -301,16 +314,19 @@ export async function fetchUserById(userId: string): Promise<{ data: UserRecord 
             return { data: null, error: error.message };
         }
 
-        // Merge email from auth.users if not in profile yet
+        // Merge email + auth provider from auth.users
         const profile = data as UserRecord;
-        if (!profile.email) {
-            try {
-                const { data: authData } = await supabase.auth.admin.getUserById(userId);
-                if (authData?.user?.email) {
+        try {
+            const { data: authData } = await supabase.auth.admin.getUserById(userId);
+            if (authData?.user) {
+                if (!profile.email && authData.user.email) {
                     profile.email = authData.user.email;
                 }
-            } catch { /* auth lookup optional */ }
-        }
+                profile.auth_provider = authData.user.app_metadata?.provider ||
+                    (authData.user.identities?.[0]?.provider) || 'email';
+                profile.last_sign_in = authData.user.last_sign_in_at || undefined;
+            }
+        } catch { /* auth lookup optional */ }
 
         return { data: profile };
     } catch (err) {

@@ -180,6 +180,18 @@ export default function UserDetailPage() {
                                     {user.email}
                                 </span>
                             )}
+                            {user.auth_provider && (
+                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold ${
+                                    user.auth_provider === 'google' ? 'bg-blue-100 text-blue-700' :
+                                    user.auth_provider === 'phone' ? 'bg-green-100 text-green-700' :
+                                    'bg-gray-100 text-gray-600'
+                                }`}>
+                                    <span className="material-symbols-outlined text-[10px]">
+                                        {user.auth_provider === 'google' ? 'login' : user.auth_provider === 'phone' ? 'phone_iphone' : 'key'}
+                                    </span>
+                                    {user.auth_provider === 'google' ? 'Google SSO' : user.auth_provider === 'phone' ? 'Phone OTP' : user.auth_provider}
+                                </span>
+                            )}
                             {user.phone && (
                                 <span className="flex items-center gap-1">
                                     <span className="material-symbols-outlined text-sm">phone</span>

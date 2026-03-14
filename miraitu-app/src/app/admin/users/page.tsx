@@ -45,6 +45,7 @@ export default function AdminUsersPage() {
             'ID': u.id,
             'Full Name': u.full_name || '',
             'Email': u.email || '',
+            'Sign-in Method': u.auth_provider === 'google' ? 'Google SSO' : u.auth_provider === 'phone' ? 'Phone OTP' : (u.auth_provider || ''),
             'Phone': u.phone || '',
             'Role': u.role || '',
             'Farm Location': u.farm_location || '',
@@ -194,9 +195,27 @@ export default function AdminUsersPage() {
                                         </td>
                                         <td className="px-4 py-3 text-gray-600 max-w-[180px]">
                                             {u.email ? (
-                                                <span className="text-xs truncate block" title={u.email}>{u.email}</span>
+                                                <div>
+                                                    <span className="text-xs truncate block" title={u.email}>{u.email}</span>
+                                                    {u.auth_provider && (
+                                                        <span className={`inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                                                            u.auth_provider === 'google' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'
+                                                        }`}>
+                                                            {u.auth_provider === 'google' ? 'Google SSO' : u.auth_provider}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             ) : (
-                                                <span className="text-gray-400 text-xs">—</span>
+                                                <div>
+                                                    <span className="text-gray-400 text-xs">—</span>
+                                                    {u.auth_provider && (
+                                                        <span className={`inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                                                            u.auth_provider === 'phone' ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-500'
+                                                        }`}>
+                                                            {u.auth_provider === 'phone' ? 'Phone OTP' : u.auth_provider}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             )}
                                         </td>
                                         <td className="px-4 py-3 text-gray-600">{u.phone || '—'}</td>
