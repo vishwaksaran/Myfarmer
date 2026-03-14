@@ -22,7 +22,7 @@ import { useLoginPrompt } from '@/context/LoginPromptContext';
  */
 
 // Pages where the interceptor should be completely disabled
-const AUTH_PAGES = ['/user-login', '/user-register', '/language-selection'];
+const AUTH_PAGES = ['/user-login', '/user-register', '/language-selection', '/admin-login'];
 
 export default function GlobalLoginInterceptor() {
     const { user } = useAuth();
