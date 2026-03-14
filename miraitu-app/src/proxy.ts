@@ -2,9 +2,11 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 /**
- * Proxy to refresh Supabase auth session on every request.
- * This ensures session cookies stay valid and are properly forwarded
- * between the request and response.
+ * Proxy: Supabase session refresh + Admin route protection.
+ *
+ * - Refreshes Supabase auth session on every request (keeps cookies alive)
+ * - Blocks non-admin users from accessing /admin/* routes
+ * - Redirects unauthenticated users on /admin/* to /admin-login
  */
 export async function proxy(request: NextRequest) {
     let supabaseResponse = NextResponse.next({
@@ -48,7 +50,36 @@ export async function proxy(request: NextRequest) {
 
     // IMPORTANT: Do not remove this line. It refreshes the session
     // and ensures cookies are updated if the token was refreshed.
-    await supabase.auth.getUser();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    const pathname = request.nextUrl.pathname;
+
+    // ── Admin route protection ───────────────────────────────────────
+    // Protect all /admin/* routes — only users with role='admin' can access
+    if (pathname.startsWith('/admin')) {
+        // Not logged in → redirect to admin login
+        if (!user) {
+            const loginUrl = new URL('/admin-login', request.url);
+            loginUrl.searchParams.set('redirect', pathname);
+            return NextResponse.redirect(loginUrl);
+        }
+
+        // Check if user has admin role in profiles table
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        if (!profile || profile.role !== 'admin') {
+            // Not an admin → redirect to home
+            const homeUrl = new URL('/home', request.url);
+            homeUrl.searchParams.set('error', 'unauthorized');
+            return NextResponse.redirect(homeUrl);
+        }
+    }
 
     return supabaseResponse;
 }

@@ -7,17 +7,31 @@ import Link from 'next/link';
 import MiraituLogo from '@/components/MiraituLogo';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-    const { user, loading } = useAuth();
+    const { user, loading, fetchProfile } = useAuth();
     const router = useRouter();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
     useEffect(() => {
-        if (!loading && !user) {
-            router.push('/user-login');
-        }
-    }, [user, loading, router]);
+        if (loading) return;
 
-    if (loading) {
+        if (!user) {
+            router.push('/admin-login');
+            return;
+        }
+
+        // Check admin role from profiles table
+        fetchProfile().then(profile => {
+            if (profile?.role === 'admin') {
+                setIsAdmin(true);
+            } else {
+                setIsAdmin(false);
+                router.push('/home?error=unauthorized');
+            }
+        });
+    }, [user, loading, router, fetchProfile]);
+
+    if (loading || isAdmin === null) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <span className="material-symbols-outlined text-5xl text-green-600 animate-spin">progress_activity</span>
@@ -25,7 +39,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         );
     }
 
-    if (!user) return null;
+    if (!user || !isAdmin) return null;
 
     const navItems = [
         { href: '/admin', icon: 'dashboard', label: 'Dashboard' },
