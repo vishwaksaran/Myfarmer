@@ -41,11 +41,15 @@ function AdminLoginForm() {
         setSubmitting(true);
 
         try {
+            console.log('[admin-login] Attempting sign in for:', email.trim());
+
             // Sign in with email + password via Supabase Auth
             const { data, error: authError } = await supabase.auth.signInWithPassword({
                 email: email.trim(),
                 password,
             });
+
+            console.log('[admin-login] Sign in result:', { user: data?.user?.id, error: authError?.message });
 
             if (authError) {
                 setError(authError.message === 'Invalid login credentials'
@@ -63,11 +67,21 @@ function AdminLoginForm() {
             }
 
             // Verify admin role
-            const { data: profile } = await supabase
+            console.log('[admin-login] Checking admin role for user:', data.user.id);
+            const { data: profile, error: profileError } = await supabase
                 .from('profiles')
                 .select('role')
                 .eq('id', data.user.id)
                 .single();
+
+            console.log('[admin-login] Profile result:', { profile, error: profileError?.message });
+
+            if (profileError) {
+                await supabase.auth.signOut();
+                setError(`Profile check failed: ${profileError.message}`);
+                setSubmitting(false);
+                return;
+            }
 
             if (!profile || profile.role !== 'admin') {
                 // Sign them out — they're not admin
@@ -77,9 +91,12 @@ function AdminLoginForm() {
                 return;
             }
 
-            // Success — redirect to admin
-            router.push(redirect);
-        } catch {
+            // Success — redirect to admin using window.location for full page reload
+            // (ensures server-side cookies are properly set for the proxy check)
+            console.log('[admin-login] Login successful, redirecting to:', redirect);
+            window.location.href = redirect;
+        } catch (err) {
+            console.error('[admin-login] Unexpected error:', err);
             setError('Something went wrong. Please try again.');
             setSubmitting(false);
         }
