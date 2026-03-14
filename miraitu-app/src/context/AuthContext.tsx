@@ -37,6 +37,12 @@ export interface UserProfile {
     availability_status: string;
     whatsapp_number: string | null;
     bio: string | null;
+    // Onboarding fields
+    interests: string[];
+    onboarding_completed: boolean;
+    farm_size: string | null;
+    experience_years: string | null;
+    preferred_language: string | null;
 }
 
 interface AuthContextType {
@@ -50,6 +56,8 @@ interface AuthContextType {
     fetchProfile: () => Promise<UserProfile | null>;
     updateProfile: (data: Partial<UserProfile>) => Promise<{ error: string | null }>;
     uploadAvatar: (file: File) => Promise<{ url: string | null; error: string | null }>;
+    checkOnboardingStatus: () => Promise<boolean>;
+    deleteAccount: () => Promise<{ error: string | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -161,14 +169,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 .select('avatar_url, full_name, phone')
                 .eq('id', userId)
                 .single();
-            if (data?.avatar_url) {
-                setUser(prev => prev ? { ...prev, photoURL: data.avatar_url } : prev);
-            }
-            if (data?.full_name) {
-                setUser(prev => prev ? { ...prev, displayName: data.full_name || prev?.displayName } : prev);
-            }
-            if (data?.phone) {
-                setUser(prev => prev ? { ...prev, phone: data.phone || prev?.phone } : prev);
+            if (data) {
+                setUser(prev => {
+                    if (!prev) return prev;
+                    return {
+                        ...prev,
+                        photoURL: data.avatar_url || prev.photoURL,
+                        displayName: data.full_name || prev.displayName,
+                        phone: data.phone || prev.phone,
+                    };
+                });
             }
         } catch (err) {
             console.error('Error loading profile avatar:', err);
@@ -180,7 +190,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Check current session on mount
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session?.user) {
-                setUser(toMiraituUser(session.user));
+                setUser(prev => {
+                    const mapped = toMiraituUser(session.user);
+                    // Preserve DB avatar if we already loaded one from profiles table
+                    if (prev?.photoURL && (prev.photoURL.includes('supabase') || prev.photoURL.includes('storage'))) {
+                        mapped.photoURL = prev.photoURL;
+                    }
+                    return mapped;
+                });
                 // Load profile data (including custom avatar) from DB
                 loadProfileAvatar(session.user.id);
             }
@@ -191,7 +208,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             (_event: string, session: Session | null) => {
                 if (session?.user) {
-                    setUser(toMiraituUser(session.user));
+                    setUser(prev => {
+                        const mapped = toMiraituUser(session.user!);
+                        // Preserve DB avatar if we already loaded one from profiles table
+                        if (prev?.photoURL && (prev.photoURL.includes('supabase') || prev.photoURL.includes('storage'))) {
+                            mapped.photoURL = prev.photoURL;
+                        }
+                        return mapped;
+                    });
                     // Load profile data (including custom avatar) from DB
                     loadProfileAvatar(session.user.id);
                 } else {
@@ -290,13 +314,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
     };
 
+    // Check if user has completed onboarding
+    const checkOnboardingStatus = async (): Promise<boolean> => {
+        if (!user || user.isGuest) return true; // guests skip onboarding
+        try {
+            const { data } = await supabase
+                .from('profiles')
+                .select('onboarding_completed')
+                .eq('id', user.id)
+                .single();
+            return data?.onboarding_completed === true;
+        } catch {
+            return true; // fallback: don't block
+        }
+    };
+
     // Fetch user profile from Supabase profiles table
     const fetchProfile = async (): Promise<UserProfile | null> => {
         if (!user || user.isGuest) return null;
         try {
             const { data, error } = await supabase
                 .from('profiles')
-                .select('full_name, phone, avatar_url, farm_location, role, address, pincode, district, state, latitude, longitude, service_types, availability_status, whatsapp_number, bio')
+                .select('full_name, phone, avatar_url, farm_location, role, address, pincode, district, state, latitude, longitude, service_types, availability_status, whatsapp_number, bio, interests, onboarding_completed, farm_size, experience_years, preferred_language')
                 .eq('id', user.id)
                 .single();
             if (error) {
@@ -355,20 +394,65 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 return { url: null, error: uploadError.message };
             }
 
+            // Add cache-buster to avoid stale images
             const { data: { publicUrl } } = supabase.storage
                 .from('avatars')
                 .getPublicUrl(filePath);
+            const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
 
             // Update the profile with the new avatar URL
-            const profileResult = await updateProfile({ avatar_url: publicUrl });
+            const profileResult = await updateProfile({ avatar_url: cacheBustedUrl });
             if (profileResult.error) {
                 console.error('Profile update error after avatar upload:', profileResult.error);
-                // Still return the URL since the file was uploaded successfully
             }
-            return { url: publicUrl, error: null };
+            return { url: cacheBustedUrl, error: null };
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : 'Failed to upload avatar';
             return { url: null, error: message };
+        }
+    };
+
+    // Delete user account (profiles row + auth user via server action)
+    const deleteAccount = async (): Promise<{ error: string | null }> => {
+        if (!user || user.isGuest) return { error: 'Not authenticated' };
+        try {
+            // 1. Delete profile data from profiles table
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .delete()
+                .eq('id', user.id);
+            if (profileError) {
+                console.error('Error deleting profile:', profileError);
+                return { error: profileError.message };
+            }
+
+            // 2. Delete avatar from storage (ignore errors if no avatar)
+            try {
+                const { data: files } = await supabase.storage
+                    .from('avatars')
+                    .list(user.id);
+                if (files && files.length > 0) {
+                    await supabase.storage
+                        .from('avatars')
+                        .remove(files.map(f => `${user.id}/${f.name}`));
+                }
+            } catch { /* ignore storage cleanup errors */ }
+
+            // 3. Call server action to delete auth user
+            const { deleteAuthUser } = await import('@/app/actions/account');
+            const result = await deleteAuthUser(user.id);
+            if (result.error) {
+                return { error: result.error };
+            }
+
+            // 4. Sign out locally
+            await supabase.auth.signOut();
+            setUser(null);
+            sessionStorage.clear();
+            return { error: null };
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Failed to delete account';
+            return { error: message };
         }
     };
 
@@ -384,6 +468,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             fetchProfile,
             updateProfile,
             uploadAvatar,
+            checkOnboardingStatus,
+            deleteAccount,
         }}>
             {children}
         </AuthContext.Provider>

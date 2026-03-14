@@ -192,6 +192,13 @@ export default function UserDetailPage() {
                                     {user.farm_location}
                                 </span>
                             )}
+                            {user.district && (
+                                <span className="flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-sm">map</span>
+                                    {[user.district, user.state].filter(Boolean).join(', ')}
+                                    {user.pincode && <span className="ml-1 text-gray-400">({user.pincode})</span>}
+                                </span>
+                            )}
                             <span className="flex items-center gap-1">
                                 <span className="material-symbols-outlined text-sm">calendar_today</span>
                                 Joined {joinedDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -199,6 +206,35 @@ export default function UserDetailPage() {
                             </span>
                         </div>
                         <p className="text-[10px] font-mono text-gray-400 mt-1">ID: {user.id}</p>
+                        {/* Interests & Onboarding Status */}
+                        {(user.interests && user.interests.length > 0) && (
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                                {user.interests.map((interest: string) => (
+                                    <span key={interest} className="inline-block px-2 py-0.5 bg-purple-50 text-purple-600 rounded-lg text-[10px] font-bold capitalize">
+                                        {interest.replace(/_/g, ' ')}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                        <div className="flex items-center gap-3 mt-2">
+                            {user.onboarding_completed ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-bold">
+                                    <span className="material-symbols-outlined text-[10px]">check_circle</span>
+                                    Onboarded
+                                </span>
+                            ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-50 text-yellow-600 rounded-lg text-[10px] font-bold">
+                                    <span className="material-symbols-outlined text-[10px]">pending</span>
+                                    Not Onboarded
+                                </span>
+                            )}
+                            {user.farm_size && (
+                                <span className="text-[10px] text-gray-400 font-medium">Farm: {user.farm_size.replace(/-/g, ' ')}</span>
+                            )}
+                            {user.experience_years && (
+                                <span className="text-[10px] text-gray-400 font-medium">Exp: {user.experience_years.replace(/-/g, ' ')}</span>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

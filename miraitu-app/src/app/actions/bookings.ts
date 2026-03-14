@@ -185,6 +185,12 @@ export interface UserRecord {
     longitude?: number | null;
     whatsapp_number?: string | null;
     bio?: string | null;
+    // Onboarding fields
+    interests?: string[];
+    onboarding_completed?: boolean;
+    farm_size?: string | null;
+    experience_years?: string | null;
+    preferred_language?: string | null;
 }
 
 // ─── Admin: Fetch provider earnings by ID ────────────────────────────

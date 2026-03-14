@@ -12,7 +12,7 @@ export default function AdminUsersPage() {
     const [roleFilter, setRoleFilter] = useState('');
     const [deleteTarget, setDeleteTarget] = useState<UserRecord | null>(null);
     const [editTarget, setEditTarget] = useState<UserRecord | null>(null);
-    const [editForm, setEditForm] = useState({ full_name: '', phone: '', role: '', farm_location: '' });
+    const [editForm, setEditForm] = useState({ full_name: '', phone: '', role: '', farm_location: '', district: '', state: '', pincode: '' });
     const [actionLoading, setActionLoading] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -47,6 +47,13 @@ export default function AdminUsersPage() {
             'Phone': u.phone || '',
             'Role': u.role || '',
             'Farm Location': u.farm_location || '',
+            'District': u.district || '',
+            'State': u.state || '',
+            'Pincode': u.pincode || '',
+            'Interests': (u.interests || []).join(', '),
+            'Farm Size': u.farm_size || '',
+            'Experience': u.experience_years || '',
+            'Onboarded': u.onboarding_completed ? 'Yes' : 'No',
             'Avatar URL': u.avatar_url || '',
             'Joined': new Date(u.created_at).toLocaleString(),
             'Last Updated': new Date(u.updated_at).toLocaleString(),
@@ -75,6 +82,9 @@ export default function AdminUsersPage() {
             phone: u.phone || '',
             role: u.role || 'farmer',
             farm_location: u.farm_location || '',
+            district: u.district || '',
+            state: u.state || '',
+            pincode: u.pincode || '',
         });
     };
 
@@ -152,6 +162,8 @@ export default function AdminUsersPage() {
                                     <th className="px-4 py-3">Phone</th>
                                     <th className="px-4 py-3">Role</th>
                                     <th className="px-4 py-3">Location</th>
+                                    <th className="px-4 py-3">Interests</th>
+                                    <th className="px-4 py-3">Status</th>
                                     <th className="px-4 py-3">Joined</th>
                                     <th className="px-4 py-3"></th>
                                 </tr>
@@ -199,7 +211,50 @@ export default function AdminUsersPage() {
                                                 <p className="text-[10px] text-gray-400 mt-0.5">{u.service_types.length} service{u.service_types.length !== 1 ? 's' : ''}</p>
                                             )}
                                         </td>
-                                        <td className="px-4 py-3 text-gray-600 max-w-[200px] truncate">{u.farm_location || '—'}</td>
+                                        <td className="px-4 py-3 text-gray-600 max-w-[200px]">
+                                            {u.farm_location || u.district || u.state ? (
+                                                <div>
+                                                    <p className="text-xs font-medium text-gray-800 truncate">{u.farm_location || '—'}</p>
+                                                    {(u.district || u.state) && (
+                                                        <p className="text-[10px] text-gray-400 mt-0.5 truncate">
+                                                            {[u.district, u.state].filter(Boolean).join(', ')}
+                                                            {u.pincode && <span className="ml-1">({u.pincode})</span>}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <span className="text-gray-400">—</span>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            {u.interests && u.interests.length > 0 ? (
+                                                <div className="flex flex-wrap gap-1 max-w-[160px]">
+                                                    {u.interests.slice(0, 3).map((interest: string) => (
+                                                        <span key={interest} className="inline-block px-1.5 py-0.5 bg-purple-50 text-purple-600 rounded text-[9px] font-bold capitalize">
+                                                            {interest.replace(/_/g, ' ')}
+                                                        </span>
+                                                    ))}
+                                                    {u.interests.length > 3 && (
+                                                        <span className="text-[9px] text-gray-400 font-bold">+{u.interests.length - 3}</span>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <span className="text-gray-400 text-xs">—</span>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            {u.onboarding_completed ? (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-bold">
+                                                    <span className="material-symbols-outlined text-[10px]">check_circle</span>
+                                                    Onboarded
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-50 text-yellow-600 rounded-lg text-[10px] font-bold">
+                                                    <span className="material-symbols-outlined text-[10px]">pending</span>
+                                                    Pending
+                                                </span>
+                                            )}
+                                        </td>
                                         <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
                                             {new Date(u.created_at).toLocaleDateString()}
                                         </td>
@@ -343,17 +398,53 @@ export default function AdminUsersPage() {
                                     <option value="farmer">Farmer</option>
                                     <option value="dealer">Dealer</option>
                                     <option value="service_provider">Service Provider</option>
+                                    <option value="livestock_farmer">Livestock Farmer</option>
+                                    <option value="buyer">Buyer / Trader</option>
+                                    <option value="student">Agri Student</option>
                                     <option value="admin">Admin</option>
                                 </select>
                             </div>
                             <div>
-                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Farm / Location</label>
+                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Village / Town / City</label>
                                 <input
                                     type="text"
                                     value={editForm.farm_location}
                                     onChange={e => setEditForm(f => ({ ...f, farm_location: e.target.value }))}
                                     className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-500 transition-colors"
                                     placeholder="Enter location"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">District</label>
+                                    <input
+                                        type="text"
+                                        value={editForm.district}
+                                        onChange={e => setEditForm(f => ({ ...f, district: e.target.value }))}
+                                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-500 transition-colors"
+                                        placeholder="District"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">State</label>
+                                    <input
+                                        type="text"
+                                        value={editForm.state}
+                                        onChange={e => setEditForm(f => ({ ...f, state: e.target.value }))}
+                                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-500 transition-colors"
+                                        placeholder="State"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Pincode</label>
+                                <input
+                                    type="text"
+                                    value={editForm.pincode}
+                                    onChange={e => setEditForm(f => ({ ...f, pincode: e.target.value }))}
+                                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-500 transition-colors"
+                                    placeholder="e.g. 422001"
+                                    maxLength={6}
                                 />
                             </div>
                         </div>

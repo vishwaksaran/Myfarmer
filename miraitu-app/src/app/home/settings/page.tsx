@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth, UserProfile } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -22,19 +23,12 @@ const allLanguages = [
 ];
 
 export default function SettingsPage() {
-    const { user, loading, fetchProfile, updateProfile, uploadAvatar, signOut } = useAuth();
+    const { user, loading, fetchProfile, signOut, deleteAccount } = useAuth();
     const { lang: selectedLang, setLang: setSelectedLang } = useLanguage();
     const router = useRouter();
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Form state
-    const [fullName, setFullName] = useState('');
-    const [phone, setPhone] = useState('');
-    const [farmLocation, setFarmLocation] = useState('');
-    const [avatarUrl, setAvatarUrl] = useState('');
-    const [saving, setSaving] = useState(false);
-    const [uploading, setUploading] = useState(false);
-    const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    // Profile summary state
+    const [profileData, setProfileData] = useState<UserProfile | null>(null);
     const [profileLoaded, setProfileLoaded] = useState(false);
 
     // Notification prefs (local only)
@@ -43,81 +37,38 @@ export default function SettingsPage() {
     const [notifyOrders, setNotifyOrders] = useState(true);
     const [notifyCommunity, setNotifyCommunity] = useState(false);
 
+    // Delete account state
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteConfirmText, setDeleteConfirmText] = useState('');
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
+
     // Load profile data
     const loadProfile = useCallback(async () => {
-        if (!user) return;
-        // Set defaults from user object
-        setFullName(user.displayName || '');
-        setPhone(user.phone || '');
-        setAvatarUrl(user.photoURL || '');
-
-        if (!user.isGuest) {
-            const profile = await fetchProfile();
-            if (profile) {
-                setFullName(profile.full_name || user.displayName || '');
-                setPhone(profile.phone || user.phone || '');
-                setFarmLocation(profile.farm_location || '');
-                if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
-            }
-        }
+        if (!user || user.isGuest) return;
+        const profile = await fetchProfile();
+        if (profile) setProfileData(profile);
         setProfileLoaded(true);
     }, [user, fetchProfile]);
 
     useEffect(() => {
-        if (user && !profileLoaded) {
-            loadProfile();
-        }
+        if (user && !profileLoaded) loadProfile();
     }, [user, profileLoaded, loadProfile]);
 
-    // Redirect if not logged in
     useEffect(() => {
-        if (!loading && !user) {
-            router.push('/user-login');
-        }
+        if (!loading && !user) router.push('/user-login');
     }, [loading, user, router]);
 
-    const handleAvatarClick = () => {
-        fileInputRef.current?.click();
-    };
-
-    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        setUploading(true);
-        setSaveMessage(null);
-        const result = await uploadAvatar(file);
-        setUploading(false);
+    const handleDeleteAccount = async () => {
+        if (deleteConfirmText !== 'DELETE') return;
+        setIsDeleting(true);
+        setDeleteError(null);
+        const result = await deleteAccount();
         if (result.error) {
-            setSaveMessage({ type: 'error', text: `Avatar upload failed: ${result.error}` });
-        } else if (result.url) {
-            setAvatarUrl(result.url);
-            setSaveMessage({ type: 'success', text: 'Profile photo updated!' });
-            setTimeout(() => setSaveMessage(null), 3000);
-        }
-    };
-
-    const handleSave = async () => {
-        setSaving(true);
-        setSaveMessage(null);
-
-        if (user?.isGuest) {
-            setSaveMessage({ type: 'error', text: 'Guest users cannot save settings. Please sign up!' });
-            setSaving(false);
-            return;
-        }
-
-        const result = await updateProfile({
-            full_name: fullName,
-            phone: phone,
-            farm_location: farmLocation,
-        });
-
-        setSaving(false);
-        if (result.error) {
-            setSaveMessage({ type: 'error', text: `Save failed: ${result.error}` });
+            setDeleteError(result.error);
+            setIsDeleting(false);
         } else {
-            setSaveMessage({ type: 'success', text: 'Settings saved successfully!' });
-            setTimeout(() => setSaveMessage(null), 3000);
+            router.replace('/');
         }
     };
 
@@ -138,107 +89,43 @@ export default function SettingsPage() {
                     {/* Page Title */}
                     <div className="mb-8">
                         <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Settings</h1>
-                        <p className="text-gray-500 dark:text-gray-400 mt-2 font-medium">Manage your account and app preferences</p>
+                        <p className="text-gray-500 dark:text-gray-400 mt-2 font-medium">Manage your app preferences and account</p>
                     </div>
 
-                    {/* Save Message */}
-                    {saveMessage && (
-                        <div className={`mb-6 p-4 rounded-2xl font-semibold text-sm ${saveMessage.type === 'success'
-                            ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
-                            : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
-                            }`}>
-                            <span className="material-symbols-outlined text-sm mr-2 align-middle">
-                                {saveMessage.type === 'success' ? 'check_circle' : 'error'}
-                            </span>
-                            {saveMessage.text}
-                        </div>
-                    )}
-
                     <div className="space-y-8">
-                        {/* Profile Section */}
+                        {/* Profile Summary Card (compact, links to profile page) */}
                         <section className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
                             <div className="p-6 border-b border-gray-100 dark:border-gray-800">
                                 <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                                     <span className="material-symbols-outlined text-primary">account_circle</span>
-                                    Profile Settings
+                                    Profile
                                 </h2>
                             </div>
                             <div className="p-6">
-                                {/* Avatar */}
-                                <div className="flex items-center gap-6 mb-8">
-                                    <div className="relative group">
-                                        <div className="size-24 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center overflow-hidden border-2 border-primary/20">
-                                            {avatarUrl ? (
-                                                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <span className="material-symbols-outlined text-5xl text-primary/40">person</span>
-                                            )}
-                                        </div>
-                                        <button
-                                            onClick={handleAvatarClick}
-                                            disabled={uploading}
-                                            className="absolute -bottom-1 -right-1 size-8 bg-primary rounded-lg flex items-center justify-center text-white shadow-lg cursor-pointer hover:bg-primary/90 transition-colors disabled:opacity-50"
-                                        >
-                                            {uploading ? (
-                                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                                            ) : (
-                                                <span className="material-symbols-outlined text-sm">photo_camera</span>
-                                            )}
-                                        </button>
-                                        <input
-                                            ref={fileInputRef}
-                                            type="file"
-                                            accept="image/*"
-                                            className="hidden"
-                                            onChange={handleAvatarUpload}
-                                        />
+                                <div className="flex items-center gap-5">
+                                    <div className="size-16 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center overflow-hidden border-2 border-primary/20 flex-shrink-0">
+                                        {user.photoURL ? (
+                                            <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                        ) : (
+                                            <span className="material-symbols-outlined text-4xl text-primary/40">person</span>
+                                        )}
                                     </div>
-                                    <div>
-                                        <p className="font-bold text-gray-900 dark:text-white text-lg">{fullName || 'Your Name'}</p>
-                                        <p className="text-sm text-gray-500">{user.email || phone || 'No email'}</p>
-                                        {user.isGuest && (
-                                            <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs font-bold">
-                                                Guest Account
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-bold text-gray-900 dark:text-white text-lg truncate">{user.displayName || 'Your Name'}</p>
+                                        <p className="text-sm text-gray-500 truncate">{user.email || user.phone || 'No email'}</p>
+                                        {profileData?.role && (
+                                            <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold capitalize">
+                                                {profileData.role.replace('_', ' ')}
                                             </span>
                                         )}
                                     </div>
-                                </div>
-
-                                {/* Form Fields */}
-                                <div className="space-y-5">
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
-                                        <input
-                                            type="text"
-                                            value={fullName}
-                                            onChange={(e) => setFullName(e.target.value)}
-                                            placeholder="Enter your full name"
-                                            className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all outline-none font-medium text-gray-900 dark:text-white"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
-                                        <input
-                                            type="tel"
-                                            value={phone}
-                                            onChange={(e) => setPhone(e.target.value)}
-                                            placeholder="Enter your phone number"
-                                            className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all outline-none font-medium text-gray-900 dark:text-white"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Farm Location</label>
-                                        <div className="relative">
-                                            <input
-                                                type="text"
-                                                value={farmLocation}
-                                                onChange={(e) => setFarmLocation(e.target.value)}
-                                                placeholder="e.g. Ludhiana, Punjab"
-                                                className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all outline-none font-medium text-gray-900 dark:text-white pr-12"
-                                            />
-                                            <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-primary">location_on</span>
-                                        </div>
-                                    </div>
+                                    <Link
+                                        href="/home/profile"
+                                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/5 hover:bg-primary/10 text-primary font-bold text-sm transition-colors flex-shrink-0"
+                                    >
+                                        <span className="material-symbols-outlined text-lg">edit</span>
+                                        Edit Profile
+                                    </Link>
                                 </div>
                             </div>
                         </section>
@@ -316,7 +203,7 @@ export default function SettingsPage() {
                             </div>
                         </section>
 
-                        {/* Security Section */}
+                        {/* Account & Security Section */}
                         <section className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
                             <div className="p-6 border-b border-gray-100 dark:border-gray-800">
                                 <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
@@ -337,6 +224,19 @@ export default function SettingsPage() {
                                     </div>
                                     <span className="material-symbols-outlined text-green-500 text-lg">verified</span>
                                 </div>
+
+                                <div className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <span className="material-symbols-outlined text-gray-500">badge</span>
+                                        <div>
+                                            <p className="font-semibold text-gray-900 dark:text-white text-sm">User ID</p>
+                                            <p className="text-xs text-gray-500 font-mono">{user.id.slice(0, 8)}...{user.id.slice(-4)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-gray-100 dark:border-gray-800 my-2" />
+
                                 <button
                                     onClick={() => { signOut(); router.push('/'); }}
                                     className="w-full flex items-center gap-3 p-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -344,34 +244,121 @@ export default function SettingsPage() {
                                     <span className="material-symbols-outlined">logout</span>
                                     <span className="font-bold text-sm">Log Out</span>
                                 </button>
+
+                                <button
+                                    onClick={() => setShowDeleteModal(true)}
+                                    disabled={user.isGuest}
+                                    className="w-full flex items-center gap-3 p-3 rounded-xl text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors border border-red-200 dark:border-red-800/50 disabled:opacity-40 disabled:cursor-not-allowed"
+                                >
+                                    <span className="material-symbols-outlined">delete_forever</span>
+                                    <div className="text-left">
+                                        <span className="font-bold text-sm block">Delete Account</span>
+                                        <span className="text-xs text-red-400">Permanently remove your account and all data</span>
+                                    </div>
+                                </button>
                             </div>
                         </section>
-                    </div>
-
-                    {/* Save Button */}
-                    <div className="mt-8 mb-8 flex justify-center">
-                        <button
-                            onClick={handleSave}
-                            disabled={saving}
-                            className="w-full sm:w-80 py-4 rounded-2xl bg-primary text-white font-bold text-lg shadow-lg shadow-primary/25 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                        >
-                            {saving ? (
-                                <>
-                                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                                    Saving...
-                                </>
-                            ) : (
-                                <>
-                                    <span className="material-symbols-outlined">save</span>
-                                    Save Changes
-                                </>
-                            )}
-                        </button>
                     </div>
                 </div>
             </main>
 
             <Footer />
+
+            {/* Delete Account Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => !isDeleting && setShowDeleteModal(false)} />
+                    <div className="relative bg-white dark:bg-[#1a231a] rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        {/* Header */}
+                        <div className="p-6 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800/50">
+                            <div className="flex items-center gap-3">
+                                <div className="size-12 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-red-600 text-2xl">warning</span>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-black text-red-700 dark:text-red-400">Delete Account?</h3>
+                                    <p className="text-sm text-red-500 dark:text-red-400/70">This action cannot be undone</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-6 space-y-4">
+                            <div className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
+                                <p>Deleting your account will <strong>permanently</strong> remove:</p>
+                                <ul className="space-y-1.5 ml-1">
+                                    <li className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-red-400 text-base">close</span>
+                                        Your profile and personal information
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-red-400 text-base">close</span>
+                                        All your bookings and order history
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-red-400 text-base">close</span>
+                                        Your uploaded photos and avatars
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-red-400 text-base">close</span>
+                                        Access to all Miraitu services
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                                    Type <span className="text-red-500 font-black">DELETE</span> to confirm
+                                </label>
+                                <input
+                                    type="text"
+                                    value={deleteConfirmText}
+                                    onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
+                                    placeholder="Type DELETE"
+                                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 focus:border-red-400 outline-none text-sm font-bold text-gray-900 dark:text-white placeholder:text-gray-400 transition-colors"
+                                    autoFocus
+                                    disabled={isDeleting}
+                                />
+                            </div>
+
+                            {deleteError && (
+                                <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 text-sm font-medium flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-base">error</span>
+                                    {deleteError}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="p-6 pt-0 flex gap-3">
+                            <button
+                                onClick={() => { setShowDeleteModal(false); setDeleteConfirmText(''); setDeleteError(null); }}
+                                disabled={isDeleting}
+                                className="flex-1 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDeleteAccount}
+                                disabled={deleteConfirmText !== 'DELETE' || isDeleting}
+                                className="flex-1 py-3 rounded-xl bg-red-600 text-white text-sm font-bold shadow-lg shadow-red-300/30 hover:bg-red-700 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                {isDeleting ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                                        Deleting...
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="material-symbols-outlined text-lg">delete_forever</span>
+                                        Delete My Account
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

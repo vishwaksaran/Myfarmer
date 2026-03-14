@@ -41,7 +41,12 @@ export default function HeaderAuthSection() {
                 >
                     <div className="relative">
                         {user.photoURL ? (
-                            <img src={user.photoURL} alt="User" className="size-8 rounded-full ring-2 ring-primary/30" />
+                            <>
+                                <img src={user.photoURL} alt="User" className="size-8 rounded-full ring-2 ring-primary/30" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }} />
+                                <div className="hidden size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary ring-2 ring-primary/30">
+                                    <span className="material-symbols-outlined text-xl">person</span>
+                                </div>
+                            </>
                         ) : (
                             <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary ring-2 ring-primary/30">
                                 <span className="material-symbols-outlined text-xl">person</span>
@@ -65,7 +70,12 @@ export default function HeaderAuthSection() {
                             <div className="p-4 bg-gradient-to-br from-primary/5 to-transparent border-b border-black/5 dark:border-white/10">
                                 <div className="flex items-center gap-3">
                                     {user.photoURL ? (
-                                        <img src={user.photoURL} alt="Profile" className="size-12 rounded-full ring-2 ring-primary/30 shadow-md" />
+                                        <>
+                                            <img src={user.photoURL} alt="Profile" className="size-12 rounded-full ring-2 ring-primary/30 shadow-md" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }} />
+                                            <div className="hidden size-12 rounded-full bg-primary/10 flex items-center justify-center text-primary ring-2 ring-primary/30">
+                                                <span className="material-symbols-outlined text-2xl">person</span>
+                                            </div>
+                                        </>
                                     ) : (
                                         <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center text-primary ring-2 ring-primary/30">
                                             <span className="material-symbols-outlined text-2xl">person</span>
@@ -80,7 +90,7 @@ export default function HeaderAuthSection() {
                             {/* Menu Items */}
                             <div className="p-2">
                                 <Link
-                                    href="/home/settings"
+                                    href="/home/profile"
                                     onClick={() => setIsProfileOpen(false)}
                                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
                                 >

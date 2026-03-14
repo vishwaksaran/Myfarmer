@@ -5,6 +5,24 @@ import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 
 /**
+ * Check if user has completed onboarding by querying their profile.
+ * Returns the redirect path: '/onboarding' for new users, '/' for existing.
+ */
+async function getRedirectPath(userId: string): Promise<string> {
+    try {
+        const { data } = await supabase
+            .from('profiles')
+            .select('onboarding_completed')
+            .eq('id', userId)
+            .single();
+        return data?.onboarding_completed ? '/' : '/onboarding';
+    } catch {
+        // If profile check fails, go to home (fallback)
+        return '/';
+    }
+}
+
+/**
  * Auth Callback Page (Client-Side)
  *
  * Supabase OAuth (implicit flow) returns tokens in the URL hash fragment
@@ -36,16 +54,18 @@ export default function AuthCallbackPage() {
                 }
 
                 if (data.session) {
-                    // Session established successfully — redirect to home
-                    router.replace('/');
+                    // Session established — check onboarding status
+                    const path = await getRedirectPath(data.session.user.id);
+                    router.replace(path);
                 } else {
                     // No session yet — listen for the auth state change
                     // (the client may still be processing the hash)
                     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-                        (event, session) => {
+                        async (event, session) => {
                             if (event === 'SIGNED_IN' && session) {
                                 subscription.unsubscribe();
-                                router.replace('/');
+                                const path = await getRedirectPath(session.user.id);
+                                router.replace(path);
                             }
                         }
                     );

@@ -12,7 +12,7 @@ import { LangCode } from '@/i18n/translations';
  * UserLoginPage - Login page with Google SSO and Phone Auth
  */
 export default function UserLoginPage() {
-    const { user, loading, signInWithGoogle, signInWithPhone, verifyOtp, loginAsGuest } = useAuth();
+    const { user, loading, signInWithGoogle, signInWithPhone, verifyOtp, loginAsGuest, checkOnboardingStatus } = useAuth();
     const { lang, setLang, t } = useLanguage();
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
@@ -113,7 +113,9 @@ export default function UserLoginPage() {
                 setOtp('');
             } else {
                 setSuccessMessage('✅ Login successful! Redirecting...');
-                setTimeout(() => router.push('/'), 1500);
+                // Check if onboarding is needed
+                const onboarded = await checkOnboardingStatus();
+                setTimeout(() => router.push(onboarded ? '/' : '/onboarding'), 1500);
             }
         } catch {
             setError('Failed to verify OTP. Please try again.');

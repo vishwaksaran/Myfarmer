@@ -134,7 +134,7 @@ export default function ProfilePage() {
                                     <div className="relative group">
                                         <div className="size-28 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center overflow-hidden border-2 border-primary/20 shadow-lg">
                                             {avatarUrl ? (
-                                                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                                             ) : (
                                                 <span className="material-symbols-outlined text-6xl text-primary/40">person</span>
                                             )}
