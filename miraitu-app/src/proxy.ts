@@ -58,7 +58,8 @@ export async function proxy(request: NextRequest) {
 
     // ── Admin route protection ───────────────────────────────────────
     // Protect all /admin/* routes — only users with role='admin' can access
-    if (pathname.startsWith('/admin')) {
+    // Exclude /admin-login so it doesn't redirect in a loop
+    if (pathname.startsWith('/admin') && pathname !== '/admin-login') {
         // Not logged in → redirect to admin login
         if (!user) {
             const loginUrl = new URL('/admin-login', request.url);
