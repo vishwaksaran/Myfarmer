@@ -94,7 +94,7 @@ export default function LoginPromptOverlay() {
                         )}
                     </button>
 
-                    {/* Google login */}
+                    {/* Google login — temporarily disabled
                     <button
                         onClick={handleGoogleLogin}
                         disabled={authLoading}
@@ -103,6 +103,7 @@ export default function LoginPromptOverlay() {
                         <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" />
                         <span className="font-bold text-sm text-gray-700 dark:text-gray-200">Continue with Google</span>
                     </button>
+                    */}
 
                     {/* Sign Up button */}
                     <button

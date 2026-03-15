@@ -392,6 +392,7 @@ export default function UserLoginPage() {
                             {/* DEFAULT SELECTION VIEW */}
                             {authMethod === 'default' && (
                                 <div className="space-y-4 animate-button-entrance">
+                                    {/* Google SSO — temporarily disabled
                                     <button
                                         onClick={handleGoogleSignIn}
                                         disabled={isSigningIn}
@@ -406,13 +407,7 @@ export default function UserLoginPage() {
                                             </>
                                         )}
                                     </button>
-
-                                    {/* Divider */}
-                                    <div className="flex items-center gap-4 my-6">
-                                        <div className="flex-1 h-px bg-gray-200" />
-                                        <span className="text-sm text-gray-400 font-medium">{t('login.or')}</span>
-                                        <div className="flex-1 h-px bg-gray-200" />
-                                    </div>
+                                    */}
 
                                     {/* Phone Login Button */}
                                     <button
@@ -423,12 +418,7 @@ export default function UserLoginPage() {
                                         <span>{t('login.continuePhone')}</span>
                                     </button>
 
-                                    <button
-                                        onClick={handleGuestLogin}
-                                        className="w-full py-3 text-sm font-semibold text-gray-500 hover:text-[var(--miraitu-primary-green)] transition-colors underline decoration-dotted underline-offset-4"
-                                    >
-                                        {t('login.skipGuest')}
-                                    </button>
+                                    {/* Guest login removed */}
 
                                     {/* Dev Login — localhost only */}
                                     {typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && (
