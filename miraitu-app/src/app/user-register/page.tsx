@@ -93,6 +93,8 @@ export default function UserRegisterPage() {
                     // Save name to profile if provided
                     if (fullName.trim()) {
                         await supabase.from('profiles').update({ full_name: fullName.trim() }).eq('id', data.user_id);
+                        // Store name in sessionStorage so onboarding can pre-fill it reliably
+                        try { sessionStorage.setItem('miraitu_reg_name', fullName.trim()); } catch { /* ignore */ }
                     }
                 }
 

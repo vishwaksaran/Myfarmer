@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import MiraituLogo from '@/components/MiraituLogo';
@@ -350,7 +350,7 @@ const DEFAULT_STEP4: Step4Config = STEP4_BY_ROLE.farmer;
 // ─── Component ────────────────────────────────────────────────────
 
 export default function OnboardingPage() {
-    const { user, loading, updateProfile } = useAuth();
+    const { user, loading, updateProfile, deleteAccount, fetchProfile } = useAuth();
     const router = useRouter();
     const [currentStep, setCurrentStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -359,6 +359,9 @@ export default function OnboardingPage() {
     const [animateIn, setAnimateIn] = useState(true);
     const [emailChecking, setEmailChecking] = useState(false);
     const [emailError, setEmailError] = useState<string | null>(null);
+    const [showDiscardModal, setShowDiscardModal] = useState(false);
+    const [isDiscarding, setIsDiscarding] = useState(false);
+    const isSubmittingRef = useRef(false);
 
     const [formData, setFormData] = useState<OnboardingData>({
         full_name: '',
@@ -384,13 +387,31 @@ export default function OnboardingPage() {
                 phoneDigits = phoneDigits.slice(2); // strip '91' prefix
             }
 
+            // Check sessionStorage for name saved during registration (most reliable for OTP users)
+            let regName = '';
+            try { regName = sessionStorage.getItem('miraitu_reg_name') || ''; } catch { /* ignore */ }
+
+            const nameToUse = user.displayName || regName;
+
             setFormData(prev => ({
                 ...prev,
-                full_name: user.displayName || prev.full_name,
+                full_name: nameToUse || prev.full_name,
                 phone: phoneDigits || prev.phone,
             }));
+
+            // Also fetch profile from DB in case displayName isn't loaded yet
+            if (!nameToUse) {
+                fetchProfile().then(profile => {
+                    if (profile?.full_name) {
+                        setFormData(prev => ({
+                            ...prev,
+                            full_name: prev.full_name || profile.full_name || '',
+                        }));
+                    }
+                });
+            }
         }
-    }, [user]);
+    }, [user, fetchProfile]);
 
     // Redirect to login if not authenticated
     useEffect(() => {
@@ -398,6 +419,56 @@ export default function OnboardingPage() {
             router.replace('/user-login');
         }
     }, [user, loading, router]);
+
+    // ── Navigation Guard: prevent leaving onboarding without completing ──
+    useEffect(() => {
+        // Warn on browser tab close / refresh
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (isSubmittingRef.current) return; // Allow navigation after successful submit
+            e.preventDefault();
+        };
+
+        // Intercept browser back button
+        const handlePopState = () => {
+            if (isSubmittingRef.current) return;
+            // Push state back to prevent actual navigation
+            window.history.pushState(null, '', window.location.href);
+            setShowDiscardModal(true);
+        };
+
+        // Push an extra history entry so popstate fires on back button
+        window.history.pushState(null, '', window.location.href);
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        window.addEventListener('popstate', handlePopState);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, []);
+
+    // Handle discard: delete account and redirect
+    const handleDiscard = async () => {
+        setIsDiscarding(true);
+        try {
+            const result = await deleteAccount();
+            if (result.error) {
+                setError('Failed to discard account. Please try again.');
+                setShowDiscardModal(false);
+                setIsDiscarding(false);
+                return;
+            }
+            // Clear registration name from sessionStorage
+            try { sessionStorage.removeItem('miraitu_reg_name'); } catch { /* ignore */ }
+            isSubmittingRef.current = true; // Allow navigation
+            router.replace('/user-register');
+        } catch {
+            setError('Something went wrong. Please try again.');
+            setShowDiscardModal(false);
+            setIsDiscarding(false);
+        }
+    };
 
     // Step animation
     const animateStep = useCallback((direction: 'next' | 'prev') => {
@@ -572,6 +643,9 @@ export default function OnboardingPage() {
 
             // Mark in sessionStorage so the app knows onboarding is done
             sessionStorage.setItem('miraitu_onboarding_done', 'true');
+            // Clear registration name from sessionStorage
+            try { sessionStorage.removeItem('miraitu_reg_name'); } catch { /* ignore */ }
+            isSubmittingRef.current = true; // Allow navigation past the guard
             router.replace('/');
         } catch {
             setError('Something went wrong. Please try again.');
@@ -592,6 +666,45 @@ export default function OnboardingPage() {
 
     return (
         <div className="relative min-h-screen bg-[var(--miraitu-background-light)] font-display overflow-hidden">
+            {/* ── Discard Confirmation Modal ── */}
+            {showDiscardModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-fade-in">
+                        <div className="flex items-center justify-center w-14 h-14 bg-red-100 rounded-full mx-auto mb-4">
+                            <span className="material-symbols-outlined text-red-500 text-3xl">warning</span>
+                        </div>
+                        <h3 className="text-lg font-black text-center text-gray-900 mb-2">Discard Setup?</h3>
+                        <p className="text-sm text-gray-500 text-center mb-6">
+                            Your profile setup is incomplete. If you leave now, your account will be deleted and you&apos;ll need to register again.
+                        </p>
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={handleDiscard}
+                                disabled={isDiscarding}
+                                className="w-full py-3 rounded-xl bg-red-500 text-white font-bold text-sm hover:bg-red-600 active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                            >
+                                {isDiscarding ? (
+                                    <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
+                                ) : (
+                                    <>
+                                        <span className="material-symbols-outlined text-lg">delete</span>
+                                        Yes, Discard & Delete Account
+                                    </>
+                                )}
+                            </button>
+                            <button
+                                onClick={() => setShowDiscardModal(false)}
+                                disabled={isDiscarding}
+                                className="w-full py-3 rounded-xl border-2 border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                            >
+                                <span className="material-symbols-outlined text-lg">arrow_back</span>
+                                Cancel, Continue Setup
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Background */}
             <div className="fixed inset-0 z-0">
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #e8f0e5 0%, #d4e5cf 50%, #c5dbbe 100%)' }} />
