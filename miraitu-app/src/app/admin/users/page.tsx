@@ -47,6 +47,8 @@ export default function AdminUsersPage() {
             'Email': u.email || '',
             'Sign-in Method': u.auth_provider === 'google' ? 'Google SSO' : u.auth_provider === 'phone' ? 'Phone OTP' : (u.auth_provider || ''),
             'Phone': u.phone || '',
+            'Device': u.device_type || '',
+            'Device Detail': u.last_login_device || '',
             'Role': u.role || '',
             'Farm Location': u.farm_location || '',
             'District': u.district || '',
@@ -182,6 +184,7 @@ export default function AdminUsersPage() {
                                     <th className="px-4 py-3">User</th>
                                     <th className="px-4 py-3">Email</th>
                                     <th className="px-4 py-3">Phone</th>
+                                    <th className="px-4 py-3">Device</th>
                                     <th className="px-4 py-3">Role</th>
                                     <th className="px-4 py-3">Location</th>
                                     <th className="px-4 py-3">Interests</th>
@@ -238,6 +241,34 @@ export default function AdminUsersPage() {
                                             )}
                                         </td>
                                         <td className="px-4 py-3 text-gray-600">{u.phone || '—'}</td>
+                                        <td className="px-4 py-3">
+                                            {u.device_type ? (
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className={`material-symbols-outlined text-sm ${
+                                                        u.device_type === 'mobile' ? 'text-blue-500' :
+                                                        u.device_type === 'tablet' ? 'text-purple-500' :
+                                                        'text-gray-500'
+                                                    }`}>
+                                                        {u.device_type === 'mobile' ? 'smartphone' :
+                                                         u.device_type === 'tablet' ? 'tablet' : 'computer'}
+                                                    </span>
+                                                    <div>
+                                                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold capitalize ${
+                                                            u.device_type === 'mobile' ? 'bg-blue-50 text-blue-600' :
+                                                            u.device_type === 'tablet' ? 'bg-purple-50 text-purple-600' :
+                                                            'bg-gray-100 text-gray-600'
+                                                        }`}>
+                                                            {u.device_type}
+                                                        </span>
+                                                        {u.last_login_device && (
+                                                            <p className="text-[9px] text-gray-400 mt-0.5 truncate max-w-[100px]" title={u.last_login_device}>{u.last_login_device}</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <span className="text-gray-400 text-xs">—</span>
+                                            )}
+                                        </td>
                                         <td className="px-4 py-3">
                                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
                                                 u.role === 'admin' ? 'bg-red-100 text-red-700' :

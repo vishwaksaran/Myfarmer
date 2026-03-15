@@ -1,11 +1,53 @@
 import { NextResponse } from 'next/server';
+import { headers } from 'next/headers';
 
 const MSG91_AUTH_KEY = process.env.MSG91_AUTH_KEY!;
 const MSG91_TEMPLATE_ID = process.env.MSG91_TEMPLATE_ID!;
 
+// ── Rate Limiting: max 2 OTP requests per IP per 15-minute window ────
+const OTP_RATE_LIMIT = 2;
+const OTP_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const rateLimitMap = new Map<string, { count: number; firstRequestAt: number }>();
+
+// Cleanup stale entries every 5 minutes
+setInterval(() => {
+    const now = Date.now();
+    for (const [key, val] of rateLimitMap) {
+        if (now - val.firstRequestAt > OTP_WINDOW_MS) {
+            rateLimitMap.delete(key);
+        }
+    }
+}, 5 * 60 * 1000);
+
+function getClientIP(headersList: Headers): string {
+    // Vercel/Cloudflare typically set these
+    return headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+        headersList.get('x-real-ip') ||
+        headersList.get('cf-connecting-ip') ||
+        'unknown';
+}
+
+function checkRateLimit(key: string): { allowed: boolean; remaining: number; retryAfterMs?: number } {
+    const now = Date.now();
+    const entry = rateLimitMap.get(key);
+
+    if (!entry || now - entry.firstRequestAt > OTP_WINDOW_MS) {
+        rateLimitMap.set(key, { count: 1, firstRequestAt: now });
+        return { allowed: true, remaining: OTP_RATE_LIMIT - 1 };
+    }
+
+    if (entry.count >= OTP_RATE_LIMIT) {
+        const retryAfterMs = OTP_WINDOW_MS - (now - entry.firstRequestAt);
+        return { allowed: false, remaining: 0, retryAfterMs };
+    }
+
+    entry.count++;
+    return { allowed: true, remaining: OTP_RATE_LIMIT - entry.count };
+}
+
 export async function POST(request: Request) {
     try {
-        const { phone } = await request.json();
+        const { phone, deviceId } = await request.json();
 
         if (!phone || typeof phone !== 'string') {
             return NextResponse.json({ error: 'Phone number is required' }, { status: 400 });
@@ -27,7 +69,22 @@ export async function POST(request: Request) {
             );
         }
 
-        console.log(`[Send OTP] Sending to ${mobile} with template ${MSG91_TEMPLATE_ID}`);
+        // ── Rate limit check (by IP + deviceId composite key) ────────────
+        const headersList = await headers();
+        const clientIP = getClientIP(headersList);
+        const rateLimitKey = deviceId ? `${clientIP}:${deviceId}` : clientIP;
+        const { allowed, remaining, retryAfterMs } = checkRateLimit(rateLimitKey);
+
+        if (!allowed) {
+            const retryMinutes = Math.ceil((retryAfterMs || 0) / 60000);
+            console.warn(`[Send OTP] Rate limited: ${rateLimitKey} (retry in ${retryMinutes}m)`);
+            return NextResponse.json(
+                { error: `Too many OTP requests. Please try again in ${retryMinutes} minute${retryMinutes !== 1 ? 's' : ''}.`, rateLimited: true },
+                { status: 429 }
+            );
+        }
+
+        console.log(`[Send OTP] Sending to ${mobile} (IP: ${clientIP}, remaining: ${remaining}) with template ${MSG91_TEMPLATE_ID}`);
 
         const response = await fetch('https://control.msg91.com/api/v5/otp', {
             method: 'POST',

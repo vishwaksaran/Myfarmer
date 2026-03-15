@@ -256,10 +256,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Phone OTP — send code via MSG91
     const signInWithPhone = async (phone: string): Promise<{ error: string | null }> => {
         try {
+            // Generate/retrieve a persistent device ID for rate limiting
+            let deviceId = '';
+            if (typeof window !== 'undefined') {
+                deviceId = localStorage.getItem('miraitu_device_id') || '';
+                if (!deviceId) {
+                    deviceId = crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+                    localStorage.setItem('miraitu_device_id', deviceId);
+                }
+            }
+
             const response = await fetch('/api/auth/send-otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone }),
+                body: JSON.stringify({ phone, deviceId }),
             });
             const data = await response.json();
             if (!response.ok || data.error) {

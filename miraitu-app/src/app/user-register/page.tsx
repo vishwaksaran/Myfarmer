@@ -128,10 +128,6 @@ export default function UserRegisterPage() {
                 setValidationError('Please verify your mobile number with OTP before continuing.');
                 return;
             }
-            if (!formData.farmLocation) {
-                setValidationError('Please select your farm location.');
-                return;
-            }
         }
         // Validate Step 2
         if (currentStep === 2) {
@@ -311,7 +307,7 @@ export default function UserRegisterPage() {
                                                 }}
                                                 disabled={phoneVerified}
                                                 className={`skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border bg-[#fcfdfc] outline-none ${phoneVerified ? 'border-[var(--miraitu-primary-green)] bg-green-50/50 text-gray-600' : 'border-gray-200 focus:border-[var(--miraitu-primary-green)]'}`}
-                                                placeholder="+91 98765 43210"
+                                                placeholder="+91 XXXXX XXXXX"
                                                 type="tel"
                                                 required
                                                 minLength={10}
@@ -343,7 +339,7 @@ export default function UserRegisterPage() {
                                                     ) : (
                                                         <>
                                                             <span className="material-symbols-outlined text-lg">sms</span>
-                                                            Send OTP to Verify
+                                                            Verify
                                                         </>
                                                     )}
                                                 </button>
@@ -394,28 +390,6 @@ export default function UserRegisterPage() {
                                             )}
                                         </div>
                                     )}
-                                </div>
-                                <div className="col-span-1 md:col-span-2">
-                                    <label className="flex flex-col gap-2">
-                                        <span className="text-[#0f1a11] text-sm font-bold uppercase tracking-wide ml-1">Farm Location</span>
-                                        <div className="relative">
-                                            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">distance</span>
-                                            <select
-                                                name="farmLocation"
-                                                value={formData.farmLocation}
-                                                onChange={handleInputChange}
-                                                className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] text-[#0f1a11] appearance-none"
-                                                required
-                                            >
-                                                <option disabled value="">Select your district / region</option>
-                                                <option value="north">North Valley Region</option>
-                                                <option value="south">Southern Highlands</option>
-                                                <option value="east">Eastern Delta Plains</option>
-                                                <option value="west">Western Foothills</option>
-                                            </select>
-                                            <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
-                                        </div>
-                                    </label>
                                 </div>
                             </div>
 

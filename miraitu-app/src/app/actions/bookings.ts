@@ -247,6 +247,8 @@ export interface UserRecord {
     farm_size?: string | null;
     experience_years?: string | null;
     preferred_language?: string | null;
+    device_type?: string | null;
+    last_login_device?: string | null;
 }
 
 // ─── Admin: Fetch provider earnings by ID ────────────────────────────

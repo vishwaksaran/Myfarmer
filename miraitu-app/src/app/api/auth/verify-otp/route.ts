@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
+import { headers } from 'next/headers';
 
 const MSG91_AUTH_KEY = process.env.MSG91_AUTH_KEY!;
 const PHONE_AUTH_SECRET = process.env.PHONE_AUTH_SECRET!;
@@ -13,6 +14,39 @@ function generatePhonePassword(phone: string): string {
         .createHmac('sha256', PHONE_AUTH_SECRET)
         .update(phone)
         .digest('hex');
+}
+
+/**
+ * Detect device type from user-agent string
+ */
+function detectDeviceType(userAgent: string): { type: 'mobile' | 'desktop' | 'tablet'; detail: string } {
+    const ua = userAgent.toLowerCase();
+
+    // Tablet detection (before mobile, since some tablets match mobile patterns)
+    if (/ipad|tablet|playbook|silk/.test(ua) || (/android/.test(ua) && !/mobile/.test(ua))) {
+        return { type: 'tablet', detail: extractDeviceDetail(ua) };
+    }
+
+    // Mobile detection
+    if (/mobile|iphone|ipod|android.*mobile|blackberry|windows phone|opera mini|opera mobi/.test(ua)) {
+        return { type: 'mobile', detail: extractDeviceDetail(ua) };
+    }
+
+    return { type: 'desktop', detail: extractDeviceDetail(ua) };
+}
+
+function extractDeviceDetail(ua: string): string {
+    // Try to extract a short device identifier
+    if (ua.includes('iphone')) return 'iPhone';
+    if (ua.includes('ipad')) return 'iPad';
+    if (ua.includes('android')) {
+        const match = ua.match(/android\s[\d.]+;\s*([^)]+)/);
+        return match ? match[1].split(' Build')[0].trim() : 'Android';
+    }
+    if (ua.includes('windows')) return 'Windows';
+    if (ua.includes('macintosh') || ua.includes('mac os')) return 'Mac';
+    if (ua.includes('linux')) return 'Linux';
+    return 'Unknown';
 }
 
 /**
@@ -209,7 +243,7 @@ export async function POST(request: Request) {
 
         console.log('[Verify OTP] ✅ Session created for:', phoneWithCode);
 
-        // Check if user has completed onboarding
+        // Check if user has completed onboarding + save device type
         const userId = signInData.session.user.id;
         let onboardingCompleted = false;
         try {
@@ -221,6 +255,24 @@ export async function POST(request: Request) {
             onboardingCompleted = profile?.onboarding_completed === true;
         } catch {
             // Profile may not exist yet for new users
+        }
+
+        // ── Step 5: Detect and save device type ──────────────────────────────
+        try {
+            const headersList = await headers();
+            const userAgent = headersList.get('user-agent') || '';
+            const { type: deviceType, detail: deviceDetail } = detectDeviceType(userAgent);
+            console.log(`[Verify OTP] Device: ${deviceType} (${deviceDetail})`);
+
+            await supabaseAdmin
+                .from('profiles')
+                .update({
+                    device_type: deviceType,
+                    last_login_device: deviceDetail,
+                })
+                .eq('id', userId);
+        } catch (deviceErr) {
+            console.warn('[Verify OTP] Could not save device type:', deviceErr);
         }
 
         return NextResponse.json({
