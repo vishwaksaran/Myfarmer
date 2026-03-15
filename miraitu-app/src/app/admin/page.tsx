@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { fetchAllBookings, fetchAllUsers, type BookingRecord, type UserRecord } from '@/app/actions/bookings';
 
 export default function AdminDashboard() {
+    const router = useRouter();
     const [bookings, setBookings] = useState<BookingRecord[]>([]);
     const [users, setUsers] = useState<UserRecord[]>([]);
     const [loading, setLoading] = useState(true);
@@ -39,10 +41,10 @@ export default function AdminDashboard() {
     }, {} as Record<string, number>);
 
     const stats = [
-        { label: 'Total Bookings', value: bookings.length, icon: 'assignment', color: 'bg-blue-500' },
-        { label: 'Pending', value: pendingCount, icon: 'pending_actions', color: 'bg-amber-500' },
-        { label: 'Today', value: todayCount, icon: 'today', color: 'bg-green-500' },
-        { label: 'Total Users', value: users.length, icon: 'group', color: 'bg-purple-500' },
+        { label: 'Total Bookings', value: bookings.length, icon: 'assignment', color: 'bg-blue-500', href: '/admin/bookings' },
+        { label: 'Pending', value: pendingCount, icon: 'pending_actions', color: 'bg-amber-500', href: '/admin/bookings?status=pending' },
+        { label: 'Today', value: todayCount, icon: 'today', color: 'bg-green-500', href: '/admin/bookings?filter=today' },
+        { label: 'Total Users', value: users.length, icon: 'group', color: 'bg-purple-500', href: '/admin/users' },
     ];
 
     return (
@@ -52,11 +54,16 @@ export default function AdminDashboard() {
             {/* Stats Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 {stats.map((stat) => (
-                    <div key={stat.label} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                    <div
+                        key={stat.label}
+                        onClick={() => router.push(stat.href)}
+                        className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm cursor-pointer hover:shadow-md hover:border-gray-200 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150"
+                    >
                         <div className="flex items-center justify-between mb-3">
                             <div className={`${stat.color} size-10 rounded-xl flex items-center justify-center`}>
                                 <span className="material-symbols-outlined text-white text-xl">{stat.icon}</span>
                             </div>
+                            <span className="material-symbols-outlined text-gray-300 text-lg">arrow_forward</span>
                         </div>
                         <p className="text-2xl font-black text-gray-900">{stat.value}</p>
                         <p className="text-xs font-semibold text-gray-500 mt-1">{stat.label}</p>

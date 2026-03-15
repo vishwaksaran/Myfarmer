@@ -115,10 +115,10 @@ export default function AdminUsersPage() {
                 <h1 className="text-2xl md:text-3xl font-black text-gray-900">Users</h1>
                 <button
                     onClick={handleExportCSV}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white rounded-xl text-sm font-bold hover:bg-purple-700 transition-colors shadow-sm"
+                    className="flex items-center gap-1.5 px-3 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-700 transition-colors shadow-sm"
                 >
-                    <span className="material-symbols-outlined text-lg">download</span>
-                    Export Users CSV
+                    <span className="material-symbols-outlined text-base">download</span>
+                    <span className="hidden sm:inline">Export CSV</span>
                 </button>
             </div>
 

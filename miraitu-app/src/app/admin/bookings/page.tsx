@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { Suspense, useEffect, useState, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { fetchAllBookings, updateBookingStatus, deleteBooking, type BookingRecord } from '@/app/actions/bookings';
 import { downloadCSV } from '@/lib/csv-export';
 
@@ -24,10 +25,27 @@ const STATUS_OPTIONS = [
 ];
 
 export default function AdminBookingsPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center py-20">
+                <span className="material-symbols-outlined text-4xl text-green-600 animate-spin">progress_activity</span>
+            </div>
+        }>
+            <AdminBookingsContent />
+        </Suspense>
+    );
+}
+
+function AdminBookingsContent() {
+    const searchParams = useSearchParams();
+    const initialStatus = searchParams.get('status') || '';
+    const initialFilter = searchParams.get('filter') || '';
+
     const [bookings, setBookings] = useState<BookingRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [moduleFilter, setModuleFilter] = useState('');
-    const [statusFilter, setStatusFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState(initialStatus);
+    const [todayOnly, setTodayOnly] = useState(initialFilter === 'today');
     const [searchQuery, setSearchQuery] = useState('');
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -53,6 +71,12 @@ export default function AdminBookingsPage() {
     useEffect(() => { loadBookings(); }, [loadBookings]);
 
     const filteredBookings = bookings.filter(b => {
+        // Today filter
+        if (todayOnly) {
+            const d = new Date(b.created_at);
+            const today = new Date();
+            if (d.toDateString() !== today.toDateString()) return false;
+        }
         if (!searchQuery) return true;
         const q = searchQuery.toLowerCase();
         return (
@@ -165,6 +189,17 @@ export default function AdminBookingsPage() {
                 >
                     {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
+                <button
+                    onClick={() => setTodayOnly(!todayOnly)}
+                    className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-colors border ${
+                        todayOnly
+                            ? 'bg-green-600 text-white border-green-600'
+                            : 'bg-white text-gray-600 border-gray-200 hover:border-green-300'
+                    }`}
+                >
+                    <span className="material-symbols-outlined text-sm">today</span>
+                    Today
+                </button>
             </div>
 
             {/* Category-specific CSV export */}
