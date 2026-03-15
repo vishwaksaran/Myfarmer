@@ -235,12 +235,6 @@ export const translations: Record<LangCode, Record<string, string>> = {
         'livestock.buffaloes': 'Buffaloes',
         'livestock.goats': 'Goats',
         'livestock.others': 'Others',
-        // Machinery Section
-        'machinery.title': 'Machinery & Equipment',
-        'machinery.subtitle': 'Rent or purchase the latest agricultural technology.',
-        'machinery.compare': 'Compare',
-        'machinery.seeMore': 'See More Machinery',
-        'machinery.viewDetails': 'View Details',
         'livestock.marketplace': 'Marketplace',
         'livestock.health': 'Health',
         // Login Page
@@ -824,11 +818,6 @@ export const translations: Record<LangCode, Record<string, string>> = {
         'livestock.buffaloes': 'भैंस',
         'livestock.goats': 'बकरी',
         'livestock.others': 'अन्य',
-        'machinery.title': 'मशीनरी और उपकरण',
-        'machinery.subtitle': 'नवीनतम कृषि तकनीक किराए पर लें या खरीदें।',
-        'machinery.compare': 'तुलना करें',
-        'machinery.seeMore': 'और मशीनरी देखें',
-        'machinery.viewDetails': 'विवरण देखें',
         // Login Page
         'login.welcomeBack': 'स्वागत है',
         'login.signInSubtitle': 'अपने मिराइटू डैशबोर्ड तक पहुंचने के लिए लॉग इन करें',
@@ -1422,15 +1411,9 @@ export const translations: Record<LangCode, Record<string, string>> = {
         'livestock.healthStatus': 'ఆరోగ్య స్థితి',
         'livestock.call': 'కాల్ చేయండి',
         'livestock.cows': 'ఆవులు',
-        'livestock.buffaloes': 'గేదెలు',
+        'livestock.buffaloes': 'భైంసలు',
         'livestock.goats': 'మేకలు',
         'livestock.others': 'ఇతరాలు',
-        // Machinery Section
-        'machinery.title': 'యంత్రాలు & పరికరాలు',
-        'machinery.subtitle': 'తాజా వ్యవసాయ సాంకేతికతను అద్దెకు తీసుకోండి లేదా కొనుగోలు చేయండి.',
-        'machinery.compare': 'పోలిక',
-        'machinery.seeMore': 'మరిన్ని యంత్రాలు చూడండి',
-        'machinery.viewDetails': 'వివరాలు చూడండి',
         'livestock.marketplace': 'మార్కెట్‌ప్లేస్',
         'livestock.health': 'ఆరోగ్యం',
         // Login Page
