@@ -109,17 +109,36 @@ export default function AdminUsersPage() {
         setActionLoading(false);
     };
 
+    const [refreshing, setRefreshing] = useState(false);
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        const result = await fetchAllUsers();
+        setUsers(result.data);
+        setRefreshing(false);
+    };
+
     return (
         <div>
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div className="flex items-center justify-between gap-3 mb-6">
                 <h1 className="text-2xl md:text-3xl font-black text-gray-900">Users</h1>
-                <button
-                    onClick={handleExportCSV}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-700 transition-colors shadow-sm"
-                >
-                    <span className="material-symbols-outlined text-base">download</span>
-                    <span className="hidden sm:inline">Export CSV</span>
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleRefresh}
+                        disabled={refreshing}
+                        className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50"
+                    >
+                        <span className={`material-symbols-outlined text-base ${refreshing ? 'animate-spin' : ''}`}>refresh</span>
+                        <span className="hidden sm:inline">{refreshing ? 'Loading...' : 'Refresh'}</span>
+                    </button>
+                    <button
+                        onClick={handleExportCSV}
+                        className="flex items-center gap-1.5 px-3 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-700 transition-colors shadow-sm"
+                    >
+                        <span className="material-symbols-outlined text-base">download</span>
+                        <span className="hidden sm:inline">Export CSV</span>
+                    </button>
+                </div>
             </div>
 
             {/* Filters */}

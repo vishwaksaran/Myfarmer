@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import supabase from '@/lib/supabase';
 
 /**
@@ -10,30 +11,33 @@ import supabase from '@/lib/supabase';
  */
 async function getRedirectPath(userId: string): Promise<string> {
     try {
-        const { data } = await supabase
+        // Small delay to let the DB trigger (handle_new_user) finish
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const { data, error } = await supabase
             .from('profiles')
             .select('onboarding_completed')
             .eq('id', userId)
             .single();
-        return data?.onboarding_completed ? '/' : '/onboarding';
-    } catch {
-        // If profile check fails, go to home (fallback)
-        return '/';
+
+        console.log('[Auth Callback] Profile check:', { data, error: error?.message });
+
+        if (error || !data) {
+            // Profile doesn't exist yet or query failed → send to onboarding
+            return '/onboarding';
+        }
+
+        return data.onboarding_completed ? '/' : '/onboarding';
+    } catch (err) {
+        console.error('[Auth Callback] Profile check error:', err);
+        // On any error, default to onboarding (safer than skipping it)
+        return '/onboarding';
     }
 }
 
-/**
- * Auth Callback Page (Client-Side)
- *
- * Supabase OAuth (implicit flow) returns tokens in the URL hash fragment
- * (e.g. #access_token=...). Hash fragments are never sent to the server,
- * so this MUST be a client-side page.
- *
- * The browser Supabase client (with detectSessionInUrl: true) automatically
- * picks up the tokens from the hash and establishes the session.
- */
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const handled = useRef(false);
 
     useEffect(() => {
@@ -42,9 +46,27 @@ export default function AuthCallbackPage() {
 
         const handleCallback = async () => {
             try {
-                // The Supabase client with detectSessionInUrl: true
-                // automatically detects tokens in the URL hash fragment
-                // and exchanges them for a session.
+                // PKCE flow: exchange the authorization code for a session
+                const code = searchParams.get('code');
+                if (code) {
+                    console.log('[Auth Callback] PKCE code detected, exchanging...');
+                    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+                    if (error) {
+                        console.error('[Auth Callback] Code exchange error:', error.message);
+                        router.replace('/user-login?error=session_failed');
+                        return;
+                    }
+
+                    if (data.session) {
+                        const path = await getRedirectPath(data.session.user.id);
+                        console.log('[Auth Callback] Redirecting to:', path);
+                        router.replace(path);
+                        return;
+                    }
+                }
+
+                // Fallback: check existing session (implicit flow / already authenticated)
                 const { data, error } = await supabase.auth.getSession();
 
                 if (error) {
@@ -54,17 +76,17 @@ export default function AuthCallbackPage() {
                 }
 
                 if (data.session) {
-                    // Session established — check onboarding status
                     const path = await getRedirectPath(data.session.user.id);
+                    console.log('[Auth Callback] Redirecting to:', path);
                     router.replace(path);
                 } else {
                     // No session yet — listen for the auth state change
-                    // (the client may still be processing the hash)
                     const { data: { subscription } } = supabase.auth.onAuthStateChange(
                         async (event, session) => {
                             if (event === 'SIGNED_IN' && session) {
                                 subscription.unsubscribe();
                                 const path = await getRedirectPath(session.user.id);
+                                console.log('[Auth Callback] Auth change redirect to:', path);
                                 router.replace(path);
                             }
                         }
@@ -83,7 +105,7 @@ export default function AuthCallbackPage() {
         };
 
         handleCallback();
-    }, [router]);
+    }, [router, searchParams]);
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-[var(--miraitu-background-light)]">
@@ -95,5 +117,21 @@ export default function AuthCallbackPage() {
                 <p className="text-gray-400 text-sm">Please wait while we complete authentication</p>
             </div>
         </div>
+    );
+}
+
+export default function AuthCallbackPage() {
+    return (
+        <Suspense
+            fallback={
+                <div className="min-h-screen flex items-center justify-center bg-[var(--miraitu-background-light)]">
+                    <span className="material-symbols-outlined text-5xl text-[var(--miraitu-primary-green)] animate-spin">
+                        progress_activity
+                    </span>
+                </div>
+            }
+        >
+            <AuthCallbackContent />
+        </Suspense>
     );
 }
