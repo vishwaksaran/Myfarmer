@@ -1,47 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-
-const storageServices = [
-    {
-        name: 'Cold Storage',
-        icon: 'ac_unit',
-        desc: 'Climate-controlled storage for perishables',
-        color: 'text-green-600',
-        bg: 'bg-green-50 dark:bg-green-900/20',
-        href: '/home/services/storage-godown',
-        badge: 'Popular'
-    },
-    {
-        name: 'Dry Godowns',
-        icon: 'warehouse',
-        desc: 'Secure storage for grains & heavy goods',
-        color: 'text-green-600',
-        bg: 'bg-green-50 dark:bg-green-900/20',
-        href: '/home/services/storage-godown',
-        badge: ''
-    },
-    {
-        name: 'Grain Silos',
-        icon: 'archive',
-        desc: 'Bulk storage solutions for harvest',
-        color: 'text-green-600',
-        bg: 'bg-green-50 dark:bg-green-900/20',
-        href: '/home/services/storage-godown',
-        badge: ''
-    },
-    {
-        name: 'Warehouse Leasing',
-        icon: 'real_estate_agent',
-        desc: 'Rent spaces for long-term storage',
-        color: 'text-green-600',
-        bg: 'bg-green-50 dark:bg-green-900/20',
-        href: '/home/services/storage-godown',
-        badge: 'New'
-    }
-];
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export default function StorageSection() {
+    const { t } = useLanguage();
+
+    const storageServices = [
+        { name: t('storage.coldStorage'), icon: 'ac_unit', desc: t('storage.coldStorageDesc'), color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20', href: '/home/services/storage-godown', badge: t('storage.popular') },
+        { name: t('storage.dryGodowns'), icon: 'warehouse', desc: t('storage.dryGodownsDesc'), color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20', href: '/home/services/storage-godown', badge: '' },
+        { name: t('storage.grainSilos'), icon: 'archive', desc: t('storage.grainSilosDesc'), color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20', href: '/home/services/storage-godown', badge: '' },
+        { name: t('storage.warehouseLeasing'), icon: 'real_estate_agent', desc: t('storage.warehouseLeasingDesc'), color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20', href: '/home/services/storage-godown', badge: t('storage.new') },
+    ];
+
     return (
         <section className="py-12 md:py-16 bg-white dark:bg-[#121811] relative overflow-hidden border-t border-gray-100 dark:border-gray-800">
             {/* Background Pattern */}
@@ -54,13 +25,13 @@ export default function StorageSection() {
                     <div>
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-bold uppercase tracking-wider mb-2">
                             <span className="material-symbols-outlined text-sm">inventory_2</span>
-                            Storage Solutions
+                            {t('storage.badge')}
                         </div>
                         <h2 className="text-3xl md:text-4xl font-black text-[#121811] dark:text-[#f9fbf9] tracking-tight">
-                            Cold Storage & Godowns
+                            {t('storage.title')}
                         </h2>
                         <p className="text-gray-500 mt-2 text-lg max-w-xl">
-                            Find verify local storage facilities to keep your produce fresh and secure until you get the best price.
+                            {t('storage.desc')}
                         </p>
                     </div>
 
@@ -68,7 +39,7 @@ export default function StorageSection() {
                         href="/home/services/storage-godown"
                         className="hidden md:flex items-center gap-2 text-green-600 font-bold hover:gap-3 transition-all"
                     >
-                        View All Facilities <span className="material-symbols-outlined">arrow_forward</span>
+                        {t('storage.viewAll')} <span className="material-symbols-outlined">arrow_forward</span>
                     </Link>
                 </div>
 
@@ -98,7 +69,7 @@ export default function StorageSection() {
                             </p>
 
                             <div className="mt-4 flex items-center text-xs font-bold text-green-600 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0 duration-300">
-                                Check Availability <span className="material-symbols-outlined text-sm ml-1">arrow_forward</span>
+                                {t('storage.checkAvailability')} <span className="material-symbols-outlined text-sm ml-1">arrow_forward</span>
                             </div>
                         </Link>
                     ))}
@@ -110,7 +81,7 @@ export default function StorageSection() {
                         href="/home/services/storage-godown"
                         className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-green-600 text-white font-bold shadow-lg shadow-green-200 dark:shadow-none"
                     >
-                        Find Storage Nearby <span className="material-symbols-outlined">search</span>
+                        {t('storage.findNearby')} <span className="material-symbols-outlined">search</span>
                     </Link>
                 </div>
             </div>

@@ -1,61 +1,31 @@
 'use client';
 
 import { useState } from 'react';
-
-const videos = [
-    {
-        id: 'v1',
-        title: 'Shiva Kumar \u2013 Verified Seller',
-        role: 'Seller',
-        thumbnail: 'https://images.unsplash.com/photo-1595246140625-573b715d11dc?w=400&h=300&fit=crop',
-        youtubeId: 'EZXkM7UXoDI',
-        views: '1.2K views',
-        duration: '3:45'
-    },
-    {
-        id: 'v2',
-        title: 'Ramesh \u2013 Tractor Dealer',
-        role: 'Dealer',
-        thumbnail: 'https://images.unsplash.com/photo-1530507629858-e4977d01e975?w=400&h=300&fit=crop',
-        youtubeId: 'EZXkM7UXoDI',
-        views: '3.4K views',
-        duration: '4:12'
-    },
-    {
-        id: 'v3',
-        title: 'Lakshmi \u2013 Organic Farmer',
-        role: 'Farmer',
-        thumbnail: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400&h=300&fit=crop',
-        youtubeId: 'EZXkM7UXoDI',
-        views: '5.1K views',
-        duration: '5:30'
-    },
-    {
-        id: 'v4',
-        title: 'Venkat \u2013 Drone Service',
-        role: 'Service Provider',
-        thumbnail: 'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=400&h=300&fit=crop',
-        youtubeId: 'EZXkM7UXoDI',
-        views: '890 views',
-        duration: '2:58'
-    }
-];
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export default function FeaturedVideosSection() {
     const [playingVideo, setPlayingVideo] = useState<string | null>(null);
+    const { t } = useLanguage();
+
+    const videos = [
+        { id: 'v1', title: 'Shiva Kumar \u2013 Verified Seller', role: t('videos.seller'), thumbnail: 'https://images.unsplash.com/photo-1595246140625-573b715d11dc?w=400&h=300&fit=crop', youtubeId: 'EZXkM7UXoDI', views: '1.2K views', duration: '3:45' },
+        { id: 'v2', title: 'Ramesh \u2013 Tractor Dealer', role: t('videos.dealer'), thumbnail: 'https://images.unsplash.com/photo-1530507629858-e4977d01e975?w=400&h=300&fit=crop', youtubeId: 'EZXkM7UXoDI', views: '3.4K views', duration: '4:12' },
+        { id: 'v3', title: 'Lakshmi \u2013 Organic Farmer', role: t('videos.farmer'), thumbnail: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400&h=300&fit=crop', youtubeId: 'EZXkM7UXoDI', views: '5.1K views', duration: '5:30' },
+        { id: 'v4', title: 'Venkat \u2013 Drone Service', role: t('videos.serviceProvider'), thumbnail: 'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=400&h=300&fit=crop', youtubeId: 'EZXkM7UXoDI', views: '890 views', duration: '2:58' },
+    ];
 
     return (
         <section className="py-12 md:py-16 bg-white dark:bg-[#121811] relative overflow-hidden">
             <div className="mx-auto max-w-[1400px] px-4 md:px-6 relative z-10">
                 <div className="text-center mb-10">
                     <span className="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-wider text-red-600 uppercase bg-red-100 rounded-full dark:bg-red-900/30 dark:text-red-300">
-                        Success Stories
+                        {t('videos.badge')}
                     </span>
                     <h2 className="text-3xl md:text-4xl font-black text-[#121811] dark:text-[#f9fbf9] tracking-tight mb-3">
-                        Watch Farmer Stories
+                        {t('videos.title')}
                     </h2>
                     <p className="text-gray-500 max-w-2xl mx-auto text-lg">
-                        Hear directly from sellers, dealers, and farmers about their success with Miraitu.
+                        {t('videos.desc')}
                     </p>
                 </div>
 

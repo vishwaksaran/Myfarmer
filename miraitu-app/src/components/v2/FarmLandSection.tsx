@@ -1,47 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-
-const landServices = [
-    {
-        name: 'Buy Farm Land',
-        icon: 'landscape',
-        desc: 'Find verified agricultural land for sale',
-        color: 'text-green-700',
-        bg: 'bg-green-100 dark:bg-green-900/30',
-        href: '/home/land/buy',
-        badge: 'Hot'
-    },
-    {
-        name: 'Sell Farm Land',
-        icon: 'real_estate_agent',
-        desc: 'List your property for the best price',
-        color: 'text-emerald-700',
-        bg: 'bg-emerald-100 dark:bg-emerald-900/30',
-        href: '/home/land/sell',
-        badge: ''
-    },
-    {
-        name: 'Lease Land',
-        icon: 'handshake',
-        desc: 'Long-term leasing opportunities',
-        color: 'text-teal-700',
-        bg: 'bg-teal-100 dark:bg-teal-900/30',
-        href: '/home/land/lease',
-        badge: ''
-    },
-    {
-        name: 'Rent Farm Land',
-        icon: 'key',
-        desc: 'Short-term rental for seasonal farming',
-        color: 'text-lime-700',
-        bg: 'bg-lime-100 dark:bg-lime-900/30',
-        href: '/home/land/rent',
-        badge: ''
-    }
-];
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export default function FarmLandSection() {
+    const { t } = useLanguage();
+
+    const landServices = [
+        { name: t('farmLand.buy'), icon: 'landscape', desc: 'Find verified agricultural land for sale', color: 'text-green-700', bg: 'bg-green-100 dark:bg-green-900/30', href: '/home/land/buy', badge: 'Hot' },
+        { name: t('farmLand.sell'), icon: 'real_estate_agent', desc: 'List your property for the best price', color: 'text-emerald-700', bg: 'bg-emerald-100 dark:bg-emerald-900/30', href: '/home/land/sell', badge: '' },
+        { name: t('farmLand.lease'), icon: 'handshake', desc: 'Long-term leasing opportunities', color: 'text-teal-700', bg: 'bg-teal-100 dark:bg-teal-900/30', href: '/home/land/lease', badge: '' },
+        { name: t('farmLand.rent'), icon: 'key', desc: 'Short-term rental for seasonal farming', color: 'text-lime-700', bg: 'bg-lime-100 dark:bg-lime-900/30', href: '/home/land/rent', badge: '' },
+    ];
+
     return (
         <section className="px-4 md:px-6 py-12 md:py-16">
             <div className="mx-auto max-w-[1400px]">
@@ -54,11 +25,11 @@ export default function FarmLandSection() {
                     <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
                         <div className="max-w-3xl">
                             <h2 className="text-3xl md:text-5xl font-black text-white mb-6 leading-tight tracking-tight">
-                                Find Your Perfect <br className="hidden md:block" />
-                                <span className="text-lime-300">Farm Land</span>
+                                {t('farmLand.title')} <br className="hidden md:block" />
+                                <span className="text-lime-300">{t('farmLand.titleHighlight')}</span>
                             </h2>
                             <p className="text-white/80 text-lg md:text-xl font-medium max-w-2xl leading-relaxed mb-8">
-                                The easiest way to Buy, Sell, Rent, or Lease verified agricultural land. Connect directly with owners and buyers.
+                                {t('farmLand.desc')}
                             </p>
 
                             {/* Service Pills */}
@@ -84,7 +55,7 @@ export default function FarmLandSection() {
                             >
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-green-100/50 to-transparent w-full h-full -translate-x-full group-hover:animate-shimmer"></div>
                                 <span className="material-symbols-outlined text-2xl group-hover:rotate-12 transition-transform">travel_explore</span>
-                                View All Listings
+                                {t('farmLand.viewAll')}
                             </Link>
 
                             <Link
@@ -92,7 +63,7 @@ export default function FarmLandSection() {
                                 className="group flex items-center justify-center gap-3 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-md px-6 py-5 text-lg font-bold text-white hover:bg-white/20 hover:border-white/50 active:scale-[0.98] transition-all duration-300"
                             >
                                 <span className="material-symbols-outlined text-2xl">add_location_alt</span>
-                                Post Your Land
+                                {t('farmLand.postLand')}
                             </Link>
                         </div>
                     </div>

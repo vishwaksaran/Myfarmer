@@ -1,5 +1,6 @@
 'use client';
 
+import { useLanguage } from '@/i18n/LanguageContext';
 
 
 const teamMembers = [
@@ -64,6 +65,69 @@ const impactStats = [
 ];
 
 export default function AboutPage() {
+    const { t } = useLanguage();
+
+    const teamMembers = [
+        {
+            name: 'M. Raju',
+            role: t('about.founderRole'),
+            image: '/team/raju.jpeg',
+            linkedin: 'https://www.linkedin.com/in/raju-m07',
+            description: t('about.founderDesc'),
+        },
+        {
+            name: 'R.S. VishwakSaran',
+            role: t('about.cofounderRole'),
+            image: '/team/vishwaksaran.jpeg',
+            linkedin: 'https://www.linkedin.com/in/vishwaksaran',
+            description: t('about.cofounderDesc'),
+        },
+        {
+            name: 'CA Manpreet Singh',
+            role: t('about.directorRole'),
+            image: '/team/manpreeth.jpeg',
+            linkedin: 'https://www.linkedin.com/in/camanpreethsingh',
+            description: t('about.directorDesc'),
+        },
+    ];
+
+    const pillars = [
+        {
+            icon: 'visibility',
+            title: t('about.vision'),
+            description: t('about.visionDesc'),
+            gradient: 'from-blue-500 to-indigo-600',
+            bgLight: 'bg-blue-50 dark:bg-blue-950/20',
+            iconBg: 'bg-blue-100 dark:bg-blue-900/40',
+            iconColor: 'text-blue-600 dark:text-blue-400',
+        },
+        {
+            icon: 'rocket_launch',
+            title: t('about.mission'),
+            description: t('about.missionDesc'),
+            gradient: 'from-green-500 to-emerald-600',
+            bgLight: 'bg-green-50 dark:bg-green-950/20',
+            iconBg: 'bg-green-100 dark:bg-green-900/40',
+            iconColor: 'text-green-600 dark:text-green-400',
+        },
+        {
+            icon: 'flag',
+            title: t('about.goals'),
+            description: t('about.goalsDesc'),
+            gradient: 'from-orange-500 to-amber-600',
+            bgLight: 'bg-orange-50 dark:bg-orange-950/20',
+            iconBg: 'bg-orange-100 dark:bg-orange-900/40',
+            iconColor: 'text-orange-600 dark:text-orange-400',
+        },
+    ];
+
+    const impactStats = [
+        { value: '200+', label: t('about.districtsCovered'), icon: 'location_on' },
+        { value: '50K+', label: t('about.farmersConnected'), icon: 'groups' },
+        { value: '10K+', label: t('about.productsListed'), icon: 'inventory' },
+        { value: '4.8\u2605', label: t('about.appRating'), icon: 'star' },
+    ];
+
     return (
         <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-[#121811] dark:text-[#f9fbf9] transition-colors duration-300">
 
@@ -93,24 +157,24 @@ export default function AboutPage() {
                     <div className="mx-auto max-w-[1280px] text-center">
                         <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 backdrop-blur-md text-sm font-bold text-white/90 mb-8 border border-white/20">
                             <span className="material-symbols-outlined text-[#B0EA3C] text-lg">eco</span>
-                            About Miraitu
+                            {t('about.badge')}
                         </div>
                         <h1 className="text-5xl md:text-6xl lg:text-8xl font-black tracking-tight text-white mb-8 leading-[1.05]">
-                            Bringing{' '}
+                            {t('about.heroTitle1')}{' '}
                             <span className="relative inline-block">
-                                <span className="text-[#B0EA3C]">Nature</span>
+                                <span className="text-[#B0EA3C]">{t('about.heroTitle2')}</span>
                                 <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
                                     <path d="M2 8 C50 2, 150 2, 198 8" stroke="#B0EA3C" strokeWidth="3" strokeLinecap="round" opacity="0.5" />
                                 </svg>
                             </span>
                             <br />
-                            <span className="text-white/90">&</span>{' '}
+                            <span className="text-white/90">{t('about.heroTitle3')}</span>{' '}
                             <span className="relative inline-block">
-                                <span className="bg-gradient-to-r from-white to-[#B0EA3C] bg-clip-text text-transparent">Innovation</span>
+                                <span className="bg-gradient-to-r from-white to-[#B0EA3C] bg-clip-text text-transparent">{t('about.heroTitle4')}</span>
                             </span>
                         </h1>
                         <p className="text-xl lg:text-2xl text-white/80 max-w-3xl mx-auto font-medium leading-relaxed mb-12">
-                            Bridging the gap between traditional farming wisdom and modern technology — empowering millions of Indian farmers with one unified platform.
+                            {t('about.heroDesc')}
                         </p>
                         <div className="flex flex-wrap justify-center gap-8">
                             {impactStats.map((stat) => (
@@ -141,13 +205,13 @@ export default function AboutPage() {
                 <div className="mx-auto max-w-[1280px]">
                     <div className="text-center mb-16">
                         <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-sm mb-4 border border-primary/20">
-                            Foundation
+                            {t('about.foundation')}
                         </span>
                         <h2 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 dark:text-white mb-4">
-                            Our Core <span className="text-primary">Pillars</span>
+                            {t('about.corePillars')} <span className="text-primary">{t('about.corePillarsHighlight')}</span>
                         </h2>
                         <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-                            The three guiding principles that shape everything we do at Miraitu
+                            {t('about.corePillarsDesc')}
                         </p>
                     </div>
 
@@ -185,23 +249,23 @@ export default function AboutPage() {
                 <div className="mx-auto max-w-[1280px]">
                     <div className="text-center mb-14">
                         <h2 className="text-4xl font-black tracking-tight text-gray-900 dark:text-white mb-4">
-                            What Makes <span className="text-primary">Miraitu</span> Different
+                            {t('about.whatMakes')} <span className="text-primary">{t('about.ctaHighlight')}</span> {t('about.different')}
                         </h2>
                         <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-                            One app that covers the entire farming lifecycle — from seed to sale
+                            {t('about.whatMakesDesc')}
                         </p>
                     </div>
 
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                         {[
-                            { icon: 'agriculture', title: 'Machinery', desc: 'Buy, sell & rent farming equipment' },
-                            { icon: 'pets', title: 'Livestock', desc: 'Trade cattle, goats, buffaloes & more' },
-                            { icon: 'account_balance', title: 'Finance', desc: 'Loans, insurance & credit solutions' },
-                            { icon: 'storefront', title: 'Marketplace', desc: 'Organic products & farm supplies' },
-                            { icon: 'vaccines', title: 'Veterinary', desc: 'Expert animal healthcare on demand' },
-                            { icon: 'handyman', title: 'Farm Tools', desc: 'Smart tools for soil, weather & crops' },
-                            { icon: 'landscape', title: 'Land', desc: 'Buy, sell or lease agricultural land' },
-                            { icon: 'groups', title: 'Community', desc: 'Connect with fellow farmers' },
+                            { icon: 'agriculture', title: t('about.machinery'), desc: t('about.machineryDesc') },
+                            { icon: 'pets', title: t('about.livestock'), desc: t('about.livestockDesc') },
+                            { icon: 'account_balance', title: t('about.finance'), desc: t('about.financeDesc') },
+                            { icon: 'storefront', title: t('about.marketplace'), desc: t('about.marketplaceDesc') },
+                            { icon: 'vaccines', title: t('about.veterinary'), desc: t('about.veterinaryDesc') },
+                            { icon: 'handyman', title: t('about.farmTools'), desc: t('about.farmToolsDesc') },
+                            { icon: 'landscape', title: t('about.land'), desc: t('about.landDesc') },
+                            { icon: 'groups', title: t('about.community'), desc: t('about.communityDesc') },
                         ].map((item, i) => (
                             <div
                                 key={i}
@@ -225,13 +289,13 @@ export default function AboutPage() {
                 <div className="mx-auto max-w-[1280px]">
                     <div className="text-center mb-10 md:mb-16">
                         <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-sm mb-4 border border-primary/20">
-                            Leadership
+                            {t('about.leadership')}
                         </span>
                         <h2 className="text-3xl md:text-5xl font-black tracking-tight text-gray-900 dark:text-white mb-4">
-                            The Minds Behind <span className="text-primary">Miraitu</span>
+                            {t('about.mindsTitle')} <span className="text-primary">{t('about.ctaHighlight')}</span>
                         </h2>
                         <p className="text-base md:text-lg text-gray-500 max-w-2xl mx-auto">
-                            A passionate team driven by the mission to revolutionize agriculture in India through technology and innovation
+                            {t('about.mindsDesc')}
                         </p>
                     </div>
 
@@ -277,7 +341,7 @@ export default function AboutPage() {
                                         {member.description}
                                     </p>
                                     <div className="mt-3 md:mt-4 flex items-center gap-2 text-primary font-bold text-sm">
-                                        <span>View LinkedIn Profile</span>
+                                        <span>{t('about.viewLinkedIn')}</span>
                                         <span className="material-symbols-outlined text-base group-hover:translate-x-2 transition-transform">arrow_forward</span>
                                     </div>
                                 </div>
@@ -307,24 +371,24 @@ export default function AboutPage() {
                                 />
                             </div>
                             <h2 className="text-2xl md:text-4xl lg:text-5xl font-black tracking-tight mb-4 md:mb-6">
-                                Join the <span className="text-[#B0EA3C]">Miraitu</span> Revolution
+                                {t('about.ctaTitle')} <span className="text-[#B0EA3C]">{t('about.ctaHighlight')}</span> {t('about.ctaTitle2')}
                             </h2>
                             <p className="text-sm md:text-xl text-white/80 max-w-2xl mx-auto mb-6 md:mb-10 leading-relaxed">
-                                Whether you&apos;re a farmer, dealer, or service provider — Miraitu is your gateway to a smarter agricultural future.
+                                {t('about.ctaDesc')}
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center max-w-md sm:max-w-none mx-auto">
                                 <a href="#" className="inline-flex items-center gap-3 md:gap-4 px-5 md:px-8 py-3 md:py-4 bg-[#B0EA3C] text-[#1a3a14] rounded-xl md:rounded-2xl shadow-2xl shadow-[#B0EA3C]/20 hover:-translate-y-1 active:scale-95 transition-all">
                                     <svg className="size-7 md:size-8 fill-current shrink-0" viewBox="0 0 24 24"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.302 2.302-2.302 2.302-2.608-2.302 2.608-2.302zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z" /></svg>
                                     <div className="text-left">
-                                        <p className="text-[10px] md:text-xs text-[#1a3a14]/60 leading-tight font-medium">Download on</p>
-                                        <p className="text-sm md:text-lg font-black leading-tight">Play Store</p>
+                                        <p className="text-[10px] md:text-xs text-[#1a3a14]/60 leading-tight font-medium">{t('about.downloadOn')}</p>
+                                        <p className="text-sm md:text-lg font-black leading-tight">{t('about.playStore')}</p>
                                     </div>
                                 </a>
                                 <a href="#" className="inline-flex items-center gap-3 md:gap-4 px-5 md:px-8 py-3 md:py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl md:rounded-2xl border border-white/20 hover:bg-white/20 transition-all">
                                     <svg className="size-7 md:size-8 fill-current shrink-0" viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" /></svg>
                                     <div className="text-left">
-                                        <p className="text-[10px] md:text-xs text-white/60 leading-tight font-medium">Download on</p>
-                                        <p className="text-sm md:text-lg font-black leading-tight">App Store</p>
+                                        <p className="text-[10px] md:text-xs text-white/60 leading-tight font-medium">{t('about.downloadOn')}</p>
+                                        <p className="text-sm md:text-lg font-black leading-tight">{t('about.appStore')}</p>
                                     </div>
                                 </a>
                             </div>

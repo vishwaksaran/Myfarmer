@@ -95,13 +95,13 @@ export default function TestimonialsSection() {
                 <div className="mb-10 text-center animate-fade-in-up">
                     <span className="inline-flex items-center gap-1.5 mb-4 rounded-full bg-accent/15 px-5 py-2 text-xs font-bold uppercase tracking-widest text-accent">
                         <span className="material-symbols-outlined text-sm">star</span>
-                        Farmer Stories
+                        {t('testimonials.badge')}
                     </span>
                     <h2 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight text-[#121811] dark:text-white mb-3">
-                        Trusted by Thousands of Farmers
+                        {t('testimonials.title')}
                     </h2>
                     <p className="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto text-base md:text-lg">
-                        See how Miraitu is transforming farming across India
+                        {t('testimonials.subtitle')}
                     </p>
                 </div>
 

@@ -407,7 +407,7 @@ export default function Header() {
                                 onClick={() => setIsLanguageModalOpen(true)}
                                 className="flex items-center gap-1.5 rounded-xl px-2 sm:px-3 py-2 text-sm font-semibold skeuo-card transition-transform hover:scale-105"
                             >
-                                <span className="material-symbols-outlined text-primary text-lg">language</span>
+                                <span className="material-symbols-outlined text-primary text-lg">translate</span>
                                 <span className="hidden lg:inline">{allLanguages.find(lang => lang.code === selectedLang)?.name || 'English'}</span>
                             </button>
 

@@ -1,44 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-
-const services = [
-    {
-        name: 'New Machinery',
-        icon: 'agriculture',
-        desc: 'Get Quote',
-        color: 'text-green-600',
-        bg: 'bg-green-50 dark:bg-green-900/20',
-        href: '/home/machinery'
-    },
-    {
-        name: 'Buy Used Machinery',
-        icon: 'shopping_cart',
-        desc: 'Find great deals',
-        color: 'text-green-600',
-        bg: 'bg-green-50 dark:bg-green-900/20',
-        href: '/home/machinery'
-    },
-    {
-        name: 'Sell Used Machinery',
-        icon: 'sell',
-        desc: 'Best price for your equipment',
-        color: 'text-green-600',
-        bg: 'bg-green-50 dark:bg-green-900/20',
-        href: '/home/machinery'
-    },
-    {
-        name: 'Rent Machinery',
-        icon: 'handshake',
-        desc: 'Hire by hour, day or season',
-        color: 'text-green-600',
-        bg: 'bg-green-50 dark:bg-green-900/20',
-        href: '/home/services/rent-machinery'
-    }
-];
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export default function MachinerySection() {
+    const { t } = useLanguage();
+
+    const services = [
+        { name: t('machinery.newMachinery'), icon: 'agriculture', desc: t('machinery.newMachineryDesc'), color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20', href: '/home/machinery' },
+        { name: t('machinery.buyUsed'), icon: 'shopping_cart', desc: t('machinery.buyUsedDesc'), color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20', href: '/home/machinery' },
+        { name: t('machinery.sellUsed'), icon: 'sell', desc: t('machinery.sellUsedDesc'), color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20', href: '/home/machinery' },
+        { name: t('machinery.rent'), icon: 'handshake', desc: t('machinery.rentDesc'), color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20', href: '/home/services/rent-machinery' },
+    ];
+
     return (
         <section className="py-12 md:py-16 bg-white dark:bg-[#121811] relative overflow-hidden">
             {/* Background Pattern */}
@@ -51,13 +25,13 @@ export default function MachinerySection() {
                     <div>
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-bold uppercase tracking-wider mb-2">
                             <span className="material-symbols-outlined text-sm">precision_manufacturing</span>
-                            Farm Equipment
+                            {t('machinery.badge')}
                         </div>
                         <h2 className="text-3xl md:text-4xl font-black text-[#121811] dark:text-[#f9fbf9] tracking-tight">
-                            Machinery Services
+                            {t('machinery.title')}
                         </h2>
                         <p className="text-gray-500 mt-2 text-lg max-w-xl">
-                            Buy, sell, or rent farm machinery with ease. Connect with verified dealers and buyers.
+                            {t('machinery.desc')}
                         </p>
                     </div>
 
@@ -65,7 +39,7 @@ export default function MachinerySection() {
                         href="/home/machinery"
                         className="hidden md:flex items-center gap-2 text-green-600 font-bold hover:gap-3 transition-all"
                     >
-                        View All Services <span className="material-symbols-outlined">arrow_forward</span>
+                        {t('machinery.viewAll')} <span className="material-symbols-outlined">arrow_forward</span>
                     </Link>
                 </div>
 
@@ -101,7 +75,7 @@ export default function MachinerySection() {
                         href="/home/machinery"
                         className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-green-600 text-white font-bold shadow-lg shadow-green-200 dark:shadow-none"
                     >
-                        Explore Machinery <span className="material-symbols-outlined">arrow_forward</span>
+                        {t('machinery.explore')} <span className="material-symbols-outlined">arrow_forward</span>
                     </Link>
                 </div>
             </div>

@@ -1,43 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-
-const services = [
-    {
-        name: 'Mandi Prices',
-        icon: 'currency_rupee',
-        desc: 'Check daily market rates',
-        color: 'text-emerald-600',
-        bg: 'bg-emerald-50 dark:bg-emerald-900/20',
-        href: '/home/crops/mandi/prices'
-    },
-    {
-        name: 'Buy Crops',
-        icon: 'shopping_cart',
-        desc: 'Quality produce from farmers',
-        color: 'text-emerald-600',
-        bg: 'bg-emerald-50 dark:bg-emerald-900/20',
-        href: '/home/crops/buy'
-    },
-    {
-        name: 'Sell Crops',
-        icon: 'sell',
-        desc: 'Get best rates for your harvest',
-        color: 'text-emerald-600',
-        bg: 'bg-emerald-50 dark:bg-emerald-900/20',
-        href: '/home/crops/sell'
-    },
-    {
-        name: 'Nearby Mandis',
-        icon: 'location_on',
-        desc: 'Find markets near you',
-        color: 'text-emerald-600',
-        bg: 'bg-emerald-50 dark:bg-emerald-900/20',
-        href: '/home/crops/mandi/nearby'
-    }
-];
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export default function CropMarketplaceSection() {
+    const { t } = useLanguage();
+
+    const services = [
+        { name: t('cropMarket.mandiPrices'), icon: 'currency_rupee', desc: 'Check daily market rates', color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20', href: '/home/crops/mandi/prices' },
+        { name: t('cropMarket.buyCrops'), icon: 'shopping_cart', desc: 'Quality produce from farmers', color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20', href: '/home/crops/buy' },
+        { name: t('cropMarket.sellCrops'), icon: 'sell', desc: 'Get best rates for your harvest', color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20', href: '/home/crops/sell' },
+        { name: t('cropMarket.nearbyMandis'), icon: 'location_on', desc: 'Find markets near you', color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20', href: '/home/crops/mandi/nearby' },
+    ];
+
     return (
         <section className="px-4 md:px-6 py-12 md:py-16">
             <div className="mx-auto max-w-[1400px]">
@@ -50,11 +25,11 @@ export default function CropMarketplaceSection() {
                     <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
                         <div className="max-w-3xl">
                             <h2 className="text-3xl md:text-5xl font-black text-white mb-6 leading-tight tracking-tight">
-                                Maximize Your <br className="hidden md:block" />
-                                <span className="text-lime-300">Harvest Profits</span>
+                                {t('cropMarket.title')} <br className="hidden md:block" />
+                                <span className="text-lime-300">{t('cropMarket.titleHighlight')}</span>
                             </h2>
                             <p className="text-white/80 text-lg md:text-xl font-medium max-w-2xl leading-relaxed mb-8">
-                                Real-time mandi prices, direct farmer-to-buyer trade, and local market discovery at your fingertips.
+                                {t('cropMarket.desc')}
                             </p>
 
                             {/* Service Pills */}
@@ -80,7 +55,7 @@ export default function CropMarketplaceSection() {
                             >
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-100/50 to-transparent w-full h-full -translate-x-full group-hover:animate-shimmer"></div>
                                 <span className="material-symbols-outlined text-2xl group-hover:rotate-12 transition-transform">eco</span>
-                                Browse Crops
+                                {t('cropMarket.browseCrops')}
                             </Link>
 
                             <Link
@@ -88,7 +63,7 @@ export default function CropMarketplaceSection() {
                                 className="group flex items-center justify-center gap-3 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-md px-6 py-5 text-lg font-bold text-white hover:bg-white/20 hover:border-white/50 active:scale-[0.98] transition-all duration-300"
                             >
                                 <span className="material-symbols-outlined text-2xl">add_circle</span>
-                                Sell Crops
+                                {t('cropMarket.sellCropsBtn')}
                             </Link>
                         </div>
                     </div>

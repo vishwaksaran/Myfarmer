@@ -4,18 +4,20 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const baseNavItems = [
-    { label: 'Home', icon: 'home', path: '/home' },
-    { label: 'Services', icon: 'home_repair_service', path: '/home/services' },
-    { label: 'Sell', icon: 'add', path: '/home/become-seller', isCenterAction: true },
-    { label: 'Shop', icon: 'shopping_bag', path: '/home/shop' },
-    { label: 'Dashboard', icon: 'dashboard', path: '/home/dashboard' },
+    { label: 'Home', tKey: 'bottomNav.home', icon: 'home', path: '/home' },
+    { label: 'Services', tKey: 'bottomNav.services', icon: 'home_repair_service', path: '/home/services' },
+    { label: 'Sell', tKey: 'bottomNav.sell', icon: 'add', path: '/home/become-seller', isCenterAction: true },
+    { label: 'Shop', tKey: 'bottomNav.shop', icon: 'shopping_bag', path: '/home/shop' },
+    { label: 'Dashboard', tKey: 'bottomNav.dashboard', icon: 'dashboard', path: '/home/dashboard' },
 ];
 
 export default function BottomNav() {
     const pathname = usePathname();
     const { user, fetchProfile } = useAuth();
+    const { t } = useLanguage();
     const [userRole, setUserRole] = useState<string | null>(null);
 
     useEffect(() => {
@@ -55,7 +57,7 @@ export default function BottomNav() {
                                     <div className="relative flex items-center justify-center size-12 rounded-full bg-gradient-to-b from-[#34a832] to-[#2c5926] shadow-[0_3px_0_#1b3817,_0_6px_12px_rgba(44,89,38,0.35)] group-active:shadow-[0_1px_0_#1b3817,_0_3px_6px_rgba(44,89,38,0.25)] group-active:translate-y-[2px] transition-all">
                                         <span className="material-symbols-outlined text-white text-xl font-bold">add</span>
                                     </div>
-                                    <span className="text-[10px] font-bold mt-1 text-[#2c5926] dark:text-[#6abf62]">{item.label}</span>
+                                    <span className="text-[10px] font-bold mt-1 text-[#2c5926] dark:text-[#6abf62]">{t(item.tKey)}</span>
                                 </Link>
                             );
                         }
@@ -84,7 +86,7 @@ export default function BottomNav() {
                                     ? 'text-[#2c5926] dark:text-[#6abf62] font-bold'
                                     : 'text-gray-600 dark:text-gray-400 font-semibold'
                                     }`}>
-                                    {item.label}
+                                    {t(item.tKey)}
                                 </span>
                             </Link>
                         );
