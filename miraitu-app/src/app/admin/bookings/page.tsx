@@ -252,7 +252,23 @@ function AdminBookingsContent() {
                                             className="border-b border-gray-50 hover:bg-gray-50/50 cursor-pointer"
                                             onClick={() => setExpandedId(expandedId === b.id ? null : b.id)}
                                         >
-                                            <td className="px-4 py-3 font-semibold text-gray-900">{b.full_name}</td>
+                                            <td className="px-4 py-3">
+                                                <div className="font-semibold text-gray-900">{b.full_name}</div>
+                                                {b.auth_provider && (
+                                                    <span className={`inline-flex items-center gap-0.5 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                                                        b.auth_provider === 'google'
+                                                            ? 'bg-blue-50 text-blue-600'
+                                                            : b.auth_provider === 'phone'
+                                                                ? 'bg-green-50 text-green-600'
+                                                                : 'bg-gray-50 text-gray-500'
+                                                    }`}>
+                                                        {b.auth_provider === 'google' ? 'Google SSO' : b.auth_provider === 'phone' ? 'Phone OTP' : b.auth_provider}
+                                                    </span>
+                                                )}
+                                                {!b.auth_provider && !b.user_id && (
+                                                    <span className="inline-flex items-center gap-0.5 mt-0.5 px-1.5 py-0.5 rounded bg-gray-50 text-gray-400 text-[9px] font-bold">Guest</span>
+                                                )}
+                                            </td>
                                             <td className="px-4 py-3 text-gray-600">
                                                 <a href={`tel:${b.phone}`} className="hover:text-green-600">{b.phone}</a>
                                             </td>
@@ -279,7 +295,8 @@ function AdminBookingsContent() {
                                                 </select>
                                             </td>
                                             <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
-                                                {new Date(b.created_at).toLocaleDateString()}
+                                                <div>{new Date(b.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                                                <div className="text-[10px] text-gray-400">{new Date(b.created_at).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}</div>
                                             </td>
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center gap-1.5">
@@ -300,6 +317,18 @@ function AdminBookingsContent() {
                                             <tr key={`${b.id}-detail`} className="bg-gray-50/80">
                                                 <td colSpan={8} className="px-4 py-4">
                                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                                                        {b.user_email && (
+                                                            <div>
+                                                                <p className="font-bold text-gray-500 uppercase mb-1">User Email</p>
+                                                                <p className="text-gray-900 text-[11px]">{b.user_email}</p>
+                                                            </div>
+                                                        )}
+                                                        {b.user_display_name && b.user_display_name !== b.full_name && (
+                                                            <div>
+                                                                <p className="font-bold text-gray-500 uppercase mb-1">Account Name</p>
+                                                                <p className="text-gray-900">{b.user_display_name}</p>
+                                                            </div>
+                                                        )}
                                                         <div>
                                                             <p className="font-bold text-gray-500 uppercase mb-1">Preferred Date</p>
                                                             <p className="text-gray-900">{b.preferred_date || '—'}</p>
@@ -314,7 +343,7 @@ function AdminBookingsContent() {
                                                         </div>
                                                         <div>
                                                             <p className="font-bold text-gray-500 uppercase mb-1">Updated</p>
-                                                            <p className="text-gray-900">{new Date(b.updated_at).toLocaleString()}</p>
+                                                            <p className="text-gray-900">{new Date(b.updated_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true })}</p>
                                                         </div>
                                                     </div>
                                                     {Object.keys(b.extra_data).length > 0 && (

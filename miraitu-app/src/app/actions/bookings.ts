@@ -100,6 +100,10 @@ export interface BookingRecord {
     admin_notes: string | null;
     created_at: string;
     updated_at: string;
+    // Enriched from auth + profiles (populated by fetchAllBookings)
+    auth_provider?: 'google' | 'phone' | 'email' | string;
+    user_email?: string;
+    user_display_name?: string;
 }
 
 export async function fetchAllBookings(filters?: {
@@ -126,7 +130,57 @@ export async function fetchAllBookings(filters?: {
             return { data: [], error: error.message };
         }
 
-        return { data: data as BookingRecord[] };
+        // Enrich bookings with user auth info (sign-in method, email, display name)
+        const bookings = data as BookingRecord[];
+        const userIds = [...new Set(bookings.map(b => b.user_id).filter(Boolean))] as string[];
+
+        if (userIds.length > 0) {
+            try {
+                // Fetch auth data for all users who made bookings
+                const { data: authData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+                const authMap = new Map<string, { email?: string; provider: string; displayName?: string }>();
+                if (authData?.users) {
+                    for (const u of authData.users) {
+                        const provider = u.app_metadata?.provider ||
+                            (u.identities?.[0]?.provider) || 'email';
+                        const meta = u.user_metadata || {};
+                        authMap.set(u.id, {
+                            email: u.email || undefined,
+                            provider,
+                            displayName: meta.full_name || meta.name || meta.display_name || undefined,
+                        });
+                    }
+                }
+
+                // Fetch profile names for users (in case display_name differs from booking full_name)
+                const { data: profiles } = await supabase
+                    .from('profiles')
+                    .select('id, full_name, phone')
+                    .in('id', userIds);
+                const profileMap = new Map<string, { full_name?: string; phone?: string }>();
+                if (profiles) {
+                    for (const p of profiles) {
+                        profileMap.set(p.id, { full_name: p.full_name, phone: p.phone });
+                    }
+                }
+
+                for (const booking of bookings) {
+                    if (booking.user_id) {
+                        const auth = authMap.get(booking.user_id);
+                        const profile = profileMap.get(booking.user_id);
+                        if (auth) {
+                            booking.auth_provider = auth.provider;
+                            booking.user_email = auth.email;
+                            booking.user_display_name = auth.displayName || profile?.full_name || undefined;
+                        }
+                    }
+                }
+            } catch (enrichErr) {
+                console.warn('[fetchAllBookings] Could not enrich with auth data:', enrichErr);
+            }
+        }
+
+        return { data: bookings };
     } catch (err) {
         console.error('[fetchAllBookings] Unexpected error:', err);
         return { data: [], error: 'Failed to fetch bookings' };
