@@ -433,7 +433,7 @@ export default function UserLoginPage() {
                                     {authMethod === 'default' && t('login.signInSubtitle')}
                                     {authMethod === 'phone' && phoneState === 'input' && t('login.enterMobile')}
                                     {authMethod === 'phone' && phoneState === 'otp' && t('login.enterOtp')}
-                                    {authMethod === 'email' && 'Sign in with your email & password'}
+                                    {authMethod === 'email' && 'Log in with your email & password'}
                                 </p>
                             </div>
 
@@ -488,7 +488,7 @@ export default function UserLoginPage() {
                                         className="w-full h-14 flex items-center justify-center gap-3 bg-[var(--miraitu-background-light)] border-2 border-[var(--miraitu-primary-green)]/20 rounded-xl font-bold text-[#0f1a11] hover:bg-[var(--miraitu-primary-green)]/5 hover:border-[var(--miraitu-primary-green)]/40 transition-all"
                                     >
                                         <span className="material-symbols-outlined text-[var(--miraitu-primary-green)]">mail</span>
-                                        <span>Continue with Email</span>
+                                        <span>Continue with Registered Mail</span>
                                     </button>
 
                                     {/* Guest login removed */}
@@ -651,7 +651,7 @@ export default function UserLoginPage() {
                                             <span className="material-symbols-outlined animate-spin">progress_activity</span>
                                         ) : (
                                             <>
-                                                Sign In
+                                                Log In
                                                 <span className="material-symbols-outlined">arrow_forward</span>
                                             </>
                                         )}
@@ -659,8 +659,8 @@ export default function UserLoginPage() {
                                 </form>
                             )}
 
-                            {/* Create Account Link (Only on selection screen or simple text on phone screen?) */}
-                            {authMethod === 'default' && (
+                            {/* Create Account Link */}
+                            {(authMethod === 'default' || authMethod === 'email') && (
                                 <p className="text-center mt-8 text-sm text-[#53935d] font-medium animate-footer-entrance">
                                     {t('login.noAccount')}{' '}
                                     <Link href="/user-register" className="text-[var(--miraitu-primary-green)] font-bold hover:underline">

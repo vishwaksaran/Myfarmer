@@ -244,8 +244,8 @@ export const translations: Record<LangCode, Record<string, string>> = {
         'livestock.marketplace': 'Marketplace',
         'livestock.health': 'Health',
         // Login Page
-        'login.welcomeBack': 'Welcome Back',
-        'login.signInSubtitle': 'Sign in to access your Miraitu dashboard',
+        'login.welcomeBack': 'Welcome',
+        'login.signInSubtitle': 'Log in to access your Miraitu dashboard',
         'login.continueGoogle': 'Continue with Google',
         'login.or': 'or',
         'login.continuePhone': 'Continue with Phone',
@@ -830,8 +830,8 @@ export const translations: Record<LangCode, Record<string, string>> = {
         'machinery.seeMore': 'और मशीनरी देखें',
         'machinery.viewDetails': 'विवरण देखें',
         // Login Page
-        'login.welcomeBack': 'वापस स्वागत है',
-        'login.signInSubtitle': 'अपने मिराइटू डैशबोर्ड तक पहुंचने के लिए साइन इन करें',
+        'login.welcomeBack': 'स्वागत है',
+        'login.signInSubtitle': 'अपने मिराइटू डैशबोर्ड तक पहुंचने के लिए लॉग इन करें',
         'login.continueGoogle': 'Google से जारी रखें',
         'login.or': 'या',
         'login.continuePhone': 'फ़ोन से जारी रखें',
@@ -1434,8 +1434,8 @@ export const translations: Record<LangCode, Record<string, string>> = {
         'livestock.marketplace': 'మార్కెట్‌ప్లేస్',
         'livestock.health': 'ఆరోగ్యం',
         // Login Page
-        'login.welcomeBack': 'తిరిగి స్వాగతం',
-        'login.signInSubtitle': 'మీ మిరైటు డాష్‌బోర్డ్‌ను యాక్సెస్ చేయడానికి సైన్ ఇన్ చేయండి',
+        'login.welcomeBack': 'స్వాగతం',
+        'login.signInSubtitle': 'మీ మిరైటు డాష్‌బోర్డ్‌ను యాక్సెస్ చేయడానికి లాగిన్ చేయండి',
         'login.continueGoogle': 'Google తో కొనసాగించండి',
         'login.or': 'లేదా',
         'login.continuePhone': 'ఫోన్ తో కొనసాగించండి',
