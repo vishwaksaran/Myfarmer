@@ -7,20 +7,16 @@ import MiraituLogo from '@/components/MiraituLogo';
 import { useAuth } from '@/context/AuthContext';
 
 /**
- * UserRegisterPage - Simple registration with Phone OTP or Email
- * After verification → redirects to /onboarding for role, interests, location etc.
+ * UserRegisterPage - Phone OTP registration only
+ * After verification → redirects to /onboarding for role, interests, location, email etc.
  */
 export default function UserRegisterPage() {
     const router = useRouter();
     const { user, loading: authLoading, signInWithPhone } = useAuth();
 
-    // Auth method: 'phone' or 'email'
-    const [authMethod, setAuthMethod] = useState<'phone' | 'email'>('phone');
-
     // Shared state
     const [fullName, setFullName] = useState('');
     const [error, setError] = useState<string | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     // Phone OTP state
@@ -30,11 +26,6 @@ export default function UserRegisterPage() {
     const [otpCode, setOtpCode] = useState('');
     const [otpLoading, setOtpLoading] = useState(false);
     const [otpError, setOtpError] = useState<string | null>(null);
-
-    // Email state
-    const [email, setEmail] = useState('');
-    const [emailPassword, setEmailPassword] = useState('');
-    const [emailError, setEmailError] = useState<string | null>(null);
 
     // Redirect if already logged in
     useEffect(() => {
@@ -114,81 +105,6 @@ export default function UserRegisterPage() {
             setOtpCode('');
         } finally {
             setOtpLoading(false);
-        }
-    };
-
-    // ── Email Sign-Up Handler ──────────────────────────────────────
-
-    const handleEmailSignUp = async () => {
-        setEmailError(null);
-        setError(null);
-
-        if (!fullName.trim()) {
-            setError('Please enter your full name.');
-            return;
-        }
-        if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            setEmailError('Please enter a valid email address.');
-            return;
-        }
-        if (!emailPassword || emailPassword.length < 6) {
-            setEmailError('Password must be at least 6 characters.');
-            return;
-        }
-
-        setIsSubmitting(true);
-        try {
-            const { default: supabase } = await import('@/lib/supabase');
-
-            // Try to sign up
-            const { data, error: signUpError } = await supabase.auth.signUp({
-                email: email.trim(),
-                password: emailPassword,
-                options: {
-                    data: {
-                        full_name: fullName.trim(),
-                    },
-                },
-            });
-
-            if (signUpError) {
-                // Check for duplicate email
-                if (signUpError.message?.toLowerCase().includes('already registered') ||
-                    signUpError.message?.toLowerCase().includes('already been registered') ||
-                    signUpError.message?.toLowerCase().includes('user already registered')) {
-                    setEmailError('This email is already registered. Please use a different email or login instead.');
-                } else {
-                    setEmailError(signUpError.message || 'Failed to create account.');
-                }
-                return;
-            }
-
-            // Supabase may return an existing user with identities=[] if email is already taken
-            if (data.user && data.user.identities && data.user.identities.length === 0) {
-                setEmailError('This email is already registered. Please use a different email or login instead.');
-                return;
-            }
-
-            // If email confirmation is required, show message
-            if (data.user && !data.session) {
-                setSuccessMessage('📧 Check your email! We sent a confirmation link. Verify to continue.');
-                return;
-            }
-
-            // If session created directly (email confirmation disabled)
-            if (data.session) {
-                // Save name to profile
-                if (data.user && fullName.trim()) {
-                    await supabase.from('profiles').update({ full_name: fullName.trim() }).eq('id', data.user.id);
-                }
-
-                setSuccessMessage('✅ Account created! Setting up your profile...');
-                setTimeout(() => router.push('/onboarding'), 1500);
-            }
-        } catch {
-            setEmailError('Something went wrong. Please try again.');
-        } finally {
-            setIsSubmitting(false);
         }
     };
 
@@ -281,40 +197,11 @@ export default function UserRegisterPage() {
                                 </div>
                             </label>
 
-                            {/* Auth Method Toggle */}
-                            <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-xl">
-                                <button
-                                    type="button"
-                                    onClick={() => { setAuthMethod('phone'); setEmailError(null); setError(null); }}
-                                    className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                                        authMethod === 'phone'
-                                            ? 'bg-white text-[var(--miraitu-primary-green)] shadow-sm'
-                                            : 'text-gray-500 hover:text-gray-700'
-                                    }`}
-                                >
-                                    <span className="material-symbols-outlined text-lg">smartphone</span>
-                                    Phone
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => { setAuthMethod('email'); setOtpError(null); setError(null); }}
-                                    className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                                        authMethod === 'email'
-                                            ? 'bg-white text-[var(--miraitu-primary-green)] shadow-sm'
-                                            : 'text-gray-500 hover:text-gray-700'
-                                    }`}
-                                >
-                                    <span className="material-symbols-outlined text-lg">mail</span>
-                                    Email
-                                </button>
-                            </div>
-
                             {/* ── Phone Registration ─────────────────── */}
-                            {authMethod === 'phone' && (
-                                <div className="space-y-4">
-                                    <label className="flex flex-col gap-2">
-                                        <span className="text-[#0f1a11] text-sm font-bold uppercase tracking-wide ml-1">
-                                            Mobile Number
+                            <div className="space-y-4">
+                                <label className="flex flex-col gap-2">
+                                    <span className="text-[#0f1a11] text-sm font-bold uppercase tracking-wide ml-1">
+                                        Mobile Number
                                             {phoneVerified && (
                                                 <span className="ml-2 text-[var(--miraitu-primary-green)] text-xs normal-case font-bold inline-flex items-center gap-1">
                                                     <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
@@ -419,67 +306,6 @@ export default function UserRegisterPage() {
                                         </div>
                                     )}
                                 </div>
-                            )}
-
-                            {/* ── Email Registration ─────────────────── */}
-                            {authMethod === 'email' && (
-                                <div className="space-y-4">
-                                    <label className="flex flex-col gap-2">
-                                        <span className="text-[#0f1a11] text-sm font-bold uppercase tracking-wide ml-1">Email Address</span>
-                                        <div className="relative">
-                                            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">mail</span>
-                                            <input
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none"
-                                                placeholder="you@example.com"
-                                                type="email"
-                                                required
-                                            />
-                                        </div>
-                                    </label>
-
-                                    <label className="flex flex-col gap-2">
-                                        <span className="text-[#0f1a11] text-sm font-bold uppercase tracking-wide ml-1">Password</span>
-                                        <div className="relative">
-                                            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">lock</span>
-                                            <input
-                                                value={emailPassword}
-                                                onChange={(e) => setEmailPassword(e.target.value)}
-                                                className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none"
-                                                placeholder="Min. 6 characters"
-                                                type="password"
-                                                required
-                                                minLength={6}
-                                            />
-                                        </div>
-                                    </label>
-
-                                    {/* Email Error */}
-                                    {emailError && (
-                                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs font-medium flex items-center gap-1.5">
-                                            <span className="material-symbols-outlined text-sm">error</span>
-                                            {emailError}
-                                        </div>
-                                    )}
-
-                                    <button
-                                        type="button"
-                                        onClick={handleEmailSignUp}
-                                        disabled={isSubmitting || !fullName.trim() || !email.trim() || !emailPassword}
-                                        className="w-full py-3.5 rounded-xl bg-[var(--miraitu-primary-green)] text-white font-bold text-sm flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-[var(--miraitu-primary-green)]/20"
-                                    >
-                                        {isSubmitting ? (
-                                            <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
-                                        ) : (
-                                            <>
-                                                <span className="material-symbols-outlined text-lg">person_add</span>
-                                                Create Account
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                            )}
 
                             {/* Divider */}
                             <div className="flex items-center gap-4 my-2">

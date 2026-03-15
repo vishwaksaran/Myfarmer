@@ -21,10 +21,15 @@ export default function UserLoginPage() {
     const [isLangOpen, setIsLangOpen] = useState(false);
 
     // Auth Method State
-    const [authMethod, setAuthMethod] = useState<'default' | 'phone'>('default');
+    const [authMethod, setAuthMethod] = useState<'default' | 'phone' | 'email'>('default');
     const [phoneState, setPhoneState] = useState<'input' | 'otp'>('input');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [otp, setOtp] = useState('');
+
+    // Email login state
+    const [loginEmail, setLoginEmail] = useState('');
+    const [loginPassword, setLoginPassword] = useState('');
+    const [emailError, setEmailError] = useState<string | null>(null);
 
     const allLanguages: { name: string; sub: string; code: LangCode }[] = [
         { name: 'English', sub: 'EN', code: 'en' },
@@ -147,6 +152,9 @@ export default function UserLoginPage() {
         setAuthMethod('default');
         setPhoneState('input');
         setError(null);
+        setEmailError(null);
+        setLoginEmail('');
+        setLoginPassword('');
     };
 
     // Dev-only login for localhost testing
@@ -192,6 +200,60 @@ export default function UserLoginPage() {
             }
         } catch {
             setError('Failed to resend OTP. Please try again.');
+        } finally {
+            setIsSigningIn(false);
+        }
+    };
+
+    // Email + Password Login for existing users
+    const handleEmailLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setEmailError(null);
+        setError(null);
+
+        if (!loginEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginEmail)) {
+            setEmailError('Please enter a valid email address.');
+            return;
+        }
+        if (!loginPassword || loginPassword.length < 6) {
+            setEmailError('Please enter your password (min. 6 characters).');
+            return;
+        }
+
+        setIsSigningIn(true);
+        try {
+            const { default: supabase } = await import('@/lib/supabase');
+            const { data, error: signInError } = await supabase.auth.signInWithPassword({
+                email: loginEmail.trim(),
+                password: loginPassword,
+            });
+
+            if (signInError) {
+                if (signInError.message?.toLowerCase().includes('invalid login credentials')) {
+                    setEmailError('Invalid email or password. Please try again.');
+                } else if (signInError.message?.toLowerCase().includes('email not confirmed')) {
+                    setEmailError('Please confirm your email first. Check your inbox.');
+                } else {
+                    setEmailError(signInError.message || 'Login failed.');
+                }
+                return;
+            }
+
+            if (data.session) {
+                setSuccessMessage('✅ Login successful! Redirecting...');
+
+                // Check onboarding status
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('onboarding_completed')
+                    .eq('id', data.user.id)
+                    .single();
+
+                const onboarded = profile?.onboarding_completed === true;
+                setTimeout(() => router.push(onboarded ? '/' : '/onboarding'), 1500);
+            }
+        } catch {
+            setEmailError('Something went wrong. Please try again.');
         } finally {
             setIsSigningIn(false);
         }
@@ -349,8 +411,8 @@ export default function UserLoginPage() {
                             {/* Background Decoration */}
                             <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--miraitu-lime-green)]/10 rounded-full blur-3xl -mr-10 -mt-10" />
 
-                            {/* Back Button (Only for Phone Auth) */}
-                            {authMethod === 'phone' && (
+                            {/* Back Button (Only for Phone/Email Auth) */}
+                            {(authMethod === 'phone' || authMethod === 'email') && (
                                 <button
                                     onClick={handleBackToSelection}
                                     className="absolute top-6 left-6 text-gray-400 hover:text-[var(--miraitu-primary-green)] transition-colors flex items-center gap-1 text-sm font-bold uppercase tracking-widest"
@@ -365,11 +427,13 @@ export default function UserLoginPage() {
                                 <h1 className="text-[#0f1a11] text-3xl md:text-3xl font-black leading-tight tracking-[-0.02em] mb-2">
                                     {authMethod === 'default' && t('login.welcomeBack')}
                                     {authMethod === 'phone' && t('login.phoneLogin')}
+                                    {authMethod === 'email' && 'Email Login'}
                                 </h1>
                                 <p className="text-[#53935d] text-base font-medium">
                                     {authMethod === 'default' && t('login.signInSubtitle')}
                                     {authMethod === 'phone' && phoneState === 'input' && t('login.enterMobile')}
                                     {authMethod === 'phone' && phoneState === 'otp' && t('login.enterOtp')}
+                                    {authMethod === 'email' && 'Sign in with your email & password'}
                                 </p>
                             </div>
 
@@ -416,6 +480,15 @@ export default function UserLoginPage() {
                                     >
                                         <span className="material-symbols-outlined text-[var(--miraitu-primary-green)]">smartphone</span>
                                         <span>{t('login.continuePhone')}</span>
+                                    </button>
+
+                                    {/* Email Login Button */}
+                                    <button
+                                        onClick={() => setAuthMethod('email')}
+                                        className="w-full h-14 flex items-center justify-center gap-3 bg-[var(--miraitu-background-light)] border-2 border-[var(--miraitu-primary-green)]/20 rounded-xl font-bold text-[#0f1a11] hover:bg-[var(--miraitu-primary-green)]/5 hover:border-[var(--miraitu-primary-green)]/40 transition-all"
+                                    >
+                                        <span className="material-symbols-outlined text-[var(--miraitu-primary-green)]">mail</span>
+                                        <span>Continue with Email</span>
                                     </button>
 
                                     {/* Guest login removed */}
@@ -519,6 +592,66 @@ export default function UserLoginPage() {
                                         ) : (
                                             <>
                                                 {phoneState === 'input' ? t('login.getOtp') : t('login.verifyLogin')}
+                                                <span className="material-symbols-outlined">arrow_forward</span>
+                                            </>
+                                        )}
+                                    </button>
+                                </form>
+                            )}
+
+                            {/* EMAIL LOGIN UI */}
+                            {authMethod === 'email' && (
+                                <form onSubmit={handleEmailLogin} className="space-y-5 animate-fade-in">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Email Address</label>
+                                        <div className="relative">
+                                            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60">mail</span>
+                                            <input
+                                                type="email"
+                                                value={loginEmail}
+                                                onChange={(e) => { setLoginEmail(e.target.value); setEmailError(null); }}
+                                                className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-[var(--miraitu-primary-green)]/20 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none transition-all placeholder:text-gray-400 text-base font-medium"
+                                                placeholder="you@example.com"
+                                                autoFocus
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Password</label>
+                                        <div className="relative">
+                                            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60">lock</span>
+                                            <input
+                                                type="password"
+                                                value={loginPassword}
+                                                onChange={(e) => { setLoginPassword(e.target.value); setEmailError(null); }}
+                                                className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-[var(--miraitu-primary-green)]/20 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none transition-all placeholder:text-gray-400 text-base font-medium"
+                                                placeholder="Enter your password"
+                                                required
+                                                minLength={6}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Email Error */}
+                                    {emailError && (
+                                        <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm font-medium flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-red-500 text-lg">error</span>
+                                            {emailError}
+                                        </div>
+                                    )}
+
+                                    <button
+                                        type="submit"
+                                        disabled={isSigningIn || !loginEmail.trim() || !loginPassword}
+                                        className="skeuo-button w-full h-14 flex items-center justify-center gap-3 bg-[var(--miraitu-primary-green)] text-white rounded-xl font-bold uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[var(--miraitu-primary-green)]/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isSigningIn ? (
+                                            <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                                        ) : (
+                                            <>
+                                                Sign In
                                                 <span className="material-symbols-outlined">arrow_forward</span>
                                             </>
                                         )}

@@ -9,6 +9,7 @@ import MiraituLogo from '@/components/MiraituLogo';
 
 interface OnboardingData {
     full_name: string;
+    email: string;
     role: string;
     interests: string[];
     farm_location: string;
@@ -356,9 +357,12 @@ export default function OnboardingPage() {
     const [error, setError] = useState<string | null>(null);
     const [locationLoading, setLocationLoading] = useState(false);
     const [animateIn, setAnimateIn] = useState(true);
+    const [emailChecking, setEmailChecking] = useState(false);
+    const [emailError, setEmailError] = useState<string | null>(null);
 
     const [formData, setFormData] = useState<OnboardingData>({
         full_name: '',
+        email: '',
         role: '',
         interests: [],
         farm_location: '',
@@ -404,8 +408,36 @@ export default function OnboardingPage() {
         }, 200);
     }, []);
 
-    const handleNext = () => {
+    // Check if email is already taken
+    const checkEmailDuplicate = async (emailToCheck: string): Promise<boolean> => {
+        if (!emailToCheck.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailToCheck)) return false;
+        setEmailChecking(true);
+        setEmailError(null);
+        try {
+            const { default: supabase } = await import('@/lib/supabase');
+            // Check if any other profile has this email
+            const { data, error: fetchErr } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('email', emailToCheck.trim().toLowerCase())
+                .neq('id', user?.id || '')
+                .limit(1);
+            if (fetchErr) return false;
+            if (data && data.length > 0) {
+                setEmailError('This email is already registered by another user. Please use a different email.');
+                return true; // duplicate found
+            }
+            return false;
+        } catch {
+            return false;
+        } finally {
+            setEmailChecking(false);
+        }
+    };
+
+    const handleNext = async () => {
         setError(null);
+        setEmailError(null);
         // Validation for each step
         if (currentStep === 1 && !formData.full_name.trim()) {
             setError('Please enter your name');
@@ -418,6 +450,14 @@ export default function OnboardingPage() {
         if (currentStep === 1 && formData.phone.length !== 10) {
             setError('Please enter a valid 10-digit phone number');
             return;
+        }
+        if (currentStep === 1 && formData.email.trim()) {
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+                setEmailError('Please enter a valid email address');
+                return;
+            }
+            const isDuplicate = await checkEmailDuplicate(formData.email.trim());
+            if (isDuplicate) return;
         }
         if (currentStep === 1 && !formData.role) {
             setError('Please select your role');
@@ -511,6 +551,7 @@ export default function OnboardingPage() {
             const profileData = {
                 full_name: formData.full_name.trim(),
                 role: formData.role,
+                email: formData.email.trim().toLowerCase() || null,
                 farm_location: [formData.farm_location, formData.district, formData.state].filter(Boolean).join(', '),
                 district: formData.district,
                 state: formData.state,
@@ -650,6 +691,38 @@ export default function OnboardingPage() {
                                         Verified via OTP
                                     </p>
                                 )}
+                            </div>
+
+                            {/* Email Address */}
+                            <div className="skeuo-card rounded-2xl p-5">
+                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">
+                                    Email Address <span className="text-gray-400">(optional)</span>
+                                </label>
+                                <div className="relative">
+                                    <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60 text-xl">mail</span>
+                                    <input
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={(e) => {
+                                            setFormData(f => ({ ...f, email: e.target.value }));
+                                            setEmailError(null);
+                                        }}
+                                        className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-white focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-base font-medium placeholder:text-gray-400 ${
+                                            emailError ? 'border-red-300 bg-red-50/50' : 'border-green-200'
+                                        }`}
+                                        placeholder="you@example.com"
+                                    />
+                                    {emailChecking && (
+                                        <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg animate-spin">progress_activity</span>
+                                    )}
+                                </div>
+                                {emailError && (
+                                    <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-sm">error</span>
+                                        {emailError}
+                                    </p>
+                                )}
+                                <p className="text-[10px] text-gray-400 mt-1">Used for account recovery & notifications</p>
                             </div>
 
                             {/* Role Selection */}
@@ -916,6 +989,12 @@ export default function OnboardingPage() {
                                         <span className="material-symbols-outlined text-gray-400 text-base">person</span>
                                         <span className="font-bold text-gray-800">{formData.full_name || '—'}</span>
                                     </div>
+                                    {formData.email && (
+                                        <div className="flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-gray-400 text-base">mail</span>
+                                            <span className="text-gray-600">{formData.email}</span>
+                                        </div>
+                                    )}
                                     <div className="flex items-center gap-2">
                                         <span className="material-symbols-outlined text-gray-400 text-base">badge</span>
                                         <span className="text-gray-600 capitalize">{ROLES.find(r => r.id === formData.role)?.label || '—'}</span>
