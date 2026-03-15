@@ -303,7 +303,8 @@ export default function AdminUsersPage() {
                                             )}
                                         </td>
                                         <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
-                                            {new Date(u.created_at).toLocaleDateString()}
+                                            <div>{new Date(u.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                                            <div className="text-[10px] text-gray-400">{new Date(u.created_at).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}</div>
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
