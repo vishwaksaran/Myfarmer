@@ -488,7 +488,7 @@ export default function UserLoginPage() {
                                         className="w-full h-14 flex items-center justify-center gap-3 bg-[var(--miraitu-background-light)] border-2 border-[var(--miraitu-primary-green)]/20 rounded-xl font-bold text-[#0f1a11] hover:bg-[var(--miraitu-primary-green)]/5 hover:border-[var(--miraitu-primary-green)]/40 transition-all"
                                     >
                                         <span className="material-symbols-outlined text-[var(--miraitu-primary-green)]">mail</span>
-                                        <span>Continue with Registered Mail</span>
+                                        <span className="max-w-40 text-center sm:max-w-none">Continue with Registered Mail</span>
                                     </button>
 
                                     {/* Guest login removed */}
