@@ -4,7 +4,7 @@ export const metadata: Metadata = {
     title: 'Farm CCTV Surveillance – Security Camera Installation',
     description: 'Protect your farm with professional CCTV surveillance systems. Get camera installation, monitoring, and security solutions for agricultural properties on Miraitu.',
     alternates: {
-        canonical: 'https://miraitu.in/home/cctv',
+        canonical: 'https://www.miraitu.in/home/cctv',
     },
     robots: {
         index: true,
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: 'Farm CCTV & Security Solutions',
         description: 'Professional CCTV surveillance and security camera installation for farms.',
-        url: 'https://miraitu.in/home/cctv',
+        url: 'https://www.miraitu.in/home/cctv',
         type: 'website',
         siteName: 'Miraitu',
     },
@@ -39,9 +39,9 @@ export default function CCTVLayout({
                         '@context': 'https://schema.org',
                         '@type': 'BreadcrumbList',
                         itemListElement: [
-                            { '@type': 'ListItem', position: 1, name: 'Miraitu', item: 'https://miraitu.in' },
-                            { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://miraitu.in/home/services' },
-                            { '@type': 'ListItem', position: 3, name: 'CCTV Surveillance', item: 'https://miraitu.in/home/cctv' },
+                            { '@type': 'ListItem', position: 1, name: 'Miraitu', item: 'https://www.miraitu.in' },
+                            { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://www.miraitu.in/home/services' },
+                            { '@type': 'ListItem', position: 3, name: 'CCTV Surveillance', item: 'https://www.miraitu.in/home/cctv' },
                         ],
                     }),
                 }}

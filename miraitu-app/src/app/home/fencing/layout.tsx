@@ -4,7 +4,7 @@ export const metadata: Metadata = {
     title: 'Farm Fencing – Professional Fencing Solutions for Agriculture',
     description: 'Protect your farm with professional fencing solutions. Wire fencing, chain link, barbed wire, and compound wall services for agricultural land on Miraitu.',
     alternates: {
-        canonical: 'https://miraitu.in/home/fencing',
+        canonical: 'https://www.miraitu.in/home/fencing',
     },
     robots: {
         index: true,
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: 'Farm Fencing Solutions',
         description: 'Professional fencing installation services for agricultural land.',
-        url: 'https://miraitu.in/home/fencing',
+        url: 'https://www.miraitu.in/home/fencing',
         type: 'website',
         siteName: 'Miraitu',
     },
@@ -39,9 +39,9 @@ export default function FencingLayout({
                         '@context': 'https://schema.org',
                         '@type': 'BreadcrumbList',
                         itemListElement: [
-                            { '@type': 'ListItem', position: 1, name: 'Miraitu', item: 'https://miraitu.in' },
-                            { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://miraitu.in/home/services' },
-                            { '@type': 'ListItem', position: 3, name: 'Fencing', item: 'https://miraitu.in/home/fencing' },
+                            { '@type': 'ListItem', position: 1, name: 'Miraitu', item: 'https://www.miraitu.in' },
+                            { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://www.miraitu.in/home/services' },
+                            { '@type': 'ListItem', position: 3, name: 'Fencing', item: 'https://www.miraitu.in/home/fencing' },
                         ],
                     }),
                 }}

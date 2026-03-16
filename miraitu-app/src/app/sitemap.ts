@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://miraitu.in';
+    const baseUrl = 'https://www.miraitu.in';
 
     const routes = [
         { path: '/', priority: 1.0, changeFrequency: 'daily' as const },

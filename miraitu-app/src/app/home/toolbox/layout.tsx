@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: 'Farm Toolbox – Smart Testing & Planning Tools',
         description: 'Access smart farming tools for soil testing, weather, and crop planning.',
-        url: 'https://miraitu.in/home/toolbox',
+        url: 'https://www.miraitu.in/home/toolbox',
         type: 'website',
         siteName: 'Miraitu',
     },
@@ -40,8 +40,8 @@ export default function ToolboxLayout({
                         '@context': 'https://schema.org',
                         '@type': 'BreadcrumbList',
                         itemListElement: [
-                            { '@type': 'ListItem', position: 1, name: 'Miraitu', item: 'https://miraitu.in' },
-                            { '@type': 'ListItem', position: 2, name: 'Farm Toolbox', item: 'https://miraitu.in/home/toolbox' },
+                            { '@type': 'ListItem', position: 1, name: 'Miraitu', item: 'https://www.miraitu.in' },
+                            { '@type': 'ListItem', position: 2, name: 'Farm Toolbox', item: 'https://www.miraitu.in/home/toolbox' },
                         ],
                     }),
                 }}

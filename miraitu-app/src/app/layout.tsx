@@ -24,7 +24,7 @@ const notoSans = Noto_Sans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://miraitu.in"),
+  metadataBase: new URL("https://www.miraitu.in"),
   title: {
     default:
       "Miraitu – India's #1 Agriculture Super App | Tractor Rental, Crop & Livestock Marketplace",
@@ -87,7 +87,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://miraitu.in",
+    url: "https://www.miraitu.in",
     siteName: "Miraitu",
     title: "Miraitu – India's Agriculture Super App for Farmers",
     description:
@@ -165,7 +165,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           rel="search"
           type="application/opensearchdescription+xml"
           title="Miraitu"
-          href="https://miraitu.in/opensearch.xml"
+          href="https://www.miraitu.in/opensearch.xml"
         />
         <script
           type="application/ld+json"
@@ -173,18 +173,18 @@ export default function RootLayout({ children }: RootLayoutProps) {
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              "@id": "https://miraitu.in/#organization",
+              "@id": "https://www.miraitu.in/#organization",
               name: "Miraitu",
               legalName: "Miraitu Agriculture Tech",
               alternateName: ["Miraitu App", "Miraitu Agriculture", "miraitu.in"],
-              url: "https://miraitu.in",
+              url: "https://www.miraitu.in",
               logo: {
                 "@type": "ImageObject",
-                url: "https://miraitu.in/logo-icon.png",
+                url: "https://www.miraitu.in/logo-icon.png",
                 width: 512,
                 height: 512,
               },
-              image: "https://miraitu.in/logo-icon.png",
+              image: "https://www.miraitu.in/logo-icon.png",
               description:
                 "Miraitu is India's agriculture super app empowering farmers with machinery rental, crop marketplace, livestock trading, finance, veterinary services, and government schemes.",
               foundingDate: "2023",
@@ -227,7 +227,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 "@type": "SearchAction",
                 target: {
                   "@type": "EntryPoint",
-                  urlTemplate: "https://miraitu.in/home/crops?q={search_term_string}",
+                  urlTemplate: "https://www.miraitu.in/home/crops?q={search_term_string}",
                 },
                 "query-input": "required name=search_term_string",
               },
@@ -241,21 +241,21 @@ export default function RootLayout({ children }: RootLayoutProps) {
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebSite",
-              "@id": "https://miraitu.in/#website",
+              "@id": "https://www.miraitu.in/#website",
               name: "Miraitu",
               alternateName: "Miraitu Agriculture Super App",
-              url: "https://miraitu.in",
+              url: "https://www.miraitu.in",
               description:
                 "India's #1 agriculture super app — tractor rental, crop marketplace, livestock trading, veterinary services, farm finance, and government schemes.",
               inLanguage: ["en-IN", "hi-IN", "te-IN"],
               publisher: {
-                "@id": "https://miraitu.in/#organization",
+                "@id": "https://www.miraitu.in/#organization",
               },
               potentialAction: {
                 "@type": "SearchAction",
                 target: {
                   "@type": "EntryPoint",
-                  urlTemplate: "https://miraitu.in/home/crops?q={search_term_string}",
+                  urlTemplate: "https://www.miraitu.in/home/crops?q={search_term_string}",
                 },
                 "query-input": "required name=search_term_string",
               },
@@ -273,13 +273,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
               applicationCategory: "BusinessApplication",
               applicationSubCategory: "Agriculture",
               operatingSystem: "Web, Android, iOS",
-              url: "https://miraitu.in",
+              url: "https://www.miraitu.in",
               brand: {
                 "@type": "Brand",
                 name: "Miraitu",
               },
               author: {
-                "@id": "https://miraitu.in/#organization",
+                "@id": "https://www.miraitu.in/#organization",
               },
               description:
                 "Miraitu — India's agriculture super app. Rent farm machinery, sell crops and livestock, consult veterinary doctors, access government schemes and farm finance.",

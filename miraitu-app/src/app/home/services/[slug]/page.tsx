@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const seo = serviceSeo[slug];
     const title = seo?.title ?? 'Farm Services';
     const description = seo?.description ?? 'Professional farm services on Miraitu.';
-    const url = `https://miraitu.in/home/services/${slug}`;
+    const url = `https://www.miraitu.in/home/services/${slug}`;
 
     return {
         title,

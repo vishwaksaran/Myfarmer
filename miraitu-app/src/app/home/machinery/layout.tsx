@@ -7,12 +7,12 @@ export const metadata: Metadata = {
     title: 'Agricultural Machinery – Buy, Sell & Rent Farm Equipment',
     description: 'Browse tractors, JCBs, harvesters, power tillers, drones & implements. Buy new, sell used, or rent farm machinery on Miraitu – India\'s #1 farming app.',
     alternates: {
-        canonical: 'https://miraitu.in/home/machinery',
+        canonical: 'https://www.miraitu.in/home/machinery',
     },
     openGraph: {
         title: 'Farm Machinery – Tractors, JCB, Harvesters & More',
         description: 'Buy, sell or rent agricultural machinery from verified sellers across India.',
-        url: 'https://miraitu.in/home/machinery',
+        url: 'https://www.miraitu.in/home/machinery',
     },
 };
 

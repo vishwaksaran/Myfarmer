@@ -2,10 +2,10 @@
 <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
   <ShortName>Miraitu</ShortName>
   <Description>Search Miraitu - India's Agriculture Super App</Description>
-  <Url type="text/html" template="https://miraitu.in/home/crops?q={searchTerms}"/>
-  <Url type="application/opensearchdescription+xml" rel="self" template="https://miraitu.in/opensearch.xml"/>
-  <Image height="16" width="16" type="image/png">https://miraitu.in/logo-icon.png</Image>
-  <Image height="64" width="64" type="image/png">https://miraitu.in/logo-icon.png</Image>
+  <Url type="text/html" template="https://www.miraitu.in/home/crops?q={searchTerms}"/>
+  <Url type="application/opensearchdescription+xml" rel="self" template="https://www.miraitu.in/opensearch.xml"/>
+  <Image height="16" width="16" type="image/png">https://www.miraitu.in/logo-icon.png</Image>
+  <Image height="64" width="64" type="image/png">https://www.miraitu.in/logo-icon.png</Image>
   <InputEncoding>UTF-8</InputEncoding>
   <Language>en-IN</Language>
   <Language>hi-IN</Language>

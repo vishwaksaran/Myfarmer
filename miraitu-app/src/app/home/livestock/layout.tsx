@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     title: 'Livestock Marketplace – Buy & Sell Cattle, Goats, Poultry',
     description: 'India\'s largest livestock marketplace. Buy and sell cattle, goats, sheep, poultry, fish and more from verified sellers. Contact directly on Miraitu.',
     alternates: {
-        canonical: 'https://miraitu.in/home/livestock',
+        canonical: 'https://www.miraitu.in/home/livestock',
     },
     robots: {
         index: true,
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: 'Livestock Marketplace – Cattle, Goats, Poultry & More',
         description: 'Buy and sell livestock from verified sellers across India.',
-        url: 'https://miraitu.in/home/livestock',
+        url: 'https://www.miraitu.in/home/livestock',
         type: 'website',
         siteName: 'Miraitu',
     },
@@ -42,8 +42,8 @@ export default function LivestockLayout({
                         '@context': 'https://schema.org',
                         '@type': 'BreadcrumbList',
                         itemListElement: [
-                            { '@type': 'ListItem', position: 1, name: 'Miraitu', item: 'https://miraitu.in' },
-                            { '@type': 'ListItem', position: 2, name: 'Livestock Marketplace', item: 'https://miraitu.in/home/livestock' },
+                            { '@type': 'ListItem', position: 1, name: 'Miraitu', item: 'https://www.miraitu.in' },
+                            { '@type': 'ListItem', position: 2, name: 'Livestock Marketplace', item: 'https://www.miraitu.in/home/livestock' },
                         ],
                     }),
                 }}

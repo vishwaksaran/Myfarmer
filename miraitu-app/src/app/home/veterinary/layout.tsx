@@ -7,12 +7,12 @@ export const metadata: Metadata = {
     title: 'Veterinary Services – Animal Healthcare On Demand',
     description: 'Book veterinary services for treatment, vaccination, artificial insemination, and deworming. Expert animal healthcare providers on Miraitu.',
     alternates: {
-        canonical: 'https://miraitu.in/home/veterinary',
+        canonical: 'https://www.miraitu.in/home/veterinary',
     },
     openGraph: {
         title: 'Veterinary Services – Expert Animal Healthcare',
         description: 'Book veterinary services including treatment, vaccination, and AI.',
-        url: 'https://miraitu.in/home/veterinary',
+        url: 'https://www.miraitu.in/home/veterinary',
     },
 };
 

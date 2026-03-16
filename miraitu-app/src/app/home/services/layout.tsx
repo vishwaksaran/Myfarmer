@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: 'Farm Services – Professional Agricultural Support',
         description: 'Book farm services like borewell, fencing, CCTV, and more.',
-        url: 'https://miraitu.in/home/services',
+        url: 'https://www.miraitu.in/home/services',
         type: 'website',
         siteName: 'Miraitu',
     },
@@ -40,8 +40,8 @@ export default function ServicesLayout({
                         '@context': 'https://schema.org',
                         '@type': 'BreadcrumbList',
                         itemListElement: [
-                            { '@type': 'ListItem', position: 1, name: 'Miraitu', item: 'https://miraitu.in' },
-                            { '@type': 'ListItem', position: 2, name: 'Farm Services', item: 'https://miraitu.in/home/services' },
+                            { '@type': 'ListItem', position: 1, name: 'Miraitu', item: 'https://www.miraitu.in' },
+                            { '@type': 'ListItem', position: 2, name: 'Farm Services', item: 'https://www.miraitu.in/home/services' },
                         ],
                     }),
                 }}

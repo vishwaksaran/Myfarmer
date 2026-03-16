@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: 'Crop Marketplace – Live Prices & Direct Trading',
         description: 'Buy and sell crops directly. Get live mandi prices from across India.',
-        url: 'https://miraitu.in/home/crops',
+        url: 'https://www.miraitu.in/home/crops',
     },
 };
 

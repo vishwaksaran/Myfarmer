@@ -7,12 +7,12 @@ export const metadata: Metadata = {
     title: 'Farm Land – Buy, Sell, Lease & Rent Agricultural Land',
     description: 'Find agricultural land for buy, sell, lease or rent across India. Verified listings with location details and pricing on Miraitu.',
     alternates: {
-        canonical: 'https://miraitu.in/home/land',
+        canonical: 'https://www.miraitu.in/home/land',
     },
     openGraph: {
         title: 'Agricultural Land – Buy, Sell & Lease',
         description: 'Browse verified agricultural land listings across India.',
-        url: 'https://miraitu.in/home/land',
+        url: 'https://www.miraitu.in/home/land',
     },
 };
 

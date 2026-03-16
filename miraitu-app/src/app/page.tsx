@@ -27,7 +27,7 @@ export const metadata = {
   title: 'Miraitu — The Future of Smart Farming',
   description: 'Redefining the agricultural super-app experience with precision tools, real-time marketplace, and a connected community hub for modern farmers across India.',
   alternates: {
-    canonical: 'https://miraitu.in',
+    canonical: 'https://www.miraitu.in',
   },
 };
 

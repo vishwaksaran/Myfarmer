@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const meta = categoryMeta[category];
     const title = meta ? `${meta.title} - Farm Shop` : 'Farm Shop';
     const description = meta?.description ?? 'Shop for all farming needs on Miraitu.';
-    const url = `https://miraitu.in/home/shop/${category}`;
+    const url = `https://www.miraitu.in/home/shop/${category}`;
 
     return {
         title,

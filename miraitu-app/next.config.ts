@@ -4,9 +4,17 @@ const nextConfig: NextConfig = {
   /* SEO: Prevent trailing-slash redirect loops */
   trailingSlash: false,
 
-  /* Permanent 301 redirect: /home → / (backwards compatibility) */
+  /* Permanent 301 redirects */
   async redirects() {
     return [
+      // Non-www → www (fixes Google Search Console "Redirect error" for miraitu.in pages)
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'miraitu.in' }],
+        destination: 'https://www.miraitu.in/:path*',
+        permanent: true, // 301
+      },
+      // /home → / (backwards compatibility)
       {
         source: '/home',
         destination: '/',

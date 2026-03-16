@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: 'Farm Shop – All Agricultural Supplies',
         description: 'Buy seeds, fertilizers, pesticides, and farm equipment online.',
-        url: 'https://miraitu.in/home/shop',
+        url: 'https://www.miraitu.in/home/shop',
     },
 };
 

@@ -7,12 +7,12 @@ export const metadata: Metadata = {
     title: 'About Miraitu – Our Mission to Empower Indian Farmers',
     description: 'Learn about Miraitu, India\'s agriculture super app. Our vision, mission, leadership team, and how we\'re transforming farming through technology and innovation.',
     alternates: {
-        canonical: 'https://miraitu.in/home/about',
+        canonical: 'https://www.miraitu.in/home/about',
     },
     openGraph: {
         title: 'About Miraitu – Empowering Indian Farmers',
         description: 'Discover the team and mission behind India\'s leading agriculture super app.',
-        url: 'https://miraitu.in/home/about',
+        url: 'https://www.miraitu.in/home/about',
     },
 };
 

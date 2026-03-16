@@ -17,9 +17,12 @@ export default function robots(): MetadataRoute.Robots {
                     '/admin/',
                     '/user-login/',
                     '/user-register/',
+                    '/_next/',
+                    '/manifest.json',
+                    '/*.ico$',
                 ],
             },
         ],
-        sitemap: 'https://miraitu.in/sitemap.xml',
+        sitemap: 'https://www.miraitu.in/sitemap.xml',
     };
 }
