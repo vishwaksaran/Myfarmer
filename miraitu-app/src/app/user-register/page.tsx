@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import MiraituLogo from '@/components/MiraituLogo';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 /**
  * UserRegisterPage - Phone OTP registration only
@@ -13,6 +14,7 @@ import { useAuth } from '@/context/AuthContext';
 export default function UserRegisterPage() {
     const router = useRouter();
     const { user, loading: authLoading, signInWithPhone } = useAuth();
+    const { t } = useLanguage();
 
     // Shared state
     const [fullName, setFullName] = useState('');
@@ -39,7 +41,7 @@ export default function UserRegisterPage() {
     const handleSendOtp = async () => {
         const phone = phoneNumber.trim();
         if (!phone || phone.length < 10) {
-            setOtpError('Please enter a valid 10-digit mobile number.');
+            setOtpError(t('register.errorInvalidPhone'));
             return;
         }
         setOtpError(null);
@@ -53,7 +55,7 @@ export default function UserRegisterPage() {
                 setOtpSent(true);
             }
         } catch {
-            setOtpError('Failed to send OTP. Please try again.');
+            setOtpError(t('register.errorSendOtp'));
         } finally {
             setOtpLoading(false);
         }
@@ -61,7 +63,7 @@ export default function UserRegisterPage() {
 
     const handleVerifyOtp = async () => {
         if (otpCode.length < 4) {
-            setOtpError('Please enter the OTP code.');
+            setOtpError(t('register.errorOtpRequired'));
             return;
         }
         setOtpError(null);
@@ -79,7 +81,7 @@ export default function UserRegisterPage() {
             const data = await response.json();
 
             if (!response.ok || data.error) {
-                setOtpError(data.error || 'Failed to verify OTP');
+                setOtpError(data.error || t('register.errorVerifyOtp'));
                 setOtpCode('');
             } else {
                 // Set Supabase session
@@ -99,11 +101,11 @@ export default function UserRegisterPage() {
                 }
 
                 setPhoneVerified(true);
-                setSuccessMessage('✅ Phone verified! Setting up your profile...');
+                setSuccessMessage(`✅ ${t('register.successVerified')}`);
                 setTimeout(() => router.push('/onboarding'), 1500);
             }
         } catch {
-            setOtpError('Failed to verify OTP. Please try again.');
+            setOtpError(t('register.errorVerifyOtp'));
             setOtpCode('');
         } finally {
             setOtpLoading(false);
@@ -115,11 +117,11 @@ export default function UserRegisterPage() {
     const handlePhoneRegister = async () => {
         setError(null);
         if (!fullName.trim()) {
-            setError('Please enter your full name.');
+            setError(t('register.errorFullName'));
             return;
         }
         if (!phoneNumber.trim() || phoneNumber.trim().length < 10) {
-            setError('Please enter a valid 10-digit mobile number.');
+            setError(t('register.errorInvalidPhone'));
             return;
         }
 
@@ -153,10 +155,10 @@ export default function UserRegisterPage() {
                 {/* Heading */}
                 <div className="max-w-[600px] w-full text-center mb-10 animate-fade-in">
                     <h1 className="text-[#0f1a11] dark:text-white text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em] mb-3">
-                        Create Your <span className="text-[var(--miraitu-primary-green)]">Account</span>
+                        {t('register.title1')} <span className="text-[var(--miraitu-primary-green)]">{t('register.title2')}</span>
                     </h1>
                     <p className="text-[#53935d] dark:text-gray-400 text-lg font-medium">
-                        Join the digital ecosystem designed for modern farmers.
+                        {t('register.subtitle')}
                     </p>
                 </div>
 
@@ -185,14 +187,14 @@ export default function UserRegisterPage() {
                         <div className="flex flex-col gap-6 animate-fade-in relative z-10">
                             {/* Full Name */}
                             <label className="flex flex-col gap-2">
-                                <span className="text-[#0f1a11] text-sm font-bold uppercase tracking-wide ml-1">Full Name</span>
+                                <span className="text-[#0f1a11] text-sm font-bold uppercase tracking-wide ml-1">{t('register.fullName')}</span>
                                 <div className="relative">
                                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">person</span>
                                     <input
                                         value={fullName}
                                         onChange={(e) => setFullName(e.target.value)}
                                         className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none"
-                                        placeholder="Enter your full name"
+                                        placeholder={t('register.fullNamePlaceholder')}
                                         type="text"
                                         required
                                     />
@@ -203,11 +205,11 @@ export default function UserRegisterPage() {
                             <div className="space-y-4">
                                 <label className="flex flex-col gap-2">
                                     <span className="text-[#0f1a11] text-sm font-bold uppercase tracking-wide ml-1">
-                                        Mobile Number
+                                        {t('register.mobileNumber')}
                                             {phoneVerified && (
                                                 <span className="ml-2 text-[var(--miraitu-primary-green)] text-xs normal-case font-bold inline-flex items-center gap-1">
                                                     <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-                                                    Verified
+                                                    {t('register.verified')}
                                                 </span>
                                             )}
                                         </span>
@@ -256,7 +258,7 @@ export default function UserRegisterPage() {
                                             ) : (
                                                 <>
                                                     <span className="material-symbols-outlined text-lg">sms</span>
-                                                    Send OTP & Register
+                                                    {t('register.sendOtpRegister')}
                                                 </>
                                             )}
                                         </button>
@@ -266,7 +268,7 @@ export default function UserRegisterPage() {
                                     {otpSent && !phoneVerified && (
                                         <div className="space-y-3">
                                             <p className="text-xs text-gray-500 font-medium">
-                                                OTP sent to <span className="font-bold text-[var(--miraitu-primary-green)]">+91{phoneNumber}</span>
+                                                {t('register.otpSentTo')} <span className="font-bold text-[var(--miraitu-primary-green)]">+91{phoneNumber}</span>
                                             </p>
                                             <div className="flex gap-2">
                                                 <div className="relative flex-1">
@@ -292,7 +294,7 @@ export default function UserRegisterPage() {
                                                     ) : (
                                                         <>
                                                             <span className="material-symbols-outlined text-lg">check</span>
-                                                            Verify
+                                                            {t('register.verify')}
                                                         </>
                                                     )}
                                                 </button>
@@ -303,7 +305,7 @@ export default function UserRegisterPage() {
                                                 disabled={otpLoading}
                                                 className="text-xs font-bold text-[var(--miraitu-primary-green)] hover:underline"
                                             >
-                                                Resend OTP
+                                                {t('register.resendOtp')}
                                             </button>
                                         </div>
                                     )}
@@ -312,7 +314,7 @@ export default function UserRegisterPage() {
                             {/* Divider */}
                             <div className="flex items-center gap-4 my-2">
                                 <div className="flex-1 h-px bg-gray-200" />
-                                <span className="text-xs text-gray-400 font-medium">Already have an account?</span>
+                                <span className="text-xs text-gray-400 font-medium">{t('register.alreadyHaveAccount')}</span>
                                 <div className="flex-1 h-px bg-gray-200" />
                             </div>
 
@@ -322,7 +324,7 @@ export default function UserRegisterPage() {
                                 className="w-full py-3 rounded-xl border-2 border-[var(--miraitu-primary-green)]/20 font-bold text-sm text-[var(--miraitu-primary-green)] flex items-center justify-center gap-2 hover:bg-[var(--miraitu-primary-green)]/5 transition-all"
                             >
                                 <span className="material-symbols-outlined text-lg">login</span>
-                                Login Instead
+                                {t('register.loginInstead')}
                             </Link>
                         </div>
                     )}
@@ -332,21 +334,21 @@ export default function UserRegisterPage() {
                 <div className="mt-16 flex flex-wrap justify-center gap-12 grayscale opacity-40 animate-footer-entrance">
                     <div className="flex items-center gap-2">
                         <span className="material-symbols-outlined">shield</span>
-                        <span className="text-xs font-bold uppercase tracking-[0.1em]">Privacy Guaranteed</span>
+                        <span className="text-xs font-bold uppercase tracking-[0.1em]">{t('register.privacyGuaranteed')}</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="material-symbols-outlined">psychology</span>
-                        <span className="text-xs font-bold uppercase tracking-[0.1em]">Smart Matching</span>
+                        <span className="text-xs font-bold uppercase tracking-[0.1em]">{t('register.smartMatching')}</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="material-symbols-outlined">group</span>
-                        <span className="text-xs font-bold uppercase tracking-[0.1em]">50k+ Members</span>
+                        <span className="text-xs font-bold uppercase tracking-[0.1em]">{t('register.members')}</span>
                     </div>
                 </div>
             </main>
 
             <footer className="py-10 border-t border-[var(--miraitu-primary-green)]/10 bg-white/50 text-center">
-                <p className="text-sm text-[#53935d]">© 2026 Miraitu Agriculture Tech. Empowering farmers globally.</p>
+                <p className="text-sm text-[#53935d]">© 2026 Miraitu Agriculture Tech. {t('register.footer')}</p>
             </footer>
         </div>
     );

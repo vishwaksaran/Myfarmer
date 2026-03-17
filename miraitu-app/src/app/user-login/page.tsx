@@ -58,7 +58,7 @@ export default function UserLoginPage() {
             await signInWithGoogle();
             router.push('/');
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to sign in with Google. Please try again.');
+            setError(err instanceof Error ? err.message : t('login.errorGoogle'));
             console.error(err);
         } finally {
             setIsSigningIn(false);
@@ -71,7 +71,7 @@ export default function UserLoginPage() {
             await loginAsGuest();
             router.push('/');
         } catch (err) {
-            setError('Failed to continue as guest.');
+            setError(t('login.errorGuest'));
         } finally {
             setIsSigningIn(false);
         }
@@ -80,7 +80,7 @@ export default function UserLoginPage() {
     const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         if (phoneNumber.length !== 10) {
-            setError('Please enter a valid 10-digit phone number');
+            setError(t('login.errorInvalidPhone'));
             return;
         }
         setError(null);
@@ -94,7 +94,7 @@ export default function UserLoginPage() {
                 setPhoneState('otp');
             }
         } catch {
-            setError('Failed to send OTP. Please try again.');
+            setError(t('login.errorSendOtp'));
         } finally {
             setIsSigningIn(false);
         }
@@ -105,7 +105,7 @@ export default function UserLoginPage() {
         e?.preventDefault();
         const otpToVerify = directOtp ?? otp;
         if (otpToVerify.length !== 6) {
-            setError('Please enter the 6-digit OTP');
+            setError(t('login.errorOtpRequired'));
             return;
         }
         setError(null);
@@ -122,7 +122,7 @@ export default function UserLoginPage() {
             const data = await response.json();
 
             if (!response.ok || data.error) {
-                setError(data.error || 'Failed to verify OTP');
+                setError(data.error || t('login.errorVerifyOtp'));
                 setOtp('');
             } else {
                 // Set Supabase session
@@ -134,14 +134,14 @@ export default function UserLoginPage() {
                     });
                 }
 
-                setSuccessMessage('✅ Login successful! Redirecting...');
+                setSuccessMessage(`✅ ${t('login.successLogin')}`);
 
                 // Use server-side onboarding check (not AuthContext which may have stale user)
                 const onboarded = data.onboarding_completed === true;
                 setTimeout(() => router.push(onboarded ? '/' : '/onboarding'), 1500);
             }
         } catch {
-            setError('Failed to verify OTP. Please try again.');
+            setError(t('login.errorVerifyOtp'));
             setOtp('');
         } finally {
             setIsSigningIn(false);
@@ -165,7 +165,7 @@ export default function UserLoginPage() {
             const response = await fetch('/api/auth/dev-login', { method: 'POST' });
             const data = await response.json();
             if (!response.ok || data.error) {
-                setError(data.error || 'Dev login failed');
+                setError(data.error || t('login.errorDevLogin'));
                 return;
             }
             // Set the Supabase session from the API response
@@ -174,10 +174,10 @@ export default function UserLoginPage() {
                 access_token: data.session.access_token,
                 refresh_token: data.session.refresh_token,
             });
-            setSuccessMessage('✅ Dev login successful! Redirecting to admin...');
+            setSuccessMessage(`✅ ${t('login.successDevLogin')}`);
             setTimeout(() => router.push('/admin'), 1000);
         } catch (err) {
-            setError('Dev login failed. Check console for details.');
+            setError(t('login.errorDevLoginConsole'));
             console.error(err);
         } finally {
             setIsSigningIn(false);
@@ -196,7 +196,7 @@ export default function UserLoginPage() {
             });
             const data = await response.json();
             if (!response.ok || data.error) {
-                setError(data.error || 'Failed to resend OTP');
+                setError(data.error || t('login.errorSendOtp'));
             }
         } catch {
             setError('Failed to resend OTP. Please try again.');
@@ -212,11 +212,11 @@ export default function UserLoginPage() {
         setError(null);
 
         if (!loginEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginEmail)) {
-            setEmailError('Please enter a valid email address.');
+            setEmailError(t('login.errorInvalidEmail'));
             return;
         }
         if (!loginPassword || loginPassword.length < 6) {
-            setEmailError('Please enter your password (min. 6 characters).');
+            setEmailError(t('login.errorPasswordMin'));
             return;
         }
 
@@ -230,17 +230,17 @@ export default function UserLoginPage() {
 
             if (signInError) {
                 if (signInError.message?.toLowerCase().includes('invalid login credentials')) {
-                    setEmailError('Invalid email or password. Please try again.');
+                    setEmailError(t('login.errorInvalidCredentials'));
                 } else if (signInError.message?.toLowerCase().includes('email not confirmed')) {
-                    setEmailError('Please confirm your email first. Check your inbox.');
+                    setEmailError(t('login.errorEmailNotConfirmed'));
                 } else {
-                    setEmailError(signInError.message || 'Login failed.');
+                    setEmailError(signInError.message || t('login.errorLoginFailed'));
                 }
                 return;
             }
 
             if (data.session) {
-                setSuccessMessage('✅ Login successful! Redirecting...');
+                setSuccessMessage(`✅ ${t('login.successLogin')}`);
 
                 // Check onboarding status
                 const { data: profile } = await supabase
@@ -253,7 +253,7 @@ export default function UserLoginPage() {
                 setTimeout(() => router.push(onboarded ? '/' : '/onboarding'), 1500);
             }
         } catch {
-            setEmailError('Something went wrong. Please try again.');
+            setEmailError(t('login.errorGeneric'));
         } finally {
             setIsSigningIn(false);
         }
@@ -427,13 +427,13 @@ export default function UserLoginPage() {
                                 <h1 className="text-[#0f1a11] text-3xl md:text-3xl font-black leading-tight tracking-[-0.02em] mb-2">
                                     {authMethod === 'default' && t('login.welcomeBack')}
                                     {authMethod === 'phone' && t('login.phoneLogin')}
-                                    {authMethod === 'email' && 'Email Login'}
+                                    {authMethod === 'email' && t('login.emailLogin')}
                                 </h1>
                                 <p className="text-[#53935d] text-base font-medium">
                                     {authMethod === 'default' && t('login.signInSubtitle')}
                                     {authMethod === 'phone' && phoneState === 'input' && t('login.enterMobile')}
                                     {authMethod === 'phone' && phoneState === 'otp' && t('login.enterOtp')}
-                                    {authMethod === 'email' && 'Log in with your email & password'}
+                                    {authMethod === 'email' && t('login.emailSubtitle')}
                                 </p>
                             </div>
 
@@ -488,7 +488,7 @@ export default function UserLoginPage() {
                                         className="w-full h-14 flex items-center justify-center gap-3 bg-[var(--miraitu-background-light)] border-2 border-[var(--miraitu-primary-green)]/20 rounded-xl font-bold text-[#0f1a11] hover:bg-[var(--miraitu-primary-green)]/5 hover:border-[var(--miraitu-primary-green)]/40 transition-all"
                                     >
                                         <span className="material-symbols-outlined text-[var(--miraitu-primary-green)]">mail</span>
-                                        <span className="max-w-40 text-center sm:max-w-none">Continue with Registered Mail</span>
+                                        <span className="max-w-40 text-center sm:max-w-none">{t('login.continueEmail')}</span>
                                     </button>
 
                                     {/* Guest login removed */}
@@ -498,7 +498,7 @@ export default function UserLoginPage() {
                                         <>
                                             <div className="flex items-center gap-4 my-2">
                                                 <div className="flex-1 h-px bg-red-200" />
-                                                <span className="text-[10px] text-red-400 font-bold uppercase tracking-widest">Dev Only</span>
+                                                <span className="text-[10px] text-red-400 font-bold uppercase tracking-widest">{t('login.devOnly')}</span>
                                                 <div className="flex-1 h-px bg-red-200" />
                                             </div>
                                             <button
@@ -507,7 +507,7 @@ export default function UserLoginPage() {
                                                 className="w-full h-12 flex items-center justify-center gap-2 bg-red-50 border-2 border-red-200 border-dashed rounded-xl font-bold text-red-600 text-sm hover:bg-red-100 transition-all disabled:opacity-50"
                                             >
                                                 <span className="material-symbols-outlined text-lg">developer_mode</span>
-                                                Dev Admin Login (localhost)
+                                                {t('login.devAdminLogin')}
                                             </button>
                                         </>
                                     )}
@@ -603,7 +603,7 @@ export default function UserLoginPage() {
                             {authMethod === 'email' && (
                                 <form onSubmit={handleEmailLogin} className="space-y-5 animate-fade-in">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Email Address</label>
+                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">{t('login.emailAddress')}</label>
                                         <div className="relative">
                                             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60">mail</span>
                                             <input
@@ -619,7 +619,7 @@ export default function UserLoginPage() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Password</label>
+                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">{t('login.password')}</label>
                                         <div className="relative">
                                             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60">lock</span>
                                             <input
@@ -627,7 +627,7 @@ export default function UserLoginPage() {
                                                 value={loginPassword}
                                                 onChange={(e) => { setLoginPassword(e.target.value); setEmailError(null); }}
                                                 className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-[var(--miraitu-primary-green)]/20 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none transition-all placeholder:text-gray-400 text-base font-medium"
-                                                placeholder="Enter your password"
+                                                placeholder={t('login.passwordPlaceholder')}
                                                 required
                                                 minLength={6}
                                             />
@@ -651,7 +651,7 @@ export default function UserLoginPage() {
                                             <span className="material-symbols-outlined animate-spin">progress_activity</span>
                                         ) : (
                                             <>
-                                                Log In
+                                                {t('login.logIn')}
                                                 <span className="material-symbols-outlined">arrow_forward</span>
                                             </>
                                         )}
@@ -706,13 +706,15 @@ function GoogleIcon() {
  * Loading Spinner Component
  */
 function LoadingSpinner() {
+    const { t } = useLanguage();
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-[var(--miraitu-background-light)]">
             <div className="flex flex-col items-center gap-4">
                 <span className="material-symbols-outlined text-4xl text-[var(--miraitu-primary-green)] animate-spin">
                     progress_activity
                 </span>
-                <p className="text-[#53935d] font-medium">Loading...</p>
+                <p className="text-[#53935d] font-medium">{t('login.loading')}</p>
             </div>
         </div>
     );
