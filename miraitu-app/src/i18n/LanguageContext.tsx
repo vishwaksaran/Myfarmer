@@ -3,6 +3,9 @@
 import { createContext, useContext, useState, useCallback, useEffect, useMemo, ReactNode } from 'react';
 import { translations, LangCode } from './translations';
 
+// Import pre-generated complete translations for instant availability
+import generatedTranslations from '../../generated-translations-complete.json';
+
 interface LanguageContextType {
     lang: LangCode;
     setLang: (lang: LangCode) => void;
@@ -16,6 +19,18 @@ const LanguageContext = createContext<LanguageContextType>({
 });
 
 const VALID_LANGS: LangCode[] = ['en', 'hi', 'mr', 'gu', 'te', 'ta', 'kn', 'pa', 'bn', 'ml'];
+
+// Languages that have complete pre-generated translations
+const LANGS_WITH_PREGENERATED: LangCode[] = ['mr', 'gu', 'te', 'ta', 'kn', 'pa', 'bn', 'ml'];
+
+// Create a merged translations object with pre-generated data
+const mergedTranslations: Record<LangCode, Record<string, string>> = { ...translations };
+for (const lang of LANGS_WITH_PREGENERATED) {
+    mergedTranslations[lang] = {
+        ...(translations[lang] || {}),
+        ...(generatedTranslations[lang as keyof typeof generatedTranslations] || {}),
+    };
+}
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
     const [lang, setLangState] = useState<LangCode>('en');
@@ -36,13 +51,13 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }, []);
 
     // Memoize the entire context value so it only changes when lang changes.
-    // The t function is recreated only when lang changes, ensuring all
-    // consumers get fresh translations without stale closure issues.
     const contextValue = useMemo<LanguageContextType>(() => ({
         lang,
         setLang,
         t: (key: string): string => {
-            return translations[lang]?.[key] || translations['en']?.[key] || key;
+            // Use merged translations (with pre-generated data) if available
+            const dict = mergedTranslations[lang] || translations[lang];
+            return dict?.[key] || translations['en']?.[key] || key;
         },
     }), [lang, setLang]);
 
