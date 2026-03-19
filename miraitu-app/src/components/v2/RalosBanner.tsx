@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 const slides = [
     {
@@ -41,8 +42,9 @@ export default function RalosBanner() {
     const slide = slides[active];
 
     return (
-        <div
-            className="relative overflow-hidden rounded-2xl mb-6 select-none"
+        <Link
+            href="/home/shop/solar-dry-products/ralos"
+            className="block relative overflow-hidden rounded-2xl mb-6 select-none cursor-pointer transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
             style={{
                 background: 'linear-gradient(135deg, #1a0f00 0%, #2d1a00 40%, #1a1a00 100%)',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
@@ -132,7 +134,7 @@ export default function RalosBanner() {
                             {slides.map((_, i) => (
                                 <button
                                     key={i}
-                                    onClick={() => setActive(i)}
+                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActive(i); }}
                                     className="rounded-full transition-all duration-300"
                                     style={{
                                         width: i === active ? '20px' : '6px',
@@ -150,7 +152,7 @@ export default function RalosBanner() {
                         {slides.map((s, i) => (
                             <div
                                 key={i}
-                                onClick={() => setActive(i)}
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActive(i); }}
                                 className="cursor-pointer transition-all duration-300"
                                 style={{
                                     transform: i === active ? 'scale(1.15)' : 'scale(0.9)',
@@ -173,13 +175,20 @@ export default function RalosBanner() {
                     </div>
                 </div>
 
-                {/* Discount badge + CTA */}
-                <div className="mt-4 flex items-center gap-3">
-                    <div className="flex items-center gap-1.5 bg-green-500/20 border border-green-500/40 rounded-lg px-2.5 py-1">
-                        <span className="text-green-400 text-xs font-black">15% OFF</span>
-                        <span className="text-green-400/60 text-xs">Flat Discount</span>
+                {/* Discount badge + CTA row */}
+                <div className="mt-4 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5 bg-green-500/20 border border-green-500/40 rounded-lg px-2.5 py-1">
+                            <span className="text-green-400 text-xs font-black">15% OFF</span>
+                            <span className="text-green-400/60 text-xs">Flat Discount</span>
+                        </div>
+                        <div className="text-white/30 text-xs">on all RaloS products</div>
                     </div>
-                    <div className="text-white/30 text-xs">on all RaloS products</div>
+                    {/* Tap-to-visit indicator */}
+                    <div className="flex items-center gap-1 text-amber-400/70 text-xs font-semibold">
+                        <span>View Brand</span>
+                        <span className="text-base">→</span>
+                    </div>
                 </div>
             </div>
 
@@ -198,6 +207,6 @@ export default function RalosBanner() {
                     50%       { transform: scale(1.15) translateY(-4px); }
                 }
             `}</style>
-        </div>
+        </Link>
     );
 }

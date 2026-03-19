@@ -153,10 +153,67 @@ export const categoryMeta: Record<string, { title: string; icon: string; descrip
     'agri-inputs': { title: 'Agri Inputs', icon: '\u{1F6CD}\uFE0F', description: 'Essential farming inputs \u2014 fertilizers, pesticides, herbicides, and micronutrients at best prices.', bannerColor: 'from-orange-500 to-orange-700' },
     'agriculture-tools': { title: 'Agriculture Tools', icon: '\u{1F527}', description: 'Hand tools, sprayers, irrigation equipment, and planting accessories for every farmer.', bannerColor: 'from-slate-600 to-slate-800' },
     'cold-press-oil': { title: 'Cold Press Oil', icon: 'water_drop', description: 'Pure wood-pressed and cold-pressed oils \u2014 groundnut, sesame, coconut, mustard & more. Chemical-free, farm-fresh.', bannerColor: 'from-yellow-600 to-yellow-800' },
-    'solar-dry-products': { title: 'Solar Dry Products', icon: 'sunny', description: 'Sun-dried and solar-dehydrated fruits, vegetables & herbs. Natural preservation, intense flavor.', bannerColor: 'from-red-500 to-red-700' },
+    'solar-dry-products': { title: 'Solar Dry Products', icon: 'sunny', description: 'Sun-dried and solar-dehydrated fruits, vegetables & herbs. Natural preservation, intense flavor.', bannerColor: 'from-amber-400 to-orange-600' },
     'organic-manure': { title: 'Organic Manure', icon: 'compost', description: 'Natural fertilizers \u2014 vermicompost, neem cake, bone meal, panchagavya & jeevamrutha for healthy soil.', bannerColor: 'from-lime-600 to-lime-800' },
     'millets-grains': { title: 'Millets & Grains', icon: 'grain', description: 'Farm-fresh millets and traditional grains \u2014 ragi, foxtail, bajra, jowar & more. Nutrient-dense superfoods.', bannerColor: 'from-emerald-600 to-emerald-800' },
     'honey-products': { title: 'Honey & Bee Products', icon: 'hive', description: 'Raw forest honey, bee pollen, beeswax & beekeeping kits. Unprocessed, straight from the hive.', bannerColor: 'from-amber-500 to-amber-700' },
     'spices-herbs': { title: 'Spices & Herbs', icon: 'spa', description: 'Farm-direct Indian spices & medicinal herbs. Turmeric, pepper, cardamom, moringa & more \u2014 pure & aromatic.', bannerColor: 'from-rose-600 to-rose-800' },
     'dairy-products': { title: 'Dairy Products', icon: '🥛', description: 'Fresh farm dairy — milk, ghee, paneer, curd, butter & more. Sourced daily from local dairy farms near you.', bannerColor: 'from-sky-500 to-sky-700' },
+};
+
+// ── Featured Brands config ───────────────────────────────────────────────────
+// Add a new entry here to show an animated featured-brand banner in a category.
+// Multiple brands per category are supported (rendered as stacked banners).
+
+export interface FeaturedBrandSlide {
+    headline: string;
+    sub: string;
+    emoji: string;
+    color: string; // hex accent colour for the slide circle
+}
+
+export interface FeaturedBrand {
+    id: string;                 // unique slug, used in the brand page route
+    name: string;               // display name
+    logoText: string[];         // split around the icon, e.g. ['Ral', 'S']
+    logoIcon: string;           // emoji icon rendered between logoText parts
+    tagline: string;
+    brandPagePath: string;      // absolute Next.js route to the brand store page
+    heroBg: string;             // CSS gradient string for the banner card
+    discountLabel: string;      // e.g. '15% OFF'
+    discountSub: string;        // e.g. 'Flat Discount'
+    rating: string;
+    productCount: number;
+    slides: FeaturedBrandSlide[];
+}
+
+export const featuredBrands: Record<string, FeaturedBrand[]> = {
+    // ── Solar Dry Products ───────────────────────────────────────────────────
+    'solar-dry-products': [
+        {
+            id: 'ralos',
+            name: 'RaloS',
+            logoText: ['Ral', 'S'],
+            logoIcon: '☀️',
+            tagline: '100% Natural · No Chemicals · Sun-Dried Goodness',
+            brandPagePath: '/home/shop/solar-dry-products/ralos',
+            heroBg: 'linear-gradient(135deg, #0c1220 0%, #0f2027 30%, #162a3a 60%, #1a3a4a 100%)',
+            discountLabel: '15% OFF',
+            discountSub: 'Flat Discount',
+            rating: '4.8',
+            productCount: 19,
+            slides: [
+                { headline: 'Moringa Powder', sub: 'Rich in Vitamins A, C & Iron', emoji: '🌿', color: '#22863a' },
+                { headline: 'Amla Powder', sub: "Nature's Vitamin C Powerhouse", emoji: '🫐', color: '#7c3d8e' },
+                { headline: 'Herbal Tea – Vedic Kada', sub: 'Ashwagandha · Shatavari · Yashtimadhu', emoji: '🍵', color: '#b45309' },
+            ],
+        },
+        // Add more featured brands for solar-dry-products here in future:
+        // { id: 'brand2', name: 'Brand Two', ... },
+    ],
+
+    // ── Example: add featured brands for other categories here ──────────────
+    // 'cold-press-oil': [
+    //   { id: 'woodpress', name: 'WoodPress', ... },
+    // ],
 };

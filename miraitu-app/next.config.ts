@@ -1,8 +1,16 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   /* SEO: Prevent trailing-slash redirect loops */
   trailingSlash: false,
+
+  /* Fix Turbopack resolving modules from workspace root instead of project dir */
+  turbopack: {
+    resolveAlias: {
+      tailwindcss: path.resolve(__dirname, 'node_modules/tailwindcss'),
+    },
+  },
 
   /* Permanent 301 redirects */
   async redirects() {

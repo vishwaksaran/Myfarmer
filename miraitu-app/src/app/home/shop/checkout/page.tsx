@@ -6,6 +6,7 @@ import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import { useCart } from '@/context/CartContext';
 import { featuredProducts } from '../data';
+import { categoryProducts, type Product } from '../categoryData';
 
 export default function CheckoutPage() {
     const [form, setForm] = useState({
@@ -29,10 +30,16 @@ export default function CheckoutPage() {
 
     const { quantities, deleteItem, clearCart } = useCart();
 
+    // Build a combined product lookup from featured + all category products
+    const allProducts: { id: number; name: string; price: string; originalPrice: string; rating: number; reviews: number; image: string; badge: string | null; description?: string }[] = [
+        ...featuredProducts.map(p => ({ ...p, description: '' })),
+        ...Object.values(categoryProducts).flat(),
+    ];
+
     // Compute cart items from quantities and product data
     const cartItems = Object.entries(quantities).map(([idStr, qty]) => {
         const id = parseInt(idStr);
-        const product = featuredProducts.find(p => p.id === id);
+        const product = allProducts.find(p => p.id === id);
         if (!product) return null;
 
         // Parse price to number (remove currency symbol and commas)
@@ -43,7 +50,7 @@ export default function CheckoutPage() {
             qty,
             totalPrice: priceNum * qty
         };
-    }).filter(item => item !== null) as (typeof featuredProducts[0] & { qty: number, totalPrice: number })[];
+    }).filter(item => item !== null) as ({ id: number; name: string; price: string; originalPrice: string; rating: number; reviews: number; image: string; badge: string | null; qty: number; totalPrice: number })[];
 
     const subtotal = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
     const discount = 200; // Flat discount for now

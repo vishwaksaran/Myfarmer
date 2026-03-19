@@ -7,8 +7,8 @@ import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import { useCart } from '@/context/CartContext';
 import { shopCategories } from '../data';
-import { categoryProducts, categoryMeta } from '../categoryData';
-import RalosBanner from '@/components/v2/RalosBanner';
+import { categoryProducts, categoryMeta, featuredBrands } from '../categoryData';
+import FeaturedBrandBanner from '@/components/v2/FeaturedBrandBanner';
 
 type SortOption = 'popular' | 'price-low' | 'price-high' | 'rating';
 
@@ -21,6 +21,7 @@ const bannerGradients: Record<string, string> = {
     'from-slate-600 to-slate-800': 'linear-gradient(to right, #475569, #1e293b)',
     'from-yellow-600 to-yellow-800': 'linear-gradient(to right, #ca8a04, #854d0e)',
     'from-red-500 to-red-700': 'linear-gradient(to right, #ef4444, #b91c1c)',
+    'from-amber-400 to-orange-600': 'linear-gradient(to right, #fbbf24, #ea580c)',
     'from-lime-600 to-lime-800': 'linear-gradient(to right, #65a30d, #3f6212)',
     'from-emerald-600 to-emerald-800': 'linear-gradient(to right, #059669, #065f46)',
     'from-rose-600 to-rose-800': 'linear-gradient(to right, #e11d48, #9f1239)',
@@ -116,8 +117,10 @@ export default function CategoryPage() {
                         </div>
                     </div>
 
-                    {/* RaloS Featured Brand Banner – Solar Dry Products only */}
-                    {slug === 'solar-dry-products' && <RalosBanner />}
+                    {/* Featured Brand Banners – dynamically driven by featuredBrands config */}
+                    {(featuredBrands[slug] ?? []).map(brand => (
+                        <FeaturedBrandBanner key={brand.id} brand={brand} />
+                    ))}
 
                     {/* Other Categories Quick Nav */}
                     <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
