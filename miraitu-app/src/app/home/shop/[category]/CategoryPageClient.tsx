@@ -8,6 +8,7 @@ import Footer from '@/components/v2/Footer';
 import { useCart } from '@/context/CartContext';
 import { shopCategories } from '../data';
 import { categoryProducts, categoryMeta } from '../categoryData';
+import RalosBanner from '@/components/v2/RalosBanner';
 
 type SortOption = 'popular' | 'price-low' | 'price-high' | 'rating';
 
@@ -114,6 +115,9 @@ export default function CategoryPage() {
                             )}
                         </div>
                     </div>
+
+                    {/* RaloS Featured Brand Banner – Solar Dry Products only */}
+                    {slug === 'solar-dry-products' && <RalosBanner />}
 
                     {/* Other Categories Quick Nav */}
                     <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
