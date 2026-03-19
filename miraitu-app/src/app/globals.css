@@ -44,9 +44,11 @@
 /* Force light mode only - no dark mode */
 html {
   color-scheme: light;
+  /* PWA startup: green background prevents white flash before React loads */
+  background: #2c5926;
 }
 
-/* Base Styles */
+/* Base Styles — body resets the green html bg to the app light background */
 body {
   background: var(--background);
   color: var(--foreground);
