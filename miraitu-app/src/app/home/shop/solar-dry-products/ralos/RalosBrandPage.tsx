@@ -79,7 +79,7 @@ export default function RalosBrandPage() {
                 {/* ── HERO ─────────────────────────────────────────── */}
                 <section
                     ref={hero.ref}
-                    className="relative w-full min-h-screen flex items-center justify-center overflow-hidden"
+                    className="relative w-full min-h-[70vh] md:min-h-screen flex items-center justify-center overflow-hidden"
                 >
                     {/* Background Image – High-res solar farm scene */}
                     <div className="absolute inset-0 z-0">
@@ -99,7 +99,7 @@ export default function RalosBrandPage() {
 
                     {/* Main Content */}
                     <div
-                        className="relative z-10 container mx-auto px-6 py-20 flex flex-col items-center text-center max-w-7xl"
+                        className="relative z-10 container mx-auto px-4 md:px-6 py-10 md:py-20 flex flex-col items-center text-center max-w-7xl"
                         style={{
                             opacity: hero.visible ? 1 : 0,
                             transform: hero.visible ? 'translateY(0)' : 'translateY(40px)',
@@ -107,7 +107,7 @@ export default function RalosBrandPage() {
                         }}
                     >
                         {/* Breadcrumb */}
-                        <nav className="flex items-center gap-1.5 text-xs mb-8 flex-wrap justify-center">
+                        <nav className="flex items-center gap-1.5 text-xs mb-4 md:mb-8 flex-wrap justify-center">
                             <Link href="/home" className="text-gray-500 hover:text-gray-800 transition-colors font-medium">Home</Link>
                             <span className="text-gray-400">›</span>
                             <Link href="/home/shop" className="text-gray-500 hover:text-gray-800 transition-colors font-medium">Shop</Link>
@@ -118,31 +118,31 @@ export default function RalosBrandPage() {
                         </nav>
 
                         {/* Logo Image */}
-                        <div className="mb-8 md:mb-12 transform transition-transform hover:scale-105 duration-500">
+                        <div className="mb-4 md:mb-12 transform transition-transform hover:scale-105 duration-500">
                             <img
                                 alt="RaloS Logo"
-                                className="h-32 md:h-44 xl:h-52 w-auto object-contain"
+                                className="h-20 md:h-44 xl:h-52 w-auto object-contain"
                                 src="/images/ralos/ralos-transparent.png"
                                 style={{ filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.25)) drop-shadow(0 0 30px rgba(255,255,255,0.5))' }}
                             />
                         </div>
 
                         {/* Tagline */}
-                        <div className="mb-12 xl:mb-16">
-                            <h2 className="text-gray-900 text-lg md:text-2xl xl:text-3xl font-extrabold tracking-widest drop-shadow-sm" style={{ letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                        <div className="mb-6 md:mb-12 xl:mb-16">
+                            <h2 className="text-gray-900 text-sm md:text-2xl xl:text-3xl font-extrabold tracking-widest drop-shadow-sm" style={{ letterSpacing: '0.15em', textTransform: 'uppercase' }}>
                                 <span>100% Natural</span>
-                                <span className="mx-4 text-orange-500 font-black">•</span>
+                                <span className="mx-2 md:mx-4 text-orange-500 font-black">•</span>
                                 <span>Solar Dried</span>
-                                <span className="mx-4 text-orange-500 font-black">•</span>
+                                <span className="mx-2 md:mx-4 text-orange-500 font-black">•</span>
                                 <span>Zero Chemicals</span>
                             </h2>
                         </div>
 
                         {/* CTA Button – Skeuomorphic */}
-                        <div className="mb-24 xl:mb-32">
+                        <div className="mb-8 md:mb-24 xl:mb-32">
                             <a
                                 href="#products"
-                                className="relative overflow-hidden inline-flex items-center gap-3 px-14 py-6 rounded-full text-white text-xl xl:text-2xl font-bold uppercase tracking-wider group"
+                                className="relative overflow-hidden inline-flex items-center gap-2 md:gap-3 px-8 py-3 md:px-14 md:py-6 rounded-full text-white text-base md:text-xl xl:text-2xl font-bold uppercase tracking-wider group"
                                 style={{
                                     background: 'linear-gradient(180deg, #3d7a35 0%, #2D5A27 100%)',
                                     boxShadow: '0 4px 6px -1px rgba(0,0,0,0.2), 0 2px 4px -1px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.3)',
@@ -165,13 +165,13 @@ export default function RalosBrandPage() {
                         </div>
 
                         {/* Trust Badges – Glassmorphism */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 md:gap-12 xl:gap-20">
+                        <div className="grid grid-cols-3 gap-3 md:gap-12 xl:gap-20 w-full max-w-md md:max-w-none">
                             {[
                                 {
                                     label: 'Solar\nDehydrated',
                                     bgColor: 'bg-yellow-500',
                                     icon: (
-                                        <svg className="h-8 w-8 xl:h-10 xl:w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="h-5 w-5 md:h-8 md:w-8 xl:h-10 xl:w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                                         </svg>
                                     ),
@@ -180,7 +180,7 @@ export default function RalosBrandPage() {
                                     label: '100%\nOrganic',
                                     bgColor: 'bg-green-600',
                                     icon: (
-                                        <svg className="h-8 w-8 xl:h-10 xl:w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="h-5 w-5 md:h-8 md:w-8 xl:h-10 xl:w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                                         </svg>
                                     ),
@@ -189,7 +189,7 @@ export default function RalosBrandPage() {
                                     label: 'FSSAI\nCertified',
                                     bgColor: 'bg-blue-600',
                                     icon: (
-                                        <svg className="h-8 w-8 xl:h-10 xl:w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="h-5 w-5 md:h-8 md:w-8 xl:h-10 xl:w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                                         </svg>
                                     ),
@@ -197,7 +197,7 @@ export default function RalosBrandPage() {
                             ].map((badge, i) => (
                                 <div
                                     key={i}
-                                    className="flex flex-col items-center justify-center w-40 h-40 xl:w-48 xl:h-48 rounded-[2.5rem] hover:bg-white/60 transition-all group mx-auto"
+                                    className="flex flex-col items-center justify-center w-full aspect-square max-w-[10rem] md:w-40 md:h-40 xl:w-48 xl:h-48 rounded-2xl md:rounded-[2.5rem] hover:bg-white/60 transition-all group mx-auto"
                                     style={{
                                         background: 'rgba(255,255,255,0.4)',
                                         backdropFilter: 'blur(12px)',
@@ -205,10 +205,10 @@ export default function RalosBrandPage() {
                                         boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1)',
                                     }}
                                 >
-                                    <div className={`mb-4 p-4 rounded-full shadow-lg transform group-hover:scale-110 transition-transform ${badge.bgColor}`}>
+                                    <div className={`mb-2 md:mb-4 p-2.5 md:p-4 rounded-full shadow-lg transform group-hover:scale-110 transition-transform ${badge.bgColor}`}>
                                         {badge.icon}
                                     </div>
-                                    <span className="text-xs xl:text-sm font-extrabold text-gray-800 text-center leading-tight whitespace-pre-line">{badge.label}</span>
+                                    <span className="text-[10px] md:text-xs xl:text-sm font-extrabold text-gray-800 text-center leading-tight whitespace-pre-line">{badge.label}</span>
                                 </div>
                             ))}
                         </div>
@@ -228,7 +228,7 @@ export default function RalosBrandPage() {
                     className="bg-white"
                 >
                     <div
-                        className="mx-auto max-w-[1280px] px-4 md:px-8 py-4 flex items-center justify-between md:justify-around gap-4 overflow-x-auto scrollbar-hide"
+                        className="mx-auto max-w-[1280px] px-4 md:px-8 py-3 md:py-4 flex items-center justify-between md:justify-around gap-3 md:gap-4 overflow-x-auto scrollbar-hide"
                         style={{
                             opacity: trust.visible ? 1 : 0,
                             transform: trust.visible ? 'translateY(0)' : 'translateY(15px)',
