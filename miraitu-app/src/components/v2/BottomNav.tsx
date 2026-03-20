@@ -35,7 +35,7 @@ export default function BottomNav() {
     });
 
     const isActive = (path: string) => {
-        if (path === '/home') return pathname === '/home';
+        if (path === '/home') return pathname === '/home' || pathname === '/';
         return pathname.startsWith(path);
     };
 
