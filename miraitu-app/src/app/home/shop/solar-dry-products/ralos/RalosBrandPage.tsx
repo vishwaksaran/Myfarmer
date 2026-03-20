@@ -40,10 +40,29 @@ function useReveal(threshold = 0.15) {
     return { ref, visible };
 }
 
+type SortOption = 'all' | 'popular' | 'price-low' | 'price-high' | 'rating';
+
+const parsePrice = (p: string) => {
+    const num = p.replace(/[₹,]/g, '');
+    return parseFloat(num) || 0;
+};
+
 export default function RalosBrandPage() {
     const { quantities, addItem, removeItem } = useCart();
-    const [showAll, setShowAll] = useState(false);
-    const displayed = showAll ? products : products.slice(0, 8);
+    const [showAll, setShowAll] = useState(true);
+    const [sortBy, setSortBy] = useState<SortOption>('all');
+
+    const sorted = (() => {
+        const list = [...products];
+        switch (sortBy) {
+            case 'price-low':  return list.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
+            case 'price-high': return list.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
+            case 'rating':     return list.sort((a, b) => b.rating - a.rating);
+            case 'popular':    return list.sort((a, b) => b.reviews - a.reviews);
+            default:           return list;
+        }
+    })();
+    const displayed = showAll ? sorted : sorted.slice(0, 8);
 
     const hero = useReveal(0.1);
     const trust = useReveal();
@@ -61,16 +80,16 @@ export default function RalosBrandPage() {
                 <section
                     ref={hero.ref}
                     className="relative overflow-hidden"
-                    style={{ background: 'linear-gradient(135deg, #0c1220 0%, #0f2027 30%, #162a3a 60%, #1a3a4a 100%)' }}
+                    style={{ background: 'linear-gradient(135deg, #0f1f13 0%, #132a17 30%, #1a3620 60%, #1e4028 100%)' }}
                 >
                     {/* Aurora blobs */}
                     <div className="absolute inset-0 pointer-events-none overflow-hidden">
                         <div className="absolute w-[600px] h-[600px] md:w-[800px] md:h-[800px] rounded-full"
-                            style={{ top: '-35%', right: '-15%', background: 'radial-gradient(circle, rgba(56,189,248,0.12) 0%, rgba(14,165,233,0.05) 40%, transparent 70%)', animation: 'r-aurora1 9s ease-in-out infinite' }} />
+                            style={{ top: '-35%', right: '-15%', background: 'radial-gradient(circle, rgba(74,222,128,0.12) 0%, rgba(34,197,94,0.05) 40%, transparent 70%)', animation: 'r-aurora1 9s ease-in-out infinite' }} />
                         <div className="absolute w-[500px] h-[500px] md:w-[700px] md:h-[700px] rounded-full"
-                            style={{ bottom: '-30%', left: '-10%', background: 'radial-gradient(circle, rgba(52,211,153,0.10) 0%, rgba(16,185,129,0.04) 40%, transparent 70%)', animation: 'r-aurora2 11s ease-in-out infinite' }} />
+                            style={{ bottom: '-30%', left: '-10%', background: 'radial-gradient(circle, rgba(250,204,21,0.10) 0%, rgba(234,179,8,0.04) 40%, transparent 70%)', animation: 'r-aurora2 11s ease-in-out infinite' }} />
                         <div className="absolute w-[350px] h-[350px] rounded-full"
-                            style={{ top: '30%', left: '50%', background: 'radial-gradient(circle, rgba(251,191,36,0.08) 0%, transparent 60%)', animation: 'r-aurora3 13s ease-in-out infinite' }} />
+                            style={{ top: '30%', left: '50%', background: 'radial-gradient(circle, rgba(163,230,53,0.08) 0%, transparent 60%)', animation: 'r-aurora3 13s ease-in-out infinite' }} />
                     </div>
 
                     {/* Subtle grid */}
@@ -79,7 +98,7 @@ export default function RalosBrandPage() {
 
                     {/* Top shimmer */}
                     <div className="absolute top-0 left-0 right-0 h-px pointer-events-none"
-                        style={{ background: 'linear-gradient(90deg, transparent, rgba(56,189,248,0.4) 30%, rgba(52,211,153,0.4) 50%, rgba(251,191,36,0.3) 70%, transparent)', animation: 'r-shimmer 4s ease-in-out infinite' }} />
+                        style={{ background: 'linear-gradient(90deg, transparent, rgba(74,222,128,0.4) 30%, rgba(250,204,21,0.4) 50%, rgba(163,230,53,0.3) 70%, transparent)', animation: 'r-shimmer 4s ease-in-out infinite' }} />
 
                     <div
                         className="relative z-10 mx-auto max-w-[1280px] px-4 md:px-8 py-14 md:py-24"
@@ -93,13 +112,13 @@ export default function RalosBrandPage() {
                             {/* Left */}
                             <div className="flex-1 text-center md:text-left">
                                 <nav className="flex items-center gap-1 text-xs mb-6 justify-center md:justify-start flex-wrap">
-                                    <Link href="/home" className="hover:text-sky-300 transition-colors" style={{ color: 'rgba(56,189,248,0.5)' }}>Home</Link>
+                                    <Link href="/home" className="hover:text-emerald-300 transition-colors" style={{ color: 'rgba(74,222,128,0.5)' }}>Home</Link>
                                     <span className="text-white/20">›</span>
-                                    <Link href="/home/shop" className="hover:text-sky-300 transition-colors" style={{ color: 'rgba(56,189,248,0.5)' }}>Shop</Link>
+                                    <Link href="/home/shop" className="hover:text-emerald-300 transition-colors" style={{ color: 'rgba(74,222,128,0.5)' }}>Shop</Link>
                                     <span className="text-white/20">›</span>
-                                    <Link href="/home/shop/solar-dry-products" className="hover:text-sky-300 transition-colors" style={{ color: 'rgba(56,189,248,0.5)' }}>Solar Dry Products</Link>
+                                    <Link href="/home/shop/solar-dry-products" className="hover:text-emerald-300 transition-colors" style={{ color: 'rgba(74,222,128,0.5)' }}>Solar Dry Products</Link>
                                     <span className="text-white/20">›</span>
-                                    <span className="font-bold" style={{ color: '#38bdf8' }}>RaloS</span>
+                                    <span className="font-bold" style={{ color: '#4ade80' }}>RaloS</span>
                                 </nav>
 
                                 {/* Logo */}
@@ -111,13 +130,13 @@ export default function RalosBrandPage() {
                                     <span className="text-white/35 text-sm ml-1 self-start mt-3 font-medium">™</span>
                                 </div>
 
-                                <p className="text-sm md:text-base font-medium mb-6 tracking-wide" style={{ color: 'rgba(147,197,253,0.6)' }}>
+                                <p className="text-sm md:text-base font-medium mb-6 tracking-wide" style={{ color: 'rgba(163,230,53,0.6)' }}>
                                     100% Natural · Solar Dried · Zero Chemicals
                                 </p>
 
                                 <div className="flex items-center gap-3 mb-7 justify-center md:justify-start flex-wrap">
                                     <span className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold"
-                                        style={{ background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)', color: '#7dd3fc' }}>
+                                        style={{ background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.25)', color: '#86efac' }}>
                                         🌿 19 Products
                                     </span>
                                     <span className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold"
@@ -133,7 +152,7 @@ export default function RalosBrandPage() {
                                 <a
                                     href="#products"
                                     className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm transition-all hover:gap-3 active:scale-95 group"
-                                    style={{ background: 'linear-gradient(135deg, #38bdf8, #0ea5e9)', color: '#0c1220', boxShadow: '0 4px 24px rgba(56,189,248,0.3)' }}
+                                    style={{ background: 'linear-gradient(135deg, #4ade80, #22c55e)', color: '#0f1f13', boxShadow: '0 4px 24px rgba(74,222,128,0.3)' }}
                                 >
                                     Shop Now
                                     <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
@@ -177,9 +196,9 @@ export default function RalosBrandPage() {
                 <div
                     ref={trust.ref}
                     style={{
-                        background: 'linear-gradient(90deg, #0f2027, #162a3a, #0f2027)',
-                        borderTop: '1px solid rgba(56,189,248,0.08)',
-                        borderBottom: '1px solid rgba(56,189,248,0.08)',
+                        background: 'linear-gradient(90deg, #0f1f13, #1a3620, #0f1f13)',
+                        borderTop: '1px solid rgba(74,222,128,0.08)',
+                        borderBottom: '1px solid rgba(74,222,128,0.08)',
                     }}
                 >
                     <div
@@ -193,7 +212,7 @@ export default function RalosBrandPage() {
                         {trustItems.map((t, i) => (
                             <div key={i} className="flex items-center gap-2 whitespace-nowrap" style={{ animationDelay: `${i * 100}ms` }}>
                                 <span className="text-base">{t.icon}</span>
-                                <span className="text-xs font-semibold" style={{ color: 'rgba(147,197,253,0.6)' }}>{t.label}</span>
+                                <span className="text-xs font-semibold" style={{ color: 'rgba(163,230,53,0.6)' }}>{t.label}</span>
                             </div>
                         ))}
                     </div>
@@ -211,13 +230,13 @@ export default function RalosBrandPage() {
                     >
                         <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-center">
                             <div>
-                                <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#0ea5e9' }}>
-                                    <span className="w-6 h-0.5 rounded" style={{ background: '#38bdf8' }} />
+                                <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#16a34a' }}>
+                                    <span className="w-6 h-0.5 rounded" style={{ background: '#22c55e' }} />
                                     About the Brand
                                 </div>
                                 <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-4">
                                     Nature&apos;s Healing Power,<br />
-                                    <span style={{ color: '#0e7490' }}>Delivered to You</span>
+                                    <span style={{ color: '#15803d' }}>Delivered to You</span>
                                 </h2>
                                 <p className="text-gray-500 text-sm md:text-base leading-relaxed mb-5">
                                     RaloS brings the ancient wisdom of Ayurvedic herbs with modern solar dehydration technology. Every product is handpicked, sun-dried naturally, and packed without any artificial preservatives or chemicals — preserving the full nutritional value of each herb.
@@ -225,7 +244,7 @@ export default function RalosBrandPage() {
                                 <div className="flex flex-wrap gap-2">
                                     {['☀️ Solar Dried', '🌿 Organic Herbs', '🧪 No Preservatives', '🍃 Farm Direct'].map(pill => (
                                         <span key={pill} className="px-3 py-1.5 rounded-full text-xs font-semibold border"
-                                            style={{ borderColor: 'rgba(14,165,233,0.2)', color: '#0369a1', background: 'rgba(14,165,233,0.05)' }}>
+                                            style={{ borderColor: 'rgba(34,197,94,0.2)', color: '#15803d', background: 'rgba(34,197,94,0.05)' }}>
                                             {pill}
                                         </span>
                                     ))}
@@ -239,14 +258,14 @@ export default function RalosBrandPage() {
                                         key={i}
                                         className="rounded-2xl p-5 text-center border transition-all hover:shadow-lg hover:-translate-y-0.5"
                                         style={{
-                                            background: 'linear-gradient(135deg, rgba(14,165,233,0.03), rgba(52,211,153,0.03))',
-                                            borderColor: 'rgba(14,165,233,0.12)',
+                                            background: 'linear-gradient(135deg, rgba(34,197,94,0.03), rgba(163,230,53,0.03))',
+                                            borderColor: 'rgba(34,197,94,0.12)',
                                             opacity: about.visible ? 1 : 0,
                                             transform: about.visible ? 'scale(1)' : 'scale(0.9)',
                                             transition: `all 0.5s cubic-bezier(0.34,1.56,0.64,1) ${0.2 + i * 0.1}s`,
                                         }}
                                     >
-                                        <div className="text-3xl font-black mb-1" style={{ color: '#0ea5e9' }}>{s.value}</div>
+                                        <div className="text-3xl font-black mb-1" style={{ color: '#16a34a' }}>{s.value}</div>
                                         <div className="text-gray-500 text-sm font-medium">{s.label}</div>
                                     </div>
                                 ))}
@@ -260,7 +279,7 @@ export default function RalosBrandPage() {
                     ref={ribbon.ref}
                     className="relative overflow-hidden"
                     style={{
-                        background: 'linear-gradient(90deg, #0ea5e9, #38bdf8, #34d399, #38bdf8, #0ea5e9)',
+                        background: 'linear-gradient(90deg, #16a34a, #22c55e, #a3e635, #22c55e, #16a34a)',
                         backgroundSize: '300% 100%',
                         animation: 'r-ribbon 4s linear infinite',
                     }}
@@ -272,7 +291,7 @@ export default function RalosBrandPage() {
                             transition: 'opacity 0.5s ease-out',
                         }}
                     >
-                        <span className="text-sm md:text-base font-black" style={{ color: '#0c1220' }}>
+                        <span className="text-sm md:text-base font-black" style={{ color: '#052e16' }}>
                             🎉 Flat 15% Off on All RaloS Products — No Coupon Needed!
                         </span>
                     </div>
@@ -290,13 +309,36 @@ export default function RalosBrandPage() {
                             }}
                         >
                             <div>
-                                <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#0ea5e9' }}>
-                                    <span className="w-6 h-0.5 rounded" style={{ background: '#38bdf8' }} />
+                                <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#16a34a' }}>
+                                    <span className="w-6 h-0.5 rounded" style={{ background: '#22c55e' }} />
                                     Our Collection
                                 </div>
                                 <h2 className="text-xl md:text-2xl font-black text-gray-900">All RaloS Products</h2>
                             </div>
                             <span className="text-sm text-gray-400">{products.length} products</span>
+                        </div>
+
+                        {/* Sort Buttons */}
+                        <div className="flex gap-2 mb-6 overflow-x-auto p-1 -m-1 scrollbar-hide">
+                            {([
+                                { key: 'all',        label: 'All' },
+                                { key: 'popular',    label: 'Popular' },
+                                { key: 'price-low',  label: 'Price Low to High' },
+                                { key: 'price-high', label: 'Price High to Low' },
+                                { key: 'rating',     label: 'Top Rated' },
+                            ] as { key: SortOption; label: string }[]).map(s => (
+                                <button
+                                    key={s.key}
+                                    onClick={() => setSortBy(s.key)}
+                                    className={`px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
+                                        sortBy === s.key
+                                            ? 'bg-white shadow-lg ring-2 ring-emerald-400 text-emerald-700'
+                                            : 'bg-white/70 text-gray-500 hover:bg-white hover:shadow-sm'
+                                    }`}
+                                >
+                                    {s.label}
+                                </button>
+                            ))}
                         </div>
 
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
@@ -312,14 +354,14 @@ export default function RalosBrandPage() {
                                     }}
                                 >
                                     {/* Image */}
-                                    <div className="relative aspect-square overflow-hidden" style={{ background: '#f0f5fa' }}>
+                                    <div className="relative aspect-square overflow-hidden" style={{ background: '#ffffff' }}>
                                         <img
                                             src={product.image}
                                             alt={product.name}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500"
                                         />
                                         {product.badge && (
-                                            <span className="absolute top-2 left-2 px-2 py-0.5 text-white text-xs font-bold rounded-lg" style={{ background: '#0ea5e9' }}>
+                                            <span className="absolute top-2 left-2 px-2 py-0.5 text-white text-xs font-bold rounded-lg" style={{ background: '#16a34a' }}>
                                                 {product.badge}
                                             </span>
                                         )}
@@ -341,7 +383,7 @@ export default function RalosBrandPage() {
                                         </div>
 
                                         {(quantities[product.id] || 0) > 0 ? (
-                                            <div className="w-full flex items-center justify-between rounded-xl overflow-hidden" style={{ background: '#0ea5e9' }}>
+                                            <div className="w-full flex items-center justify-between rounded-xl overflow-hidden" style={{ background: '#16a34a' }}>
                                                 <button onClick={() => removeItem(product.id)} className="px-4 py-2 font-black text-white hover:bg-black/10 text-lg">−</button>
                                                 <span className="font-black text-white text-sm">{quantities[product.id]}</span>
                                                 <button onClick={() => addItem(product.id)} className="px-4 py-2 font-black text-white hover:bg-black/10 text-lg">+</button>
@@ -350,7 +392,7 @@ export default function RalosBrandPage() {
                                             <button
                                                 onClick={() => addItem(product.id)}
                                                 className="w-full py-2.5 rounded-xl text-sm font-bold transition-all hover:shadow-md active:scale-95"
-                                                style={{ background: 'linear-gradient(135deg, #38bdf8, #0ea5e9)', color: '#0c1220' }}
+                                                style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#052e16' }}
                                             >
                                                 Add to Cart
                                             </button>
@@ -365,7 +407,7 @@ export default function RalosBrandPage() {
                                 <button
                                     onClick={() => setShowAll(true)}
                                     className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-base transition-all hover:shadow-lg hover:gap-4 active:scale-95"
-                                    style={{ background: 'linear-gradient(135deg, #38bdf8, #0ea5e9)', color: '#0c1220', boxShadow: '0 6px 28px rgba(56,189,248,0.3)' }}
+                                    style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#052e16', boxShadow: '0 6px 28px rgba(34,197,94,0.3)' }}
                                 >
                                     View All {products.length} Products
                                     <span className="text-lg">→</span>
@@ -379,14 +421,14 @@ export default function RalosBrandPage() {
                 <section
                     ref={cta.ref}
                     className="relative py-14 md:py-20 overflow-hidden"
-                    style={{ background: 'linear-gradient(135deg, #0c1220 0%, #0f2027 30%, #162a3a 60%, #1a3a4a 100%)' }}
+                    style={{ background: 'linear-gradient(135deg, #0f1f13 0%, #132a17 30%, #1a3620 60%, #1e4028 100%)' }}
                 >
                     {/* CTA aurora */}
                     <div className="absolute inset-0 pointer-events-none overflow-hidden">
                         <div className="absolute w-[400px] h-[400px] rounded-full"
-                            style={{ top: '-20%', left: '10%', background: 'radial-gradient(circle, rgba(56,189,248,0.1) 0%, transparent 60%)', animation: 'r-aurora1 8s ease-in-out infinite' }} />
+                            style={{ top: '-20%', left: '10%', background: 'radial-gradient(circle, rgba(74,222,128,0.1) 0%, transparent 60%)', animation: 'r-aurora1 8s ease-in-out infinite' }} />
                         <div className="absolute w-[300px] h-[300px] rounded-full"
-                            style={{ bottom: '-15%', right: '15%', background: 'radial-gradient(circle, rgba(52,211,153,0.08) 0%, transparent 60%)', animation: 'r-aurora2 10s ease-in-out infinite' }} />
+                            style={{ bottom: '-15%', right: '15%', background: 'radial-gradient(circle, rgba(250,204,21,0.08) 0%, transparent 60%)', animation: 'r-aurora2 10s ease-in-out infinite' }} />
                     </div>
 
                     <div
@@ -397,14 +439,14 @@ export default function RalosBrandPage() {
                             transition: 'all 0.7s cubic-bezier(0.16,1,0.3,1)',
                         }}
                     >
-                        <div className="mb-3 text-sm font-semibold uppercase tracking-widest" style={{ color: 'rgba(147,197,253,0.5)' }}>Ready to transform your wellness?</div>
+                        <div className="mb-3 text-sm font-semibold uppercase tracking-widest" style={{ color: 'rgba(163,230,53,0.5)' }}>Ready to transform your wellness?</div>
                         <h3 className="text-2xl md:text-3xl font-black text-white mb-7">
                             Shop the complete RaloS collection
                         </h3>
                         <Link
                             href="/home/shop/solar-dry-products"
                             className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-base transition-all hover:brightness-110 hover:gap-3 active:scale-95"
-                            style={{ background: 'linear-gradient(135deg, #38bdf8, #0ea5e9)', color: '#0c1220', boxShadow: '0 6px 24px rgba(56,189,248,0.3)' }}
+                            style={{ background: 'linear-gradient(135deg, #4ade80, #22c55e)', color: '#0f1f13', boxShadow: '0 6px 24px rgba(74,222,128,0.3)' }}
                         >
                             ← Back to Solar Dry Products
                         </Link>

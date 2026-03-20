@@ -58,8 +58,8 @@ export default function FeaturedBrandBanner({ brand }: Props) {
             href={brand.brandPagePath}
             className="block relative overflow-hidden rounded-2xl md:rounded-3xl mb-4 select-none cursor-pointer group"
             style={{
-                background: 'linear-gradient(135deg, #0c1220 0%, #0f2027 30%, #162a3a 60%, #1a3a4a 100%)',
-                boxShadow: '0 8px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
+                background: 'linear-gradient(135deg, #0f1f13 0%, #132a17 30%, #1a3620 60%, #1e4028 100%)',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)',
                 opacity: isVisible ? 1 : 0,
                 transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
                 transition: 'opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1)',
@@ -71,7 +71,7 @@ export default function FeaturedBrandBanner({ brand }: Props) {
                     className="absolute w-[500px] h-[500px] md:w-[700px] md:h-[700px] rounded-full"
                     style={{
                         top: '-40%', right: '-20%',
-                        background: 'radial-gradient(circle, rgba(56,189,248,0.12) 0%, rgba(14,165,233,0.06) 40%, transparent 70%)',
+                        background: 'radial-gradient(circle, rgba(74,222,128,0.12) 0%, rgba(34,197,94,0.06) 40%, transparent 70%)',
                         animation: 'fb-aurora1 8s ease-in-out infinite',
                     }}
                 />
@@ -79,7 +79,7 @@ export default function FeaturedBrandBanner({ brand }: Props) {
                     className="absolute w-[400px] h-[400px] md:w-[600px] md:h-[600px] rounded-full"
                     style={{
                         bottom: '-30%', left: '-15%',
-                        background: 'radial-gradient(circle, rgba(52,211,153,0.10) 0%, rgba(16,185,129,0.05) 40%, transparent 70%)',
+                        background: 'radial-gradient(circle, rgba(250,204,21,0.10) 0%, rgba(234,179,8,0.05) 40%, transparent 70%)',
                         animation: 'fb-aurora2 10s ease-in-out infinite',
                     }}
                 />
@@ -87,7 +87,7 @@ export default function FeaturedBrandBanner({ brand }: Props) {
                     className="absolute w-[300px] h-[300px] rounded-full"
                     style={{
                         top: '20%', left: '40%',
-                        background: 'radial-gradient(circle, rgba(251,191,36,0.08) 0%, transparent 60%)',
+                        background: 'radial-gradient(circle, rgba(163,230,53,0.08) 0%, transparent 60%)',
                         animation: 'fb-aurora3 12s ease-in-out infinite',
                     }}
                 />
@@ -104,7 +104,7 @@ export default function FeaturedBrandBanner({ brand }: Props) {
             {/* Top shimmer line */}
             <div className="absolute top-0 left-0 right-0 h-[1px] pointer-events-none"
                 style={{
-                    background: 'linear-gradient(90deg, transparent 0%, rgba(56,189,248,0.4) 30%, rgba(52,211,153,0.4) 50%, rgba(251,191,36,0.3) 70%, transparent 100%)',
+                    background: 'linear-gradient(90deg, transparent 0%, rgba(74,222,128,0.4) 30%, rgba(250,204,21,0.4) 50%, rgba(163,230,53,0.3) 70%, transparent 100%)',
                     animation: 'fb-shimmer 4s ease-in-out infinite',
                 }}
             />
@@ -114,13 +114,13 @@ export default function FeaturedBrandBanner({ brand }: Props) {
                 <div
                     className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-4"
                     style={{
-                        background: 'linear-gradient(135deg, rgba(56,189,248,0.15), rgba(52,211,153,0.15))',
-                        border: '1px solid rgba(56,189,248,0.25)',
+                        background: 'linear-gradient(135deg, rgba(74,222,128,0.15), rgba(250,204,21,0.15))',
+                        border: '1px solid rgba(74,222,128,0.25)',
                         backdropFilter: 'blur(8px)',
                     }}
                 >
-                    <span style={{ fontSize: '10px', color: '#38bdf8' }}>★</span>
-                    <span className="text-xs font-bold tracking-widest uppercase" style={{ color: '#38bdf8' }}>Featured Brand</span>
+                    <span style={{ fontSize: '10px', color: '#4ade80' }}>★</span>
+                    <span className="text-xs font-bold tracking-widest uppercase" style={{ color: '#4ade80' }}>Featured Brand</span>
                 </div>
 
                 <div className="flex items-start justify-between gap-4">
@@ -147,7 +147,7 @@ export default function FeaturedBrandBanner({ brand }: Props) {
                             <span className="text-white/40 text-[10px] ml-1 mt-1.5 self-start font-medium">™</span>
                         </div>
 
-                        <p className="text-sm md:text-xs font-medium mb-5" style={{ color: 'rgba(147,197,253,0.6)' }}>{brand.tagline}</p>
+                        <p className="text-sm md:text-xs font-medium mb-5" style={{ color: 'rgba(163,230,53,0.6)' }}>{brand.tagline}</p>
 
                         {/* Animated product slide */}
                         <div
@@ -268,7 +268,7 @@ export default function FeaturedBrandBanner({ brand }: Props) {
                     </div>
                     <div
                         className="flex items-center gap-1.5 text-xs font-semibold transition-all duration-300 group-hover:gap-2.5"
-                        style={{ color: 'rgba(56,189,248,0.7)' }}
+                        style={{ color: 'rgba(74,222,128,0.7)' }}
                     >
                         <span>View Brand</span>
                         <span className="text-sm transition-transform duration-300 group-hover:translate-x-1">→</span>

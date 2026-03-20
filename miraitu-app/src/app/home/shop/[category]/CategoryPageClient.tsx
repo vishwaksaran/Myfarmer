@@ -10,7 +10,7 @@ import { shopCategories } from '../data';
 import { categoryProducts, categoryMeta, featuredBrands } from '../categoryData';
 import FeaturedBrandBanner from '@/components/v2/FeaturedBrandBanner';
 
-type SortOption = 'popular' | 'price-low' | 'price-high' | 'rating';
+type SortOption = 'all' | 'popular' | 'price-low' | 'price-high' | 'rating';
 
 const bannerGradients: Record<string, string> = {
     'from-blue-600 to-blue-800': 'linear-gradient(to right, #2563eb, #1e40af)',
@@ -33,7 +33,7 @@ export default function CategoryPage() {
     const slug = params.category as string;
     const { quantities, addItem, removeItem } = useCart();
 
-    const [sortBy, setSortBy] = useState<SortOption>('popular');
+    const [sortBy, setSortBy] = useState<SortOption>('all');
     const [searchTerm, setSearchTerm] = useState('');
 
     const meta = categoryMeta[slug];
@@ -54,7 +54,8 @@ export default function CategoryPage() {
             case 'price-low': list = [...list].sort((a, b) => parsePrice(a.price) - parsePrice(b.price)); break;
             case 'price-high': list = [...list].sort((a, b) => parsePrice(b.price) - parsePrice(a.price)); break;
             case 'rating': list = [...list].sort((a, b) => b.rating - a.rating); break;
-            default: list = [...list].sort((a, b) => b.reviews - a.reviews);
+            case 'popular': list = [...list].sort((a, b) => b.reviews - a.reviews); break;
+            default: break; // 'all' - keep original order
         }
         return list;
     }, [products, searchTerm, sortBy]);
@@ -154,19 +155,20 @@ export default function CategoryPage() {
                                 className="w-full bg-white dark:bg-[#1a231a] border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                             />
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                             {([
+                                { key: 'all', label: 'All' },
                                 { key: 'popular', label: 'Popular' },
-                                { key: 'price-low', label: 'Price ↑' },
-                                { key: 'price-high', label: 'Price ↓' },
-                                { key: 'rating', label: 'Rating' },
+                                { key: 'price-low', label: 'Price Low to High' },
+                                { key: 'price-high', label: 'Price High to Low' },
+                                { key: 'rating', label: 'Top Rated' },
                             ] as { key: SortOption; label: string }[]).map(s => (
                                 <button
                                     key={s.key}
                                     onClick={() => setSortBy(s.key)}
-                                    className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${sortBy === s.key
-                                        ? 'bg-white dark:bg-gray-800 shadow-md ring-2 ring-primary/30 text-primary'
-                                        : 'bg-gray-100 dark:bg-gray-800/50 text-gray-500'
+                                    className={`px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${sortBy === s.key
+                                        ? 'bg-white dark:bg-gray-800 shadow-lg ring-2 ring-primary/30 text-primary'
+                                        : 'bg-gray-100 dark:bg-gray-800/50 text-gray-500 hover:bg-gray-200'
                                         }`}
                                 >
                                     {s.label}
