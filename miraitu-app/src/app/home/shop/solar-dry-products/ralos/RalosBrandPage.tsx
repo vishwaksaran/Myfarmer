@@ -88,11 +88,14 @@ export default function RalosBrandPage() {
                             className="w-full h-full object-cover"
                             src="/images/ralos/Bg-ralos.png"
                         />
-                        {/* Light overlay for airy feel + logo contrast */}
+                        {/* Multi-layer gradient overlay for text readability */}
                         <div
                             className="absolute inset-0"
                             style={{
-                                background: 'linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 40%, rgba(255,255,255,0.05) 100%)',
+                                background: [
+                                    'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 30%, rgba(0,0,0,0.10) 50%, rgba(0,0,0,0.30) 80%, rgba(0,0,0,0.50) 100%)',
+                                    'radial-gradient(ellipse at center 40%, rgba(0,0,0,0.40) 0%, transparent 70%)',
+                                ].join(', '),
                             }}
                         />
                     </div>
@@ -107,14 +110,14 @@ export default function RalosBrandPage() {
                         }}
                     >
                         {/* Breadcrumb */}
-                        <nav className="flex items-center gap-1.5 text-xs mb-4 md:mb-8 flex-wrap justify-center">
-                            <Link href="/home" className="text-gray-500 hover:text-gray-800 transition-colors font-medium">Home</Link>
-                            <span className="text-gray-400">›</span>
-                            <Link href="/home/shop" className="text-gray-500 hover:text-gray-800 transition-colors font-medium">Shop</Link>
-                            <span className="text-gray-400">›</span>
-                            <Link href="/home/shop/solar-dry-products" className="text-gray-500 hover:text-gray-800 transition-colors font-medium">Solar Dry Products</Link>
-                            <span className="text-gray-400">›</span>
-                            <span className="font-bold text-gray-900">RaloS</span>
+                        <nav className="flex items-center gap-1.5 text-xs mb-4 md:mb-8 flex-wrap justify-center" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
+                            <Link href="/home" className="text-gray-200 hover:text-white transition-colors font-medium">Home</Link>
+                            <span className="text-gray-300">›</span>
+                            <Link href="/home/shop" className="text-gray-200 hover:text-white transition-colors font-medium">Shop</Link>
+                            <span className="text-gray-300">›</span>
+                            <Link href="/home/shop/solar-dry-products" className="text-gray-200 hover:text-white transition-colors font-medium">Solar Dry Products</Link>
+                            <span className="text-gray-300">›</span>
+                            <span className="font-bold text-white">RaloS</span>
                         </nav>
 
                         {/* Logo Image */}
@@ -123,13 +126,13 @@ export default function RalosBrandPage() {
                                 alt="RaloS Logo"
                                 className="h-20 md:h-44 xl:h-52 w-auto object-contain"
                                 src="/images/ralos/ralos-transparent.png"
-                                style={{ filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.25)) drop-shadow(0 0 30px rgba(255,255,255,0.5))' }}
+                                style={{ filter: 'drop-shadow(0 4px 20px rgba(0,0,0,0.5)) drop-shadow(0 0 40px rgba(255,255,255,0.6))' }}
                             />
                         </div>
 
                         {/* Tagline */}
                         <div className="mb-6 md:mb-12 xl:mb-16">
-                            <h2 className="text-gray-900 text-sm md:text-2xl xl:text-3xl font-extrabold tracking-widest drop-shadow-sm" style={{ letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                            <h2 className="text-white text-sm md:text-2xl xl:text-3xl font-extrabold tracking-widest" style={{ letterSpacing: '0.15em', textTransform: 'uppercase', textShadow: '0 2px 8px rgba(0,0,0,0.6), 0 0 20px rgba(0,0,0,0.3)' }}>
                                 <span>100% Natural</span>
                                 <span className="mx-2 md:mx-4 text-orange-500 font-black">•</span>
                                 <span>Solar Dried</span>
