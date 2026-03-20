@@ -124,14 +124,14 @@ export default function CategoryPage() {
                     ))}
 
                     {/* Other Categories Quick Nav */}
-                    <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+                    <div className="flex gap-2.5 mb-6 overflow-x-auto py-2 px-1 -mx-4 md:mx-0 scrollbar-hide">
                         {shopCategories.map(cat => (
                             <Link
                                 key={cat.id}
                                 href={cat.path}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${cat.id === slug
-                                    ? 'bg-white dark:bg-gray-800 shadow-md ring-2 ring-primary/30 text-primary'
-                                    : 'bg-gray-100 dark:bg-gray-800/50 text-gray-500 hover:bg-gray-200'
+                                className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all border ${cat.id === slug
+                                    ? 'bg-white dark:bg-gray-800 shadow-md border-primary text-primary'
+                                    : 'bg-gray-100 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-200'
                                     }`}
                             >
                                 {cat.isMatIcon ? (
@@ -155,7 +155,7 @@ export default function CategoryPage() {
                                 className="w-full bg-white dark:bg-[#1a231a] border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                             />
                         </div>
-                        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                        <div className="flex gap-2.5 overflow-x-auto py-2 px-1 scrollbar-hide">
                             {([
                                 { key: 'all', label: 'All' },
                                 { key: 'popular', label: 'Popular' },
@@ -166,9 +166,9 @@ export default function CategoryPage() {
                                 <button
                                     key={s.key}
                                     onClick={() => setSortBy(s.key)}
-                                    className={`px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${sortBy === s.key
-                                        ? 'bg-white dark:bg-gray-800 shadow-lg ring-2 ring-primary/30 text-primary'
-                                        : 'bg-gray-100 dark:bg-gray-800/50 text-gray-500 hover:bg-gray-200'
+                                    className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all border ${sortBy === s.key
+                                        ? 'bg-white dark:bg-gray-800 shadow-md border-primary text-primary'
+                                        : 'bg-gray-100 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-200'
                                         }`}
                                 >
                                     {s.label}
@@ -194,6 +194,11 @@ export default function CategoryPage() {
                                     {product.badge && (
                                         <span className="absolute top-2 left-2 px-2 py-0.5 bg-primary text-white text-xs font-bold rounded">
                                             {product.badge}
+                                        </span>
+                                    )}
+                                    {product.weight && (
+                                        <span className="absolute bottom-2 left-2 px-2.5 py-1 text-[11px] font-extrabold rounded-full backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.65)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)' }}>
+                                            {product.weight}
                                         </span>
                                     )}
                                     <button className="absolute top-2 right-2 p-1.5 rounded-lg bg-white/80 dark:bg-gray-800/80 text-gray-600 dark:text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity">

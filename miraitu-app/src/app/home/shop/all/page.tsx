@@ -53,10 +53,10 @@ export default function AllProductsPage() {
                     <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white mb-6">All Products</h1>
 
                     {/* Category Filter */}
-                    <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+                    <div className="flex gap-2.5 mb-6 overflow-x-auto py-2 px-1 -mx-4 md:mx-0 scrollbar-hide">
                         <button
                             onClick={() => setSelectedCategory('all')}
-                            className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${selectedCategory === 'all' ? 'bg-white dark:bg-gray-800 shadow-md ring-2 ring-primary/30 text-primary' : 'bg-gray-100 dark:bg-gray-800/50 text-gray-500'}`}
+                            className={`px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all border ${selectedCategory === 'all' ? 'bg-white dark:bg-gray-800 shadow-md border-primary text-primary' : 'bg-gray-100 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 text-gray-500'}`}
                         >
                             All ({allProducts.length})
                         </button>
@@ -64,7 +64,7 @@ export default function AllProductsPage() {
                             <button
                                 key={cat.id}
                                 onClick={() => setSelectedCategory(cat.id)}
-                                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${selectedCategory === cat.id ? 'bg-white dark:bg-gray-800 shadow-md ring-2 ring-primary/30 text-primary' : 'bg-gray-100 dark:bg-gray-800/50 text-gray-500'}`}
+                                className={`flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all border ${selectedCategory === cat.id ? 'bg-white dark:bg-gray-800 shadow-md border-primary text-primary' : 'bg-gray-100 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 text-gray-500'}`}
                             >
                                 <span>{cat.icon}</span>{cat.name}
                             </button>
@@ -77,9 +77,9 @@ export default function AllProductsPage() {
                             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
                             <input type="text" placeholder="Search products..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full bg-white dark:bg-[#1a231a] border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2.5 py-2 px-1">
                             {([{ key: 'popular', label: 'Popular' }, { key: 'price-low', label: 'Price ↑' }, { key: 'price-high', label: 'Price ↓' }, { key: 'rating', label: 'Rating' }] as { key: SortOption; label: string }[]).map(s => (
-                                <button key={s.key} onClick={() => setSortBy(s.key)} className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${sortBy === s.key ? 'bg-white dark:bg-gray-800 shadow-md ring-2 ring-primary/30 text-primary' : 'bg-gray-100 dark:bg-gray-800/50 text-gray-500'}`}>{s.label}</button>
+                                <button key={s.key} onClick={() => setSortBy(s.key)} className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all border ${sortBy === s.key ? 'bg-white dark:bg-gray-800 shadow-md border-primary text-primary' : 'bg-gray-100 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 text-gray-500'}`}>{s.label}</button>
                             ))}
                         </div>
                     </div>
@@ -93,6 +93,11 @@ export default function AllProductsPage() {
                                 <div className="relative aspect-square bg-gray-100 dark:bg-gray-800 overflow-hidden">
                                     <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                                     {product.badge && <span className="absolute top-2 left-2 px-2 py-0.5 bg-primary text-white text-xs font-bold rounded">{product.badge}</span>}
+                                    {product.weight && (
+                                        <span className="absolute bottom-2 left-2 px-2.5 py-1 text-[11px] font-extrabold rounded-full backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.65)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)' }}>
+                                            {product.weight}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="p-3 md:p-4">
                                     <p className="text-[10px] text-primary font-bold uppercase tracking-wider mb-1">{product.categoryName}</p>

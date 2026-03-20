@@ -180,6 +180,7 @@ export interface FeaturedBrand {
     name: string;               // display name
     logoText: string[];         // split around the icon, e.g. ['Ral', 'S']
     logoIcon: string;           // emoji icon rendered between logoText parts
+    logoImage?: string;         // optional image URL for the brand logo
     tagline: string;
     brandPagePath: string;      // absolute Next.js route to the brand store page
     heroBg: string;             // CSS gradient string for the banner card
@@ -198,6 +199,7 @@ export const featuredBrands: Record<string, FeaturedBrand[]> = {
             name: 'RaloS',
             logoText: ['Ral', 'S'],
             logoIcon: '☀️',
+            logoImage: '/images/ralos/ralos-transparent.png',
             tagline: '100% Natural · No Chemicals · Sun-Dried Goodness',
             brandPagePath: '/home/shop/solar-dry-products/ralos',
             heroBg: 'linear-gradient(135deg, #0f1f13 0%, #132a17 30%, #1a3620 60%, #1e4028 100%)',

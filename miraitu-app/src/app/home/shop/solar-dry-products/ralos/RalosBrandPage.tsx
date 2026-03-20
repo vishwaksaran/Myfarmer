@@ -79,127 +79,153 @@ export default function RalosBrandPage() {
                 {/* ── HERO ─────────────────────────────────────────── */}
                 <section
                     ref={hero.ref}
-                    className="relative overflow-hidden"
-                    style={{ background: 'linear-gradient(135deg, #0f1f13 0%, #132a17 30%, #1a3620 60%, #1e4028 100%)' }}
+                    className="relative w-full min-h-screen flex items-center justify-center overflow-hidden"
                 >
-                    {/* Aurora blobs */}
-                    <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                        <div className="absolute w-[600px] h-[600px] md:w-[800px] md:h-[800px] rounded-full"
-                            style={{ top: '-35%', right: '-15%', background: 'radial-gradient(circle, rgba(74,222,128,0.12) 0%, rgba(34,197,94,0.05) 40%, transparent 70%)', animation: 'r-aurora1 9s ease-in-out infinite' }} />
-                        <div className="absolute w-[500px] h-[500px] md:w-[700px] md:h-[700px] rounded-full"
-                            style={{ bottom: '-30%', left: '-10%', background: 'radial-gradient(circle, rgba(250,204,21,0.10) 0%, rgba(234,179,8,0.04) 40%, transparent 70%)', animation: 'r-aurora2 11s ease-in-out infinite' }} />
-                        <div className="absolute w-[350px] h-[350px] rounded-full"
-                            style={{ top: '30%', left: '50%', background: 'radial-gradient(circle, rgba(163,230,53,0.08) 0%, transparent 60%)', animation: 'r-aurora3 13s ease-in-out infinite' }} />
+                    {/* Background Image – High-res solar farm scene */}
+                    <div className="absolute inset-0 z-0">
+                        <img
+                            alt="Solar panels over a lush green field under a bright sky"
+                            className="w-full h-full object-cover"
+                            src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=2560&q=90&fit=crop&auto=format"
+                        />
+                        {/* Light overlay for airy feel + logo contrast */}
+                        <div
+                            className="absolute inset-0"
+                            style={{
+                                background: 'linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 40%, rgba(255,255,255,0.05) 100%)',
+                            }}
+                        />
                     </div>
 
-                    {/* Subtle grid */}
-                    <div className="absolute inset-0 pointer-events-none opacity-[0.025]"
-                        style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
-
-                    {/* Top shimmer */}
-                    <div className="absolute top-0 left-0 right-0 h-px pointer-events-none"
-                        style={{ background: 'linear-gradient(90deg, transparent, rgba(74,222,128,0.4) 30%, rgba(250,204,21,0.4) 50%, rgba(163,230,53,0.3) 70%, transparent)', animation: 'r-shimmer 4s ease-in-out infinite' }} />
-
+                    {/* Main Content */}
                     <div
-                        className="relative z-10 mx-auto max-w-[1280px] px-4 md:px-8 py-14 md:py-24"
+                        className="relative z-10 container mx-auto px-6 py-20 flex flex-col items-center text-center max-w-7xl"
                         style={{
                             opacity: hero.visible ? 1 : 0,
                             transform: hero.visible ? 'translateY(0)' : 'translateY(40px)',
                             transition: 'all 0.8s cubic-bezier(0.16,1,0.3,1)',
                         }}
                     >
-                        <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
-                            {/* Left */}
-                            <div className="flex-1 text-center md:text-left">
-                                <nav className="flex items-center gap-1 text-xs mb-6 justify-center md:justify-start flex-wrap">
-                                    <Link href="/home" className="hover:text-emerald-300 transition-colors" style={{ color: 'rgba(74,222,128,0.5)' }}>Home</Link>
-                                    <span className="text-white/20">›</span>
-                                    <Link href="/home/shop" className="hover:text-emerald-300 transition-colors" style={{ color: 'rgba(74,222,128,0.5)' }}>Shop</Link>
-                                    <span className="text-white/20">›</span>
-                                    <Link href="/home/shop/solar-dry-products" className="hover:text-emerald-300 transition-colors" style={{ color: 'rgba(74,222,128,0.5)' }}>Solar Dry Products</Link>
-                                    <span className="text-white/20">›</span>
-                                    <span className="font-bold" style={{ color: '#4ade80' }}>RaloS</span>
-                                </nav>
+                        {/* Breadcrumb */}
+                        <nav className="flex items-center gap-1.5 text-xs mb-8 flex-wrap justify-center">
+                            <Link href="/home" className="text-gray-500 hover:text-gray-800 transition-colors font-medium">Home</Link>
+                            <span className="text-gray-400">›</span>
+                            <Link href="/home/shop" className="text-gray-500 hover:text-gray-800 transition-colors font-medium">Shop</Link>
+                            <span className="text-gray-400">›</span>
+                            <Link href="/home/shop/solar-dry-products" className="text-gray-500 hover:text-gray-800 transition-colors font-medium">Solar Dry Products</Link>
+                            <span className="text-gray-400">›</span>
+                            <span className="font-bold text-gray-900">RaloS</span>
+                        </nav>
 
-                                {/* Logo */}
-                                <div className="flex items-center gap-1 justify-center md:justify-start mb-3">
-                                    <span className="font-black text-white leading-none" style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', letterSpacing: '-0.02em' }}>Ral</span>
-                                    <span className="leading-none"
-                                        style={{ fontSize: 'clamp(2.2rem, 5.5vw, 4rem)', animation: 'r-glow 3s ease-in-out infinite', filter: 'drop-shadow(0 0 14px rgba(251,191,36,0.8))' }}>☀️</span>
-                                    <span className="font-black text-white leading-none" style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', letterSpacing: '-0.02em' }}>S</span>
-                                    <span className="text-white/35 text-sm ml-1 self-start mt-3 font-medium">™</span>
-                                </div>
-
-                                <p className="text-sm md:text-base font-medium mb-6 tracking-wide" style={{ color: 'rgba(163,230,53,0.6)' }}>
-                                    100% Natural · Solar Dried · Zero Chemicals
-                                </p>
-
-                                <div className="flex items-center gap-3 mb-7 justify-center md:justify-start flex-wrap">
-                                    <span className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold"
-                                        style={{ background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.25)', color: '#86efac' }}>
-                                        🌿 20 Products
-                                    </span>
-                                    <span className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold"
-                                        style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)', color: '#fcd34d' }}>
-                                        ⭐ 4.8 Rated
-                                    </span>
-                                    <span className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold"
-                                        style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', color: '#6ee7b7' }}>
-                                        🎉 15% OFF
-                                    </span>
-                                </div>
-
-                                <a
-                                    href="#products"
-                                    className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm transition-all hover:gap-3 active:scale-95 group"
-                                    style={{ background: 'linear-gradient(135deg, #4ade80, #22c55e)', color: '#0f1f13', boxShadow: '0 4px 24px rgba(74,222,128,0.3)' }}
-                                >
-                                    Shop Now
-                                    <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
-                                </a>
-                            </div>
-
-                            {/* Right – Floating product circles */}
-                            <div className="flex md:flex-col gap-5 md:gap-6 shrink-0">
-                                {[
-                                    { emoji: '🌿', name: 'Moringa', color: '#34d399' },
-                                    { emoji: '🫐', name: 'Amla', color: '#a78bfa' },
-                                    { emoji: '🍵', name: 'Vedic Kada', color: '#fbbf24' },
-                                ].map((item, i) => (
-                                    <div
-                                        key={i}
-                                        className="flex items-center gap-3 relative"
-                                        style={{ animation: `r-float ${3 + i * 0.6}s ease-in-out infinite`, animationDelay: `${i * 0.4}s` }}
-                                    >
-                                        {/* Rotating ring */}
-                                        <div className="absolute -inset-1 rounded-2xl pointer-events-none"
-                                            style={{ border: '1.5px dashed transparent', borderTopColor: `${item.color}55`, borderRightColor: `${item.color}22`, animation: `r-ring ${4 + i}s linear infinite` }} />
-                                        <div
-                                            className="w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center text-2xl md:text-3xl relative"
-                                            style={{
-                                                background: `radial-gradient(circle at 30% 30%, ${item.color}33, ${item.color}0d)`,
-                                                border: `1.5px solid ${item.color}44`,
-                                                boxShadow: `0 0 24px ${item.color}22, inset 0 0 10px ${item.color}0a`,
-                                            }}
-                                        >
-                                            {item.emoji}
-                                        </div>
-                                        <span className="text-xs font-medium hidden md:block" style={{ color: `${item.color}99` }}>{item.name}</span>
-                                    </div>
-                                ))}
-                            </div>
+                        {/* Logo Image */}
+                        <div className="mb-8 md:mb-12 transform transition-transform hover:scale-105 duration-500">
+                            <img
+                                alt="RaloS Logo"
+                                className="h-32 md:h-44 xl:h-52 w-auto object-contain"
+                                src="/images/ralos/ralos-transparent.png"
+                                style={{ filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.25)) drop-shadow(0 0 30px rgba(255,255,255,0.5))' }}
+                            />
                         </div>
+
+                        {/* Tagline */}
+                        <div className="mb-12 xl:mb-16">
+                            <h2 className="text-gray-900 text-lg md:text-2xl xl:text-3xl font-extrabold tracking-widest drop-shadow-sm" style={{ letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                                <span>100% Natural</span>
+                                <span className="mx-4 text-orange-500 font-black">•</span>
+                                <span>Solar Dried</span>
+                                <span className="mx-4 text-orange-500 font-black">•</span>
+                                <span>Zero Chemicals</span>
+                            </h2>
+                        </div>
+
+                        {/* CTA Button – Skeuomorphic */}
+                        <div className="mb-24 xl:mb-32">
+                            <a
+                                href="#products"
+                                className="relative overflow-hidden inline-flex items-center gap-3 px-14 py-6 rounded-full text-white text-xl xl:text-2xl font-bold uppercase tracking-wider group"
+                                style={{
+                                    background: 'linear-gradient(180deg, #3d7a35 0%, #2D5A27 100%)',
+                                    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.2), 0 2px 4px -1px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.3)',
+                                    border: '1px solid #1e3d1a',
+                                    transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
+                                }}
+                            >
+                                <span>Shop Now</span>
+                                <span
+                                    className="absolute top-0 left-[-100%] w-full h-full pointer-events-none"
+                                    style={{
+                                        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                                        transition: '0.5s',
+                                    }}
+                                />
+                                <svg className="h-6 w-6 xl:h-8 xl:w-8 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M14 5l7 7m0 0l-7 7m7-7H3" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+                                </svg>
+                            </a>
+                        </div>
+
+                        {/* Trust Badges – Glassmorphism */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 md:gap-12 xl:gap-20">
+                            {[
+                                {
+                                    label: 'Solar\nDehydrated',
+                                    bgColor: 'bg-yellow-500',
+                                    icon: (
+                                        <svg className="h-8 w-8 xl:h-10 xl:w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                                        </svg>
+                                    ),
+                                },
+                                {
+                                    label: '100%\nOrganic',
+                                    bgColor: 'bg-green-600',
+                                    icon: (
+                                        <svg className="h-8 w-8 xl:h-10 xl:w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                                        </svg>
+                                    ),
+                                },
+                                {
+                                    label: 'FSSAI\nCertified',
+                                    bgColor: 'bg-blue-600',
+                                    icon: (
+                                        <svg className="h-8 w-8 xl:h-10 xl:w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                                        </svg>
+                                    ),
+                                },
+                            ].map((badge, i) => (
+                                <div
+                                    key={i}
+                                    className="flex flex-col items-center justify-center w-40 h-40 xl:w-48 xl:h-48 rounded-[2.5rem] hover:bg-white/60 transition-all group mx-auto"
+                                    style={{
+                                        background: 'rgba(255,255,255,0.4)',
+                                        backdropFilter: 'blur(12px)',
+                                        border: '1px solid rgba(255,255,255,0.6)',
+                                        boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1)',
+                                    }}
+                                >
+                                    <div className={`mb-4 p-4 rounded-full shadow-lg transform group-hover:scale-110 transition-transform ${badge.bgColor}`}>
+                                        {badge.icon}
+                                    </div>
+                                    <span className="text-xs xl:text-sm font-extrabold text-gray-800 text-center leading-tight whitespace-pre-line">{badge.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Decorative bottom curve */}
+                    <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] rotate-180">
+                        <svg className="relative block w-[calc(100%+1.3px)] h-[80px] md:h-[120px]" preserveAspectRatio="none" viewBox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" fill="#FFFFFF" />
+                        </svg>
                     </div>
                 </section>
 
                 {/* ── TRUST BAR ────────────────────────────────────── */}
                 <div
                     ref={trust.ref}
-                    style={{
-                        background: 'linear-gradient(90deg, #0f1f13, #1a3620, #0f1f13)',
-                        borderTop: '1px solid rgba(74,222,128,0.08)',
-                        borderBottom: '1px solid rgba(74,222,128,0.08)',
-                    }}
+                    className="bg-white"
                 >
                     <div
                         className="mx-auto max-w-[1280px] px-4 md:px-8 py-4 flex items-center justify-between md:justify-around gap-4 overflow-x-auto scrollbar-hide"
@@ -212,7 +238,7 @@ export default function RalosBrandPage() {
                         {trustItems.map((t, i) => (
                             <div key={i} className="flex items-center gap-2 whitespace-nowrap" style={{ animationDelay: `${i * 100}ms` }}>
                                 <span className="text-base">{t.icon}</span>
-                                <span className="text-xs font-semibold" style={{ color: 'rgba(163,230,53,0.6)' }}>{t.label}</span>
+                                <span className="text-xs font-semibold text-gray-600">{t.label}</span>
                             </div>
                         ))}
                     </div>

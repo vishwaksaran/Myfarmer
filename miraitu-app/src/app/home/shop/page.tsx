@@ -178,12 +178,12 @@ export default function ShopPage() {
                         {/* Decorative plant SVG */}
                         <div className="absolute right-4 md:right-10 bottom-0 opacity-20 w-40 h-40 md:w-64 md:h-64">
                             <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                                <path d="M100 180V100" stroke="white" strokeWidth="6" strokeLinecap="round"/>
-                                <path d="M100 140C80 140 60 120 60 100C60 80 80 70 100 80" stroke="white" strokeWidth="5" strokeLinecap="round" fill="none"/>
-                                <path d="M100 120C120 120 140 100 140 80C140 60 120 50 100 60" stroke="white" strokeWidth="5" strokeLinecap="round" fill="none"/>
-                                <path d="M100 100C80 100 55 80 55 55C55 35 75 25 100 40" stroke="white" strokeWidth="5" strokeLinecap="round" fill="none"/>
-                                <path d="M100 80C120 75 145 55 145 35C145 15 125 10 100 25" stroke="white" strokeWidth="5" strokeLinecap="round" fill="none"/>
-                                <ellipse cx="85" cy="185" rx="25" ry="5" fill="white" opacity="0.3"/>
+                                <path d="M100 180V100" stroke="white" strokeWidth="6" strokeLinecap="round" />
+                                <path d="M100 140C80 140 60 120 60 100C60 80 80 70 100 80" stroke="white" strokeWidth="5" strokeLinecap="round" fill="none" />
+                                <path d="M100 120C120 120 140 100 140 80C140 60 120 50 100 60" stroke="white" strokeWidth="5" strokeLinecap="round" fill="none" />
+                                <path d="M100 100C80 100 55 80 55 55C55 35 75 25 100 40" stroke="white" strokeWidth="5" strokeLinecap="round" fill="none" />
+                                <path d="M100 80C120 75 145 55 145 35C145 15 125 10 100 25" stroke="white" strokeWidth="5" strokeLinecap="round" fill="none" />
+                                <ellipse cx="85" cy="185" rx="25" ry="5" fill="white" opacity="0.3" />
                             </svg>
                         </div>
                     </div>
@@ -301,6 +301,11 @@ export default function ShopPage() {
                                         {product.badge && (
                                             <span className="absolute top-2 left-2 px-2 py-0.5 bg-primary text-white text-xs font-bold rounded">
                                                 {product.badge}
+                                            </span>
+                                        )}
+                                        {('weight' in product) && (product as any).weight && (
+                                            <span className="absolute bottom-2 left-2 px-2.5 py-1 text-[11px] font-extrabold rounded-full backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.65)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)' }}>
+                                                {(product as any).weight}
                                             </span>
                                         )}
                                         <button
