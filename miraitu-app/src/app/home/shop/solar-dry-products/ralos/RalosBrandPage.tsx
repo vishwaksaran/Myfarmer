@@ -137,7 +137,7 @@ export default function RalosBrandPage() {
                                 <div className="flex items-center gap-3 mb-7 justify-center md:justify-start flex-wrap">
                                     <span className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold"
                                         style={{ background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.25)', color: '#86efac' }}>
-                                        🌿 19 Products
+                                        🌿 20 Products
                                     </span>
                                     <span className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold"
                                         style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)', color: '#fcd34d' }}>
@@ -358,7 +358,10 @@ export default function RalosBrandPage() {
                                         <img
                                             src={product.image}
                                             alt={product.name}
-                                            className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500"
+                                            className={`w-full h-full ${product.imageFit === 'cover' ? 'object-cover' : 'object-contain p-2'} group-hover:scale-105 transition-transform duration-500`}
+                                            loading="lazy"
+                                            decoding="async"
+                                            style={{ imageRendering: 'auto', WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden' }}
                                         />
                                         {product.badge && (
                                             <span className="absolute top-2 left-2 px-2 py-0.5 text-white text-xs font-bold rounded-lg" style={{ background: '#16a34a' }}>
@@ -368,6 +371,11 @@ export default function RalosBrandPage() {
                                         <span className="absolute top-2 right-2 px-2 py-0.5 bg-emerald-500 text-white text-xs font-bold rounded-lg">
                                             15% OFF
                                         </span>
+                                        {product.weight && (
+                                            <span className="absolute bottom-2 left-2 px-2 py-0.5 text-xs font-bold rounded-lg" style={{ background: 'rgba(0,0,0,0.7)', color: '#4ade80' }}>
+                                                {product.weight}
+                                            </span>
+                                        )}
                                     </div>
 
                                     {/* Info */}
