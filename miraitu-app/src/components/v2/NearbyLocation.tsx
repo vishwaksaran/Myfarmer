@@ -59,7 +59,7 @@ export default function NearbyLocation({ onLocationChange }: NearbyLocationProps
                     setIsLoading(false);
                 },
                 (error) => {
-                    console.error('Geolocation error:', error);
+                    console.warn('Geolocation unavailable:', error?.message || error);
                     setLocationKey('nearby.enableAccess');
                     setLocation('');
                     setIsLoading(false);
