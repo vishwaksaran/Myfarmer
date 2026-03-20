@@ -273,13 +273,13 @@ export default function FeaturedBrandBanner({ brand }: Props) {
                             }}
                         >
                             <span className="text-xs font-black" style={{ color: '#2D5A27' }}>{brand.discountLabel}</span>
-                            <span className="text-xs" style={{ color: '#6b5c2a' }}>{brand.discountSub}</span>
+                            <span className="text-xs font-bold" style={{ color: '#4a3d1a' }}>{brand.discountSub}</span>
                         </div>
-                        <span className="text-xs" style={{ color: '#8a7e60' }}>{brand.productCount} products</span>
+                        <span className="text-xs font-semibold" style={{ color: '#5a4e30' }}>{brand.productCount} products</span>
                     </div>
                     <div
-                        className="flex items-center gap-1.5 text-xs font-semibold transition-all duration-300 group-hover:gap-2.5"
-                        style={{ color: '#2D5A27' }}
+                        className="flex items-center gap-1.5 text-sm font-bold transition-all duration-300 group-hover:gap-2.5"
+                        style={{ color: '#1a3a14' }}
                     >
                         <span>View Brand</span>
                         <span className="text-sm transition-transform duration-300 group-hover:translate-x-1">→</span>

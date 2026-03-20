@@ -84,9 +84,9 @@ export default function RalosBrandPage() {
                     {/* Background Image – High-res solar farm scene */}
                     <div className="absolute inset-0 z-0">
                         <img
-                            alt="Solar panels over a lush green field under a bright sky"
+                            alt="Solar powered tunnel dryer for natural food processing"
                             className="w-full h-full object-cover"
-                            src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=2560&q=90&fit=crop&auto=format"
+                            src="/images/ralos/Bg-ralos.png"
                         />
                         {/* Light overlay for airy feel + logo contrast */}
                         <div

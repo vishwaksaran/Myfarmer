@@ -206,7 +206,7 @@ export const featuredBrands: Record<string, FeaturedBrand[]> = {
             discountLabel: '15% OFF',
             discountSub: 'Flat Discount',
             rating: '4.8',
-            productCount: 19,
+            productCount: 20,
             slides: [
                 { headline: 'Moringa Powder', sub: 'Rich in Vitamins A, C & Iron', emoji: '🌿', color: '#22863a' },
                 { headline: 'Amla Powder', sub: "Nature's Vitamin C Powerhouse", emoji: '🫐', color: '#7c3d8e' },
