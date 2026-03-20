@@ -319,7 +319,7 @@ export default function RalosBrandPage() {
                         </div>
 
                         {/* Sort Buttons */}
-                        <div className="flex gap-2 mb-6 overflow-x-auto p-1 -m-1 scrollbar-hide">
+                        <div className="flex gap-2.5 mb-6 overflow-x-auto py-2 px-1 -mx-1 scrollbar-hide">
                             {([
                                 { key: 'all', label: 'All' },
                                 { key: 'popular', label: 'Popular' },
@@ -330,9 +330,9 @@ export default function RalosBrandPage() {
                                 <button
                                     key={s.key}
                                     onClick={() => setSortBy(s.key)}
-                                    className={`px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${sortBy === s.key
-                                            ? 'bg-white shadow-lg ring-2 ring-emerald-400 text-emerald-700'
-                                            : 'bg-white/70 text-gray-500 hover:bg-white hover:shadow-sm'
+                                    className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all border ${sortBy === s.key
+                                        ? 'bg-white shadow-md border-emerald-400 text-emerald-700'
+                                        : 'bg-white/80 border-gray-200 text-gray-500 hover:bg-white hover:border-gray-300 hover:shadow-sm'
                                         }`}
                                 >
                                     {s.label}
@@ -371,7 +371,7 @@ export default function RalosBrandPage() {
                                             15% OFF
                                         </span>
                                         {product.weight && (
-                                            <span className="absolute bottom-2 left-2 px-2 py-0.5 text-xs font-bold rounded-lg" style={{ background: 'rgba(0,0,0,0.7)', color: '#4ade80' }}>
+                                            <span className="absolute bottom-2 left-2 px-2.5 py-1 text-[11px] font-extrabold rounded-full backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.65)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)' }}>
                                                 {product.weight}
                                             </span>
                                         )}
