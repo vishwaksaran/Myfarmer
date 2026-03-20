@@ -12,24 +12,9 @@ const nextConfig: NextConfig = {
     },
   },
 
-  /* Permanent 301 redirects */
-  async redirects() {
-    return [
-      // Non-www → www (fixes Google Search Console "Redirect error" for miraitu.in pages)
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'miraitu.in' }],
-        destination: 'https://www.miraitu.in/:path*',
-        permanent: true, // 301
-      },
-      // /home → / (backwards compatibility)
-      {
-        source: '/home',
-        destination: '/',
-        permanent: true, // 301
-      },
-    ];
-  },
+  /* Redirects now handled by src/middleware.ts for reliability.
+   * Middleware handles: non-www → www (301) and /home → / (301).
+   * Keeping this empty in case additional config-level redirects are needed. */
 
   /* Performance optimizations */
   images: {

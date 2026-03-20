@@ -259,7 +259,7 @@ export default function Header() {
                     {/* Main Header Row */}
                     <div className="flex items-center justify-between gap-4">
                         {/* Logo */}
-                        <Link href="/home" className="flex items-center gap-2 shrink-0">
+                        <Link href="/" className="flex items-center gap-2 shrink-0">
                             <MiraituLogo size={36} />
                             <h2 className="text-xl font-bold tracking-tight text-[#121811] dark:text-[#f9fbf9]">Miraitu</h2>
                         </Link>

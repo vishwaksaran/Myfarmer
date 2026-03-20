@@ -2,13 +2,35 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 /**
- * Proxy: Supabase session refresh + Admin route protection.
+ * Proxy: Non-www → www redirect, /home → / redirect,
+ * Supabase session refresh + Admin route protection.
  *
+ * - 301 redirects miraitu.in → www.miraitu.in (fixes GSC redirect errors)
+ * - 301 redirects /home → / (single hop, no chain)
  * - Refreshes Supabase auth session on every request (keeps cookies alive)
  * - Blocks non-admin users from accessing /admin/* routes
  * - Redirects unauthenticated users on /admin/* to /admin-login
  */
 export async function proxy(request: NextRequest) {
+    const { hostname, pathname } = request.nextUrl;
+
+    // ── Non-www → www permanent redirect ─────────────────────────────
+    // Fixes Google Search Console "Redirect error" for miraitu.in (non-www) URLs
+    if (hostname === 'miraitu.in') {
+        const url = request.nextUrl.clone();
+        url.hostname = 'www.miraitu.in';
+        url.port = '';
+        return NextResponse.redirect(url, 301);
+    }
+
+    // ── /home → / permanent redirect ─────────────────────────────────
+    // Single 301 hop — avoids redirect chain through next.config.ts
+    if (pathname === '/home' || pathname === '/home/') {
+        const url = request.nextUrl.clone();
+        url.pathname = '/';
+        return NextResponse.redirect(url, 301);
+    }
+
     let supabaseResponse = NextResponse.next({
         request,
     });
@@ -54,16 +76,16 @@ export async function proxy(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser();
 
-    const pathname = request.nextUrl.pathname;
+    const requestPathname = request.nextUrl.pathname;
 
     // ── Admin route protection ───────────────────────────────────────
     // Protect all /admin/* routes — only users with role='admin' can access
     // Exclude /admin-login so it doesn't redirect in a loop
-    if (pathname.startsWith('/admin') && pathname !== '/admin-login') {
+    if (requestPathname.startsWith('/admin') && requestPathname !== '/admin-login') {
         // Not logged in → redirect to admin login
         if (!user) {
             const loginUrl = new URL('/admin-login', request.url);
-            loginUrl.searchParams.set('redirect', pathname);
+            loginUrl.searchParams.set('redirect', requestPathname);
             return NextResponse.redirect(loginUrl);
         }
 

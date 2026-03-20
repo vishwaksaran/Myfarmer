@@ -26,8 +26,10 @@ const fallbackPopular = [
 ];
 
 const quickActions = [
+    { name: 'Mandi Hub', description: 'All mandi data in one place', icon: 'hub', href: '/home/crops/mandi', color: 'bg-primary' },
     { name: 'Mandi Prices', description: 'Check live prices from nearby mandis', icon: 'trending_up', href: '/home/crops/mandi/prices', color: 'bg-primary' },
     { name: 'Buy Crops', description: 'Browse available produce listings', icon: 'shopping_cart', href: '/home/crops/buy', color: 'bg-primary' },
+    { name: 'Buy Grains', description: 'Wheat, rice, millets & more', icon: 'grain', href: '/home/crops/buy/grains', color: 'bg-primary' },
     { name: 'Sell Crops', description: 'List your harvest for sale', icon: 'sell', href: '/home/crops/sell', color: 'bg-primary' },
     { name: 'Nearby Mandis', description: 'Find mandis near your location', icon: 'location_on', href: '/home/crops/mandi/nearby', color: 'bg-primary' },
 ];

@@ -198,7 +198,14 @@ export default function MachineryPage() {
                                     Browse our comprehensive collection of farm equipment and machinery
                                 </p>
                             </div>
-                            <div className="shrink-0">
+                            <div className="flex items-center gap-3 shrink-0">
+                                <Link
+                                    href="/home/machinery/compare"
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-lg">compare_arrows</span>
+                                    Compare
+                                </Link>
                                 <NearbyLocation />
                             </div>
                         </div>

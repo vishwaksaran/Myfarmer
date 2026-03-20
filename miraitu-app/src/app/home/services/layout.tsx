@@ -6,7 +6,9 @@ import '../globals-v2.css';
 export const metadata: Metadata = {
     title: 'Farm Services – Borewell, Fencing, CCTV & More',
     description: 'Essential farm services including borewell drilling, fencing, CCTV surveillance, solar setup, and labor booking. Professional service providers on Miraitu.',
-    // canonical removed from layout — set per-page to avoid children inheriting it
+    alternates: {
+        canonical: 'https://www.miraitu.in/home/services',
+    },
     robots: {
         index: true,
         follow: true,

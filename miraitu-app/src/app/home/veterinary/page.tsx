@@ -5,37 +5,31 @@ const services = [
     {
         name: 'Treatment',
         icon: 'medical_services',
-        href: '/home/veterinary/treatment',
         description: 'Get expert veterinary treatment for your livestock',
     },
     {
         name: 'Vaccination',
         icon: 'vaccines',
-        href: '/home/veterinary/vaccination',
         description: 'Schedule vaccinations to protect your animals',
     },
     {
         name: 'Deworming',
         icon: 'medication',
-        href: '/home/veterinary/deworming',
         description: 'Regular deworming for healthy livestock',
     },
     {
         name: 'Mastitis Test',
         icon: 'science',
-        href: '/home/veterinary/mastitis-test',
         description: 'Early detection and treatment of mastitis',
     },
     {
         name: 'Grooming',
         icon: 'content_cut',
-        href: '/home/veterinary/grooming',
         description: 'Professional grooming services for your animals',
     },
     {
         name: 'Nutritional Advice',
         icon: 'nutrition',
-        href: '/home/veterinary/nutritional-advice',
         description: 'Expert dietary guidance for optimal health',
     },
 ];
@@ -110,21 +104,25 @@ export default function VeterinaryPage() {
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Our Services</h2>
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {services.map((service) => (
-                                <Link
+                                <div
                                     key={service.name}
-                                    href={service.href}
                                     className="group p-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all hover:-translate-y-1"
                                 >
                                     <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                         <span className="material-symbols-outlined text-white text-3xl">{service.icon}</span>
                                     </div>
                                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{service.name}</h3>
-                                    <p className="text-sm text-gray-500">{service.description}</p>
-                                    <div className="mt-4 flex items-center text-primary font-semibold">
-                                        Book Now
+                                    <p className="text-sm text-gray-500 mb-4">{service.description}</p>
+                                    <a
+                                        href="https://wa.me/919876543210?text=Hi%2C%20I%20need%20veterinary%20service%20for%20my%20livestock"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center text-primary font-semibold hover:underline"
+                                    >
+                                        Enquire Now
                                         <span className="material-symbols-outlined ml-1 group-hover:translate-x-2 transition-transform">arrow_forward</span>
-                                    </div>
-                                </Link>
+                                    </a>
+                                </div>
                             ))}
                         </div>
                     </div>
@@ -155,7 +153,7 @@ export default function VeterinaryPage() {
                                 <p className="text-white/90">Join our network and connect with farmers who need your expertise.</p>
                             </div>
                             <Link
-                                href="/home/veterinary/register"
+                                href="/home/become-seller"
                                 className="shrink-0 px-8 py-4 bg-white text-primary rounded-xl font-bold hover:bg-green-50 transition-colors shadow-lg"
                             >
                                 Register as Vet →
