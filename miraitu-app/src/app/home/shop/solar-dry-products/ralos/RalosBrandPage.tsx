@@ -55,11 +55,11 @@ export default function RalosBrandPage() {
     const sorted = (() => {
         const list = [...products];
         switch (sortBy) {
-            case 'price-low':  return list.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
+            case 'price-low': return list.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
             case 'price-high': return list.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
-            case 'rating':     return list.sort((a, b) => b.rating - a.rating);
-            case 'popular':    return list.sort((a, b) => b.reviews - a.reviews);
-            default:           return list;
+            case 'rating': return list.sort((a, b) => b.rating - a.rating);
+            case 'popular': return list.sort((a, b) => b.reviews - a.reviews);
+            default: return list;
         }
     })();
     const displayed = showAll ? sorted : sorted.slice(0, 8);
@@ -321,20 +321,19 @@ export default function RalosBrandPage() {
                         {/* Sort Buttons */}
                         <div className="flex gap-2 mb-6 overflow-x-auto p-1 -m-1 scrollbar-hide">
                             {([
-                                { key: 'all',        label: 'All' },
-                                { key: 'popular',    label: 'Popular' },
-                                { key: 'price-low',  label: 'Price Low to High' },
+                                { key: 'all', label: 'All' },
+                                { key: 'popular', label: 'Popular' },
+                                { key: 'price-low', label: 'Price Low to High' },
                                 { key: 'price-high', label: 'Price High to Low' },
-                                { key: 'rating',     label: 'Top Rated' },
+                                { key: 'rating', label: 'Top Rated' },
                             ] as { key: SortOption; label: string }[]).map(s => (
                                 <button
                                     key={s.key}
                                     onClick={() => setSortBy(s.key)}
-                                    className={`px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
-                                        sortBy === s.key
+                                    className={`px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${sortBy === s.key
                                             ? 'bg-white shadow-lg ring-2 ring-emerald-400 text-emerald-700'
                                             : 'bg-white/70 text-gray-500 hover:bg-white hover:shadow-sm'
-                                    }`}
+                                        }`}
                                 >
                                     {s.label}
                                 </button>
