@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState, useCallback } from 'react';
+import { Fragment, Suspense, useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { fetchAllBookings, updateBookingStatus, deleteBooking, type BookingRecord } from '@/app/actions/bookings';
 import { downloadCSV } from '@/lib/csv-export';
@@ -191,11 +191,10 @@ function AdminBookingsContent() {
                 </select>
                 <button
                     onClick={() => setTodayOnly(!todayOnly)}
-                    className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-colors border ${
-                        todayOnly
+                    className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-colors border ${todayOnly
                             ? 'bg-green-600 text-white border-green-600'
                             : 'bg-white text-gray-600 border-gray-200 hover:border-green-300'
-                    }`}
+                        }`}
                 >
                     <span className="material-symbols-outlined text-sm">today</span>
                     Today
@@ -231,7 +230,7 @@ function AdminBookingsContent() {
             ) : (
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                        <table className="w-full text-sm min-w-[900px]">
                             <thead>
                                 <tr className="text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
                                     <th className="px-4 py-3">Name</th>
@@ -246,7 +245,7 @@ function AdminBookingsContent() {
                             </thead>
                             <tbody>
                                 {filteredBookings.map((b) => (
-                                    <>
+                                    <Fragment key={b.id}>
                                         <tr
                                             key={b.id}
                                             className="border-b border-gray-50 hover:bg-gray-50/50 cursor-pointer"
@@ -255,13 +254,12 @@ function AdminBookingsContent() {
                                             <td className="px-4 py-3">
                                                 <div className="font-semibold text-gray-900">{b.full_name}</div>
                                                 {b.auth_provider && (
-                                                    <span className={`inline-flex items-center gap-0.5 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                                                        b.auth_provider === 'google'
+                                                    <span className={`inline-flex items-center gap-0.5 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold ${b.auth_provider === 'google'
                                                             ? 'bg-blue-50 text-blue-600'
                                                             : b.auth_provider === 'phone'
                                                                 ? 'bg-green-50 text-green-600'
                                                                 : 'bg-gray-50 text-gray-500'
-                                                    }`}>
+                                                        }`}>
                                                         {b.auth_provider === 'google' ? 'Google SSO' : b.auth_provider === 'phone' ? 'Phone OTP' : b.auth_provider}
                                                     </span>
                                                 )}
@@ -281,13 +279,12 @@ function AdminBookingsContent() {
                                                     onChange={(e) => { e.stopPropagation(); handleStatusChange(b.id, e.target.value); }}
                                                     onClick={(e) => e.stopPropagation()}
                                                     disabled={updatingId === b.id}
-                                                    className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase border-0 outline-none cursor-pointer ${
-                                                        b.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                                                        b.status === 'contacted' ? 'bg-blue-100 text-blue-700' :
-                                                        b.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                                                        b.status === 'completed' ? 'bg-gray-100 text-gray-600' :
-                                                        'bg-red-100 text-red-700'
-                                                    }`}
+                                                    className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase border-0 outline-none cursor-pointer ${b.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                                                            b.status === 'contacted' ? 'bg-blue-100 text-blue-700' :
+                                                                b.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                                                                    b.status === 'completed' ? 'bg-gray-100 text-gray-600' :
+                                                                        'bg-red-100 text-red-700'
+                                                        }`}
                                                 >
                                                     {STATUS_OPTIONS.filter(o => o.value).map(o => (
                                                         <option key={o.value} value={o.value}>{o.label}</option>
@@ -362,7 +359,7 @@ function AdminBookingsContent() {
                                                 </td>
                                             </tr>
                                         )}
-                                    </>
+                                    </Fragment>
                                 ))}
                             </tbody>
                         </table>
@@ -375,9 +372,8 @@ function AdminBookingsContent() {
 
             {/* Toast */}
             {toast && (
-                <div className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-bold flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-300 ${
-                    toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
-                }`}>
+                <div className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-bold flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-300 ${toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                    }`}>
                     <span className="material-symbols-outlined text-lg">
                         {toast.type === 'success' ? 'check_circle' : 'error'}
                     </span>

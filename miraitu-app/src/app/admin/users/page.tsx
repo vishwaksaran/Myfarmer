@@ -178,7 +178,7 @@ export default function AdminUsersPage() {
             ) : (
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                        <table className="w-full text-sm min-w-[1100px]">
                             <thead>
                                 <tr className="text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
                                     <th className="px-4 py-3">User</th>
@@ -190,7 +190,7 @@ export default function AdminUsersPage() {
                                     <th className="px-4 py-3">Interests</th>
                                     <th className="px-4 py-3">Status</th>
                                     <th className="px-4 py-3">Joined</th>
-                                    <th className="px-4 py-3"></th>
+                                    <th className="px-4 py-3 sticky right-0 bg-gray-50"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -220,9 +220,8 @@ export default function AdminUsersPage() {
                                                 <div>
                                                     <span className="text-xs truncate block" title={u.email}>{u.email}</span>
                                                     {u.auth_provider && (
-                                                        <span className={`inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                                                            u.auth_provider === 'google' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'
-                                                        }`}>
+                                                        <span className={`inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold ${u.auth_provider === 'google' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'
+                                                            }`}>
                                                             {u.auth_provider === 'google' ? 'Google SSO' : u.auth_provider}
                                                         </span>
                                                     )}
@@ -231,9 +230,8 @@ export default function AdminUsersPage() {
                                                 <div>
                                                     <span className="text-gray-400 text-xs">—</span>
                                                     {u.auth_provider && (
-                                                        <span className={`inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                                                            u.auth_provider === 'phone' ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-500'
-                                                        }`}>
+                                                        <span className={`inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold ${u.auth_provider === 'phone' ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-500'
+                                                            }`}>
                                                             {u.auth_provider === 'phone' ? 'Phone OTP' : u.auth_provider}
                                                         </span>
                                                     )}
@@ -244,20 +242,18 @@ export default function AdminUsersPage() {
                                         <td className="px-4 py-3">
                                             {u.device_type ? (
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className={`material-symbols-outlined text-sm ${
-                                                        u.device_type === 'mobile' ? 'text-blue-500' :
-                                                        u.device_type === 'tablet' ? 'text-purple-500' :
-                                                        'text-gray-500'
-                                                    }`}>
+                                                    <span className={`material-symbols-outlined text-sm ${u.device_type === 'mobile' ? 'text-blue-500' :
+                                                            u.device_type === 'tablet' ? 'text-purple-500' :
+                                                                'text-gray-500'
+                                                        }`}>
                                                         {u.device_type === 'mobile' ? 'smartphone' :
-                                                         u.device_type === 'tablet' ? 'tablet' : 'computer'}
+                                                            u.device_type === 'tablet' ? 'tablet' : 'computer'}
                                                     </span>
                                                     <div>
-                                                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold capitalize ${
-                                                            u.device_type === 'mobile' ? 'bg-blue-50 text-blue-600' :
-                                                            u.device_type === 'tablet' ? 'bg-purple-50 text-purple-600' :
-                                                            'bg-gray-100 text-gray-600'
-                                                        }`}>
+                                                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold capitalize ${u.device_type === 'mobile' ? 'bg-blue-50 text-blue-600' :
+                                                                u.device_type === 'tablet' ? 'bg-purple-50 text-purple-600' :
+                                                                    'bg-gray-100 text-gray-600'
+                                                            }`}>
                                                             {u.device_type}
                                                         </span>
                                                         {u.last_login_device && (
@@ -270,18 +266,16 @@ export default function AdminUsersPage() {
                                             )}
                                         </td>
                                         <td className="px-4 py-3">
-                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
-                                                u.role === 'admin' ? 'bg-red-100 text-red-700' :
-                                                u.role === 'dealer' ? 'bg-blue-100 text-blue-700' :
-                                                (u.role === 'service-provider' || u.role === 'service_provider') ? 'bg-amber-100 text-amber-700' :
-                                                'bg-green-100 text-green-700'
-                                            }`}>
+                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${u.role === 'admin' ? 'bg-red-100 text-red-700' :
+                                                    u.role === 'dealer' ? 'bg-blue-100 text-blue-700' :
+                                                        (u.role === 'service-provider' || u.role === 'service_provider') ? 'bg-amber-100 text-amber-700' :
+                                                            'bg-green-100 text-green-700'
+                                                }`}>
                                                 {(u.role === 'service_provider' || u.role === 'service-provider') && u.availability_status && (
-                                                    <span className={`size-2 rounded-full ${
-                                                        u.availability_status === 'available' ? 'bg-emerald-500' :
-                                                        u.availability_status === 'busy' ? 'bg-orange-500' :
-                                                        'bg-gray-400'
-                                                    }`} />
+                                                    <span className={`size-2 rounded-full ${u.availability_status === 'available' ? 'bg-emerald-500' :
+                                                            u.availability_status === 'busy' ? 'bg-orange-500' :
+                                                                'bg-gray-400'
+                                                        }`} />
                                                 )}
                                                 {u.role || 'farmer'}
                                             </span>
@@ -337,8 +331,8 @@ export default function AdminUsersPage() {
                                             <div>{new Date(u.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                                             <div className="text-[10px] text-gray-400">{new Date(u.created_at).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}</div>
                                         </td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                                        <td className="px-4 py-3 sticky right-0 bg-white">
+                                            <div className="flex items-center gap-1.5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                                                 <Link
                                                     href={`/admin/users/${u.id}`}
                                                     className="inline-flex items-center gap-1 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors"
@@ -373,9 +367,8 @@ export default function AdminUsersPage() {
 
             {/* ── Toast Notification ───────────────────────── */}
             {toast && (
-                <div className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-bold flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-300 ${
-                    toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
-                }`}>
+                <div className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-bold flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-300 ${toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                    }`}>
                     <span className="material-symbols-outlined text-lg">
                         {toast.type === 'success' ? 'check_circle' : 'error'}
                     </span>
