@@ -103,6 +103,8 @@ export default function UserLoginPage() {
     // directOtp is passed when auto-submitting from onChange (avoids stale state)
     const handleVerifyOtp = async (e?: React.FormEvent, directOtp?: string) => {
         e?.preventDefault();
+        // Prevent duplicate calls while already verifying
+        if (isSigningIn) return;
         const otpToVerify = directOtp ?? otp;
         if (otpToVerify.length !== 6) {
             setError(t('login.errorOtpRequired'));

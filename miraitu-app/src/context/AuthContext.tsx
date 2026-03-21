@@ -362,26 +362,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Update user profile in Supabase profiles table
     const updateProfile = async (data: Partial<UserProfile>): Promise<{ error: string | null }> => {
         if (!user || user.isGuest) return { error: 'Not authenticated' };
-        try {
-            const { error } = await supabase
-                .from('profiles')
-                .upsert({ id: user.id, ...data, updated_at: new Date().toISOString() });
-            if (error) return { error: error.message };
-            // Update local user state
-            if (data.full_name !== undefined) {
-                setUser(prev => prev ? { ...prev, displayName: data.full_name || prev.displayName } : prev);
+
+        // Retry logic: AbortError can occur when auth state changes mid-request
+        const MAX_RETRIES = 2;
+        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                const { error } = await supabase
+                    .from('profiles')
+                    .upsert({ id: user.id, ...data, updated_at: new Date().toISOString() });
+                if (error) return { error: error.message };
+                // Update local user state
+                if (data.full_name !== undefined) {
+                    setUser(prev => prev ? { ...prev, displayName: data.full_name || prev.displayName } : prev);
+                }
+                if (data.avatar_url !== undefined) {
+                    setUser(prev => prev ? { ...prev, photoURL: data.avatar_url || prev.photoURL } : prev);
+                }
+                if (data.phone !== undefined) {
+                    setUser(prev => prev ? { ...prev, phone: data.phone || prev.phone } : prev);
+                }
+                return { error: null };
+            } catch (err: unknown) {
+                const isAbort = err instanceof DOMException && err.name === 'AbortError';
+                if (isAbort && attempt < MAX_RETRIES) {
+                    // Wait briefly then retry — the abort was likely from an auth state change
+                    await new Promise(r => setTimeout(r, 500));
+                    continue;
+                }
+                const message = err instanceof Error ? err.message : 'Failed to update profile';
+                return { error: message };
             }
-            if (data.avatar_url !== undefined) {
-                setUser(prev => prev ? { ...prev, photoURL: data.avatar_url || prev.photoURL } : prev);
-            }
-            if (data.phone !== undefined) {
-                setUser(prev => prev ? { ...prev, phone: data.phone || prev.phone } : prev);
-            }
-            return { error: null };
-        } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : 'Failed to update profile';
-            return { error: message };
         }
+        return { error: 'Failed to update profile after retries' };
     };
 
     // Upload avatar image to Supabase Storage

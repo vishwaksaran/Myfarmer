@@ -50,8 +50,9 @@ function extractDeviceDetail(ua: string): string {
 }
 
 /**
- * Exhaustive user search across ALL pages.
- * Supabase admin listUsers returns at most 1000/page — we page through all.
+ * Fast user lookup — tries direct queries instead of paginating all users.
+ * 1. Look up from profiles table by phone (indexed, instant)
+ * 2. Single-page scan as fallback (capped at 1 page of 1000)
  */
 async function findUserByPhone(
     admin: SupabaseClient,
@@ -59,31 +60,40 @@ async function findUserByPhone(
     mobile: string,
     syntheticEmail: string
 ) {
-    let page = 1;
-    while (true) {
-        const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
-        if (error) {
-            console.error('[findUserByPhone] listUsers error:', error.message);
-            return null;
-        }
-        if (!data?.users?.length) break;
+    const localNumber = mobile.slice(2); // "8553498691"
 
-        const found = data.users.find(u =>
-            u.phone === phoneWithCode ||        // +918553498691
-            u.phone === mobile ||               // 918553498691
-            u.phone === mobile.slice(2) ||      // 8553498691 (local)
+    // 1. Look up via profiles table (phone is stored there, indexed)
+    const { data: profile } = await admin
+        .from('profiles')
+        .select('id')
+        .or(`phone.eq.${phoneWithCode},phone.eq.${mobile},phone.eq.${localNumber},phone.eq.+91${localNumber}`)
+        .limit(1)
+        .maybeSingle();
+
+    if (profile?.id) {
+        const { data: userData } = await admin.auth.admin.getUserById(profile.id);
+        if (userData?.user) {
+            console.log('[findUserByPhone] Found via profiles table:', userData.user.id);
+            return userData.user;
+        }
+    }
+
+    // 2. Single-page scan as fallback (max 1000 users, not exhaustive pagination)
+    const { data: fallback, error: fallbackErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    if (!fallbackErr && fallback?.users) {
+        const found = fallback.users.find(u =>
+            u.phone === phoneWithCode ||
+            u.phone === mobile ||
+            u.phone === localNumber ||
             u.email === syntheticEmail ||
             (u.email && u.email.includes(mobile))
         );
-
         if (found) {
-            console.log(`[findUserByPhone] Found on page ${page}:`, found.id, '| phone:', found.phone, '| email:', found.email);
+            console.log('[findUserByPhone] Found in fallback scan:', found.id);
             return found;
         }
-
-        if (data.users.length < 1000) break; // Last page reached
-        page++;
     }
+
     return null;
 }
 
