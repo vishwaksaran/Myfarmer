@@ -152,7 +152,7 @@ export default function FarmerServicesGrid() {
                                     className="flex-1 px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
                                 >
                                     <option value="" className="text-gray-800">{t('farmerServices.selectState')}</option>
-                                    {indianStates.map(state => (
+                                    {Object.keys(govSchemePortals).map(state => (
                                         <option key={state} value={state} className="text-gray-800">{state}</option>
                                     ))}
                                 </select>

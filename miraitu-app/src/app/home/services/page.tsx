@@ -393,22 +393,22 @@ export default function ServicesPage() {
                         </Link>
                     </div>
 
-                    {/* Become a Service Provider */}
+                    {/* Become a Dealer/Seller */}
                     <div className="col-span-2 md:col-span-1 bg-gradient-to-br from-primary to-emerald-500 rounded-2xl md:rounded-3xl p-4 md:p-8 text-white">
                         <div className="flex items-start gap-3 md:gap-4 mb-4">
                             <div className="w-12 md:w-16 h-12 md:h-16 bg-white/20 rounded-xl md:rounded-2xl flex items-center justify-center flex-shrink-0">
-                                <span className="material-symbols-outlined text-white text-2xl md:text-3xl">person_add</span>
+                                <span className="material-symbols-outlined text-white text-2xl md:text-3xl">storefront</span>
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h2 className="text-lg md:text-2xl font-bold mb-1">Become a Service Provider</h2>
-                                <p className="text-xs md:text-sm text-white/90 line-clamp-2">Register and earn by offering your services.</p>
+                                <h2 className="text-lg md:text-2xl font-bold mb-1">Become a Dealer/Seller</h2>
+                                <p className="text-xs md:text-sm text-white/90 line-clamp-2">Join our platform as a dealer or seller to expand your business reach across India.</p>
                             </div>
                         </div>
                         <Link
-                            href="/home/services/register-provider"
+                            href="/home/become-seller"
                             className="block w-full text-center px-4 py-2 md:py-3 bg-white text-primary rounded-lg md:rounded-xl font-bold text-xs md:text-sm hover:bg-green-50 transition-colors shadow-lg"
                         >
-                            Register Now →
+                            Learn More →
                         </Link>
                     </div>
                 </div>
