@@ -10,48 +10,60 @@ const categories = [
     {
         id: 'tractors',
         name: 'Tractors',
+        cardTitle: 'Tractors',
+        cardSubtitle: '450+ Units Available',
         description: 'Powerful farming tractors for all field operations',
-        image: '/images/machinery/tractor.png',
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAra5heCj3EWKw9ciMktUl8ySxFjD1BX8R_APrIzxaMfiuIfZdfNO0ZRFXplWRuzIPOEWVsFRnZt5Ra-z-zx_j-ha6lcufkIbH7AFs-lfT434NUFL4P17v04Y0zByofA08IWrCa-RreqPVGuldKZ-kk8iQjQt6_X4fK01oq_yPCwA8Yew7Q86UzV4CUg_6QZ84p7ucycJxZat5VsSGjECieEk_J5mz6KzKl9NLcYXcVoiWJGMsoRxGpyQPYMXEoCR8PGoyeDIMG93en',
         count: 245,
         path: '/home/machinery/tractors',
     },
     {
         id: 'jcb',
         name: 'JCB',
+        cardTitle: 'JCBs',
+        cardSubtitle: '120+ Heavy Duty',
         description: 'Heavy-duty construction & earthmoving equipment',
-        image: '/images/machinery/jcb.png',
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBoh6_5kQck5K_nqS1QEkBnTIsyZ6UtHBWc-recL0rH-g_SpwqTl-QBMYa_hmszHCe-I8i3inkC3f_R0VadmTPU0RnAJ5j2QLOTuQCc4WLQSfQgevs2HmPhbFjsRZUY3E-q1qqItUpuVkJwAQfc9HSnfMf7EuWnDOxiZdYZGQBn2vuKAwkP5sqUX6eH0V5V16NDTjzB_XnksMioGIP5SN4UbF6DqtvcUCHIxhcxiwIATYT3Ec9jsDPLHAqMQ2JiDDvaFQG5ft0RuuZV',
         count: 78,
         path: '/home/machinery/jcb',
     },
     {
         id: 'small-machineries',
         name: 'Small Machineries',
+        cardTitle: 'Utility',
+        cardSubtitle: 'Versatile Solutions',
         description: 'Compact power tillers & cultivators',
-        image: '/images/machinery/small-machinery.png',
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCDewDe-oACw29kFZy3tgcKVeVRdUlbqF85J6xRM_D2TUt9pI8eE3Mk1cQm8cOhXe_7PYBiu1G7bNUxm3Zgs3Cv5e6mdJz6i1U0zk4fWnQbrvIZIkokvsKmXF0V6GS5j8J7zwclnMNhGQgKiW1ZGYCVgHbhX4NityattGv-gsZfGqr_AR46LMJiaf1kvzthqfV0FU6B8AwAfogjrC4WUkOdnco_yXBH4rab1N2QeGHrLtVdDd0EAhf0NAuwiWtVEGlVSPc25RHGl8IC',
         count: 156,
         path: '/home/machinery/small-machineries',
     },
     {
         id: 'implements',
         name: 'Implements',
+        cardTitle: 'Implements',
+        cardSubtitle: 'Soil Management',
         description: 'Ploughs, harrows & tractor attachments',
-        image: '/images/machinery/implements.png',
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDAKtHSKkDfsP8g_voXyzjiyjVc6L4y77SX0g8WY-6LpQ4BFCsYtbPeMG4wwjeIRzljyw-O2apIdmGERVYehyQokii_vMbgPtWdgfmegCU7fB3As4AIqWd4yBb7pxPySTRrNnApp-jx_0bGXeR8wUqTCRDG2HXO-d8GUujpXKpVpieYqvMgkBWNVdAibUPiCMrcq1g6AkwsM859GY1faIhzw2ZhePpoSSlrGy5MoSmJ2a_2VyraUK_vtfRqIx4LAuNiRRcYFlFKhaUl',
         count: 312,
         path: '/home/machinery/implements',
     },
     {
         id: 'harvesters',
         name: 'Harvesters',
+        cardTitle: 'Harvesters',
+        cardSubtitle: 'Harvest Tech',
         description: 'Combine harvesters for efficient crop harvesting',
-        image: '/images/machinery/harvester.png',
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAOOwHagrw322JV7XY2RZO11lcwK7gCmKs_SK974ipdISRD9DkYdysR9BenreqC-2FVACjjgIvERAX6s9037g0Qq_elicod0K4w2vR3uqq0IzJTVBSRX_YUdGqRJ1NvNey4W-OH5eS2MkGAUyZq2pqEyknJMIWR-s5cAfkO6thIU0CAZHxsb7poBzSYmHxS6GwmfLrhAvJO3d2V-JBKwYMr7olGmLXVUKydbrJ1jyYhzXftAWvExzTE5OZfQf_eTzNLUq9YdSMY0GM_',
         count: 64,
         path: '/home/machinery/harvesters',
     },
     {
         id: 'drones',
         name: 'Agri Drones',
+        cardTitle: 'Agri-Drones',
+        cardSubtitle: 'Next-Gen Spraying',
         description: 'Agricultural drones for spraying & monitoring',
-        image: '/images/machinery/drone.png',
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBG-VZGRwxK4WnIO-VFz4YRrzuvIkRShtIfax07ltObdtXF2f_owoRc7lFprQcCbZ-mOtbU6p2yC0y4rtrXZ9Gtw3icbHw9Farv4BdvUuE6hJBjasjoLo_zI-lI1Oyf59HHCfvstrwkCr0ZqsVpbjO5LvmUNBEPNtCP8-W5ppy450pMfLkbaT6ObDAgEP7MKc8enMV-0uiWifyOKDY-41WIQVGd6uPGzVf2PK_lm7j9xO09m8mtbqI4123R_lZq8q_mqN6XKrvSxgat',
         count: 42,
         path: '/home/machinery/drones',
     },
@@ -210,37 +222,33 @@ export default function MachineryPage() {
                             </div>
                         </div>
 
-                        {/* Category Cards Grid */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4">
-                            {categories.map((category) => (
-                                <button
-                                    key={category.id}
-                                    onClick={() => setModalCategory(category)}
-                                    className="group relative rounded-lg md:rounded-2xl p-2 md:p-4 border border-gray-100 dark:border-gray-800 hover:border-primary/30 hover:shadow-xl transition-all duration-300 overflow-hidden bg-[#d4edda] dark:bg-emerald-900/30 text-left"
-                                >
-                                    {/* Image Container - uniform size with matching bg */}
-                                    <div className="flex flex-col items-center">
-                                        <div className="size-16 md:size-22 aspect-square rounded-full bg-white dark:bg-emerald-800/50 flex items-center justify-center mb-1.5 md:mb-3 group-hover:scale-105 transition-transform duration-300 border-2 border-green-200 dark:border-green-700 shrink-0">
-                                            <img
-                                                src={category.image}
-                                                alt={category.name}
-                                                className="size-10 md:size-14 object-contain"
-                                            />
-                                        </div>
-                                        <h3 className="font-bold text-gray-900 dark:text-white text-center text-xs md:text-sm mb-0.5 md:mb-1 line-clamp-2">
-                                            {category.name}
-                                        </h3>
-                                        <p className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 text-center">
-                                            {category.count} listings
-                                        </p>
-                                    </div>
+                        {/* Category Cards */}
+                        <div className="pb-2">
+                            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+                                {categories.map((category) => (
+                                    <button
+                                        key={category.id}
+                                        onClick={() => setModalCategory(category)}
+                                        className="group relative aspect-[4/3] md:aspect-[4/5] w-full overflow-hidden rounded-2xl border border-black/15 bg-gray-200 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                                    >
+                                        <img
+                                            src={category.image}
+                                            alt={category.name}
+                                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent" />
 
-                                    {/* Hover Arrow */}
-                                    <div className="absolute bottom-1.5 md:bottom-3 right-1.5 md:right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <span className="material-symbols-outlined text-primary text-base md:text-lg">arrow_forward</span>
-                                    </div>
-                                </button>
-                            ))}
+                                        <div className="absolute inset-x-0 bottom-1 md:bottom-1.5 z-10 p-3 md:p-4">
+                                            <h3 className="text-2xl sm:text-[1.9rem] md:text-[1.75rem] font-black text-white leading-[1.08] tracking-tight drop-shadow pr-1 whitespace-nowrap line-clamp-1">
+                                                {category.cardTitle}
+                                            </h3>
+                                            <p className="text-xs md:text-sm text-white/90 leading-tight mt-1 break-words line-clamp-2">
+                                                {category.cardSubtitle ?? `${category.count}+ units available`}
+                                            </p>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
 

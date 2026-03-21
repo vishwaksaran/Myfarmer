@@ -15,7 +15,9 @@ interface MachineryItem {
     year?: string;
     location?: string;
     condition?: string;
-    [key: string]: string | number | boolean | undefined;
+    techPacks?: string[];
+    features?: Record<string, unknown>;
+    [key: string]: string | number | boolean | string[] | Record<string, unknown> | undefined;
 }
 
 interface MachineryListingProps {
@@ -24,9 +26,16 @@ interface MachineryListingProps {
     viewMode?: 'grid' | 'list';
     onCompare?: (id: number) => void;
     selectedForCompare?: number[];
+    onGetPrice?: (item: MachineryItem) => void;
 }
 
-export default function MachineryListing({ items, type, viewMode = 'grid', onCompare, selectedForCompare = [] }: MachineryListingProps) {
+const TECH_PACK_COLORS: Record<string, string> = {
+    ROBOJA: 'bg-red-500',
+    PROJA: 'bg-blue-600',
+    MYOJA: 'bg-purple-600',
+};
+
+export default function MachineryListing({ items, type, viewMode = 'grid', onCompare, selectedForCompare = [], onGetPrice }: MachineryListingProps) {
     const [selectedItem, setSelectedItem] = useState<MachineryItem | null>(null);
     const [showQuoteModal, setShowQuoteModal] = useState(false);
     const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -114,6 +123,17 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                     <h4 className="font-bold text-base md:text-lg text-gray-900 dark:text-white">{item.name}</h4>
                                     <p className="text-xs md:text-sm text-gray-500 mb-2">{item.specs}</p>
 
+                                    {/* Tech Pack Badges */}
+                                    {item.techPacks && item.techPacks.length > 0 && (
+                                        <div className="flex flex-wrap gap-1.5 mb-2">
+                                            {item.techPacks.map(tp => (
+                                                <span key={tp} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold text-white ${TECH_PACK_COLORS[tp] || 'bg-gray-500'}`}>
+                                                    {tp}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+
                                     {/* Details Grid */}
                                     <div className="grid grid-cols-2 gap-2 text-xs mb-4">
                                         {item.hp && (
@@ -159,17 +179,27 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                                 <span className="material-symbols-outlined text-sm">info</span>
                                                 Details
                                             </button>
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedItem(item);
-                                                    setShowQuoteModal(true);
-                                                    setSubmitSuccess(false);
-                                                }}
-                                                className="flex-1 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-1"
-                                            >
-                                                <span className="material-symbols-outlined text-sm">currency_rupee</span>
-                                                {type === 'new' ? 'Get Price' : 'Request Quote'}
-                                            </button>
+                                            {onGetPrice ? (
+                                                <button
+                                                    onClick={() => onGetPrice(item)}
+                                                    className="flex-1 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-1"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">location_on</span>
+                                                    On-Road Price
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedItem(item);
+                                                        setShowQuoteModal(true);
+                                                        setSubmitSuccess(false);
+                                                    }}
+                                                    className="flex-1 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-1"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">currency_rupee</span>
+                                                    {type === 'new' ? 'Get Price' : 'Request Quote'}
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -421,7 +451,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                         type="tel"
                                         required
                                         value={quotePhone}
-                                        onChange={e => { setQuotePhone(e.target.value.replace(/\D/g, '').slice(0, 10)); setQuoteErrors(prev => { const {phone, ...rest} = prev; return rest; }); }}
+                                        onChange={e => { setQuotePhone(e.target.value.replace(/\D/g, '').slice(0, 10)); setQuoteErrors(prev => { const { phone, ...rest } = prev; return rest; }); }}
                                         className={`w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 ${quoteErrors.phone ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none transition-colors`}
                                         placeholder="9380306475"
                                         maxLength={10}
@@ -434,7 +464,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                     <input
                                         type="email"
                                         value={quoteEmail}
-                                        onChange={e => { setQuoteEmail(e.target.value); setQuoteErrors(prev => { const {email, ...rest} = prev; return rest; }); }}
+                                        onChange={e => { setQuoteEmail(e.target.value); setQuoteErrors(prev => { const { email, ...rest } = prev; return rest; }); }}
                                         className={`w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 ${quoteErrors.email ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none transition-colors`}
                                         placeholder="john@example.com"
                                     />
