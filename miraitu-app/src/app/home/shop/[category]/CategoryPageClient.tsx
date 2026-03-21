@@ -28,9 +28,9 @@ const bannerGradients: Record<string, string> = {
     'from-sky-500 to-sky-700': 'linear-gradient(to right, #0ea5e9, #0369a1)',
 };
 
-export default function CategoryPage() {
+export default function CategoryPage({ categorySlug }: { categorySlug?: string }) {
     const params = useParams();
-    const slug = params.category as string;
+    const slug = categorySlug || (params.category as string);
     const { quantities, addItem, removeItem } = useCart();
 
     const [sortBy, setSortBy] = useState<SortOption>('all');

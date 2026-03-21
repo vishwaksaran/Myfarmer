@@ -23,5 +23,5 @@ export const metadata: Metadata = {
 };
 
 export default function SolarDryProductsPage() {
-    return <CategoryPageClient />;
+    return <CategoryPageClient categorySlug="solar-dry-products" />;
 }
