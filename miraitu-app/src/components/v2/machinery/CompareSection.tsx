@@ -9,7 +9,7 @@ interface CompareSectionItem {
     image: string;
     brand: string;
     hp?: string;
-    [key: string]: string | number | boolean | undefined;
+    [key: string]: unknown;
 }
 
 interface CompareSectionProps {
