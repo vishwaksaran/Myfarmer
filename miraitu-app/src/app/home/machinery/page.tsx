@@ -290,27 +290,27 @@ export default function MachineryPage() {
                                         );
                                     }
                                     return (
-                                    <button
-                                        key={category.id}
-                                        onClick={() => setModalCategory(category)}
-                                        className="group relative aspect-[4/3] md:aspect-[4/5] w-full overflow-hidden rounded-2xl border border-black/15 bg-gray-200 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
-                                    >
-                                        <img
-                                            src={category.image}
-                                            alt={category.name}
-                                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent" />
+                                        <button
+                                            key={category.id}
+                                            onClick={() => setModalCategory(category)}
+                                            className="group relative aspect-[4/3] md:aspect-[4/5] w-full overflow-hidden rounded-2xl border border-black/15 bg-gray-200 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                                        >
+                                            <img
+                                                src={category.image}
+                                                alt={category.name}
+                                                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent" />
 
-                                        <div className="absolute inset-x-0 bottom-1 md:bottom-1.5 z-10 p-3 md:p-4">
-                                            <h3 className="text-xl sm:text-2xl md:text-[1.75rem] font-black text-white leading-[1.08] tracking-tight drop-shadow pr-1 line-clamp-2">
-                                                {category.cardTitle}
-                                            </h3>
-                                            <p className="text-xs md:text-sm text-white/90 leading-tight mt-1 break-words line-clamp-2">
-                                                {category.cardSubtitle ?? `${category.count}+ units available`}
-                                            </p>
-                                        </div>
-                                    </button>
+                                            <div className="absolute inset-x-0 bottom-1 md:bottom-1.5 z-10 p-3 md:p-4">
+                                                <h3 className="text-xl sm:text-2xl md:text-[1.75rem] font-black text-white leading-[1.08] tracking-tight drop-shadow pr-1 line-clamp-2">
+                                                    {category.cardTitle}
+                                                </h3>
+                                                <p className="text-xs md:text-sm text-white/90 leading-tight mt-1 break-words line-clamp-2">
+                                                    {category.cardSubtitle ?? `${category.count}+ units available`}
+                                                </p>
+                                            </div>
+                                        </button>
                                     );
                                 })}
                             </div>

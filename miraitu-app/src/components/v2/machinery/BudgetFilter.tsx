@@ -51,11 +51,10 @@ export default function BudgetFilter() {
                     <button
                         key={i}
                         onClick={() => setActiveIdx(i)}
-                        className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                            activeIdx === i
+                        className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${activeIdx === i
                                 ? 'bg-emerald-500 text-white'
                                 : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                        }`}
+                            }`}
                     >
                         {b.label}
                     </button>

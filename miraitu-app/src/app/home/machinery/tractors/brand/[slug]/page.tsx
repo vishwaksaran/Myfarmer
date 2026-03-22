@@ -149,11 +149,10 @@ export default function BrandPage() {
                     <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                         <button
                             onClick={() => setActiveSeries(null)}
-                            className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                                !activeSeries
+                            className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${!activeSeries
                                     ? 'bg-emerald-500 text-white'
                                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
-                            }`}
+                                }`}
                         >
                             All ({models.length})
                         </button>
@@ -163,11 +162,10 @@ export default function BrandPage() {
                                 <button
                                     key={s}
                                     onClick={() => setActiveSeries(s)}
-                                    className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                                        activeSeries === s
+                                    className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${activeSeries === s
                                             ? 'bg-emerald-500 text-white'
                                             : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
-                                    }`}
+                                        }`}
                                 >
                                     {s} {count > 0 && `(${count})`}
                                 </button>

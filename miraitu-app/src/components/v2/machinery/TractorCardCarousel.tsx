@@ -75,11 +75,10 @@ export default function TractorCardCarousel({ title, tabs, models, defaultTab }:
                         <button
                             key={tab.key}
                             onClick={() => setActiveTab(tab.key)}
-                            className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                                activeTab === tab.key
+                            className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${activeTab === tab.key
                                     ? 'bg-emerald-500 text-white'
                                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                            }`}
+                                }`}
                         >
                             {tab.label}
                         </button>
