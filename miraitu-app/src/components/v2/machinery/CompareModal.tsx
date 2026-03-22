@@ -13,7 +13,7 @@ interface MachineryItem {
     hp?: string;
     warranty?: string;
     fuelType?: string;
-    [key: string]: string | number | boolean | undefined;
+    [key: string]: unknown;
 }
 
 interface CompareModalProps {
