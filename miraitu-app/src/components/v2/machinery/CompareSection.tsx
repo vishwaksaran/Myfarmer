@@ -19,9 +19,11 @@ interface CompareSectionProps {
     onRemove: (index: number) => void;
     /** Called when user clicks the "Compare Now" button */
     onCompare: () => void;
+    /** Called when user clicks an empty slot to add a model */
+    onSlotClick?: () => void;
 }
 
-export default function CompareSection({ items, onRemove, onCompare }: CompareSectionProps) {
+export default function CompareSection({ items, onRemove, onCompare, onSlotClick }: CompareSectionProps) {
     // Pad to always show 3 slots
     const slots: (CompareSectionItem | null)[] = [
         items[0] ?? null,
@@ -32,78 +34,63 @@ export default function CompareSection({ items, onRemove, onCompare }: CompareSe
     const filledCount = slots.filter(Boolean).length;
 
     return (
-        <div className="mb-10">
-            <div className="flex items-center gap-2 mb-4">
-                <span className="material-symbols-outlined text-primary">compare_arrows</span>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Compare Selected Models</h2>
-                {filledCount > 0 && (
-                    <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                        {filledCount}/3
-                    </span>
-                )}
+        <div className="mb-8">
+            <div className="flex items-center gap-2 mb-3">
+                <span className="material-symbols-outlined text-primary text-xl">compare_arrows</span>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">Compare Models</h2>
+                <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                    {filledCount}/3
+                </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {slots.map((slot, index) => (
                     <div
                         key={index}
-                        className={`relative rounded-2xl border-2 border-dashed transition-all ${slot
+                        className={`relative rounded-xl border-2 border-dashed transition-all ${slot
                             ? 'border-primary/30 bg-white dark:bg-[#1a231a]'
-                            : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50'
+                            : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 cursor-pointer hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98]'
                             }`}
+                        onClick={!slot && onSlotClick ? onSlotClick : undefined}
                     >
                         {slot ? (
-                            <div className="p-4">
+                            <div className="p-3">
                                 {/* Remove Button */}
                                 <button
                                     onClick={() => onRemove(index)}
-                                    className="absolute top-3 right-3 w-7 h-7 rounded-full bg-red-50 dark:bg-red-900/30 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 hover:text-red-600 transition-colors flex items-center justify-center"
+                                    className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-50 dark:bg-red-900/30 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 hover:text-red-600 transition-colors flex items-center justify-center z-10"
                                 >
-                                    <span className="material-symbols-outlined text-lg">close</span>
+                                    <span className="material-symbols-outlined text-base">close</span>
                                 </button>
 
-                                <div className="flex gap-4">
-                                    {/* Image */}
-                                    <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-700 overflow-hidden shrink-0">
-                                        <img
-                                            src={slot.image}
-                                            alt={slot.name}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
+                                {/* Image */}
+                                <div className="w-full h-20 rounded-lg bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-700 overflow-hidden mb-2">
+                                    <img
+                                        src={slot.image}
+                                        alt={slot.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
 
-                                    {/* Details */}
-                                    <div className="flex-1 min-w-0">
-                                        <span className="inline-block px-2 py-0.5 bg-primary/10 text-primary text-xs font-bold rounded mb-1">
-                                            {slot.category}
-                                        </span>
-                                        <h4 className="font-bold text-gray-900 dark:text-white truncate text-sm">
-                                            {slot.name}
-                                        </h4>
-                                        <p className="text-xs text-gray-500 mb-2">{slot.brand}</p>
-
-                                        <div className="grid grid-cols-2 gap-2 text-xs">
-                                            {slot.hp && (
-                                                <div>
-                                                    <span className="text-gray-400">POWER</span>
-                                                    <p className="font-semibold text-gray-700 dark:text-gray-200">{slot.hp} HP</p>
-                                                </div>
-                                            )}
-                                            <div>
-                                                <span className="text-gray-400">PRICE</span>
-                                                <p className="font-semibold text-primary">{slot.price}</p>
-                                            </div>
-                                        </div>
-                                    </div>
+                                {/* Details */}
+                                <h4 className="font-bold text-gray-900 dark:text-white truncate text-xs">
+                                    {slot.name}
+                                </h4>
+                                <p className="text-[10px] text-gray-500">{slot.brand}</p>
+                                <div className="flex items-center justify-between mt-1">
+                                    {slot.hp && (
+                                        <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-300">{slot.hp} HP</span>
+                                    )}
+                                    <span className="text-[10px] font-semibold text-primary">{slot.price}</span>
                                 </div>
                             </div>
                         ) : (
-                            <div className="p-8 flex flex-col items-center justify-center min-h-[140px]">
-                                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                                    <span className="material-symbols-outlined text-primary text-2xl">add</span>
+                            <div className="p-4 flex flex-col items-center justify-center min-h-[120px]">
+                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-1.5">
+                                    <span className="material-symbols-outlined text-primary text-xl">add</span>
                                 </div>
-                                <p className="text-sm text-gray-500">Slot {index + 1}: Add Model</p>
-                                <p className="text-xs text-gray-400 mt-1">Select from list below</p>
+                                <p className="text-xs font-medium text-gray-500">Add Model</p>
+                                <p className="text-[10px] text-gray-400 mt-0.5">Tap to select</p>
                             </div>
                         )}
                     </div>
@@ -112,12 +99,12 @@ export default function CompareSection({ items, onRemove, onCompare }: CompareSe
 
             {/* Launch Comparison Button */}
             {filledCount >= 2 && (
-                <div className="mt-4 text-center">
+                <div className="mt-3 text-center">
                     <button
                         onClick={onCompare}
-                        className="inline-flex items-center gap-2 px-8 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20"
+                        className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20 text-sm"
                     >
-                        <span className="material-symbols-outlined">compare_arrows</span>
+                        <span className="material-symbols-outlined text-lg">compare_arrows</span>
                         Compare Now ({filledCount} models)
                     </button>
                 </div>

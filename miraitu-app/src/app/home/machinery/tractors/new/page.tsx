@@ -413,7 +413,7 @@ export default function NewTractorsPage() {
     const slides = mahindraSlides.map(s => ({ ...s, ctaAction: scrollToListing }));
 
     return (
-        <div className="px-6">
+        <div className="px-3 sm:px-6">
             <div className="mx-auto max-w-[1280px]">
                 <MachinerySubNav category="tractors" currentAction="new" />
 
@@ -495,6 +495,7 @@ export default function NewTractorsPage() {
                     items={compareItems}
                     onRemove={removeFromCompare}
                     onCompare={() => setShowCompareModal(true)}
+                    onSlotClick={scrollToListing}
                 />
 
                 {/* Listing */}

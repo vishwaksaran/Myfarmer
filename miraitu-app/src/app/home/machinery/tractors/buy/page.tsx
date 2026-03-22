@@ -113,7 +113,7 @@ export default function BuyTractorsPage() {
         : usedTractors.filter(t => t.condition === selectedCondition);
 
     return (
-        <div className="px-6">
+        <div className="px-3 sm:px-6">
             <div className="mx-auto max-w-[1280px]">
                 <MachinerySubNav category="tractors" currentAction="buy" />
                 {/* Page Header */}

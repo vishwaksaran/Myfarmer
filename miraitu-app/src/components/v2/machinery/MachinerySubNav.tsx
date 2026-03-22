@@ -88,7 +88,7 @@ export default function MachinerySubNav({ category, currentAction }: MachinerySu
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex items-center gap-2 p-1.5 bg-gray-100 dark:bg-gray-800/60 rounded-2xl">
+            <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 bg-gray-100 dark:bg-gray-800/60 rounded-2xl overflow-x-auto">
                 {navItems.map((item) => {
                     const isActive = item.key === currentAction;
 
@@ -97,20 +97,20 @@ export default function MachinerySubNav({ category, currentAction }: MachinerySu
                             key={item.key}
                             href={item.href}
                             className={`
-                                flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200
+                                flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 min-w-0
                                 ${isActive
                                     ? `${item.activeBg} ${item.activeText} ring-2 ${item.activeRing} shadow-sm`
                                     : `text-gray-500 dark:text-gray-400 ${item.hoverBg} hover:text-gray-700 dark:hover:text-gray-200`
                                 }
                             `}
                         >
-                            <div className={`w-7 h-7 rounded-lg ${isActive ? item.color : 'bg-gray-300 dark:bg-gray-600'} flex items-center justify-center transition-colors duration-200`}>
-                                <span className="material-symbols-outlined text-white text-base">
+                            <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-lg ${isActive ? item.color : 'bg-gray-300 dark:bg-gray-600'} flex items-center justify-center shrink-0 transition-colors duration-200`}>
+                                <span className="material-symbols-outlined text-white text-sm sm:text-base">
                                     {item.icon}
                                 </span>
                             </div>
                             <span className="hidden sm:inline">{item.label}</span>
-                            <span className="sm:hidden">{item.shortLabel}</span>
+                            <span className="sm:hidden text-xs">{item.shortLabel}</span>
                         </Link>
                     );
                 })}
