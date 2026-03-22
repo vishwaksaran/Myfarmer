@@ -165,8 +165,6 @@ const stateEnrolmentLinks: Record<string, string> = {
 
 const stateSchemePortals: Record<string, string> = {
     'Andhra Pradesh': 'https://apseeds.ap.gov.in/Website/Schemes.aspx#:~:text=Supply%20Under%20Different%20Schemes&text=National%20Food%20Security%20Mission%20(NFSM,the%20farmers%20(Non%2Dplan)',
-    'Arunachal Pradesh': 'https://arunachalipr.gov.in/index.php/atma-nirbhar-krishi-yojana-anky/',
-    'Assam': 'https://diragri.assam.gov.in/portlet-innerpage/schemes-and-program-0',
     'Telangana': 'https://www.rythubharosa.telangana.gov.in/Default_Home.aspx',
     'Karnataka': 'https://fruitspmk.karnataka.gov.in/',
     'Tamil Nadu': 'https://www.tnagrisnet.tn.gov.in/',
@@ -179,13 +177,7 @@ const stateSchemePortals: Record<string, string> = {
     'Haryana': 'https://agriharyana.gov.in/',
     'Punjab': 'https://agri.punjab.gov.in/',
     'Goa': 'https://gscbgoa.bank.in/agriculture-scheme/',
-    'Manipur': 'https://agrimanipur.mn.gov.in/central-plan-schemes/',
-    'Meghalaya': 'https://megagriculture.gov.in/',
-    'Mizoram': 'https://agriculturemizoram.nic.in/',
-    'Nagaland': 'https://agriculture.nagaland.gov.in/rkvy/',
     'Odisha': 'https://sugam.odisha.gov.in/website/home/scheme-list',
-    'Sikkim': 'https://agri.sikkim.gov.in/',
-    'Tripura': 'https://agri.tripura.gov.in/programmes-schemes',
     'Uttarakhand': 'https://agriculture.uk.gov.in/schemes-programmes/',
     'West Bengal': 'https://web.umang.gov.in/landing/scheme/detail/amar-fasal-amar-gola_afag.html',
     'Kerala': 'https://keralaagriculture.gov.in/',
