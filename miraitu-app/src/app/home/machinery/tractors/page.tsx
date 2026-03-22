@@ -192,7 +192,7 @@ const usedTractors = [
         category: 'Tractor',
         specs: '48 HP • 4WD • Single Owner',
         price: '₹3,80,000',
-        image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=400&h=300&fit=crop',
+        image: '/images/machinery/banners/swaraj-target.jpg',
         brand: 'Swaraj',
         hp: '48',
         year: '2018',

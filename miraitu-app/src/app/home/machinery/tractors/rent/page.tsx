@@ -48,7 +48,7 @@ const rentalListings = [
         brand: 'Swaraj',
         type: 'Farm Tractor',
         location: 'Belgaum, Karnataka',
-        image: 'https://images.unsplash.com/photo-1592805723127-004b174a1d03?w=400&h=300&fit=crop',
+        image: '/images/machinery/banners/swaraj-target.jpg',
         hourlyRate: '₹400',
         dailyRate: '₹2,500',
         seasonalRate: '₹28,000',

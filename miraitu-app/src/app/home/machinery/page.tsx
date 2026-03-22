@@ -30,10 +30,10 @@ const categories = [
     {
         id: 'small-machineries',
         name: 'Small Machineries',
-        cardTitle: 'Utility',
+        cardTitle: 'Small Machineries',
         cardSubtitle: 'Versatile Solutions',
         description: 'Compact power tillers & cultivators',
-        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCDewDe-oACw29kFZy3tgcKVeVRdUlbqF85J6xRM_D2TUt9pI8eE3Mk1cQm8cOhXe_7PYBiu1G7bNUxm3Zgs3Cv5e6mdJz6i1U0zk4fWnQbrvIZIkokvsKmXF0V6GS5j8J7zwclnMNhGQgKiW1ZGYCVgHbhX4NityattGv-gsZfGqr_AR46LMJiaf1kvzthqfV0FU6B8AwAfogjrC4WUkOdnco_yXBH4rab1N2QeGHrLtVdDd0EAhf0NAuwiWtVEGlVSPc25RHGl8IC',
+        image: 'https://lh3.googleusercontent.com/aida/ADBb0ugaXncWVLGtln1ntuXnGPTMgccdxAjhbGMJxKEnje9Te_AC6Y9F1MfY-jqQ38MTbmtT1vQvP0nDMFNqok5oup8512YCsst6ri2VJhm1KcwGGh4mv9QDczOyDcFb0CIlZ1NZcolBqLgDdHXTJuV5BE6Ek3Ed8wSf_zm1077_PttP_UwCNXjdyFvfyxEYv4H6qXdXWcMwMBpMJXKsdNUHnmagr78aHFyn7Dv1XBAG7lqDWECZwf2Ij6pF2Fuwd8uuRveLX0sJzCtxHA',
         count: 156,
         path: '/home/machinery/small-machineries',
     },
@@ -43,7 +43,7 @@ const categories = [
         cardTitle: 'Implements',
         cardSubtitle: 'Soil Management',
         description: 'Ploughs, harrows & tractor attachments',
-        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDAKtHSKkDfsP8g_voXyzjiyjVc6L4y77SX0g8WY-6LpQ4BFCsYtbPeMG4wwjeIRzljyw-O2apIdmGERVYehyQokii_vMbgPtWdgfmegCU7fB3As4AIqWd4yBb7pxPySTRrNnApp-jx_0bGXeR8wUqTCRDG2HXO-d8GUujpXKpVpieYqvMgkBWNVdAibUPiCMrcq1g6AkwsM859GY1faIhzw2ZhePpoSSlrGy5MoSmJ2a_2VyraUK_vtfRqIx4LAuNiRRcYFlFKhaUl',
+        image: 'https://lh3.googleusercontent.com/aida/ADBb0ug3SbioLuMV28oY2TYrnKCmE7D49aNUR4cuzTgsM4N-wLtwhKZg0KP1GSiQzW3ICVS4Bw0qRQ8q7j37_7m79EwWWa6kYKVW0B8c1HYbZlWDpUhKF3qZZEI16xOr9AxlNs0sWVp7kdShssQDaXQQTiHJI-NGqw-uk6f5BJQJ-cxu2ZJgDYDwLTDEZyymRmsEKFs8jdoJoCZXr91hG-1tNu4tECFkEn8N9B4TLoOWRN3nveKpjbXqs4a_PvOk78_OXSO3ShCmsDjXUg',
         count: 312,
         path: '/home/machinery/implements',
     },
@@ -63,7 +63,7 @@ const categories = [
         cardTitle: 'Agri-Drones',
         cardSubtitle: 'Next-Gen Spraying',
         description: 'Agricultural drones for spraying & monitoring',
-        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBG-VZGRwxK4WnIO-VFz4YRrzuvIkRShtIfax07ltObdtXF2f_owoRc7lFprQcCbZ-mOtbU6p2yC0y4rtrXZ9Gtw3icbHw9Farv4BdvUuE6hJBjasjoLo_zI-lI1Oyf59HHCfvstrwkCr0ZqsVpbjO5LvmUNBEPNtCP8-W5ppy450pMfLkbaT6ObDAgEP7MKc8enMV-0uiWifyOKDY-41WIQVGd6uPGzVf2PK_lm7j9xO09m8mtbqI4123R_lZq8q_mqN6XKrvSxgat',
+        image: 'https://lh3.googleusercontent.com/aida/ADBb0uh1lrHPpPX3S0Vs_IrBhEgW6S3C87vrtJJNGwMGFktzb582Y1FN6HILO1SqTpcW36rE78Sd_ntvmGOqJPyThRU_6BxogbK90XHtiC3RVVPqI1IS6dNjMeFPY7FEm4Ki_jtQpQjICsgC-FSDhmt_oU1TFQPtUBk0uA5ab_unS8EEqMyqrO_WRE8kqcUt4PsXzYkItr3Nc5KlJ5wdHDS3vSWQHa9qZ9o3RWvOuhLxSJ2cMbzH6-JfsykJjK7lf-yd9IvL7OWQzexqTg',
         count: 42,
         path: '/home/machinery/drones',
     },
@@ -98,7 +98,7 @@ const featuredMachinery = [
         category: 'Tractor',
         specs: '48 HP • 3 Cylinder • 2WD',
         price: '₹6,80,000',
-        image: 'https://images.unsplash.com/photo-1592805723127-004b174a1d03?w=400&h=300&fit=crop',
+        image: '/images/machinery/banners/swaraj-target.jpg',
         brand: 'Swaraj',
         hp: '48',
         type: 'new'
@@ -210,10 +210,10 @@ export default function MachineryPage() {
                                     Browse our comprehensive collection of farm equipment and machinery
                                 </p>
                             </div>
-                            <div className="flex items-center gap-3 shrink-0">
+                            <div className="flex flex-wrap items-center gap-3 min-w-0">
                                 <Link
                                     href="/home/machinery/compare"
-                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors"
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors shrink-0"
                                 >
                                     <span className="material-symbols-outlined text-lg">compare_arrows</span>
                                     Compare
@@ -239,7 +239,7 @@ export default function MachineryPage() {
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent" />
 
                                         <div className="absolute inset-x-0 bottom-1 md:bottom-1.5 z-10 p-3 md:p-4">
-                                            <h3 className="text-2xl sm:text-[1.9rem] md:text-[1.75rem] font-black text-white leading-[1.08] tracking-tight drop-shadow pr-1 whitespace-nowrap line-clamp-1">
+                                            <h3 className="text-xl sm:text-2xl md:text-[1.75rem] font-black text-white leading-[1.08] tracking-tight drop-shadow pr-1 line-clamp-2">
                                                 {category.cardTitle}
                                             </h3>
                                             <p className="text-xs md:text-sm text-white/90 leading-tight mt-1 break-words line-clamp-2">

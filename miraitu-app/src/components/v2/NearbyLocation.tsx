@@ -84,21 +84,21 @@ export default function NearbyLocation({ onLocationChange }: NearbyLocationProps
     const displayLocation = location || t(locationKey);
 
     return (
-        <div className="relative" data-no-auth>
+        <div className="relative min-w-0" data-no-auth>
             <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary transition-colors shadow-sm"
+                className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary transition-colors shadow-sm"
             >
-                <span className="material-symbols-outlined text-primary text-xl">
+                <span className="material-symbols-outlined text-primary text-xl shrink-0">
                     {isLoading ? 'sync' : 'location_on'}
                 </span>
-                <div className="text-left">
+                <div className="text-left min-w-0">
                     <p className="text-xs text-gray-500 dark:text-gray-400">{t('nearby.label')}</p>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[150px]">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                         {isLoading ? t('nearby.detecting') : displayLocation}
                     </p>
                 </div>
-                <span className="material-symbols-outlined text-gray-400 text-lg">
+                <span className="material-symbols-outlined text-gray-400 text-lg shrink-0">
                     {showDropdown ? 'expand_less' : 'expand_more'}
                 </span>
             </button>
