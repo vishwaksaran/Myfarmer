@@ -49,20 +49,20 @@ export default function SellCropsListPage() {
                 </div>
 
                 {/* Progress Steps */}
-                <div className="flex items-center justify-center gap-2 md:gap-4 mb-8 md:mb-10 overflow-x-auto">
+                <div className="flex items-center justify-center gap-1 md:gap-4 mb-8 md:mb-10">
                     {['Category', 'Details', 'Photos & Price'].map((stepName, idx) => (
-                        <div key={stepName} className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
-                            <div className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center font-bold text-xs md:text-sm ${step > idx + 1 ? 'bg-green-500 text-white' : step === idx + 1 ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'}`}>
+                        <div key={stepName} className="flex items-center gap-1 md:gap-2">
+                            <div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center font-bold text-[10px] md:text-sm shrink-0 ${step > idx + 1 ? 'bg-green-500 text-white' : step === idx + 1 ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'}`}>
                                 {step > idx + 1 ? (
-                                    <span className="material-symbols-outlined text-base md:text-lg">check</span>
+                                    <span className="material-symbols-outlined text-sm md:text-lg">check</span>
                                 ) : (
                                     idx + 1
                                 )}
                             </div>
-                            <span className={`text-xs md:text-sm font-medium whitespace-nowrap ${step === idx + 1 ? 'text-primary' : 'text-gray-500'}`}>
+                            <span className={`text-[10px] md:text-sm font-medium whitespace-nowrap ${step === idx + 1 ? 'text-primary' : 'text-gray-500'}`}>
                                 {stepName}
                             </span>
-                            {idx < 2 && <div className="w-6 md:w-12 h-0.5 bg-gray-200 dark:bg-gray-700" />}
+                            {idx < 2 && <div className="w-4 md:w-12 h-0.5 bg-gray-200 dark:bg-gray-700 shrink-0" />}
                         </div>
                     ))}
                 </div>
