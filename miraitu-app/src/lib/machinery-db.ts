@@ -4,6 +4,7 @@ export interface MachineryModel {
     id: string;
     brand: string;
     model_name: string;
+    slug: string | null;
     category: string;
     hp: number;
     specs: string;
@@ -13,6 +14,64 @@ export interface MachineryModel {
     image_url: string | null;
     features: Record<string, unknown>;
     is_active: boolean;
+    brand_id: string | null;
+    series: string | null;
+    drive_type: string | null;
+    category_type: string | null;
+    is_popular: boolean;
+    is_latest: boolean;
+    is_upcoming: boolean;
+    launch_year: number | null;
+    cylinders: number | null;
+    engine_cc: number | null;
+    description: string | null;
+}
+
+export interface TractorBrand {
+    id: string;
+    name: string;
+    slug: string;
+    logo_url: string | null;
+    description: string | null;
+    founded_year: number | null;
+    country: string;
+    website_url: string | null;
+    tagline: string | null;
+    is_active: boolean;
+    display_order: number;
+    tier: number;
+    series: string[];
+    key_highlights: Record<string, unknown>;
+    hp_range_min: number | null;
+    hp_range_max: number | null;
+    price_range_min: number | null;
+    price_range_max: number | null;
+    total_models: number;
+    brand_color: string | null;
+}
+
+export interface TractorComparison {
+    id: string;
+    model_a_id: string;
+    model_b_id: string;
+    slug: string;
+    is_popular: boolean;
+    display_order: number;
+    model_a?: MachineryModel;
+    model_b?: MachineryModel;
+}
+
+export interface PromoBanner {
+    id: string;
+    title: string;
+    subtitle: string | null;
+    cta_text: string | null;
+    cta_link: string | null;
+    image_url: string | null;
+    placement: string;
+    display_order: number;
+    bg_color: string;
+    text_color: string;
 }
 
 export interface StatePrice {
@@ -101,4 +160,244 @@ export function estimateOnRoadPrice(
     const rto = Math.round(exShowroom * r.rto);
     const insurance = Math.round(exShowroom * r.insurance);
     return { rto, insurance, handling: r.handling, total: exShowroom + rto + insurance + r.handling };
+}
+
+// ============================================================
+// Brand queries
+// ============================================================
+
+export async function getAllBrands(tier?: number): Promise<TractorBrand[]> {
+    try {
+        let query = supabase
+            .from('tractor_brands')
+            .select('*')
+            .eq('is_active', true)
+            .order('display_order', { ascending: true });
+
+        if (tier) query = query.eq('tier', tier);
+
+        const { data, error } = await query;
+        if (error) throw error;
+        return (data as TractorBrand[]) || [];
+    } catch {
+        return [];
+    }
+}
+
+export async function getBrandBySlug(slug: string): Promise<TractorBrand | null> {
+    try {
+        const { data, error } = await supabase
+            .from('tractor_brands')
+            .select('*')
+            .eq('slug', slug)
+            .eq('is_active', true)
+            .single();
+
+        if (error) return null;
+        return data as TractorBrand;
+    } catch {
+        return null;
+    }
+}
+
+// ============================================================
+// Enhanced model queries
+// ============================================================
+
+export async function getModelsByBrand(brand: string): Promise<MachineryModel[]> {
+    try {
+        const { data, error } = await supabase
+            .from('machinery_models')
+            .select('*')
+            .eq('brand', brand)
+            .eq('is_active', true)
+            .eq('category', 'Tractor')
+            .order('hp', { ascending: true });
+
+        if (error) throw error;
+        return (data as MachineryModel[]) || [];
+    } catch {
+        return [];
+    }
+}
+
+export async function getPopularModels(limit = 12): Promise<MachineryModel[]> {
+    try {
+        const { data, error } = await supabase
+            .from('machinery_models')
+            .select('*')
+            .eq('is_active', true)
+            .eq('is_popular', true)
+            .eq('category', 'Tractor')
+            .order('hp', { ascending: true })
+            .limit(limit);
+
+        if (error) throw error;
+        return (data as MachineryModel[]) || [];
+    } catch {
+        return [];
+    }
+}
+
+export async function getLatestModels(limit = 8): Promise<MachineryModel[]> {
+    try {
+        const { data, error } = await supabase
+            .from('machinery_models')
+            .select('*')
+            .eq('is_active', true)
+            .eq('category', 'Tractor')
+            .order('created_at', { ascending: false })
+            .limit(limit);
+
+        if (error) throw error;
+        return (data as MachineryModel[]) || [];
+    } catch {
+        return [];
+    }
+}
+
+export async function getModelsByBudget(
+    minPrice: number,
+    maxPrice: number
+): Promise<MachineryModel[]> {
+    try {
+        const { data, error } = await supabase
+            .from('machinery_models')
+            .select('*')
+            .eq('is_active', true)
+            .eq('category', 'Tractor')
+            .gte('base_price', minPrice)
+            .lte('base_price', maxPrice)
+            .order('base_price', { ascending: true });
+
+        if (error) throw error;
+        return (data as MachineryModel[]) || [];
+    } catch {
+        return [];
+    }
+}
+
+export async function getModelsByHP(
+    minHP: number,
+    maxHP: number
+): Promise<MachineryModel[]> {
+    try {
+        const { data, error } = await supabase
+            .from('machinery_models')
+            .select('*')
+            .eq('is_active', true)
+            .eq('category', 'Tractor')
+            .gte('hp', minHP)
+            .lte('hp', maxHP)
+            .order('hp', { ascending: true });
+
+        if (error) throw error;
+        return (data as MachineryModel[]) || [];
+    } catch {
+        return [];
+    }
+}
+
+export async function getModelBySlug(slug: string): Promise<MachineryModel | null> {
+    try {
+        const { data, error } = await supabase
+            .from('machinery_models')
+            .select('*')
+            .eq('slug', slug)
+            .eq('is_active', true)
+            .single();
+
+        if (error) return null;
+        return data as MachineryModel;
+    } catch {
+        return null;
+    }
+}
+
+export async function getSimilarModels(
+    modelId: string,
+    brand: string,
+    hp: number,
+    limit = 4
+): Promise<MachineryModel[]> {
+    try {
+        const { data, error } = await supabase
+            .from('machinery_models')
+            .select('*')
+            .eq('is_active', true)
+            .eq('category', 'Tractor')
+            .neq('id', modelId)
+            .gte('hp', hp - 10)
+            .lte('hp', hp + 10)
+            .order('brand', { ascending: true })
+            .limit(limit);
+
+        if (error) throw error;
+        return (data as MachineryModel[]) || [];
+    } catch {
+        return [];
+    }
+}
+
+export async function getModelsByDriveType(driveType: string): Promise<MachineryModel[]> {
+    try {
+        const { data, error } = await supabase
+            .from('machinery_models')
+            .select('*')
+            .eq('is_active', true)
+            .eq('category', 'Tractor')
+            .eq('drive_type', driveType)
+            .order('hp', { ascending: true });
+
+        if (error) throw error;
+        return (data as MachineryModel[]) || [];
+    } catch {
+        return [];
+    }
+}
+
+// ============================================================
+// Comparison queries
+// ============================================================
+
+export async function getPopularComparisons(limit = 10): Promise<TractorComparison[]> {
+    try {
+        const { data, error } = await supabase
+            .from('tractor_comparisons')
+            .select(`
+                *,
+                model_a:model_a_id(id, brand, model_name, slug, hp, specs, base_price, image_url, features, drive_type),
+                model_b:model_b_id(id, brand, model_name, slug, hp, specs, base_price, image_url, features, drive_type)
+            `)
+            .eq('is_popular', true)
+            .order('display_order', { ascending: true })
+            .limit(limit);
+
+        if (error) throw error;
+        return (data as unknown as TractorComparison[]) || [];
+    } catch {
+        return [];
+    }
+}
+
+// ============================================================
+// Banner queries
+// ============================================================
+
+export async function getActiveBanners(placement?: string): Promise<PromoBanner[]> {
+    try {
+        let query = supabase
+            .from('promo_banners')
+            .select('*')
+            .eq('is_active', true)
+            .order('display_order', { ascending: true });
+
+        if (placement) query = query.eq('placement', placement);
+
+        const { data, error } = await query;
+        if (error) throw error;
+        return (data as PromoBanner[]) || [];
+    } catch {
+        return [];
+    }
 }

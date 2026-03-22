@@ -139,12 +139,50 @@ const featuredMachinery = [
 
 
 export default function MachineryPage() {
-    const [selectedCategory, setSelectedCategory] = useState('Tractors');
-    const [hpRange, setHpRange] = useState([50, 1000]);
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [hpRange, setHpRange] = useState([0, 1000]);
     const [selectedBrand, setSelectedBrand] = useState('All Brands');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [modalCategory, setModalCategory] = useState<typeof categories[0] | null>(null);
     const [showFilterModal, setShowFilterModal] = useState(false);
+
+    // Extract unique brands from data
+    const allBrands = Array.from(new Set(featuredMachinery.map((m) => m.brand))).sort();
+
+    // Category name mapping: filter label → data category values
+    const categoryMap: Record<string, string[]> = {
+        Tractors: ['Tractor'],
+        Harvesters: ['Harvester'],
+        JCB: ['JCB'],
+        'Small Machineries': ['Small Machinery'],
+        Implements: ['Implement'],
+        Drones: ['Drone'],
+    };
+
+    const filterCategories = Object.keys(categoryMap);
+
+    const toggleCategory = (cat: string) => {
+        setSelectedCategories((prev) =>
+            prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+        );
+    };
+
+    // Apply filters
+    const filteredMachinery = featuredMachinery.filter((item) => {
+        // Category filter
+        if (selectedCategories.length > 0) {
+            const allowedCategories = selectedCategories.flatMap((c) => categoryMap[c] || []);
+            if (!allowedCategories.includes(item.category)) return false;
+        }
+        // HP filter
+        if (item.hp) {
+            const hp = parseFloat(item.hp);
+            if (!isNaN(hp) && (hp < hpRange[0] || hp > hpRange[1])) return false;
+        }
+        // Brand filter
+        if (selectedBrand !== 'All Brands' && item.brand !== selectedBrand) return false;
+        return true;
+    });
 
     // Manage overflow and hide other elements when modal is open
     useEffect(() => {
@@ -225,7 +263,33 @@ export default function MachineryPage() {
                         {/* Category Cards */}
                         <div className="pb-2">
                             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-                                {categories.map((category) => (
+                                {categories.map((category) => {
+                                    // Tractors navigate directly to their page
+                                    if (category.id === 'tractors') {
+                                        return (
+                                            <Link
+                                                key={category.id}
+                                                href={category.path}
+                                                className="group relative aspect-[4/3] md:aspect-[4/5] w-full overflow-hidden rounded-2xl border border-black/15 bg-gray-200 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                                            >
+                                                <img
+                                                    src={category.image}
+                                                    alt={category.name}
+                                                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent" />
+                                                <div className="absolute inset-x-0 bottom-1 md:bottom-1.5 z-10 p-3 md:p-4">
+                                                    <h3 className="text-xl sm:text-2xl md:text-[1.75rem] font-black text-white leading-[1.08] tracking-tight drop-shadow pr-1 line-clamp-2">
+                                                        {category.cardTitle}
+                                                    </h3>
+                                                    <p className="text-xs md:text-sm text-white/90 leading-tight mt-1 break-words line-clamp-2">
+                                                        {category.cardSubtitle ?? `${category.count}+ units available`}
+                                                    </p>
+                                                </div>
+                                            </Link>
+                                        );
+                                    }
+                                    return (
                                     <button
                                         key={category.id}
                                         onClick={() => setModalCategory(category)}
@@ -247,7 +311,8 @@ export default function MachineryPage() {
                                             </p>
                                         </div>
                                     </button>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
@@ -368,12 +433,12 @@ export default function MachineryPage() {
                                 <div className="mb-6">
                                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Category</label>
                                     <div className="space-y-2">
-                                        {['Tractors', 'Harvesters', 'Tillers'].map((cat) => (
+                                        {filterCategories.map((cat) => (
                                             <label key={cat} className="flex items-center gap-2 cursor-pointer">
                                                 <input
                                                     type="checkbox"
-                                                    checked={selectedCategory === cat}
-                                                    onChange={() => setSelectedCategory(cat)}
+                                                    checked={selectedCategories.includes(cat)}
+                                                    onChange={() => toggleCategory(cat)}
                                                     className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
                                                 />
                                                 <span className="text-sm text-gray-700 dark:text-gray-300">{cat}</span>
@@ -387,10 +452,10 @@ export default function MachineryPage() {
                                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">HP Range</label>
                                     <input
                                         type="range"
-                                        min="50"
+                                        min="0"
                                         max="1000"
                                         value={hpRange[1]}
-                                        onChange={(e) => setHpRange([50, Number(e.target.value)])}
+                                        onChange={(e) => setHpRange([0, Number(e.target.value)])}
                                         className="w-full accent-primary"
                                     />
                                     <div className="flex justify-between text-xs text-gray-500 mt-1">
@@ -408,10 +473,7 @@ export default function MachineryPage() {
                                         className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm"
                                     >
                                         <option>All Brands</option>
-                                        <option>John Deere</option>
-                                        <option>Mahindra</option>
-                                        <option>Claas</option>
-                                        <option>Kubota</option>
+                                        {allBrands.map((b) => <option key={b} value={b}>{b}</option>)}
                                     </select>
                                 </div>
                             </div>
@@ -425,7 +487,7 @@ export default function MachineryPage() {
                                     <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">
                                         Available Machinery
                                     </h2>
-                                    <p className="text-xs md:text-sm text-gray-500">({featuredMachinery.length} results)</p>
+                                    <p className="text-xs md:text-sm text-gray-500">({filteredMachinery.length} results)</p>
                                 </div>
 
                                 <div className="flex items-center gap-2 md:gap-4 shrink-0">
@@ -463,7 +525,7 @@ export default function MachineryPage() {
                             </div>
 
                             <MachineryListing
-                                items={featuredMachinery}
+                                items={filteredMachinery}
                                 type="new"
                                 viewMode={viewMode}
                             />
@@ -495,12 +557,12 @@ export default function MachineryPage() {
                                 <div className="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
                                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Category</label>
                                     <div className="space-y-3">
-                                        {['Tractors', 'Harvesters', 'Tillers'].map((cat) => (
+                                        {filterCategories.map((cat) => (
                                             <label key={cat} className="flex items-center gap-3 cursor-pointer">
                                                 <input
                                                     type="checkbox"
-                                                    checked={selectedCategory === cat}
-                                                    onChange={() => setSelectedCategory(cat)}
+                                                    checked={selectedCategories.includes(cat)}
+                                                    onChange={() => toggleCategory(cat)}
                                                     className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
                                                 />
                                                 <span className="text-sm text-gray-700 dark:text-gray-300">{cat}</span>
@@ -514,10 +576,10 @@ export default function MachineryPage() {
                                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">HP Range</label>
                                     <input
                                         type="range"
-                                        min="50"
+                                        min="0"
                                         max="1000"
                                         value={hpRange[1]}
-                                        onChange={(e) => setHpRange([50, Number(e.target.value)])}
+                                        onChange={(e) => setHpRange([0, Number(e.target.value)])}
                                         className="w-full accent-primary"
                                     />
                                     <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-3">
@@ -535,10 +597,7 @@ export default function MachineryPage() {
                                         className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm"
                                     >
                                         <option>All Brands</option>
-                                        <option>John Deere</option>
-                                        <option>Mahindra</option>
-                                        <option>Claas</option>
-                                        <option>Kubota</option>
+                                        {allBrands.map((b) => <option key={b} value={b}>{b}</option>)}
                                     </select>
                                 </div>
 
@@ -546,8 +605,8 @@ export default function MachineryPage() {
                                 <div className="flex gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
                                     <button
                                         onClick={() => {
-                                            setSelectedCategory('Tractors');
-                                            setHpRange([50, 1000]);
+                                            setSelectedCategories([]);
+                                            setHpRange([0, 1000]);
                                             setSelectedBrand('All Brands');
                                         }}
                                         className="flex-1 px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"

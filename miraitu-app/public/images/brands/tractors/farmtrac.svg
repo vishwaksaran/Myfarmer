@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d4200c"/>
+      <stop offset="100%" stop-color="#a01808"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.25"/>
+      <stop offset="50%" stop-color="white" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="120" height="120" rx="20" fill="url(#bg)"/>
+  <!-- Shine overlay -->
+  <rect width="120" height="120" rx="20" fill="url(#shine)"/>
+  <!-- Subtle tractor watermark -->
+  <path d="M28 62h4v-6h8l4-8h12l2 8h8v6h4v8h-4v4h-8l-2 4h-4l-2-4h-12l-2 4h-4l-2-4h-8v-4h-4z" fill="white" opacity="0.08" transform="translate(12, 8) scale(0.9)"/>
+  <!-- Brand initials -->
+  <text x="60" y="52" text-anchor="middle" dominant-baseline="central" font-family="system-ui,'Segoe UI',Roboto,sans-serif" font-size="40" font-weight="800" fill="white" letter-spacing="1">FT</text>
+  <!-- Brand name -->
+  <rect x="10" y="80" width="100" height="22" rx="6" fill="white" opacity="0.2"/>
+  <text x="60" y="93" text-anchor="middle" dominant-baseline="central" font-family="system-ui,'Segoe UI',Roboto,sans-serif" font-size="11" font-weight="600" fill="white">Farmtrac</text>
+</svg>
