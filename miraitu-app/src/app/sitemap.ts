@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
+import { getAllBrands, getAllModels } from '@/lib/machinery-db';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://www.miraitu.in';
 
     const routes = [
@@ -39,6 +40,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         { path: '/home/machinery/small-machineries/rent', priority: 0.6, changeFrequency: 'weekly' as const },
         { path: '/home/machinery/small-machineries/new', priority: 0.6, changeFrequency: 'weekly' as const },
         { path: '/home/machinery/compare', priority: 0.6, changeFrequency: 'weekly' as const },
+        { path: '/home/machinery/tractors/compare', priority: 0.7, changeFrequency: 'weekly' as const },
         { path: '/home/crops', priority: 0.9, changeFrequency: 'daily' as const },
         { path: '/home/crops/buy', priority: 0.8, changeFrequency: 'daily' as const },
         { path: '/home/crops/buy/grains', priority: 0.7, changeFrequency: 'daily' as const },
@@ -116,10 +118,39 @@ export default function sitemap(): MetadataRoute.Sitemap {
         { path: '/home/become-seller', priority: 0.8, changeFrequency: 'monthly' as const },
     ];
 
-    return routes.map((route) => ({
+    const staticEntries = routes.map((route) => ({
         url: `${baseUrl}${route.path}`,
         lastModified: new Date(),
         changeFrequency: route.changeFrequency,
         priority: route.priority,
     }));
+
+    // Dynamic tractor brand and model pages
+    let dynamicEntries: MetadataRoute.Sitemap = [];
+    try {
+        const [brands, models] = await Promise.all([
+            getAllBrands(),
+            getAllModels('Tractor'),
+        ]);
+
+        const brandEntries: MetadataRoute.Sitemap = brands.map((b) => ({
+            url: `${baseUrl}/home/machinery/tractors/brand/${b.slug}`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly' as const,
+            priority: 0.7,
+        }));
+
+        const modelEntries: MetadataRoute.Sitemap = models.map((m) => ({
+            url: `${baseUrl}/home/machinery/tractors/${m.slug}`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly' as const,
+            priority: 0.6,
+        }));
+
+        dynamicEntries = [...brandEntries, ...modelEntries];
+    } catch {
+        // If DB is unavailable, return only static entries
+    }
+
+    return [...staticEntries, ...dynamicEntries];
 }

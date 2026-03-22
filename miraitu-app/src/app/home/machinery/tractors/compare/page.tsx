@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import type { MachineryModel, TractorBrand, TractorComparison } from '@/lib/machinery-db';
@@ -14,6 +14,22 @@ function formatPrice(price: number): string {
 }
 
 export default function CompareTractorsPage() {
+    return (
+        <Suspense fallback={
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+                <div className="h-40 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse mb-6" />
+                <div className="grid grid-cols-2 gap-6 mb-6">
+                    <div className="h-32 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
+                    <div className="h-32 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
+                </div>
+            </div>
+        }>
+            <CompareContent />
+        </Suspense>
+    );
+}
+
+function CompareContent() {
     const searchParams = useSearchParams();
     const preselected = searchParams.get('model');
     const paramA = searchParams.get('a');
