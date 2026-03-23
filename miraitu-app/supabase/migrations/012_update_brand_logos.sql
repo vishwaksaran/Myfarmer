@@ -1,0 +1,32 @@
+-- Update tractor brand logo_url to use real brand logos
+-- These replace the auto-generated SVG placeholder logos
+
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/mahindra-real.jpg' WHERE slug = 'mahindra';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/swaraj-real.png' WHERE slug = 'swaraj';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/sonalika-real.png' WHERE slug = 'sonalika';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/john-deere-real.png' WHERE slug = 'john-deere';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/massey-ferguson-real.png' WHERE slug = 'massey-ferguson';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/new-holland-real.png' WHERE slug = 'new-holland';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/eicher-real.png' WHERE slug = 'eicher';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/kubota-real.jpg' WHERE slug = 'kubota';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/farmtrac-real.png' WHERE slug = 'farmtrac';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/powertrac-real.jpg' WHERE slug = 'powertrac';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/tafe-real.png' WHERE slug = 'tafe';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/solis-real.png' WHERE slug = 'solis';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/indo-farm-real.png' WHERE slug = 'indo-farm';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/force-real.png' WHERE slug = 'force';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/vst-shakti-real.png' WHERE slug = 'vst-shakti';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/captain-real.png' WHERE slug = 'captain';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/ace-real.png' WHERE slug = 'ace';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/preet-real.jpg' WHERE slug = 'preet';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/escorts-real.jpg' WHERE slug = 'escorts';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/kartar-real.jpg' WHERE slug = 'kartar';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/same-deutz-fahr-real.jpg' WHERE slug = 'same-deutz-fahr';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/trakstar-real.jpg' WHERE slug = 'trakstar';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/standard-real.jpg' WHERE slug = 'standard';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/cooper-real.jpg' WHERE slug = 'cooper';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/autonxt-real.jpg' WHERE slug = 'autonxt';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/hav-real.jpg' WHERE slug = 'hav';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/hindustan-real.webp' WHERE slug = 'hindustan';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/cellestial-real.jpg' WHERE slug = 'cellestial';
+UPDATE public.tractor_brands SET logo_url = '/images/brands/tractors/montra-real.jpg' WHERE slug = 'montra';

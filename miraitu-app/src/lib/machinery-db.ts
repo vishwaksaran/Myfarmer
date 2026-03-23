@@ -166,6 +166,46 @@ export function estimateOnRoadPrice(
 // Brand queries
 // ============================================================
 
+// Real brand logo images (overrides auto-generated SVG placeholders)
+const REAL_LOGO_MAP: Record<string, string> = {
+    'mahindra': '/images/brands/tractors/mahindra-real.jpg',
+    'swaraj': '/images/brands/tractors/swaraj-real.png',
+    'sonalika': '/images/brands/tractors/sonalika-real.png',
+    'john-deere': '/images/brands/tractors/john-deere-real.png',
+    'massey-ferguson': '/images/brands/tractors/massey-ferguson-real.png',
+    'new-holland': '/images/brands/tractors/new-holland-real.png',
+    'eicher': '/images/brands/tractors/eicher-real.png',
+    'kubota': '/images/brands/tractors/kubota-real.jpg',
+    'farmtrac': '/images/brands/tractors/farmtrac-real.png',
+    'powertrac': '/images/brands/tractors/powertrac-real.jpg',
+    'tafe': '/images/brands/tractors/tafe-real.png',
+    'solis': '/images/brands/tractors/solis-real.png',
+    'indo-farm': '/images/brands/tractors/indo-farm-real.png',
+    'force': '/images/brands/tractors/force-real.png',
+    'vst-shakti': '/images/brands/tractors/vst-shakti-real.png',
+    'captain': '/images/brands/tractors/captain-real.png',
+    'ace': '/images/brands/tractors/ace-real.png',
+    'preet': '/images/brands/tractors/preet-real.jpg',
+    'escorts': '/images/brands/tractors/escorts-real.jpg',
+    'kartar': '/images/brands/tractors/kartar-real.jpg',
+    'same-deutz-fahr': '/images/brands/tractors/same-deutz-fahr-real.jpg',
+    'trakstar': '/images/brands/tractors/trakstar-real.jpg',
+    'standard': '/images/brands/tractors/standard-real.jpg',
+    'cooper': '/images/brands/tractors/cooper-real.jpg',
+    'autonxt': '/images/brands/tractors/autonxt-real.jpg',
+    'hav': '/images/brands/tractors/hav-real.jpg',
+    'hindustan': '/images/brands/tractors/hindustan-real.webp',
+    'cellestial': '/images/brands/tractors/cellestial-real.jpg',
+    'montra': '/images/brands/tractors/montra-real.jpg',
+};
+
+function applyRealLogos(brands: TractorBrand[]): TractorBrand[] {
+    return brands.map(b => ({
+        ...b,
+        logo_url: REAL_LOGO_MAP[b.slug] || b.logo_url,
+    }));
+}
+
 export async function getAllBrands(tier?: number): Promise<TractorBrand[]> {
     try {
         let query = supabase
@@ -178,7 +218,7 @@ export async function getAllBrands(tier?: number): Promise<TractorBrand[]> {
 
         const { data, error } = await query;
         if (error) throw error;
-        return (data as TractorBrand[]) || [];
+        return applyRealLogos((data as TractorBrand[]) || []);
     } catch {
         return [];
     }
@@ -194,7 +234,8 @@ export async function getBrandBySlug(slug: string): Promise<TractorBrand | null>
             .single();
 
         if (error) return null;
-        return data as TractorBrand;
+        const brand = data as TractorBrand;
+        return { ...brand, logo_url: REAL_LOGO_MAP[brand.slug] || brand.logo_url };
     } catch {
         return null;
     }

@@ -31,12 +31,12 @@ export default function BrandLogoGrid({ brands }: BrandLogoGridProps) {
                         href={`/home/machinery/tractors/brand/${brand.slug}`}
                         className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:shadow-md hover:border-emerald-200 dark:hover:border-emerald-700 transition-all group"
                     >
-                        <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-700">
+                        <div className="w-14 h-14 rounded-xl flex items-center justify-center overflow-hidden bg-white dark:bg-gray-700 p-1">
                             {brand.logo_url ? (
                                 <img
                                     src={brand.logo_url}
                                     alt={brand.name}
-                                    className="w-10 h-10 object-contain"
+                                    className="w-full h-full object-contain"
                                     loading="lazy"
                                 />
                             ) : (
