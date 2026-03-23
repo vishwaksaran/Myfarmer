@@ -363,8 +363,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const updateProfile = async (data: Partial<UserProfile>): Promise<{ error: string | null }> => {
         if (!user || user.isGuest) return { error: 'Not authenticated' };
 
+        // Ensure we have a valid session before attempting the update
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            // Wait for session to be established after auth state change
+            await new Promise(r => setTimeout(r, 1500));
+            const { data: { session: retrySession } } = await supabase.auth.getSession();
+            if (!retrySession) return { error: 'No active session. Please sign in again.' };
+        }
+
         // Retry logic: AbortError can occur when auth state changes mid-request
-        const MAX_RETRIES = 2;
+        const MAX_RETRIES = 4;
         for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
             try {
                 const { error } = await supabase
@@ -385,9 +394,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             } catch (err: unknown) {
                 const isAbort = err instanceof DOMException && err.name === 'AbortError';
                 if (isAbort && attempt < MAX_RETRIES) {
-                    // Wait briefly then retry — the abort was likely from an auth state change
-                    await new Promise(r => setTimeout(r, 500));
+                    // Exponential backoff — auth state needs time to stabilize
+                    await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
                     continue;
+                }
+                if (isAbort) {
+                    return { error: 'Profile update timed out. Please tap Complete Setup again.' };
                 }
                 const message = err instanceof Error ? err.message : 'Failed to update profile';
                 return { error: message };

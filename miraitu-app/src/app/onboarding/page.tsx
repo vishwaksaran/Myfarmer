@@ -619,6 +619,9 @@ export default function OnboardingPage() {
         setError(null);
 
         try {
+            // Wait briefly for auth state to stabilize after OTP sign-in
+            await new Promise(r => setTimeout(r, 500));
+
             const profileData = {
                 full_name: formData.full_name.trim(),
                 role: formData.role,
@@ -820,9 +823,8 @@ export default function OnboardingPage() {
                                             setFormData(f => ({ ...f, email: e.target.value }));
                                             setEmailError(null);
                                         }}
-                                        className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-white focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-base font-medium placeholder:text-gray-400 ${
-                                            emailError ? 'border-red-300 bg-red-50/50' : 'border-green-200'
-                                        }`}
+                                        className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-white focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-base font-medium placeholder:text-gray-400 ${emailError ? 'border-red-300 bg-red-50/50' : 'border-green-200'
+                                            }`}
                                         placeholder="you@example.com"
                                     />
                                     {emailChecking && (
@@ -846,20 +848,18 @@ export default function OnboardingPage() {
                                         <button
                                             key={role.id}
                                             onClick={() => setFormData(f => ({ ...f, role: role.id, interests: [], farm_size: '', experience_years: '' }))}
-                                            className={`relative flex flex-col items-center gap-1.5 p-4 rounded-xl border-2 transition-all duration-200 group ${
-                                                formData.role === role.id
+                                            className={`relative flex flex-col items-center gap-1.5 p-4 rounded-xl border-2 transition-all duration-200 group ${formData.role === role.id
                                                     ? `${role.border} ${role.activeBg} scale-[1.02] shadow-md`
                                                     : 'border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm'
-                                            }`}
+                                                }`}
                                         >
                                             {formData.role === role.id && (
                                                 <div className="absolute top-1.5 right-1.5">
                                                     <span className="material-symbols-outlined text-[var(--miraitu-primary-green)] text-lg">check_circle</span>
                                                 </div>
                                             )}
-                                            <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${role.color} flex items-center justify-center shadow-sm ${
-                                                formData.role === role.id ? 'shadow-md scale-110' : 'group-hover:scale-105'
-                                            } transition-transform`}>
+                                            <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${role.color} flex items-center justify-center shadow-sm ${formData.role === role.id ? 'shadow-md scale-110' : 'group-hover:scale-105'
+                                                } transition-transform`}>
                                                 <span className="material-symbols-outlined text-white text-xl">{role.icon}</span>
                                             </div>
                                             <span className={`text-xs font-bold ${formData.role === role.id ? 'text-gray-900' : 'text-gray-700'}`}>{role.label}</span>
@@ -876,54 +876,51 @@ export default function OnboardingPage() {
                         const roleInterests = INTERESTS_BY_ROLE[formData.role] || DEFAULT_INTERESTS;
                         const selectedRole = ROLES.find(r => r.id === formData.role);
                         return (
-                        <div className="space-y-6">
-                            <div className="text-center mb-2">
-                                <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${selectedRole?.color || 'from-purple-500 to-indigo-600'} rounded-2xl mb-4 shadow-lg shadow-purple-300/30`}>
-                                    <span className="material-symbols-outlined text-white text-3xl">{selectedRole?.icon || 'interests'}</span>
+                            <div className="space-y-6">
+                                <div className="text-center mb-2">
+                                    <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${selectedRole?.color || 'from-purple-500 to-indigo-600'} rounded-2xl mb-4 shadow-lg shadow-purple-300/30`}>
+                                        <span className="material-symbols-outlined text-white text-3xl">{selectedRole?.icon || 'interests'}</span>
+                                    </div>
+                                    <h1 className="text-2xl md:text-3xl font-black text-[#0f1a11] tracking-tight">
+                                        {selectedRole ? `What interests you as a ${selectedRole.label}?` : 'What interests you?'}
+                                    </h1>
+                                    <p className="text-[#53935d] mt-1 text-sm">Select all that apply — we&apos;ll personalize your experience</p>
                                 </div>
-                                <h1 className="text-2xl md:text-3xl font-black text-[#0f1a11] tracking-tight">
-                                    {selectedRole ? `What interests you as a ${selectedRole.label}?` : 'What interests you?'}
-                                </h1>
-                                <p className="text-[#53935d] mt-1 text-sm">Select all that apply — we&apos;ll personalize your experience</p>
-                            </div>
 
-                            <div className="skeuo-card rounded-2xl p-5">
-                                <div className="flex items-center justify-between mb-3">
-                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Your Interests</label>
-                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                                        formData.interests.length > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'
-                                    }`}>
-                                        {formData.interests.length} selected
-                                    </span>
-                                </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                                    {roleInterests.map(interest => {
-                                        const isSelected = formData.interests.includes(interest.id);
-                                        return (
-                                            <button
-                                                key={interest.id}
-                                                onClick={() => toggleInterest(interest.id)}
-                                                className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${
-                                                    isSelected
-                                                        ? `border-[var(--miraitu-primary-green)] bg-green-50 shadow-sm`
-                                                        : 'border-gray-100 bg-white hover:border-gray-200'
-                                                }`}
-                                            >
-                                                <div className={`w-8 h-8 rounded-lg ${interest.bg} flex items-center justify-center flex-shrink-0 ${
-                                                    isSelected ? 'scale-110' : ''
-                                                } transition-transform`}>
-                                                    <span className={`material-symbols-outlined ${interest.color} text-lg`}>{interest.icon}</span>
-                                                </div>
-                                                <span className={`text-xs font-bold ${isSelected ? 'text-gray-900' : 'text-gray-600'} text-left leading-tight`}>{interest.label}</span>
-                                                {isSelected && (
-                                                    <span className="material-symbols-outlined text-[var(--miraitu-primary-green)] text-sm ml-auto flex-shrink-0">check</span>
-                                                )}
-                                            </button>
-                                        );
-                                    })}
+                                <div className="skeuo-card rounded-2xl p-5">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Your Interests</label>
+                                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${formData.interests.length > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'
+                                            }`}>
+                                            {formData.interests.length} selected
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                                        {roleInterests.map(interest => {
+                                            const isSelected = formData.interests.includes(interest.id);
+                                            return (
+                                                <button
+                                                    key={interest.id}
+                                                    onClick={() => toggleInterest(interest.id)}
+                                                    className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${isSelected
+                                                            ? `border-[var(--miraitu-primary-green)] bg-green-50 shadow-sm`
+                                                            : 'border-gray-100 bg-white hover:border-gray-200'
+                                                        }`}
+                                                >
+                                                    <div className={`w-8 h-8 rounded-lg ${interest.bg} flex items-center justify-center flex-shrink-0 ${isSelected ? 'scale-110' : ''
+                                                        } transition-transform`}>
+                                                        <span className={`material-symbols-outlined ${interest.color} text-lg`}>{interest.icon}</span>
+                                                    </div>
+                                                    <span className={`text-xs font-bold ${isSelected ? 'text-gray-900' : 'text-gray-600'} text-left leading-tight`}>{interest.label}</span>
+                                                    {isSelected && (
+                                                        <span className="material-symbols-outlined text-[var(--miraitu-primary-green)] text-sm ml-auto flex-shrink-0">check</span>
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
                         );
                     })()}
 
@@ -1040,103 +1037,101 @@ export default function OnboardingPage() {
                     {currentStep === 4 && (() => {
                         const step4 = STEP4_BY_ROLE[formData.role] || DEFAULT_STEP4;
                         return (
-                        <div className="space-y-6">
-                            <div className="text-center mb-2">
-                                <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${step4.headerGradient} rounded-2xl mb-4 shadow-lg ${step4.headerShadow}`}>
-                                    <span className="material-symbols-outlined text-white text-3xl">{step4.headerIcon}</span>
+                            <div className="space-y-6">
+                                <div className="text-center mb-2">
+                                    <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${step4.headerGradient} rounded-2xl mb-4 shadow-lg ${step4.headerShadow}`}>
+                                        <span className="material-symbols-outlined text-white text-3xl">{step4.headerIcon}</span>
+                                    </div>
+                                    <h1 className="text-2xl md:text-3xl font-black text-[#0f1a11] tracking-tight">{step4.title}</h1>
+                                    <p className="text-[#53935d] mt-1 text-sm">{step4.subtitle}</p>
                                 </div>
-                                <h1 className="text-2xl md:text-3xl font-black text-[#0f1a11] tracking-tight">{step4.title}</h1>
-                                <p className="text-[#53935d] mt-1 text-sm">{step4.subtitle}</p>
-                            </div>
 
-                            {/* Scale / Size */}
-                            <div className="skeuo-card rounded-2xl p-5">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-3 block">{step4.scaleLabel} <span className="text-gray-400">(optional)</span></label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {step4.scaleOptions.map(size => (
-                                        <button
-                                            key={size.id}
-                                            onClick={() => setFormData(f => ({ ...f, farm_size: f.farm_size === size.id ? '' : size.id }))}
-                                            className={`flex items-center gap-2.5 p-3 rounded-xl border-2 transition-all duration-200 ${
-                                                formData.farm_size === size.id
-                                                    ? 'border-[var(--miraitu-primary-green)] bg-green-50 shadow-sm'
-                                                    : 'border-gray-100 bg-white hover:border-gray-200'
-                                            }`}
-                                        >
-                                            <span className={`material-symbols-outlined text-lg ${formData.farm_size === size.id ? 'text-[var(--miraitu-primary-green)]' : 'text-gray-400'}`}>{size.icon}</span>
-                                            <span className={`text-xs font-bold ${formData.farm_size === size.id ? 'text-gray-900' : 'text-gray-600'}`}>{size.label}</span>
-                                        </button>
-                                    ))}
+                                {/* Scale / Size */}
+                                <div className="skeuo-card rounded-2xl p-5">
+                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-3 block">{step4.scaleLabel} <span className="text-gray-400">(optional)</span></label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {step4.scaleOptions.map(size => (
+                                            <button
+                                                key={size.id}
+                                                onClick={() => setFormData(f => ({ ...f, farm_size: f.farm_size === size.id ? '' : size.id }))}
+                                                className={`flex items-center gap-2.5 p-3 rounded-xl border-2 transition-all duration-200 ${formData.farm_size === size.id
+                                                        ? 'border-[var(--miraitu-primary-green)] bg-green-50 shadow-sm'
+                                                        : 'border-gray-100 bg-white hover:border-gray-200'
+                                                    }`}
+                                            >
+                                                <span className={`material-symbols-outlined text-lg ${formData.farm_size === size.id ? 'text-[var(--miraitu-primary-green)]' : 'text-gray-400'}`}>{size.icon}</span>
+                                                <span className={`text-xs font-bold ${formData.farm_size === size.id ? 'text-gray-900' : 'text-gray-600'}`}>{size.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Experience */}
-                            <div className="skeuo-card rounded-2xl p-5">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-3 block">{step4.experienceLabel} <span className="text-gray-400">(optional)</span></label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {step4.experienceOptions.map(exp => (
-                                        <button
-                                            key={exp.id}
-                                            onClick={() => setFormData(f => ({ ...f, experience_years: f.experience_years === exp.id ? '' : exp.id }))}
-                                            className={`flex items-center gap-2.5 p-3.5 rounded-xl border-2 transition-all duration-200 ${
-                                                formData.experience_years === exp.id
-                                                    ? 'border-[var(--miraitu-primary-green)] bg-green-50 shadow-sm'
-                                                    : 'border-gray-100 bg-white hover:border-gray-200'
-                                            }`}
-                                        >
-                                            <span className="text-xl">{exp.icon}</span>
-                                            <span className={`text-xs font-bold ${formData.experience_years === exp.id ? 'text-gray-900' : 'text-gray-600'}`}>{exp.label}</span>
-                                        </button>
-                                    ))}
+                                {/* Experience */}
+                                <div className="skeuo-card rounded-2xl p-5">
+                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-3 block">{step4.experienceLabel} <span className="text-gray-400">(optional)</span></label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {step4.experienceOptions.map(exp => (
+                                            <button
+                                                key={exp.id}
+                                                onClick={() => setFormData(f => ({ ...f, experience_years: f.experience_years === exp.id ? '' : exp.id }))}
+                                                className={`flex items-center gap-2.5 p-3.5 rounded-xl border-2 transition-all duration-200 ${formData.experience_years === exp.id
+                                                        ? 'border-[var(--miraitu-primary-green)] bg-green-50 shadow-sm'
+                                                        : 'border-gray-100 bg-white hover:border-gray-200'
+                                                    }`}
+                                            >
+                                                <span className="text-xl">{exp.icon}</span>
+                                                <span className={`text-xs font-bold ${formData.experience_years === exp.id ? 'text-gray-900' : 'text-gray-600'}`}>{exp.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Summary Card */}
-                            <div className="skeuo-card rounded-2xl p-5 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <span className="material-symbols-outlined text-[var(--miraitu-primary-green)] text-lg">preview</span>
-                                    <label className="text-[10px] font-bold text-[var(--miraitu-primary-green)] uppercase tracking-wider">Your Profile Summary</label>
-                                </div>
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-gray-400 text-base">person</span>
-                                        <span className="font-bold text-gray-800">{formData.full_name || '—'}</span>
+                                {/* Summary Card */}
+                                <div className="skeuo-card rounded-2xl p-5 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <span className="material-symbols-outlined text-[var(--miraitu-primary-green)] text-lg">preview</span>
+                                        <label className="text-[10px] font-bold text-[var(--miraitu-primary-green)] uppercase tracking-wider">Your Profile Summary</label>
                                     </div>
-                                    {formData.email && (
+                                    <div className="space-y-2 text-sm">
                                         <div className="flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-gray-400 text-base">mail</span>
-                                            <span className="text-gray-600">{formData.email}</span>
+                                            <span className="material-symbols-outlined text-gray-400 text-base">person</span>
+                                            <span className="font-bold text-gray-800">{formData.full_name || '—'}</span>
                                         </div>
-                                    )}
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-gray-400 text-base">badge</span>
-                                        <span className="text-gray-600 capitalize">{ROLES.find(r => r.id === formData.role)?.label || '—'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-gray-400 text-base">location_on</span>
-                                        <span className="text-gray-600">
-                                            {[formData.farm_location, formData.district, formData.state].filter(Boolean).join(', ') || '—'}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-gray-400 text-base">interests</span>
-                                        <span className="text-gray-600">{formData.interests.length} interest{formData.interests.length !== 1 ? 's' : ''} selected</span>
-                                    </div>
-                                    {formData.farm_size && (
+                                        {formData.email && (
+                                            <div className="flex items-center gap-2">
+                                                <span className="material-symbols-outlined text-gray-400 text-base">mail</span>
+                                                <span className="text-gray-600">{formData.email}</span>
+                                            </div>
+                                        )}
                                         <div className="flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-gray-400 text-base">{step4.headerIcon}</span>
-                                            <span className="text-gray-600">{step4.scaleLabel}: {step4.scaleOptions.find(s => s.id === formData.farm_size)?.label || formData.farm_size}</span>
+                                            <span className="material-symbols-outlined text-gray-400 text-base">badge</span>
+                                            <span className="text-gray-600 capitalize">{ROLES.find(r => r.id === formData.role)?.label || '—'}</span>
                                         </div>
-                                    )}
-                                    {formData.experience_years && (
                                         <div className="flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-gray-400 text-base">timeline</span>
-                                            <span className="text-gray-600">{step4.experienceLabel}: {step4.experienceOptions.find(e => e.id === formData.experience_years)?.label || formData.experience_years}</span>
+                                            <span className="material-symbols-outlined text-gray-400 text-base">location_on</span>
+                                            <span className="text-gray-600">
+                                                {[formData.farm_location, formData.district, formData.state].filter(Boolean).join(', ') || '—'}
+                                            </span>
                                         </div>
-                                    )}
+                                        <div className="flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-gray-400 text-base">interests</span>
+                                            <span className="text-gray-600">{formData.interests.length} interest{formData.interests.length !== 1 ? 's' : ''} selected</span>
+                                        </div>
+                                        {formData.farm_size && (
+                                            <div className="flex items-center gap-2">
+                                                <span className="material-symbols-outlined text-gray-400 text-base">{step4.headerIcon}</span>
+                                                <span className="text-gray-600">{step4.scaleLabel}: {step4.scaleOptions.find(s => s.id === formData.farm_size)?.label || formData.farm_size}</span>
+                                            </div>
+                                        )}
+                                        {formData.experience_years && (
+                                            <div className="flex items-center gap-2">
+                                                <span className="material-symbols-outlined text-gray-400 text-base">timeline</span>
+                                                <span className="text-gray-600">{step4.experienceLabel}: {step4.experienceOptions.find(e => e.id === formData.experience_years)?.label || formData.experience_years}</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
                         );
                     })()}
 
@@ -1190,13 +1185,12 @@ export default function OnboardingPage() {
                         {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map(step => (
                             <div
                                 key={step}
-                                className={`h-2 rounded-full transition-all duration-300 ${
-                                    step === currentStep
+                                className={`h-2 rounded-full transition-all duration-300 ${step === currentStep
                                         ? 'w-8 bg-[var(--miraitu-primary-green)]'
                                         : step < currentStep
                                             ? 'w-2 bg-[var(--miraitu-primary-green)]/60'
                                             : 'w-2 bg-gray-300'
-                                }`}
+                                    }`}
                             />
                         ))}
                     </div>
