@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <!-- Gateway of India - Maharashtra -->
+  <rect width="80" height="80" rx="12" fill="#FFF7ED"/>
+  <!-- Base -->
+  <rect x="18" y="58" width="44" height="4" rx="1" fill="#92400E"/>
+  <!-- Main arch structure -->
+  <rect x="22" y="30" width="8" height="28" rx="1" fill="#B45309"/>
+  <rect x="50" y="30" width="8" height="28" rx="1" fill="#B45309"/>
+  <!-- Top beam -->
+  <rect x="20" y="26" width="40" height="6" rx="1" fill="#D97706"/>
+  <!-- Central arch -->
+  <path d="M30 58 V42 Q40 32 50 42 V58" fill="#FDE68A" stroke="#B45309" stroke-width="1.5"/>
+  <!-- Dome/tower top -->
+  <rect x="32" y="18" width="16" height="8" rx="1" fill="#D97706"/>
+  <rect x="35" y="14" width="10" height="6" rx="2" fill="#B45309"/>
+  <!-- Small domes -->
+  <circle cx="37" cy="13" r="3" fill="#D97706"/>
+  <circle cx="43" cy="13" r="3" fill="#D97706"/>
+  <!-- Windows -->
+  <rect x="24" y="35" width="4" height="5" rx="1" fill="#FDE68A"/>
+  <rect x="24" y="44" width="4" height="5" rx="1" fill="#FDE68A"/>
+  <rect x="52" y="35" width="4" height="5" rx="1" fill="#FDE68A"/>
+  <rect x="52" y="44" width="4" height="5" rx="1" fill="#FDE68A"/>
+</svg>

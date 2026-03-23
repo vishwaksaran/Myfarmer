@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <!-- Meenakshi Temple - Tamil Nadu -->
+  <rect width="80" height="80" rx="12" fill="#FEF3C7"/>
+  <!-- Base -->
+  <rect x="16" y="58" width="48" height="4" rx="1" fill="#92400E"/>
+  <!-- Main tower (gopuram) -->
+  <path d="M28 58 L28 22 Q40 8 52 22 L52 58" fill="#D97706"/>
+  <!-- Tier lines -->
+  <line x1="28" y1="50" x2="52" y2="50" stroke="#B45309" stroke-width="1"/>
+  <line x1="29" y1="44" x2="51" y2="44" stroke="#B45309" stroke-width="1"/>
+  <line x1="30" y1="38" x2="50" y2="38" stroke="#B45309" stroke-width="1"/>
+  <line x1="32" y1="32" x2="48" y2="32" stroke="#B45309" stroke-width="1"/>
+  <line x1="35" y1="26" x2="45" y2="26" stroke="#B45309" stroke-width="1"/>
+  <!-- Decorative elements -->
+  <circle cx="34" cy="47" r="1.5" fill="#EF4444"/>
+  <circle cx="40" cy="47" r="1.5" fill="#3B82F6"/>
+  <circle cx="46" cy="47" r="1.5" fill="#22C55E"/>
+  <circle cx="34" cy="41" r="1.5" fill="#3B82F6"/>
+  <circle cx="40" cy="41" r="1.5" fill="#EF4444"/>
+  <circle cx="46" cy="41" r="1.5" fill="#A855F7"/>
+  <circle cx="36" cy="35" r="1.5" fill="#22C55E"/>
+  <circle cx="40" cy="35" r="1.5" fill="#EAB308"/>
+  <circle cx="44" cy="35" r="1.5" fill="#EF4444"/>
+  <circle cx="38" cy="29" r="1.2" fill="#EF4444"/>
+  <circle cx="42" cy="29" r="1.2" fill="#3B82F6"/>
+  <!-- Door -->
+  <path d="M36 58 V50 Q40 46 44 50 V58" fill="#92400E"/>
+  <!-- Top finial -->
+  <ellipse cx="40" cy="14" rx="3" ry="4" fill="#B45309"/>
+  <!-- Side towers -->
+  <rect x="16" y="42" width="10" height="16" rx="1" fill="#EAB308"/>
+  <path d="M16 42 Q21 34 26 42" fill="#D97706"/>
+  <rect x="54" y="42" width="10" height="16" rx="1" fill="#EAB308"/>
+  <path d="M54 42 Q59 34 64 42" fill="#D97706"/>
+</svg>

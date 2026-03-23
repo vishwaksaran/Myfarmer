@@ -105,11 +105,22 @@ export default function TractorHubPage({ brands, popularModels, latestModels, al
                             href={`/home/machinery/tractors/brand/${brand.slug}`}
                             className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 hover:shadow-md hover:border-emerald-200 dark:hover:border-emerald-700 transition-all group"
                         >
-                            <div
-                                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                                style={{ backgroundColor: brand.brand_color || '#16a34a' }}
-                            >
-                                {brand.name.charAt(0)}
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden bg-white dark:bg-gray-700">
+                                {brand.logo_url ? (
+                                    <img
+                                        src={brand.logo_url}
+                                        alt={brand.name}
+                                        className="w-full h-full object-contain p-1"
+                                        loading="lazy"
+                                    />
+                                ) : (
+                                    <div
+                                        className="w-full h-full flex items-center justify-center text-white font-bold text-sm rounded-full"
+                                        style={{ backgroundColor: brand.brand_color || '#16a34a' }}
+                                    >
+                                        {brand.name.charAt(0)}
+                                    </div>
+                                )}
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="font-semibold text-sm text-gray-900 dark:text-white group-hover:text-emerald-600 transition-colors">{brand.name} Tractors</p>

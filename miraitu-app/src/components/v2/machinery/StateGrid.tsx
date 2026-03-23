@@ -1,20 +1,21 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 
 const STATES = [
-    { name: 'Maharashtra', slug: 'maharashtra', icon: '🏛️' },
-    { name: 'Uttar Pradesh', slug: 'uttar-pradesh', icon: '🕌' },
-    { name: 'Madhya Pradesh', slug: 'madhya-pradesh', icon: '🐅' },
-    { name: 'Punjab', slug: 'punjab', icon: '🌾' },
-    { name: 'Rajasthan', slug: 'rajasthan', icon: '🏰' },
-    { name: 'Haryana', slug: 'haryana', icon: '🏗️' },
-    { name: 'Gujarat', slug: 'gujarat', icon: '🦁' },
-    { name: 'Karnataka', slug: 'karnataka', icon: '🏯' },
-    { name: 'Tamil Nadu', slug: 'tamil-nadu', icon: '🛕' },
-    { name: 'Bihar', slug: 'bihar', icon: '📿' },
-    { name: 'Andhra Pradesh', slug: 'andhra-pradesh', icon: '⛵' },
-    { name: 'Telangana', slug: 'telangana', icon: '🏙️' },
+    { name: 'Maharashtra', slug: 'maharashtra', image: '/images/states/maharashtra.svg' },
+    { name: 'Uttar Pradesh', slug: 'uttar-pradesh', image: '/images/states/uttar-pradesh.svg' },
+    { name: 'Madhya Pradesh', slug: 'madhya-pradesh', image: '/images/states/madhya-pradesh.svg' },
+    { name: 'Punjab', slug: 'punjab', image: '/images/states/punjab.svg' },
+    { name: 'Rajasthan', slug: 'rajasthan', image: '/images/states/rajasthan.svg' },
+    { name: 'Haryana', slug: 'haryana', image: '/images/states/haryana.svg' },
+    { name: 'Gujarat', slug: 'gujarat', image: '/images/states/gujarat.svg' },
+    { name: 'Karnataka', slug: 'karnataka', image: '/images/states/karnataka.svg' },
+    { name: 'Tamil Nadu', slug: 'tamil-nadu', image: '/images/states/tamil-nadu.svg' },
+    { name: 'Bihar', slug: 'bihar', image: '/images/states/bihar.svg' },
+    { name: 'Andhra Pradesh', slug: 'andhra-pradesh', image: '/images/states/andhra-pradesh.svg' },
+    { name: 'Telangana', slug: 'telangana', image: '/images/states/telangana.svg' },
 ];
 
 export default function StateGrid() {
@@ -34,7 +35,13 @@ export default function StateGrid() {
                         href={`/home/machinery/tractors?state=${state.slug}`}
                         className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:border-emerald-200 dark:hover:border-emerald-700 hover:shadow-md transition-all group"
                     >
-                        <span className="text-2xl">{state.icon}</span>
+                        <Image
+                            src={state.image}
+                            alt={state.name}
+                            width={40}
+                            height={40}
+                            className="rounded-lg"
+                        />
                         <span className="text-xs font-medium text-gray-700 dark:text-gray-300 text-center leading-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                             {state.name}
                         </span>

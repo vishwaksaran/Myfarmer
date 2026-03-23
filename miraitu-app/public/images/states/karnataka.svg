@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <!-- Vidhana Soudha - Karnataka -->
+  <rect width="80" height="80" rx="12" fill="#ECFDF5"/>
+  <!-- Base platform -->
+  <rect x="10" y="58" width="60" height="4" rx="1" fill="#6B7280"/>
+  <rect x="14" y="54" width="52" height="6" rx="1" fill="#9CA3AF"/>
+  <!-- Main building -->
+  <rect x="18" y="36" width="44" height="18" rx="1" fill="#D1D5DB"/>
+  <!-- Pillars -->
+  <rect x="22" y="38" width="3" height="16" rx="0.5" fill="#E5E7EB"/>
+  <rect x="30" y="38" width="3" height="16" rx="0.5" fill="#E5E7EB"/>
+  <rect x="38" y="38" width="3" height="16" rx="0.5" fill="#E5E7EB"/>
+  <rect x="46" y="38" width="3" height="16" rx="0.5" fill="#E5E7EB"/>
+  <rect x="54" y="38" width="3" height="16" rx="0.5" fill="#E5E7EB"/>
+  <!-- Top horizontal -->
+  <rect x="16" y="32" width="48" height="4" rx="1" fill="#9CA3AF"/>
+  <!-- Central dome -->
+  <path d="M32 32 Q40 14 48 32" fill="#6B7280"/>
+  <rect x="38" y="14" width="4" height="6" rx="1" fill="#4B5563"/>
+  <!-- Side domes -->
+  <path d="M18 32 Q23 24 28 32" fill="#9CA3AF"/>
+  <path d="M52 32 Q57 24 62 32" fill="#9CA3AF"/>
+  <!-- Flag -->
+  <line x1="40" y1="14" x2="40" y2="8" stroke="#4B5563" stroke-width="1"/>
+  <rect x="40" y="8" width="6" height="4" rx="0.5" fill="#EF4444"/>
+</svg>

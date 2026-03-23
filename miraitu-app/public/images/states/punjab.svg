@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <!-- Wheat/Agriculture - Punjab -->
+  <rect width="80" height="80" rx="12" fill="#F0FDF4"/>
+  <!-- Wheat stalks -->
+  <!-- Left stalk -->
+  <line x1="28" y1="62" x2="28" y2="20" stroke="#16A34A" stroke-width="2"/>
+  <ellipse cx="24" cy="22" rx="3" ry="6" fill="#EAB308" transform="rotate(-15 24 22)"/>
+  <ellipse cx="22" cy="30" rx="2.5" ry="5" fill="#EAB308" transform="rotate(-20 22 30)"/>
+  <ellipse cx="32" cy="24" rx="3" ry="6" fill="#EAB308" transform="rotate(15 32 24)"/>
+  <ellipse cx="34" cy="32" rx="2.5" ry="5" fill="#EAB308" transform="rotate(20 34 32)"/>
+  <ellipse cx="28" cy="18" rx="2.5" ry="5" fill="#EAB308"/>
+  <!-- Center stalk -->
+  <line x1="40" y1="62" x2="40" y2="16" stroke="#16A34A" stroke-width="2"/>
+  <ellipse cx="36" cy="18" rx="3" ry="6" fill="#CA8A04" transform="rotate(-15 36 18)"/>
+  <ellipse cx="34" cy="26" rx="2.5" ry="5" fill="#CA8A04" transform="rotate(-20 34 26)"/>
+  <ellipse cx="44" cy="20" rx="3" ry="6" fill="#CA8A04" transform="rotate(15 44 20)"/>
+  <ellipse cx="46" cy="28" rx="2.5" ry="5" fill="#CA8A04" transform="rotate(20 46 28)"/>
+  <ellipse cx="40" cy="14" rx="2.5" ry="5" fill="#CA8A04"/>
+  <!-- Right stalk -->
+  <line x1="52" y1="62" x2="52" y2="20" stroke="#16A34A" stroke-width="2"/>
+  <ellipse cx="48" cy="22" rx="3" ry="6" fill="#EAB308" transform="rotate(-15 48 22)"/>
+  <ellipse cx="46" cy="30" rx="2.5" ry="5" fill="#EAB308" transform="rotate(-20 46 30)"/>
+  <ellipse cx="56" cy="24" rx="3" ry="6" fill="#EAB308" transform="rotate(15 56 24)"/>
+  <ellipse cx="58" cy="32" rx="2.5" ry="5" fill="#EAB308" transform="rotate(20 58 32)"/>
+  <ellipse cx="52" cy="18" rx="2.5" ry="5" fill="#EAB308"/>
+  <!-- Leaves -->
+  <path d="M28 45 Q20 42 18 48" stroke="#16A34A" stroke-width="1.5" fill="#22C55E" opacity="0.6"/>
+  <path d="M40 40 Q48 37 50 43" stroke="#16A34A" stroke-width="1.5" fill="#22C55E" opacity="0.6"/>
+  <path d="M52 48 Q60 45 62 51" stroke="#16A34A" stroke-width="1.5" fill="#22C55E" opacity="0.6"/>
+</svg>

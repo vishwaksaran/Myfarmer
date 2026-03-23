@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <!-- Mahabodhi Temple - Bihar -->
+  <rect width="80" height="80" rx="12" fill="#FEF9C3"/>
+  <!-- Base -->
+  <rect x="20" y="58" width="40" height="4" rx="1" fill="#854D0E"/>
+  <!-- Main spire -->
+  <rect x="32" y="28" width="16" height="30" rx="1" fill="#CA8A04"/>
+  <!-- Spire taper -->
+  <path d="M32 28 L40 8 L48 28" fill="#EAB308"/>
+  <!-- Finial -->
+  <circle cx="40" cy="8" r="2" fill="#A16207"/>
+  <line x1="40" y1="6" x2="40" y2="3" stroke="#854D0E" stroke-width="1.5"/>
+  <!-- Tier decorations on spire -->
+  <line x1="34" y1="25" x2="46" y2="25" stroke="#A16207" stroke-width="0.8"/>
+  <line x1="35" y1="22" x2="45" y2="22" stroke="#A16207" stroke-width="0.8"/>
+  <line x1="36" y1="19" x2="44" y2="19" stroke="#A16207" stroke-width="0.8"/>
+  <line x1="37" y1="16" x2="43" y2="16" stroke="#A16207" stroke-width="0.8"/>
+  <!-- Small niches -->
+  <rect x="35" y="32" width="4" height="5" rx="1" fill="#FDE68A"/>
+  <rect x="41" y="32" width="4" height="5" rx="1" fill="#FDE68A"/>
+  <rect x="35" y="40" width="4" height="5" rx="1" fill="#FDE68A"/>
+  <rect x="41" y="40" width="4" height="5" rx="1" fill="#FDE68A"/>
+  <!-- Door -->
+  <path d="M37 58 V50 Q40 46 43 50 V58" fill="#854D0E"/>
+  <!-- Side smaller spires -->
+  <rect x="22" y="40" width="8" height="18" rx="1" fill="#EAB308"/>
+  <path d="M22 40 L26 28 L30 40" fill="#CA8A04"/>
+  <rect x="50" y="40" width="8" height="18" rx="1" fill="#EAB308"/>
+  <path d="M50 40 L54 28 L58 40" fill="#CA8A04"/>
+  <!-- Bodhi tree hint -->
+  <circle cx="65" cy="50" r="6" fill="#22C55E" opacity="0.4"/>
+  <line x1="65" y1="56" x2="65" y2="62" stroke="#854D0E" stroke-width="1.5"/>
+</svg>
