@@ -6,12 +6,8 @@ import { useParams } from 'next/navigation';
 import type { MachineryModel, TractorBrand } from '@/lib/machinery-db';
 import { fetchModelBySlug, fetchSimilarModels, fetchBrandBySlug, fetchBrands } from '@/app/actions/tractors';
 import SpecsAccordion from '@/components/v2/machinery/SpecsAccordion';
+import CheckPriceModal from '@/components/v2/machinery/CheckPriceModal';
 import { getTractorImageUrl } from '@/lib/tractor-images';
-
-function formatPrice(price: number): string {
-    if (price >= 100000) return `₹${(price / 100000).toFixed(2)} Lakh`;
-    return `₹${price.toLocaleString('en-IN')}`;
-}
 
 export default function TractorDetailPage() {
     const params = useParams();
@@ -23,6 +19,8 @@ export default function TractorDetailPage() {
     const [allBrands, setAllBrands] = useState<TractorBrand[]>([]);
     const [loading, setLoading] = useState(true);
     const [showFullDesc, setShowFullDesc] = useState(false);
+    const [priceModalOpen, setPriceModalOpen] = useState(false);
+    const [priceModalTractor, setPriceModalTractor] = useState('');
 
     useEffect(() => {
         let cancelled = false;
@@ -186,9 +184,13 @@ export default function TractorDetailPage() {
                                 </h1>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{model.specs}</p>
 
-                                <div className="flex items-center gap-3 mt-3">
-                                    <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{formatPrice(model.base_price)}</span>
-                                    <span className="text-xs text-gray-400">Ex-showroom price</span>
+                                <div className="mt-3">
+                                    <button
+                                        onClick={() => { setPriceModalTractor(`${model.brand} ${model.model_name}`); setPriceModalOpen(true); }}
+                                        className="px-6 py-2 bg-emerald-500 text-white text-sm font-bold rounded-lg hover:bg-emerald-600 transition-colors"
+                                    >
+                                        Check Price
+                                    </button>
                                 </div>
 
                                 {/* Action buttons */}
@@ -275,10 +277,17 @@ export default function TractorDetailPage() {
                                             <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
                                                 <img src={getTractorImageUrl(m.image_url, m.brand, m.model_name, m.slug)} alt={`${m.brand} ${m.model_name}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
                                             </div>
-                                            <div className="p-3">
+                                            <div className="p-3 pb-1">
                                                 <h3 className="font-semibold text-sm text-gray-900 dark:text-white truncate">{m.brand} {m.model_name}</h3>
                                                 <p className="text-xs text-gray-500">{m.hp} HP • {m.drive_type || '2WD'}</p>
-                                                <p className="text-sm font-bold text-emerald-600 mt-1">{formatPrice(m.base_price)}</p>
+                                            </div>
+                                            <div className="px-3 pb-3 pt-1">
+                                                <button
+                                                    onClick={(e) => { e.preventDefault(); setPriceModalTractor(`${m.brand} ${m.model_name}`); setPriceModalOpen(true); }}
+                                                    className="w-full py-1.5 bg-emerald-500 text-white text-xs font-bold rounded-lg hover:bg-emerald-600 transition-colors"
+                                                >
+                                                    Check Price
+                                                </button>
                                             </div>
                                         </Link>
                                     ))}
@@ -341,7 +350,7 @@ export default function TractorDetailPage() {
                                         ['Brakes', f.brakes],
                                         ['Fuel Type', model.fuel_type],
                                         ['Warranty', `${model.warranty_years} Years`],
-                                        ['Price', formatPrice(model.base_price)],
+
                                     ].filter(([, v]) => v).map(([label, value], i) => (
                                         <tr key={i} className={i % 2 === 0 ? 'bg-gray-50 dark:bg-gray-700/30' : ''}>
                                             <td className="py-2 px-2 text-gray-500 dark:text-gray-400">{String(label)}</td>
@@ -400,7 +409,7 @@ export default function TractorDetailPage() {
                                         </div>
                                         <div className="min-w-0">
                                             <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{m.brand} {m.model_name}</p>
-                                            <p className="text-[10px] text-gray-500">{m.hp} HP • {formatPrice(m.base_price)}</p>
+                                            <p className="text-[10px] text-gray-500">{m.hp} HP • {m.drive_type || '2WD'}</p>
                                         </div>
                                     </Link>
                                 ))}
@@ -429,6 +438,11 @@ export default function TractorDetailPage() {
                 </div>
             </div>
 
+            <CheckPriceModal
+                isOpen={priceModalOpen}
+                onClose={() => setPriceModalOpen(false)}
+                tractorName={priceModalTractor}
+            />
         </>
     );
 }

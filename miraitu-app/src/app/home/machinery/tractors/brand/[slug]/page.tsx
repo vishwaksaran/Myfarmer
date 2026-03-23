@@ -12,12 +12,8 @@ import {
     fetchBanners,
 } from '@/app/actions/tractors';
 import PromoBanner from '@/components/v2/machinery/PromoBanner';
+import CheckPriceModal from '@/components/v2/machinery/CheckPriceModal';
 import { getTractorImageUrl } from '@/lib/tractor-images';
-
-function formatPrice(price: number): string {
-    if (price >= 100000) return `₹${(price / 100000).toFixed(2)} Lakh`;
-    return `₹${price.toLocaleString('en-IN')}`;
-}
 
 export default function BrandPage() {
     const params = useParams();
@@ -31,6 +27,8 @@ export default function BrandPage() {
     const [loading, setLoading] = useState(true);
     const [showFullDesc, setShowFullDesc] = useState(false);
     const [activeSeries, setActiveSeries] = useState<string | null>(null);
+    const [priceModalOpen, setPriceModalOpen] = useState(false);
+    const [priceModalTractor, setPriceModalTractor] = useState('');
 
     useEffect(() => {
         let cancelled = false;
@@ -133,7 +131,7 @@ export default function BrandPage() {
                             <p className="text-[10px] text-white/70 uppercase">HP Range</p>
                         </div>
                         <div className="bg-white/10 rounded-lg p-3 text-center">
-                            <p className="text-lg font-bold text-white">{brand.price_range_min ? formatPrice(brand.price_range_min) : 'N/A'}</p>
+                            <p className="text-lg font-bold text-white">-</p>
                             <p className="text-[10px] text-white/70 uppercase">Starting From</p>
                         </div>
                         <div className="bg-white/10 rounded-lg p-3 text-center">
@@ -184,26 +182,34 @@ export default function BrandPage() {
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                     {filteredModels.map((m) => (
-                        <Link
+                        <div
                             key={m.id}
-                            href={`/home/machinery/tractors/${m.slug || m.id}`}
                             className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all group"
                         >
-                            <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-700 relative overflow-hidden">
-                                <img src={getTractorImageUrl(m.image_url, m.brand, m.model_name, m.slug)} alt={`${m.brand} ${m.model_name}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
-                                {m.is_popular && (
-                                    <span className="absolute top-2 left-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Popular</span>
-                                )}
-                                {m.drive_type === '4WD' && (
-                                    <span className="absolute top-2 right-2 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">4WD</span>
-                                )}
+                            <Link href={`/home/machinery/tractors/${m.slug || m.id}`}>
+                                <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-700 relative overflow-hidden">
+                                    <img src={getTractorImageUrl(m.image_url, m.brand, m.model_name, m.slug)} alt={`${m.brand} ${m.model_name}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
+                                    {m.is_popular && (
+                                        <span className="absolute top-2 left-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Popular</span>
+                                    )}
+                                    {m.drive_type === '4WD' && (
+                                        <span className="absolute top-2 right-2 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">4WD</span>
+                                    )}
+                                </div>
+                                <div className="p-3 pb-1">
+                                    <h3 className="font-semibold text-sm text-gray-900 dark:text-white truncate">{m.brand} {m.model_name}</h3>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{m.specs}</p>
+                                </div>
+                            </Link>
+                            <div className="px-3 pb-3 pt-1">
+                                <button
+                                    onClick={() => { setPriceModalTractor(`${m.brand} ${m.model_name}`); setPriceModalOpen(true); }}
+                                    className="w-full py-1.5 bg-emerald-500 text-white text-xs font-bold rounded-lg hover:bg-emerald-600 transition-colors"
+                                >
+                                    Check Price
+                                </button>
                             </div>
-                            <div className="p-3">
-                                <h3 className="font-semibold text-sm text-gray-900 dark:text-white truncate">{m.brand} {m.model_name}</h3>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{m.specs}</p>
-                                <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-1">{formatPrice(m.base_price)}</p>
-                            </div>
-                        </Link>
+                        </div>
                     ))}
                 </div>
             </section>
@@ -217,20 +223,26 @@ export default function BrandPage() {
                     <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">Popular {brand.name} Tractors</h2>
                     <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                         {popularModels.map((m) => (
-                            <Link
+                            <div
                                 key={m.id}
-                                href={`/home/machinery/tractors/${m.slug || m.id}`}
                                 className="flex-shrink-0 w-[280px] flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all"
                             >
-                                <div className="w-20 h-16 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
-                                    <img src={getTractorImageUrl(m.image_url, m.brand, m.model_name, m.slug)} alt={m.model_name} className="w-full h-full object-cover" loading="lazy" />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{m.model_name}</p>
-                                    <p className="text-xs text-gray-500">{m.hp} HP • {m.drive_type || '2WD'}</p>
-                                    <p className="text-sm font-bold text-emerald-600 mt-0.5">{formatPrice(m.base_price)}</p>
-                                </div>
-                            </Link>
+                                <Link href={`/home/machinery/tractors/${m.slug || m.id}`} className="flex items-center gap-3 min-w-0">
+                                    <div className="w-20 h-16 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                                        <img src={getTractorImageUrl(m.image_url, m.brand, m.model_name, m.slug)} alt={m.model_name} className="w-full h-full object-cover" loading="lazy" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{m.model_name}</p>
+                                        <p className="text-xs text-gray-500">{m.hp} HP • {m.drive_type || '2WD'}</p>
+                                    </div>
+                                </Link>
+                                <button
+                                    onClick={() => { setPriceModalTractor(`${m.brand} ${m.model_name}`); setPriceModalOpen(true); }}
+                                    className="ml-auto flex-shrink-0 px-3 py-1.5 bg-emerald-500 text-white text-xs font-bold rounded-lg hover:bg-emerald-600 transition-colors"
+                                >
+                                    Check Price
+                                </button>
+                            </div>
                         ))}
                     </div>
                 </section>
@@ -242,20 +254,28 @@ export default function BrandPage() {
                     <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">{brand.name} Mini Tractors</h2>
                     <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                         {miniModels.map((m) => (
-                            <Link
+                            <div
                                 key={m.id}
-                                href={`/home/machinery/tractors/${m.slug || m.id}`}
                                 className="flex-shrink-0 w-[200px] bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all group"
                             >
-                                <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-                                    <img src={getTractorImageUrl(m.image_url, m.brand, m.model_name, m.slug)} alt={`${m.brand} ${m.model_name}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
+                                <Link href={`/home/machinery/tractors/${m.slug || m.id}`}>
+                                    <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                                        <img src={getTractorImageUrl(m.image_url, m.brand, m.model_name, m.slug)} alt={`${m.brand} ${m.model_name}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
+                                    </div>
+                                    <div className="p-3 pb-1">
+                                        <h3 className="font-semibold text-sm text-gray-900 dark:text-white truncate">{m.model_name}</h3>
+                                        <p className="text-xs text-gray-500">{m.hp} HP • Compact</p>
+                                    </div>
+                                </Link>
+                                <div className="px-3 pb-3 pt-1">
+                                    <button
+                                        onClick={() => { setPriceModalTractor(`${m.brand} ${m.model_name}`); setPriceModalOpen(true); }}
+                                        className="w-full py-1.5 bg-emerald-500 text-white text-xs font-bold rounded-lg hover:bg-emerald-600 transition-colors"
+                                    >
+                                        Check Price
+                                    </button>
                                 </div>
-                                <div className="p-3">
-                                    <h3 className="font-semibold text-sm text-gray-900 dark:text-white truncate">{m.model_name}</h3>
-                                    <p className="text-xs text-gray-500">{m.hp} HP • Compact</p>
-                                    <p className="text-sm font-bold text-emerald-600 mt-1">{formatPrice(m.base_price)}</p>
-                                </div>
-                            </Link>
+                            </div>
                         ))}
                     </div>
                 </section>
@@ -351,6 +371,12 @@ export default function BrandPage() {
                     </div>
                 </section>
             )}
+
+            <CheckPriceModal
+                isOpen={priceModalOpen}
+                onClose={() => setPriceModalOpen(false)}
+                tractorName={priceModalTractor}
+            />
         </div>
     );
 }
