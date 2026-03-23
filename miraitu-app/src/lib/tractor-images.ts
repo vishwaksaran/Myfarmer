@@ -46,6 +46,56 @@ const GENERAL_TRACTORS = [
     `${PEXELS_BASE}/2253282/pexels-photo-2253282.jpeg?auto=compress&cs=tinysrgb&w=800`,
 ];
 
+// High-resolution hero images for brand pages (1920px wide, close-up tractor shots)
+const HERO_RED_TRACTORS = [
+    `${PEXELS_BASE}/2933243/pexels-photo-2933243.jpeg?auto=compress&cs=tinysrgb&w=1920`,
+    `${PEXELS_BASE}/162371/tractor-round-baler-custom-work-hay-162371.jpeg?auto=compress&cs=tinysrgb&w=1920`,
+    `${PEXELS_BASE}/7532304/pexels-photo-7532304.jpeg?auto=compress&cs=tinysrgb&w=1920`,
+    `${PEXELS_BASE}/5237363/pexels-photo-5237363.jpeg?auto=compress&cs=tinysrgb&w=1920`,
+];
+const HERO_GREEN_TRACTORS = [
+    `${PEXELS_BASE}/2889440/pexels-photo-2889440.jpeg?auto=compress&cs=tinysrgb&w=1920`,
+    `${PEXELS_BASE}/5358849/pexels-photo-5358849.jpeg?auto=compress&cs=tinysrgb&w=1920`,
+    `${PEXELS_BASE}/2889442/pexels-photo-2889442.jpeg?auto=compress&cs=tinysrgb&w=1920`,
+];
+const HERO_BLUE_TRACTORS = [
+    `${PEXELS_BASE}/6020273/pexels-photo-6020273.jpeg?auto=compress&cs=tinysrgb&w=1920`,
+    `${PEXELS_BASE}/4394883/pexels-photo-4394883.jpeg?auto=compress&cs=tinysrgb&w=1920`,
+];
+const HERO_ORANGE_TRACTORS = [
+    `${PEXELS_BASE}/4439573/pexels-photo-4439573.jpeg?auto=compress&cs=tinysrgb&w=1920`,
+    `${PEXELS_BASE}/7791330/pexels-photo-7791330.jpeg?auto=compress&cs=tinysrgb&w=1920`,
+];
+const HERO_GENERAL = [
+    `${PEXELS_BASE}/4093908/pexels-photo-4093908.jpeg?auto=compress&cs=tinysrgb&w=1920`,
+    `${PEXELS_BASE}/2257447/pexels-photo-2257447.jpeg?auto=compress&cs=tinysrgb&w=1920`,
+    `${PEXELS_BASE}/3732481/pexels-photo-3732481.jpeg?auto=compress&cs=tinysrgb&w=1920`,
+    `${PEXELS_BASE}/2253412/pexels-photo-2253412.jpeg?auto=compress&cs=tinysrgb&w=1920`,
+];
+
+const BRAND_HERO_MAP: Record<string, string[]> = {
+    mahindra: HERO_RED_TRACTORS,
+    swaraj: HERO_RED_TRACTORS,
+    'massey ferguson': HERO_RED_TRACTORS,
+    tafe: HERO_RED_TRACTORS,
+    eicher: HERO_RED_TRACTORS,
+    'indo farm': HERO_RED_TRACTORS,
+    captain: HERO_RED_TRACTORS,
+    standard: HERO_RED_TRACTORS,
+    powertrac: HERO_RED_TRACTORS,
+    'john deere': HERO_GREEN_TRACTORS,
+    sonalika: HERO_GREEN_TRACTORS,
+    preet: HERO_GREEN_TRACTORS,
+    digitrac: HERO_GREEN_TRACTORS,
+    'new holland': HERO_BLUE_TRACTORS,
+    force: HERO_BLUE_TRACTORS,
+    farmtrac: HERO_BLUE_TRACTORS,
+    escorts: HERO_BLUE_TRACTORS,
+    kubota: HERO_ORANGE_TRACTORS,
+    ace: HERO_ORANGE_TRACTORS,
+    vst: HERO_ORANGE_TRACTORS,
+};
+
 // Brand → color-appropriate images
 const BRAND_IMAGE_MAP: Record<string, string[]> = {
     mahindra: RED_TRACTORS,
@@ -120,4 +170,17 @@ export function getTractorImageUrl(
 ): string {
     if (imageUrl && imageUrl.trim()) return imageUrl;
     return getTractorImage(brand, modelName, slug);
+}
+
+/**
+ * Returns a high-resolution hero image for brand pages.
+ * Uses brand-color-matched images at 1920px for crisp full-width backgrounds.
+ */
+export function getBrandHeroImage(brandName: string): string {
+    const key = brandName.toLowerCase();
+    const images = BRAND_HERO_MAP[key];
+    if (images) {
+        return images[stableHash(key) % images.length];
+    }
+    return HERO_GENERAL[stableHash(key) % HERO_GENERAL.length];
 }
