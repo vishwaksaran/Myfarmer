@@ -40,12 +40,12 @@ export default function HomePage() {
           <HeroSection />
           <QuickServices />
           <FinanceBanner />
+          <MachinerySection />
           <FPOBanner />
           <FarmerServicesGrid />
           <LivestockMarketplace />
           <VeterinarySection />
           <CTABanner />
-          <MachinerySection />
           <CropMarketplaceSection />
           <StorageSection />
           <ShopSection />
