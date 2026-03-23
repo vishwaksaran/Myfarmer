@@ -182,7 +182,7 @@ const REAL_LOGO_MAP: Record<string, string> = {
     'solis': '/images/brands/tractors/solis-real.png',
     'indo-farm': '/images/brands/tractors/indo-farm-real.png',
     'force': '/images/brands/tractors/force-real.png',
-    'vst-shakti': '/images/brands/tractors/vst-shakti-real.png',
+    'vst-shakti': '/images/brands/tractors/vst-shakti-real.webp',
     'captain': '/images/brands/tractors/captain-real.png',
     'ace': '/images/brands/tractors/ace-real.png',
     'preet': '/images/brands/tractors/preet-real.jpg',
