@@ -34,9 +34,11 @@ export default function BrandPage() {
 
     useEffect(() => {
         let cancelled = false;
+        setLoading(true);
         async function load() {
             const b = await fetchBrandBySlug(slug);
-            if (!b || cancelled) { setLoading(false); return; }
+            if (cancelled) return;
+            if (!b) { setLoading(false); return; }
 
             const [m, brands, comp, ban] = await Promise.all([
                 fetchModelsByBrand(b.name),
@@ -150,8 +152,8 @@ export default function BrandPage() {
                         <button
                             onClick={() => setActiveSeries(null)}
                             className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${!activeSeries
-                                    ? 'bg-emerald-500 text-white'
-                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
+                                ? 'bg-emerald-500 text-white'
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
                                 }`}
                         >
                             All ({models.length})
@@ -163,8 +165,8 @@ export default function BrandPage() {
                                     key={s}
                                     onClick={() => setActiveSeries(s)}
                                     className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${activeSeries === s
-                                            ? 'bg-emerald-500 text-white'
-                                            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
+                                        ? 'bg-emerald-500 text-white'
+                                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
                                         }`}
                                 >
                                     {s} {count > 0 && `(${count})`}
@@ -305,11 +307,22 @@ export default function BrandPage() {
                             href={`/home/machinery/tractors/brand/${b.slug}`}
                             className="flex flex-col items-center gap-2 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 hover:shadow-md hover:border-emerald-200 transition-all group"
                         >
-                            <div
-                                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                                style={{ backgroundColor: b.brand_color || '#16a34a' }}
-                            >
-                                {b.name.charAt(0)}
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden bg-white dark:bg-gray-700">
+                                {b.logo_url ? (
+                                    <img
+                                        src={b.logo_url}
+                                        alt={b.name}
+                                        className="w-full h-full object-contain p-1"
+                                        loading="lazy"
+                                    />
+                                ) : (
+                                    <div
+                                        className="w-full h-full flex items-center justify-center text-white font-bold text-sm rounded-full"
+                                        style={{ backgroundColor: b.brand_color || '#16a34a' }}
+                                    >
+                                        {b.name.charAt(0)}
+                                    </div>
+                                )}
                             </div>
                             <span className="text-xs font-medium text-gray-700 dark:text-gray-300 text-center group-hover:text-emerald-600 transition-colors">
                                 {b.name}

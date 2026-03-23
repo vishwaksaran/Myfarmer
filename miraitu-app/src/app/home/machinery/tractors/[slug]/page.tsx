@@ -26,9 +26,11 @@ export default function TractorDetailPage() {
 
     useEffect(() => {
         let cancelled = false;
+        setLoading(true);
         async function load() {
             const m = await fetchModelBySlug(slug);
-            if (!m || cancelled) { setLoading(false); return; }
+            if (cancelled) return;
+            if (!m) { setLoading(false); return; }
 
             const brandSlug = m.brand.toLowerCase().replace(/\s+/g, '-');
             const [sim, b, brands] = await Promise.all([
@@ -295,11 +297,22 @@ export default function TractorDetailPage() {
                                             href={`/home/machinery/tractors/brand/${b.slug}`}
                                             className="flex-shrink-0 flex flex-col items-center gap-2 p-3 w-[90px] bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all group"
                                         >
-                                            <div
-                                                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                                                style={{ backgroundColor: b.brand_color || '#16a34a' }}
-                                            >
-                                                {b.name.charAt(0)}
+                                            <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden bg-white dark:bg-gray-700">
+                                                {b.logo_url ? (
+                                                    <img
+                                                        src={b.logo_url}
+                                                        alt={b.name}
+                                                        className="w-full h-full object-contain p-1"
+                                                        loading="lazy"
+                                                    />
+                                                ) : (
+                                                    <div
+                                                        className="w-full h-full flex items-center justify-center text-white font-bold text-sm rounded-full"
+                                                        style={{ backgroundColor: b.brand_color || '#16a34a' }}
+                                                    >
+                                                        {b.name.charAt(0)}
+                                                    </div>
+                                                )}
                                             </div>
                                             <span className="text-[10px] font-medium text-gray-700 dark:text-gray-300 text-center group-hover:text-emerald-600 transition-colors">
                                                 {b.name}
