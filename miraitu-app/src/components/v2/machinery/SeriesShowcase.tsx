@@ -180,11 +180,10 @@ export default function SeriesShowcase({
             <div className="flex flex-wrap gap-2 pb-3">
                 <button
                     onClick={() => onSeriesChange(null)}
-                    className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-300 border ${
-                        !activeSeries
+                    className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-300 border ${!activeSeries
                             ? `${theme.chipActive} border-transparent shadow-lg`
                             : `${theme.chipInactive} border-zinc-700`
-                    }`}
+                        }`}
                 >
                     All Models ({models.length})
                 </button>
@@ -194,11 +193,10 @@ export default function SeriesShowcase({
                         <button
                             key={s}
                             onClick={() => onSeriesChange(s)}
-                            className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-300 border ${
-                                activeSeries === s
+                            className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-300 border ${activeSeries === s
                                     ? `${theme.chipActive} border-transparent shadow-lg`
                                     : `${theme.chipInactive} border-zinc-700`
-                            }`}
+                                }`}
                         >
                             {s} Series {count > 0 && `(${count})`}
                         </button>
