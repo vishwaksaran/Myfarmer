@@ -11,6 +11,7 @@ import {
     fetchPopularComparisons,
 } from '@/app/actions/tractors';
 import CheckPriceModal from '@/components/v2/machinery/CheckPriceModal';
+import SeriesShowcase from '@/components/v2/machinery/SeriesShowcase';
 import { getTractorImageUrl, getBrandHeroImage } from '@/lib/tractor-images';
 
 export default function BrandPage() {
@@ -24,7 +25,7 @@ export default function BrandPage() {
 
     const [loading, setLoading] = useState(true);
     const [showFullDesc, setShowFullDesc] = useState(false);
-    const [activeSeries, setActiveSeries] = useState<string | null>(null);
+    const [activeSeries, setActiveSeries] = useState<string | null>('__pending__');
     const [priceModalOpen, setPriceModalOpen] = useState(false);
     const [priceModalTractor, setPriceModalTractor] = useState('');
 
@@ -46,6 +47,9 @@ export default function BrandPage() {
                 setBrand(b);
                 setModels(m);
                 setAllBrands(brands);
+                // Default to first series if available
+                const sList: string[] = Array.isArray(b.series) ? b.series : [];
+                setActiveSeries(sList.length > 0 ? sList[0] : null);
                 setComparisons(comp.filter((c) => {
                     const a = c.model_a;
                     const ab = c.model_b;
@@ -263,77 +267,58 @@ export default function BrandPage() {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-6">
 
-                {/* Series Chips */}
+                {/* Series Showcase with inline cinematic banner */}
                 {seriesList.length > 0 && (
+                    <SeriesShowcase
+                        brandName={brand.name}
+                        seriesList={seriesList}
+                        models={models}
+                        activeSeries={activeSeries}
+                        onSeriesChange={setActiveSeries}
+                        onCheckPrice={(name) => { setPriceModalTractor(name); setPriceModalOpen(true); }}
+                    />
+                )}
+
+                {/* All Models Grid — shown when "All Models" is selected (no active series) */}
+                {!activeSeries && (
                     <section className="mb-6">
-                        <h2 className="text-base font-bold text-gray-900 dark:text-white mb-3">{brand.name} Tractor Series</h2>
-                        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                            <button
-                                onClick={() => setActiveSeries(null)}
-                                className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${!activeSeries
-                                    ? 'bg-emerald-500 text-white'
-                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
-                                    }`}
-                            >
-                                All ({models.length})
-                            </button>
-                            {seriesList.map((s) => {
-                                const count = models.filter((m) => m.series === s).length;
-                                return (
-                                    <button
-                                        key={s}
-                                        onClick={() => setActiveSeries(s)}
-                                        className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${activeSeries === s
-                                            ? 'bg-emerald-500 text-white'
-                                            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
-                                            }`}
-                                    >
-                                        {s} {count > 0 && `(${count})`}
-                                    </button>
-                                );
-                            })}
+                        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
+                            All {brand.name} Tractors ({filteredModels.length})
+                        </h2>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                            {filteredModels.map((m) => (
+                                <div
+                                    key={m.id}
+                                    className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all group"
+                                >
+                                    <Link href={`/home/machinery/tractors/${m.slug || m.id}`}>
+                                        <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-700 relative overflow-hidden">
+                                            <img src={getTractorImageUrl(m.image_url, m.brand, m.model_name, m.slug)} alt={`${m.brand} ${m.model_name}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
+                                            {m.is_popular && (
+                                                <span className="absolute top-2 left-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Popular</span>
+                                            )}
+                                            {m.drive_type === '4WD' && (
+                                                <span className="absolute top-2 right-2 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">4WD</span>
+                                            )}
+                                        </div>
+                                        <div className="p-3 pb-1">
+                                            <h3 className="font-semibold text-sm text-gray-900 dark:text-white truncate">{m.brand} {m.model_name}</h3>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{m.specs}</p>
+                                        </div>
+                                    </Link>
+                                    <div className="px-3 pb-3 pt-1">
+                                        <button
+                                            onClick={() => { setPriceModalTractor(`${m.brand} ${m.model_name}`); setPriceModalOpen(true); }}
+                                            className="w-full py-1.5 bg-emerald-500 text-white text-xs font-bold rounded-lg hover:bg-emerald-600 transition-colors"
+                                        >
+                                            Check Price
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </section>
                 )}
-
-                {/* All Models Grid */}
-                <section className="mb-6">
-                    <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
-                        {activeSeries ? `${brand.name} ${activeSeries} Series` : `All ${brand.name} Tractors`} ({filteredModels.length})
-                    </h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                        {filteredModels.map((m) => (
-                            <div
-                                key={m.id}
-                                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all group"
-                            >
-                                <Link href={`/home/machinery/tractors/${m.slug || m.id}`}>
-                                    <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-700 relative overflow-hidden">
-                                        <img src={getTractorImageUrl(m.image_url, m.brand, m.model_name, m.slug)} alt={`${m.brand} ${m.model_name}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
-                                        {m.is_popular && (
-                                            <span className="absolute top-2 left-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Popular</span>
-                                        )}
-                                        {m.drive_type === '4WD' && (
-                                            <span className="absolute top-2 right-2 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">4WD</span>
-                                        )}
-                                    </div>
-                                    <div className="p-3 pb-1">
-                                        <h3 className="font-semibold text-sm text-gray-900 dark:text-white truncate">{m.brand} {m.model_name}</h3>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{m.specs}</p>
-                                    </div>
-                                </Link>
-                                <div className="px-3 pb-3 pt-1">
-                                    <button
-                                        onClick={() => { setPriceModalTractor(`${m.brand} ${m.model_name}`); setPriceModalOpen(true); }}
-                                        className="w-full py-1.5 bg-emerald-500 text-white text-xs font-bold rounded-lg hover:bg-emerald-600 transition-colors"
-                                    >
-                                        Check Price
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
 
                 {/* Stylish Valuation Banner */}
                 <section className={`my-6 relative overflow-hidden rounded-2xl bg-gradient-to-br ${brandTheme.bannerBg} shadow-xl`}>
