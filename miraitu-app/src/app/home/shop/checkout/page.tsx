@@ -7,6 +7,8 @@ import Footer from '@/components/v2/Footer';
 import { useCart } from '@/context/CartContext';
 import { featuredProducts } from '../data';
 import { categoryProducts, type Product } from '../categoryData';
+import { createOrder } from '@/lib/supabase-db';
+import supabase from '@/lib/supabase';
 
 export default function CheckoutPage() {
     const [form, setForm] = useState({
@@ -27,6 +29,8 @@ export default function CheckoutPage() {
     const [cardCvv, setCardCvv] = useState('');
     const [cardName, setCardName] = useState('');
     const [orderPlaced, setOrderPlaced] = useState(false);
+    const [orderNumber, setOrderNumber] = useState('');
+    const [orderStatus, setOrderStatus] = useState('confirmed');
 
     const { quantities, deleteItem, clearCart } = useCart();
 
@@ -53,8 +57,7 @@ export default function CheckoutPage() {
     }).filter(item => item !== null) as ({ id: number; name: string; price: string; originalPrice: string; rating: number; reviews: number; image: string; badge: string | null; qty: number; totalPrice: number })[];
 
     const subtotal = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
-    const discount = 200; // Flat discount for now
-    const total = Math.max(0, subtotal - discount);
+    const total = subtotal;
 
     const updateField = (field: string, value: string) => {
         setForm(prev => ({ ...prev, [field]: value }));
@@ -83,10 +86,31 @@ export default function CheckoutPage() {
         return Object.keys(e).length === 0;
     };
 
-    const handlePlaceOrder = () => {
+    const handlePlaceOrder = async () => {
         if (validate()) {
+            const ordNum = `MIR${Date.now().toString().slice(-8)}`;
+            setOrderNumber(ordNum);
+
+            // Try to save order to backend
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    await createOrder({
+                        user_id: user.id,
+                        order_number: ordNum,
+                        items: cartItems.map(i => ({ id: i.id, name: i.name, qty: i.qty, price: i.totalPrice })),
+                        subtotal,
+                        total,
+                        shipping_address: form,
+                        payment_method: paymentMethod,
+                    });
+                }
+            } catch (err) {
+                console.error('Order save error:', err);
+            }
+
             setOrderPlaced(true);
-            setTimeout(clearCart, 500); // Clear cart after order placement
+            setTimeout(clearCart, 500);
         }
     };
 
@@ -108,18 +132,61 @@ export default function CheckoutPage() {
     );
 
     if (orderPlaced) {
+        const trackingSteps = [
+            { key: 'confirmed', label: 'Order Confirmed', icon: 'check_circle', time: 'Just now' },
+            { key: 'processing', label: 'Processing', icon: 'inventory_2', time: 'Expected today' },
+            { key: 'shipped', label: 'Shipped', icon: 'local_shipping', time: 'In 1-2 days' },
+            { key: 'out_for_delivery', label: 'Out for Delivery', icon: 'delivery_dining', time: 'In 2-4 days' },
+            { key: 'delivered', label: 'Delivered', icon: 'home', time: 'In 3-5 days' },
+        ];
+        const activeIdx = trackingSteps.findIndex(s => s.key === orderStatus);
+
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-[#0d110d]">
                 <Header />
                 <main className="py-10 md:py-20">
-                    <div className="mx-auto max-w-lg px-4 md:px-6 text-center">
+                    <div className="mx-auto max-w-lg px-4 md:px-6">
                         <div className="bg-white dark:bg-gray-900 rounded-2xl md:rounded-[2rem] p-6 md:p-10 shadow-xl border border-gray-100 dark:border-gray-800">
-                            <div className="h-20 w-20 md:h-24 md:w-24 rounded-full bg-gradient-to-br from-primary to-green-400 flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-xl shadow-primary/30 animate-bounce">
-                                <span className="material-symbols-outlined text-white text-4xl md:text-5xl">check</span>
+                            <div className="text-center mb-6">
+                                <div className="h-20 w-20 md:h-24 md:w-24 rounded-full bg-gradient-to-br from-primary to-green-400 flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-xl shadow-primary/30">
+                                    <span className="material-symbols-outlined text-white text-4xl md:text-5xl">check</span>
+                                </div>
+                                <h1 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">Order Placed!</h1>
+                                <p className="text-sm md:text-base text-gray-500 mb-1">Your order has been placed successfully.</p>
+                                <p className="text-xs md:text-sm text-gray-400 mb-4">Order ID: #{orderNumber}</p>
                             </div>
-                            <h1 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">Order Placed!</h1>
-                            <p className="text-sm md:text-base text-gray-500 mb-2">Your order has been placed successfully.</p>
-                            <p className="text-xs md:text-sm text-gray-400 mb-6 md:mb-8">Order ID: #MIR{Date.now().toString().slice(-8)}</p>
+
+                            {/* Order Tracking */}
+                            <div className="mb-6">
+                                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary text-lg">local_shipping</span>
+                                    Order Tracking
+                                </h3>
+                                <div className="relative pl-8">
+                                    {trackingSteps.map((step, idx) => (
+                                        <div key={step.key} className="relative pb-6 last:pb-0">
+                                            {idx < trackingSteps.length - 1 && (
+                                                <div className={`absolute left-[-20px] top-6 w-0.5 h-full ${idx < activeIdx ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'}`} />
+                                            )}
+                                            <div className={`absolute left-[-28px] top-0 w-5 h-5 rounded-full flex items-center justify-center ${idx <= activeIdx ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                                                {idx <= activeIdx ? (
+                                                    <span className="material-symbols-outlined text-white text-xs">check</span>
+                                                ) : (
+                                                    <div className="w-2 h-2 rounded-full bg-gray-400" />
+                                                )}
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <p className={`text-sm font-bold ${idx <= activeIdx ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>{step.label}</p>
+                                                    <p className="text-xs text-gray-400">{step.time}</p>
+                                                </div>
+                                                <span className={`material-symbols-outlined text-lg ${idx <= activeIdx ? 'text-primary' : 'text-gray-300'}`}>{step.icon}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
                             <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-3 md:p-4 mb-5 md:mb-6">
                                 <div className="flex items-center justify-center gap-2 text-primary font-bold text-xs md:text-sm">
                                     <span className="material-symbols-outlined text-base md:text-lg">local_shipping</span>
@@ -398,12 +465,6 @@ export default function CheckoutPage() {
                                         <span className="text-gray-500">Delivery</span>
                                         <span className="font-bold text-green-600">FREE</span>
                                     </div>
-                                    {subtotal > 0 && (
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-500">Discount</span>
-                                            <span className="font-bold text-red-500">-₹{discount.toLocaleString('en-IN')}</span>
-                                        </div>
-                                    )}
                                 </div>
 
                                 {/* Total */}

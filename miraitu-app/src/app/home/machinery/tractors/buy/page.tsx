@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import CompareModal from '@/components/v2/machinery/CompareModal';
 import CompareSection from '@/components/v2/machinery/CompareSection';
 import MachinerySubNav from '@/components/v2/machinery/MachinerySubNav';
+import { getActiveListings, type ListingRecord } from '@/lib/supabase-db';
 
 const usedTractors = [
     {
@@ -91,6 +92,28 @@ export default function BuyTractorsPage() {
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
     const [selectedCondition, setSelectedCondition] = useState('All');
+    const [dbListings, setDbListings] = useState<typeof usedTractors>([]);
+
+    useEffect(() => {
+        getActiveListings('machinery', 'tractors').then((listings: ListingRecord[]) => {
+            const mapped = listings.map((l, idx) => ({
+                id: 1000 + idx,
+                name: l.title,
+                category: 'Tractor',
+                specs: `${(l.specs as Record<string, string>)?.hp || ''} HP • ${(l.specs as Record<string, string>)?.fuelType || 'Diesel'} • ${l.state || ''}`,
+                price: `₹${l.price.toLocaleString('en-IN')}`,
+                image: l.images?.[0] || 'https://images.pexels.com/photos/7532304/pexels-photo-7532304.jpeg?auto=compress&cs=tinysrgb&w=800',
+                brand: l.brand || '',
+                hp: (l.specs as Record<string, string>)?.hp || '',
+                year: (l.specs as Record<string, string>)?.year || '',
+                location: `${l.location}, ${l.state || ''}`,
+                condition: 'Good',
+            }));
+            setDbListings(mapped);
+        });
+    }, []);
+
+    const allTractors = [...dbListings, ...usedTractors];
 
     const toggleSelection = (id: number) => {
         setSelectedItems(prev => {
@@ -106,11 +129,11 @@ export default function BuyTractorsPage() {
         setSelectedItems(prev => prev.filter((_, i) => i !== index));
     };
 
-    const compareItems = usedTractors.filter(item => selectedItems.includes(item.id));
+    const compareItems = allTractors.filter(item => selectedItems.includes(item.id));
 
     const filteredTractors = selectedCondition === 'All'
-        ? usedTractors
-        : usedTractors.filter(t => t.condition === selectedCondition);
+        ? allTractors
+        : allTractors.filter(t => t.condition === selectedCondition);
 
     return (
         <div className="px-3 sm:px-6">

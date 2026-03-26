@@ -11,7 +11,7 @@ interface LoginModalProps {
 }
 
 export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
-    const { signInWithGoogle, signInWithPhone, verifyOtp, loginAsGuest, loading: authLoading } = useAuth();
+    const { signInWithPhone, verifyOtp, loading: authLoading } = useAuth();
     const router = useRouter();
 
     const [phoneInput, setPhoneInput] = useState('');
@@ -21,17 +21,6 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     const [sendingOtp, setSendingOtp] = useState(false);
 
     if (!isOpen) return null;
-
-    const handleGoogleLogin = async () => {
-        try {
-            setError('');
-            await signInWithGoogle();
-            onClose();
-        } catch (err) {
-            console.error(err);
-            setError(err instanceof Error ? err.message : 'Google sign-in failed. Please try again.');
-        }
-    };
 
     const handleSendOtp = async () => {
         if (!phoneInput.trim()) {
@@ -63,15 +52,6 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             setError(result.error);
         } else {
             onClose();
-        }
-    };
-
-    const handleGuestLogin = async () => {
-        try {
-            await loginAsGuest();
-            onClose();
-        } catch (err) {
-            console.error(err);
         }
     };
 
@@ -136,18 +116,9 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                             <button
                                 onClick={handleSendOtp}
                                 disabled={authLoading || sendingOtp}
-                                className="w-full py-3.5 rounded-xl bg-primary text-white font-bold text-lg shadow-lg shadow-primary/30 hover:brightness-110 active:scale-[0.98] transition-all mb-3 disabled:opacity-50"
+                                className="w-full py-3.5 rounded-xl bg-primary text-white font-bold text-lg shadow-lg shadow-primary/30 hover:brightness-110 active:scale-[0.98] transition-all mb-6 disabled:opacity-50"
                             >
                                 {sendingOtp ? 'Sending OTP...' : 'Send OTP'}
-                            </button>
-
-                            {/* Guest Login */}
-                            <button
-                                onClick={handleGuestLogin}
-                                disabled={authLoading}
-                                className="w-full py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all mb-6"
-                            >
-                                Continue as Guest
                             </button>
                         </>
                     ) : (
@@ -195,24 +166,6 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                             </div>
                         </>
                     )}
-
-                    {/* Divider */}
-                    <div className="relative w-full text-center mb-6">
-                        <div className="absolute top-1/2 w-full h-px bg-gray-200 dark:bg-gray-700"></div>
-                        <span className="relative bg-white dark:bg-[#1a231a] px-3 text-xs font-bold text-gray-400">or continue with</span>
-                    </div>
-
-                    {/* Social Buttons */}
-                    <div className="flex gap-3 w-full">
-                        <button
-                            onClick={handleGoogleLogin}
-                            disabled={authLoading}
-                            className="flex-1 py-2.5 rounded-xl border-2 border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center justify-center gap-2"
-                        >
-                            <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" />
-                            <span className="font-bold text-sm text-gray-700 dark:text-gray-200">Google</span>
-                        </button>
-                    </div>
 
                     {/* Footer */}
                     <p className="mt-8 text-xs text-gray-400 font-medium">

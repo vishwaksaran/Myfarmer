@@ -48,10 +48,8 @@ export interface UserProfile {
 interface AuthContextType {
     user: MiraituUser | null;
     loading: boolean;
-    signInWithGoogle: () => Promise<void>;
     signInWithPhone: (phone: string) => Promise<{ error: string | null }>;
     verifyOtp: (phone: string, token: string) => Promise<{ error: string | null }>;
-    loginAsGuest: () => Promise<void>;
     signOut: () => Promise<void>;
     fetchProfile: () => Promise<UserProfile | null>;
     updateProfile: (data: Partial<UserProfile>) => Promise<{ error: string | null }>;
@@ -230,29 +228,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
     }, [loadProfileAvatar]);
 
-    // Google OAuth Sign-In
-    const signInWithGoogle = async () => {
-        try {
-            setLoading(true);
-            const { data, error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: `${window.location.origin}/auth/callback`,
-                    queryParams: {
-                        access_type: 'offline',
-                        prompt: 'consent',
-                    },
-                },
-            });
-            if (error) throw error;
-            // Browser will redirect to Google — loading stays true until redirect completes
-        } catch (error) {
-            console.error('Error signing in with Google:', error);
-            setLoading(false);
-            throw error;
-        }
-    };
-
     // Phone OTP — send code via MSG91
     const signInWithPhone = async (phone: string): Promise<{ error: string | null }> => {
         try {
@@ -308,25 +283,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Guest login (local only, no Supabase session)
-    const loginAsGuest = async () => {
-        const guestUser: MiraituUser = {
-            id: 'guest-123',
-            uid: 'guest-123',
-            displayName: 'Guest Farmer',
-            email: 'guest@miraitu.com',
-            photoURL: null,
-            phone: null,
-            isGuest: true,
-        };
-
-        setUser(guestUser);
-        setLoading(false);
-    };
-
     // Check if user has completed onboarding
     const checkOnboardingStatus = async (): Promise<boolean> => {
-        if (!user || user.isGuest) return true; // guests skip onboarding
+        if (!user) return true;
         try {
             const { data } = await supabase
                 .from('profiles')
@@ -494,10 +453,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         <AuthContext.Provider value={{
             user,
             loading,
-            signInWithGoogle,
             signInWithPhone,
             verifyOtp,
-            loginAsGuest,
             signOut: handleSignOut,
             fetchProfile,
             updateProfile,

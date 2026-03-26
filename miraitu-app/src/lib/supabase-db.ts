@@ -278,3 +278,164 @@ export async function updateProfile(
     }
     return { error: null };
 }
+
+
+// ============================================
+// MARKETPLACE LISTING OPERATIONS
+// ============================================
+
+export interface ListingRecord {
+    id?: string;
+    user_id: string;
+    listing_type: 'machinery' | 'crops' | 'livestock';
+    category: string;
+    title: string;
+    brand?: string;
+    model?: string;
+    description?: string;
+    price: number;
+    unit?: string;
+    location: string;
+    district?: string;
+    state?: string;
+    images?: string[];
+    specs?: Record<string, unknown>;
+    status?: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export async function uploadListingImages(
+    userId: string,
+    files: File[]
+): Promise<string[]> {
+    const urls: string[] = [];
+    for (const file of files) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+        const { error } = await supabase.storage
+            .from('listing-images')
+            .upload(fileName, file, { cacheControl: '3600', upsert: false });
+
+        if (error) {
+            console.error(`Error uploading ${file.name}:`, error);
+            continue;
+        }
+
+        const { data: urlData } = supabase.storage
+            .from('listing-images')
+            .getPublicUrl(fileName);
+
+        if (urlData?.publicUrl) {
+            urls.push(urlData.publicUrl);
+        }
+    }
+    return urls;
+}
+
+export async function createListing(listing: Omit<ListingRecord, 'id' | 'created_at' | 'updated_at' | 'status'>): Promise<{ data: ListingRecord | null; error: string | null }> {
+    const { data, error } = await supabase
+        .from('marketplace_listings')
+        .insert(listing)
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error creating listing:', error);
+        return { data: null, error: error.message };
+    }
+    return { data, error: null };
+}
+
+export async function getListingsByUser(userId: string): Promise<ListingRecord[]> {
+    const { data, error } = await supabase
+        .from('marketplace_listings')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching user listings:', error);
+        return [];
+    }
+    return data || [];
+}
+
+export async function getActiveListings(listingType?: string, category?: string): Promise<ListingRecord[]> {
+    let query = supabase
+        .from('marketplace_listings')
+        .select('*')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+
+    if (listingType) query = query.eq('listing_type', listingType);
+    if (category) query = query.eq('category', category);
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error('Error fetching listings:', error);
+        return [];
+    }
+    return data || [];
+}
+
+export async function updateListingStatus(listingId: string, status: string): Promise<{ error: string | null }> {
+    const { error } = await supabase
+        .from('marketplace_listings')
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq('id', listingId);
+
+    if (error) {
+        console.error('Error updating listing:', error);
+        return { error: error.message };
+    }
+    return { error: null };
+}
+
+
+// ============================================
+// ORDER OPERATIONS
+// ============================================
+
+export interface OrderRecord {
+    id?: string;
+    user_id: string;
+    order_number: string;
+    items: Record<string, unknown>[];
+    subtotal: number;
+    total: number;
+    shipping_address: Record<string, string>;
+    payment_method: string;
+    status?: string;
+    created_at?: string;
+}
+
+export async function createOrder(order: Omit<OrderRecord, 'id' | 'created_at' | 'status'>): Promise<{ data: OrderRecord | null; error: string | null }> {
+    const { data, error } = await supabase
+        .from('orders')
+        .insert(order)
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error creating order:', error);
+        return { data: null, error: error.message };
+    }
+    return { data, error: null };
+}
+
+export async function getOrdersByUser(userId: string): Promise<OrderRecord[]> {
+    const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching orders:', error);
+        return [];
+    }
+    return data || [];
+}

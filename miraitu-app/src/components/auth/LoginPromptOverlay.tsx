@@ -1,25 +1,13 @@
 'use client';
 
-import { useAuth } from '@/context/AuthContext';
 import { useLoginPrompt } from '@/context/LoginPromptContext';
 import { useRouter } from 'next/navigation';
-import MiraituLogo from '@/components/MiraituLogo';
 
 export default function LoginPromptOverlay() {
     const router = useRouter();
     const { isLoginPromptOpen, closeLoginPrompt, dismissLoginPrompt } = useLoginPrompt();
-    const { signInWithGoogle, loading: authLoading } = useAuth();
 
     if (!isLoginPromptOpen) return null;
-
-    const handleGoogleLogin = async () => {
-        try {
-            await signInWithGoogle();
-            closeLoginPrompt();
-        } catch (error) {
-            console.error(error);
-        }
-    };
 
     const handleLogin = () => {
         closeLoginPrompt();
@@ -81,29 +69,11 @@ export default function LoginPromptOverlay() {
                     {/* Login button */}
                     <button
                         onClick={handleLogin}
-                        disabled={authLoading}
                         className="w-full py-3.5 rounded-xl bg-primary text-white font-bold text-base shadow-lg shadow-primary/25 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mb-3"
                     >
-                        {authLoading ? (
-                            <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        ) : (
-                            <>
-                                <span className="material-symbols-outlined text-lg">login</span>
-                                Login & Continue
-                            </>
-                        )}
+                        <span className="material-symbols-outlined text-lg">login</span>
+                        Login & Continue
                     </button>
-
-                    {/* Google login — temporarily disabled
-                    <button
-                        onClick={handleGoogleLogin}
-                        disabled={authLoading}
-                        className="w-full py-3 rounded-xl border-2 border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center justify-center gap-2.5 mb-3"
-                    >
-                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" />
-                        <span className="font-bold text-sm text-gray-700 dark:text-gray-200">Continue with Google</span>
-                    </button>
-                    */}
 
                     {/* Sign Up button */}
                     <button

@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { uploadListingImages, createListing } from '@/lib/supabase-db';
+import supabase from '@/lib/supabase';
 
 const steps = ['Basic Details', 'Condition & Specs', 'Photos & Price'];
 
@@ -57,6 +59,8 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
     const [currentStep, setCurrentStep] = useState(1);
     const [selectedCategory, setSelectedCategory] = useState(category);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState('');
     const [stepErrors, setStepErrors] = useState<string[]>([]);
     const [formData, setFormData] = useState({
         category: category,
@@ -71,6 +75,9 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
         images: [] as File[],
         price: '',
         description: '',
+        location: '',
+        district: '',
+        state: '',
     });
 
     const estimatedValue = formData.hp && formData.year
@@ -93,12 +100,74 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
             if (!formData.model.trim()) errs.push('Please enter the model name');
             if (!formData.year) errs.push('Please select year of purchase');
             if (!formData.hp) errs.push('Please select HP range');
+        } else if (step === 2) {
+            if (!formData.hoursUsed.trim()) errs.push('Please enter hours used');
+            if (!formData.location.trim()) errs.push('Please enter your location');
+            if (!formData.district.trim()) errs.push('Please enter your district');
+            if (!formData.state.trim()) errs.push('Please select your state');
         } else if (step === 3) {
             if (!formData.price.trim()) errs.push('Please enter your asking price');
             else if (isNaN(Number(formData.price.replace(/,/g, '')))) errs.push('Enter a valid price');
+            if (formData.images.length === 0) errs.push('Please upload at least one photo');
         }
         setStepErrors(errs);
         return errs.length === 0;
+    };
+
+    const handleSubmit = async () => {
+        if (!validateStep(currentStep)) return;
+        setIsSubmitting(true);
+        setSubmitError('');
+
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                setSubmitError('Please log in to list your machinery');
+                setIsSubmitting(false);
+                return;
+            }
+
+            // Upload images
+            let imageUrls: string[] = [];
+            if (formData.images.length > 0) {
+                imageUrls = await uploadListingImages(user.id, formData.images);
+            }
+
+            const priceNum = Number(formData.price.replace(/,/g, ''));
+            const { error } = await createListing({
+                user_id: user.id,
+                listing_type: 'machinery',
+                category: selectedCategory,
+                title: `${formData.brand} ${formData.model}`,
+                brand: formData.brand,
+                model: formData.model,
+                description: formData.description,
+                price: priceNum,
+                location: formData.location,
+                district: formData.district,
+                state: formData.state,
+                images: imageUrls,
+                specs: {
+                    year: formData.year,
+                    hp: formData.hp,
+                    hoursUsed: formData.hoursUsed,
+                    fuelType: formData.fuelType,
+                    tireCondition: formData.tireCondition,
+                    hasServiceHistory: formData.hasServiceHistory,
+                },
+            });
+
+            if (error) {
+                setSubmitError(error);
+            } else {
+                setShowSuccess(true);
+            }
+        } catch (err) {
+            setSubmitError('Something went wrong. Please try again.');
+            console.error(err);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -347,6 +416,46 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                             <div className={`w-6 h-6 rounded-full bg-white shadow-md transition-transform ${formData.hasServiceHistory ? 'translate-x-7' : 'translate-x-0.5'}`} />
                                         </button>
                                     </div>
+
+                                    {/* Location Fields */}
+                                    <div className="grid grid-cols-2 gap-6 mt-6">
+                                        <div>
+                                            <label className="block text-sm text-gray-600 mb-2">Location / Village *</label>
+                                            <div className="relative">
+                                                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">location_on</span>
+                                                <input
+                                                    type="text"
+                                                    value={formData.location}
+                                                    onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                                                    placeholder="e.g. Indore, Dewas"
+                                                    className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border-2 border-transparent focus:border-primary outline-none"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm text-gray-600 mb-2">District *</label>
+                                            <input
+                                                type="text"
+                                                value={formData.district}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, district: e.target.value }))}
+                                                placeholder="e.g. Indore"
+                                                className="w-full px-4 py-3 rounded-xl bg-gray-50 border-2 border-transparent focus:border-primary outline-none"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="mt-6">
+                                        <label className="block text-sm text-gray-600 mb-2">State *</label>
+                                        <select
+                                            value={formData.state}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border-2 border-transparent focus:border-primary outline-none appearance-none"
+                                        >
+                                            <option value="">Select State</option>
+                                            {['Maharashtra', 'Madhya Pradesh', 'Punjab', 'Haryana', 'Uttar Pradesh', 'Karnataka', 'Rajasthan', 'Gujarat', 'Tamil Nadu', 'Andhra Pradesh', 'Telangana', 'Bihar', 'West Bengal', 'Odisha', 'Kerala', 'Chhattisgarh', 'Jharkhand', 'Assam'].map(s => (
+                                                <option key={s} value={s}>{s}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
 
@@ -475,21 +584,25 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                     setCurrentStep(prev => prev + 1);
                                 }
                             } else {
-                                if (validateStep(currentStep)) {
-                                    setShowSuccess(true);
-                                }
+                                handleSubmit();
                             }
                         }}
-                        className="flex items-center gap-2 px-8 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors"
+                        disabled={isSubmitting}
+                        className={`flex items-center gap-2 px-8 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                        {currentStep === steps.length ? 'Publish Listing' : 'Next: ' + steps[currentStep]}
-                        <span className="material-symbols-outlined">arrow_forward</span>
+                        {isSubmitting ? 'Submitting...' : currentStep === steps.length ? 'Publish Listing' : 'Next: ' + steps[currentStep]}
+                        {!isSubmitting && <span className="material-symbols-outlined">arrow_forward</span>}
                     </button>
                 </div>
 
                 {/* Validation Errors */}
-                {stepErrors.length > 0 && (
+                {(stepErrors.length > 0 || submitError) && (
                     <div className="mt-4 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                        {submitError && (
+                            <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-sm">error</span>{submitError}
+                            </p>
+                        )}
                         {stepErrors.map((err, i) => (
                             <p key={i} className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-sm">error</span>{err}

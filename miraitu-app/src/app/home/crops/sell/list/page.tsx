@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { uploadListingImages, createListing } from '@/lib/supabase-db';
+import supabase from '@/lib/supabase';
 
 const cropCategories = [
     { id: 'grains', name: 'Grains & Cereals', icon: 'grain', examples: 'Wheat, Rice, Maize, Jowar' },
@@ -17,6 +19,10 @@ const cropCategories = [
 export default function SellCropsListPage() {
     const [step, setStep] = useState(1);
     const [selectedCategory, setSelectedCategory] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState('');
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [stepErrors, setStepErrors] = useState<string[]>([]);
     const [formData, setFormData] = useState({
         cropName: '',
         variety: '',
@@ -25,10 +31,81 @@ export default function SellCropsListPage() {
         expectedPrice: '',
         description: '',
         location: '',
+        district: '',
         state: '',
         harvestDate: '',
-        images: [] as string[],
+        imageFiles: [] as File[],
     });
+
+    const validateStep = (s: number): boolean => {
+        const errs: string[] = [];
+        if (s === 1) {
+            if (!selectedCategory) errs.push('Please select a category');
+        } else if (s === 2) {
+            if (!formData.cropName.trim()) errs.push('Crop name is required');
+            if (!formData.quantity.trim()) errs.push('Quantity is required');
+            if (!formData.state) errs.push('State is required');
+            if (!formData.location.trim()) errs.push('Location is required');
+            if (!formData.district.trim()) errs.push('District is required');
+            if (!formData.harvestDate) errs.push('Harvest date is required');
+        } else if (s === 3) {
+            if (!formData.expectedPrice.trim()) errs.push('Price is required');
+        }
+        setStepErrors(errs);
+        return errs.length === 0;
+    };
+
+    const handleSubmit = async () => {
+        if (!validateStep(3)) return;
+        setIsSubmitting(true);
+        setSubmitError('');
+
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                setSubmitError('Please log in to list your produce');
+                setIsSubmitting(false);
+                return;
+            }
+
+            let imageUrls: string[] = [];
+            if (formData.imageFiles.length > 0) {
+                imageUrls = await uploadListingImages(user.id, formData.imageFiles);
+            }
+
+            const priceNum = Number(formData.expectedPrice.replace(/,/g, ''));
+            const { error } = await createListing({
+                user_id: user.id,
+                listing_type: 'crops',
+                category: selectedCategory,
+                title: formData.cropName,
+                description: formData.description,
+                price: priceNum,
+                unit: formData.unit,
+                location: formData.location,
+                district: formData.district,
+                state: formData.state,
+                images: imageUrls,
+                specs: {
+                    variety: formData.variety,
+                    quantity: formData.quantity,
+                    unit: formData.unit,
+                    harvestDate: formData.harvestDate,
+                },
+            });
+
+            if (error) {
+                setSubmitError(error);
+            } else {
+                setShowSuccess(true);
+            }
+        } catch (err) {
+            setSubmitError('Something went wrong. Please try again.');
+            console.error(err);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <div className="px-3 md:px-6">
@@ -94,7 +171,7 @@ export default function SellCropsListPage() {
                                 ))}
                             </div>
                             <button
-                                onClick={() => selectedCategory && setStep(2)}
+                                onClick={() => { if (validateStep(1)) setStep(2); }}
                                 disabled={!selectedCategory}
                                 className={`w-full py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all ${selectedCategory
                                     ? 'bg-primary text-white hover:bg-primary-dark'
@@ -199,6 +276,17 @@ export default function SellCropsListPage() {
                                 </div>
 
                                 <div>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">District *</label>
+                                    <input
+                                        type="text"
+                                        value={formData.district}
+                                        onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                                        placeholder="e.g., Indore, Ujjain"
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
+                                    />
+                                </div>
+
+                                <div>
                                     <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Description</label>
                                     <textarea
                                         value={formData.description}
@@ -218,12 +306,22 @@ export default function SellCropsListPage() {
                                     Back
                                 </button>
                                 <button
-                                    onClick={() => setStep(3)}
+                                    onClick={() => { if (validateStep(2)) setStep(3); }}
                                     className="flex-1 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg bg-primary text-white hover:bg-primary-dark transition-all"
                                 >
                                     Continue
                                 </button>
                             </div>
+
+                            {stepErrors.length > 0 && (
+                                <div className="mt-4 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                                    {stepErrors.map((err, i) => (
+                                        <p key={i} className="text-sm text-red-600 flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-sm">error</span>{err}
+                                        </p>
+                                    ))}
+                                </div>
+                            )}
                         </>
                     )}
 
@@ -234,14 +332,43 @@ export default function SellCropsListPage() {
                             <div className="space-y-4 md:space-y-6 mb-6 md:mb-8">
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Upload Photos</label>
-                                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl md:rounded-2xl p-5 md:p-8 text-center">
+                                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl md:rounded-2xl p-5 md:p-8 text-center relative">
+                                        <input
+                                            type="file"
+                                            multiple
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                                if (e.target.files) {
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        imageFiles: [...prev.imageFiles, ...Array.from(e.target.files!)],
+                                                    }));
+                                                }
+                                            }}
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                        />
                                         <span className="material-symbols-outlined text-4xl md:text-5xl text-gray-400 mb-2 md:mb-3">add_photo_alternate</span>
                                         <p className="text-sm md:text-base text-gray-500 mb-1 md:mb-2">Tap to add photos of your produce</p>
                                         <p className="text-xs text-gray-400">Upload up to 5 photos. Max 5MB each.</p>
-                                        <button className="mt-3 md:mt-4 px-5 md:px-6 py-2 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm">
-                                            Choose Files
-                                        </button>
                                     </div>
+                                    {formData.imageFiles.length > 0 && (
+                                        <div className="mt-3 flex gap-3 flex-wrap">
+                                            {formData.imageFiles.map((img, idx) => (
+                                                <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden bg-gray-100">
+                                                    <img src={URL.createObjectURL(img)} alt="" className="w-full h-full object-cover" />
+                                                    <button
+                                                        onClick={() => setFormData(prev => ({
+                                                            ...prev,
+                                                            imageFiles: prev.imageFiles.filter((_, i) => i !== idx)
+                                                        }))}
+                                                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center"
+                                                    >
+                                                        <span className="material-symbols-outlined text-xs">close</span>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div>
@@ -285,12 +412,50 @@ export default function SellCropsListPage() {
                                     Back
                                 </button>
                                 <button
-                                    className="flex-1 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg bg-primary text-white hover:bg-primary-dark transition-all"
+                                    onClick={handleSubmit}
+                                    disabled={isSubmitting}
+                                    className={`flex-1 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg bg-primary text-white hover:bg-primary-dark transition-all ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
-                                    Publish Listing
+                                    {isSubmitting ? 'Submitting...' : 'Publish Listing'}
                                 </button>
                             </div>
+
+                            {(stepErrors.length > 0 || submitError) && (
+                                <div className="mt-4 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                                    {submitError && (
+                                        <p className="text-sm text-red-600 flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-sm">error</span>{submitError}
+                                        </p>
+                                    )}
+                                    {stepErrors.map((err, i) => (
+                                        <p key={i} className="text-sm text-red-600 flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-sm">error</span>{err}
+                                        </p>
+                                    ))}
+                                </div>
+                            )}
                         </>
+                    )}
+
+                    {/* Success Modal */}
+                    {showSuccess && (
+                        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50">
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 md:p-10 shadow-2xl max-w-sm w-full text-center">
+                                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+                                    <span className="material-symbols-outlined text-3xl text-white">check</span>
+                                </div>
+                                <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Crop Listed!</h2>
+                                <p className="text-sm text-gray-500 mb-4">Your produce has been listed successfully. Buyers can now find it in the marketplace.</p>
+                                <div className="flex gap-3">
+                                    <Link href="/home/crops/sell" className="flex-1 py-3 rounded-xl bg-primary text-white font-bold text-center">
+                                        Done
+                                    </Link>
+                                    <Link href="/home/crops/buy" className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold text-center">
+                                        View Market
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>

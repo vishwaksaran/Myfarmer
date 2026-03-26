@@ -6,6 +6,8 @@ import { useAuth } from '@/context/AuthContext';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import MiraituLogo from '@/components/MiraituLogo';
 import LoginModal from '@/components/auth/LoginModal';
+import { uploadListingImages, createListing } from '@/lib/supabase-db';
+import supabase from '@/lib/supabase';
 
 type TabType = 'browse' | 'buy' | 'sell';
 
@@ -60,6 +62,24 @@ export default function LivestockPage() {
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [pendingContact, setPendingContact] = useState<{ seller: string; phone: string } | null>(null);
     const [showWelcomeModal, setShowWelcomeModal] = useState(true);
+    const [sellSubmitting, setSellSubmitting] = useState(false);
+    const [sellError, setSellError] = useState('');
+    const [sellSuccess, setSellSuccess] = useState(false);
+    const [sellFormErrors, setSellFormErrors] = useState<string[]>([]);
+    const [sellForm, setSellForm] = useState({
+        title: '',
+        breed: '',
+        age: '',
+        price: '',
+        location: '',
+        district: '',
+        state: '',
+        description: '',
+        milkYield: '',
+        weight: '',
+        quantity: '1',
+        imageFiles: [] as File[],
+    });
 
     // Auth context
     const { user } = useAuth();
@@ -81,6 +101,72 @@ export default function LivestockPage() {
         } else {
             setPendingContact({ seller, phone });
             setShowLoginModal(true);
+        }
+    };
+
+    const validateSellForm = (): boolean => {
+        const errs: string[] = [];
+        if (!selectedSellCategory) errs.push('Please select a category');
+        if (!sellForm.title.trim()) errs.push('Title is required');
+        if (!sellForm.breed.trim()) errs.push('Breed is required');
+        if (!sellForm.age.trim()) errs.push('Age is required');
+        if (!sellForm.price.trim()) errs.push('Price is required');
+        if (!sellForm.location.trim()) errs.push('Location is required');
+        if (!sellForm.district.trim()) errs.push('District is required');
+        if (!sellForm.state) errs.push('State is required');
+        setSellFormErrors(errs);
+        return errs.length === 0;
+    };
+
+    const handleSellSubmit = async () => {
+        if (!validateSellForm()) return;
+        setSellSubmitting(true);
+        setSellError('');
+
+        try {
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (!authUser) {
+                setSellError('Please log in to list your livestock');
+                setSellSubmitting(false);
+                return;
+            }
+
+            let imageUrls: string[] = [];
+            if (sellForm.imageFiles.length > 0) {
+                imageUrls = await uploadListingImages(authUser.id, sellForm.imageFiles);
+            }
+
+            const priceNum = Number(sellForm.price.replace(/,/g, ''));
+            const { error } = await createListing({
+                user_id: authUser.id,
+                listing_type: 'livestock',
+                category: selectedSellCategory,
+                title: sellForm.title,
+                description: sellForm.description,
+                price: priceNum,
+                location: sellForm.location,
+                district: sellForm.district,
+                state: sellForm.state,
+                images: imageUrls,
+                specs: {
+                    breed: sellForm.breed,
+                    age: sellForm.age,
+                    milkYield: sellForm.milkYield,
+                    weight: sellForm.weight,
+                    quantity: sellForm.quantity,
+                },
+            });
+
+            if (error) {
+                setSellError(error);
+            } else {
+                setSellSuccess(true);
+            }
+        } catch (err) {
+            setSellError('Something went wrong. Please try again.');
+            console.error(err);
+        } finally {
+            setSellSubmitting(false);
         }
     };
 
@@ -285,67 +371,143 @@ export default function LivestockPage() {
                         {/* Sell Tab */}
                         {activeTab === 'sell' && (
                             <div className="animate-fadeIn max-w-3xl mx-auto">
-                                <div className="bg-white dark:bg-[#1a231a] rounded-lg md:rounded-2xl p-4 md:p-8 border border-gray-100 dark:border-gray-800">
-                                    <h2 className="text-xl md:text-2xl font-bold text-primary text-center mb-2">Sell Your Livestock</h2>
-                                    <p className="text-sm md:text-base text-gray-500 text-center mb-6 md:mb-8">List your animals and reach thousands of buyers</p>
-
-                                    {/* Category Selection */}
-                                    <div className="mb-6 md:mb-8">
-                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 md:mb-4">Select Category</label>
-                                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 md:gap-3">
-                                            {sellCategories.map((cat) => (
-                                                <button key={cat.id} onClick={() => setSelectedSellCategory(cat.id)}
-                                                    className={`p-2 md:p-4 rounded-lg md:rounded-xl border-2 text-center transition-all ${selectedSellCategory === cat.id ? 'border-primary bg-primary/5' : 'border-gray-200 dark:border-gray-700 hover:border-primary/30'}`}>
-                                                    <span className="text-xl md:text-2xl mb-0.5 md:mb-1 block">{cat.icon}</span>
-                                                    <span className={`text-[10px] md:text-xs font-semibold line-clamp-2 ${selectedSellCategory === cat.id ? 'text-primary' : 'text-gray-600'}`}>{cat.name}</span>
-                                                </button>
-                                            ))}
+                                {sellSuccess ? (
+                                    <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-8 border border-gray-100 dark:border-gray-800 text-center">
+                                        <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+                                            <span className="material-symbols-outlined text-3xl text-white">check</span>
+                                        </div>
+                                        <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Livestock Listed!</h2>
+                                        <p className="text-sm text-gray-500 mb-6">Your listing is now active. Buyers can find it in the marketplace.</p>
+                                        <div className="flex gap-3 justify-center">
+                                            <button onClick={() => { setSellSuccess(false); setSellForm({ title: '', breed: '', age: '', price: '', location: '', district: '', state: '', description: '', milkYield: '', weight: '', quantity: '1', imageFiles: [] }); setSelectedSellCategory(''); }}
+                                                className="px-6 py-3 rounded-xl bg-primary text-white font-bold">List Another</button>
+                                            <button onClick={() => setActiveTab('buy')}
+                                                className="px-6 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold">Browse Market</button>
                                         </div>
                                     </div>
+                                ) : (
+                                    <div className="bg-white dark:bg-[#1a231a] rounded-lg md:rounded-2xl p-4 md:p-8 border border-gray-100 dark:border-gray-800">
+                                        <h2 className="text-xl md:text-2xl font-bold text-primary text-center mb-2">Sell Your Livestock</h2>
+                                        <p className="text-sm md:text-base text-gray-500 text-center mb-6 md:mb-8">List your animals and reach thousands of buyers</p>
 
-                                    {/* Form Fields */}
-                                    <div className="space-y-4 md:space-y-5">
-                                        <div className="grid grid-cols-2 gap-2 md:gap-4">
-                                            <div>
-                                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Title</label>
-                                                <input type="text" placeholder="e.g. Pure Gir Cow" className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
+                                        {/* Category Selection */}
+                                        <div className="mb-6 md:mb-8">
+                                            <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 md:mb-4">Select Category *</label>
+                                            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 md:gap-3">
+                                                {sellCategories.map((cat) => (
+                                                    <button key={cat.id} onClick={() => setSelectedSellCategory(cat.id)}
+                                                        className={`p-2 md:p-4 rounded-lg md:rounded-xl border-2 text-center transition-all ${selectedSellCategory === cat.id ? 'border-primary bg-primary/5' : 'border-gray-200 dark:border-gray-700 hover:border-primary/30'}`}>
+                                                        <span className="text-xl md:text-2xl mb-0.5 md:mb-1 block">{cat.icon}</span>
+                                                        <span className={`text-[10px] md:text-xs font-semibold line-clamp-2 ${selectedSellCategory === cat.id ? 'text-primary' : 'text-gray-600'}`}>{cat.name}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Form Fields */}
+                                        <div className="space-y-4 md:space-y-5">
+                                            <div className="grid grid-cols-2 gap-2 md:gap-4">
+                                                <div>
+                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Title *</label>
+                                                    <input type="text" placeholder="e.g. Pure Gir Cow" value={sellForm.title} onChange={(e) => setSellForm(p => ({ ...p, title: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Breed *</label>
+                                                    <input type="text" placeholder="e.g. Gir" value={sellForm.breed} onChange={(e) => setSellForm(p => ({ ...p, breed: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2 md:gap-4">
+                                                <div>
+                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Age *</label>
+                                                    <input type="text" placeholder="e.g. 3 Years" value={sellForm.age} onChange={(e) => setSellForm(p => ({ ...p, age: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Price (₹) *</label>
+                                                    <input type="text" placeholder="e.g. 85000" value={sellForm.price} onChange={(e) => setSellForm(p => ({ ...p, price: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2 md:gap-4">
+                                                <div>
+                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Milk Yield (L/day)</label>
+                                                    <input type="text" placeholder="e.g. 12" value={sellForm.milkYield} onChange={(e) => setSellForm(p => ({ ...p, milkYield: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Weight (Kg)</label>
+                                                    <input type="text" placeholder="e.g. 450" value={sellForm.weight} onChange={(e) => setSellForm(p => ({ ...p, weight: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-3 gap-2 md:gap-4">
+                                                <div>
+                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Location *</label>
+                                                    <input type="text" placeholder="e.g. Rajkot" value={sellForm.location} onChange={(e) => setSellForm(p => ({ ...p, location: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">District *</label>
+                                                    <input type="text" placeholder="e.g. Rajkot" value={sellForm.district} onChange={(e) => setSellForm(p => ({ ...p, district: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">State *</label>
+                                                    <select value={sellForm.state} onChange={(e) => setSellForm(p => ({ ...p, state: e.target.value }))}
+                                                        className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base appearance-none">
+                                                        <option value="">Select</option>
+                                                        {['Maharashtra', 'Madhya Pradesh', 'Punjab', 'Haryana', 'Uttar Pradesh', 'Karnataka', 'Rajasthan', 'Gujarat', 'Tamil Nadu', 'Andhra Pradesh', 'Telangana', 'Bihar', 'West Bengal', 'Odisha', 'Kerala'].map(s => (
+                                                            <option key={s} value={s}>{s}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
                                             </div>
                                             <div>
-                                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Breed</label>
-                                                <input type="text" placeholder="e.g. Gir" className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-2 md:gap-4">
-                                            <div>
-                                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Age</label>
-                                                <input type="text" placeholder="e.g. 3 Years" className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
+                                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Description</label>
+                                                <textarea placeholder="Describe your animal in detail..." rows={3} value={sellForm.description} onChange={(e) => setSellForm(p => ({ ...p, description: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none resize-none text-sm md:text-base" />
                                             </div>
                                             <div>
-                                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Price (₹)</label>
-                                                <input type="text" placeholder="e.g. 85000" className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
+                                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Photos</label>
+                                                <div className="relative p-4 md:p-8 rounded-lg md:rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 text-center cursor-pointer hover:border-primary/50 transition-all">
+                                                    <input
+                                                        type="file"
+                                                        multiple
+                                                        accept="image/*"
+                                                        onChange={(e) => {
+                                                            if (e.target.files) {
+                                                                setSellForm(p => ({ ...p, imageFiles: [...p.imageFiles, ...Array.from(e.target.files!)] }));
+                                                            }
+                                                        }}
+                                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                    />
+                                                    <span className="material-symbols-outlined text-2xl md:text-4xl text-primary mb-1 md:mb-2 block">add_photo_alternate</span>
+                                                    <p className="text-xs md:text-sm text-gray-500">Click to upload photos (max 5)</p>
+                                                </div>
+                                                {sellForm.imageFiles.length > 0 && (
+                                                    <div className="mt-3 flex gap-2 flex-wrap">
+                                                        {sellForm.imageFiles.map((img, idx) => (
+                                                            <div key={idx} className="relative w-16 h-16 rounded-xl overflow-hidden bg-gray-100">
+                                                                <img src={URL.createObjectURL(img)} alt="" className="w-full h-full object-cover" />
+                                                                <button onClick={() => setSellForm(p => ({ ...p, imageFiles: p.imageFiles.filter((_, i) => i !== idx) }))}
+                                                                    className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center">
+                                                                    <span className="material-symbols-outlined text-xs">close</span>
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
+
+                                            {(sellFormErrors.length > 0 || sellError) && (
+                                                <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                                                    {sellError && <p className="text-sm text-red-600 flex items-center gap-2"><span className="material-symbols-outlined text-sm">error</span>{sellError}</p>}
+                                                    {sellFormErrors.map((err, i) => (
+                                                        <p key={i} className="text-sm text-red-600 flex items-center gap-2"><span className="material-symbols-outlined text-sm">error</span>{err}</p>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            <button onClick={handleSellSubmit} disabled={sellSubmitting}
+                                                className={`w-full py-2.5 md:py-4 rounded-lg md:rounded-xl bg-gradient-to-r from-primary to-emerald-600 text-white font-bold text-sm md:text-lg hover:shadow-lg hover:scale-[1.01] transition-all flex items-center justify-center gap-2 ${sellSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                                {sellSubmitting ? 'Submitting...' : <><span className="material-symbols-outlined">publish</span>Publish Listing</>}
+                                            </button>
                                         </div>
-                                        <div>
-                                            <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Location</label>
-                                            <input type="text" placeholder="e.g. Rajkot, Gujarat" className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Description</label>
-                                            <textarea placeholder="Describe your animal in detail..." rows={3} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none resize-none text-sm md:text-base" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Photos</label>
-                                            <div className="p-4 md:p-8 rounded-lg md:rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 text-center cursor-pointer hover:border-primary/50 transition-all">
-                                                <span className="material-symbols-outlined text-2xl md:text-4xl text-primary mb-1 md:mb-2 block">add_photo_alternate</span>
-                                                <p className="text-xs md:text-sm text-gray-500">Click to upload photos (max 5)</p>
-                                            </div>
-                                        </div>
-                                        <button className="w-full py-2.5 md:py-4 rounded-lg md:rounded-xl bg-gradient-to-r from-primary to-emerald-600 text-white font-bold text-sm md:text-lg hover:shadow-lg hover:scale-[1.01] transition-all flex items-center justify-center gap-2">
-                                            <span className="material-symbols-outlined">publish</span>
-                                            Publish Listing
-                                        </button>
                                     </div>
-                                </div>
+                                )}
                             </div>
                         )}
                     </div>
