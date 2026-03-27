@@ -2,6 +2,7 @@
 
 import MiraituLogo from '@/components/MiraituLogo';
 import { useLanguage } from '@/i18n/LanguageContext';
+import Script from 'next/script';
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
@@ -175,6 +176,19 @@ export default function Footer() {
                             <a href="/home/about" className="hover:text-white transition-colors">{t('footer.refund')}</a>
                         </div>
                         <div className="flex items-center gap-4">
+                            <a
+                                href="//www.dmca.com/Protection/Status.aspx?ID=4c54c1ed-55fe-45ef-ba01-6ee8a0c0cc3a"
+                                title="DMCA.com Protection Status"
+                                className="dmca-badge"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <img
+                                    src="https://images.dmca.com/Badges/dmca_protected_1_120.png?ID=4c54c1ed-55fe-45ef-ba01-6ee8a0c0cc3a"
+                                    alt="DMCA.com Protection Status"
+                                    className="h-6"
+                                />
+                            </a>
                             <div className="inline-flex items-center gap-1.5 rounded-full bg-white/8 px-3 py-1.5 text-[10px] font-bold border border-white/5">
                                 <span className="material-symbols-outlined text-xs text-green-400">verified</span>
                                 <span>{t('footer.secureBadge')}</span>
@@ -186,6 +200,7 @@ export default function Footer() {
                     </div>
                 </div>
             </div>
+            <Script src="https://images.dmca.com/Badges/DMCABadgeHelper.min.js" strategy="lazyOnload" />
         </footer>
     );
 }
