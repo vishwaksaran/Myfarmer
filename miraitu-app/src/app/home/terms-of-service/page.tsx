@@ -13,7 +13,7 @@ export default function TermsOfServicePage() {
                         Back to Home
                     </Link>
                     <h1 className="text-3xl md:text-4xl font-black">Miraitu.in – Complete Legal Bundle</h1>
-                    <p className="text-white/70 mt-2 text-sm">Last Updated: 08/05/2024</p>
+                    <p className="text-white/70 mt-2 text-sm">Last Updated: 28/03/2026</p>
                 </div>
             </div>
 
