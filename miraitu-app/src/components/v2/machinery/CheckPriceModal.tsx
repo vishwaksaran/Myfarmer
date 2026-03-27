@@ -178,7 +178,7 @@ export default function CheckPriceModal({ isOpen, onClose, tractorName }: CheckP
 
                                 <p className="text-xs text-center text-gray-400">
                                     By proceeding, you confirm and agree to the{' '}
-                                    <a href="/privacy" className="text-teal-600 hover:underline">Privacy Policy</a>.
+                                    <a href="/home/privacy-policy" className="text-teal-600 hover:underline">Privacy Policy</a>.
                                 </p>
                             </form>
                         </>
