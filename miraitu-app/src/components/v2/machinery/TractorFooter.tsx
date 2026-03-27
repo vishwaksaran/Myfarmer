@@ -41,7 +41,7 @@ const importantLinks = [
     { name: 'About Us', href: '/home/about' },
     { name: 'Contact Us', href: '/home/about' },
     { name: 'Privacy Policy', href: '/home/privacy-policy' },
-    { name: 'Terms & Conditions', href: '/home/about' },
+    { name: 'Terms & Conditions', href: '/home/terms-of-service' },
     { name: 'Sitemap', href: '/sitemap.xml' },
 ];
 

@@ -170,7 +170,7 @@ export default function Footer() {
                 <div className="border-t border-white/10 pt-6">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="flex flex-wrap items-center gap-6 text-xs text-gray-400">
-                            <a href="/home/about" className="hover:text-white transition-colors">{t('footer.terms')}</a>
+                            <a href="/home/terms-of-service" className="hover:text-white transition-colors">{t('footer.terms')}</a>
                             <a href="/home/privacy-policy" className="hover:text-white transition-colors">{t('footer.privacy')}</a>
                             <a href="/home/about" className="hover:text-white transition-colors">{t('footer.secureFaq')}</a>
                             <a href="/home/about" className="hover:text-white transition-colors">{t('footer.refund')}</a>
