@@ -76,7 +76,7 @@ const featuredMachinery = [
         category: 'Tractor',
         specs: '45 HP • 4 Cylinder • 4WD',
         price: '₹7,20,000',
-        image: '/images/machinery/featured-mahindra-yuvo.png',
+        image: '/images/machinery/tractorr-1.png',
         brand: 'Mahindra',
         hp: '45',
         type: 'new'
@@ -131,7 +131,7 @@ const featuredMachinery = [
         category: 'Implement',
         specs: '16 Discs • Heavy Duty • Mounted',
         price: '₹55,000',
-        image: '/images/machinery/featured-disc-harrow.png',
+        image: '/images/machinery/harrow.png',
         brand: 'Fieldstar',
         type: 'new'
     }
