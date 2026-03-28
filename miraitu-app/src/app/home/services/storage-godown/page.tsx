@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import MiraituLogo from '@/components/MiraituLogo';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
+import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 
 // ─── Storage types catalogue ───────────────────────────────────────────────
 const storageServices = [
@@ -58,6 +59,7 @@ function BookingModal({
         notes: '',
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
 
     // Trap focus and close on Escape
@@ -325,9 +327,10 @@ function BookingModal({
                     )}
 
                     {/* Submit */}
+                    <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
                     <button
                         type="submit"
-                        disabled={submitting}
+                        disabled={submitting || !agreedToTerms}
                         className="w-full rounded-xl py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-black text-base shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-2"
                     >
                         {submitting ? (

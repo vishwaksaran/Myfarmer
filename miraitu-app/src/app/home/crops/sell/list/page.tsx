@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { uploadListingImages, createListing } from '@/lib/supabase-db';
 import supabase from '@/lib/supabase';
 
@@ -20,6 +21,7 @@ export default function SellCropsListPage() {
     const [step, setStep] = useState(1);
     const [selectedCategory, setSelectedCategory] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [submitError, setSubmitError] = useState('');
     const [showSuccess, setShowSuccess] = useState(false);
     const [stepErrors, setStepErrors] = useState<string[]>([]);
@@ -404,6 +406,8 @@ export default function SellCropsListPage() {
                                 </div>
                             </div>
 
+                            <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
+
                             <div className="flex gap-3 md:gap-4">
                                 <button
                                     onClick={() => setStep(2)}
@@ -413,8 +417,8 @@ export default function SellCropsListPage() {
                                 </button>
                                 <button
                                     onClick={handleSubmit}
-                                    disabled={isSubmitting}
-                                    className={`flex-1 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg bg-primary text-white hover:bg-primary-dark transition-all ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    disabled={isSubmitting || !agreedToTerms}
+                                    className={`flex-1 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg bg-primary text-white hover:bg-primary-dark transition-all ${isSubmitting || !agreedToTerms ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
                                     {isSubmitting ? 'Submitting...' : 'Publish Listing'}
                                 </button>

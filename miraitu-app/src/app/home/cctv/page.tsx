@@ -3,11 +3,13 @@
 import { useState, useEffect, useRef } from 'react';
 import MiraituLogo from '@/components/MiraituLogo';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
+import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 
 export default function CCTVSurveillancePage() {
     const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
     const [headerVisible, setHeaderVisible] = useState(true);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         phone: '',
@@ -298,9 +300,10 @@ export default function CCTVSurveillancePage() {
                                         {packages.find(p => p.id === selectedPackage)?.price}
                                     </p>
                                 </div>
+                                <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
                                 <button 
                                     onClick={handleSubmitRequest}
-                                    disabled={!formData.name || !formData.phone || !formData.location || !formData.installDate}
+                                    disabled={!formData.name || !formData.phone || !formData.location || !formData.installDate || !agreedToTerms}
                                     className="vibrant-gradient w-full rounded-xl py-5 text-white font-black text-xl shadow-2xl shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span className="material-symbols-outlined text-2xl">send</span>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { uploadListingImages, createListing } from '@/lib/supabase-db';
+import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import supabase from '@/lib/supabase';
 
 const steps = ['Basic Details', 'Condition & Specs', 'Photos & Price'];
@@ -60,6 +61,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
     const [selectedCategory, setSelectedCategory] = useState(category);
     const [showSuccess, setShowSuccess] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [submitError, setSubmitError] = useState('');
     const [stepErrors, setStepErrors] = useState<string[]>([]);
     const [formData, setFormData] = useState({
@@ -587,13 +589,17 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                 handleSubmit();
                             }
                         }}
-                        disabled={isSubmitting}
-                        className={`flex items-center gap-2 px-8 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        disabled={isSubmitting || (currentStep === steps.length && !agreedToTerms)}
+                        className={`flex items-center gap-2 px-8 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors ${isSubmitting || (currentStep === steps.length && !agreedToTerms) ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         {isSubmitting ? 'Submitting...' : currentStep === steps.length ? 'Publish Listing' : 'Next: ' + steps[currentStep]}
                         {!isSubmitting && <span className="material-symbols-outlined">arrow_forward</span>}
                     </button>
                 </div>
+
+                {currentStep === steps.length && (
+                    <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
+                )}
 
                 {/* Validation Errors */}
                 {(stepErrors.length > 0 || submitError) && (

@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import Link from 'next/link';
 
 interface MachineryItem {
     id: number;
@@ -35,16 +37,37 @@ const TECH_PACK_COLORS: Record<string, string> = {
     MYOJA: 'bg-purple-600',
 };
 
+const STATE_DISTRICTS: Record<string, string[]> = {
+    'Andhra Pradesh': ['Anantapur', 'Chittoor', 'East Godavari', 'Guntur', 'Krishna', 'Kurnool', 'Nellore', 'Prakasam', 'Srikakulam', 'Visakhapatnam', 'Vizianagaram', 'West Godavari', 'YSR Kadapa'],
+    'Bihar': ['Araria', 'Aurangabad', 'Begusarai', 'Bhagalpur', 'Darbhanga', 'Gaya', 'Muzaffarpur', 'Patna', 'Purnia', 'Samastipur', 'Vaishali'],
+    'Gujarat': ['Ahmedabad', 'Amreli', 'Banaskantha', 'Bhavnagar', 'Junagadh', 'Kutch', 'Mehsana', 'Rajkot', 'Surat', 'Vadodara'],
+    'Haryana': ['Ambala', 'Faridabad', 'Gurugram', 'Hisar', 'Jhajjar', 'Jind', 'Karnal', 'Kurukshetra', 'Panipat', 'Rohtak', 'Sirsa', 'Sonipat', 'Yamunanagar'],
+    'Karnataka': ['Bagalkot', 'Ballari', 'Belagavi', 'Bengaluru Rural', 'Bengaluru Urban', 'Bidar', 'Chamarajanagar', 'Chikkamagaluru', 'Chitradurga', 'Dakshina Kannada', 'Davangere', 'Dharwad', 'Gadag', 'Hassan', 'Haveri', 'Kalaburagi', 'Kodagu', 'Kolar', 'Koppal', 'Mandya', 'Mysuru', 'Raichur', 'Ramanagara', 'Shivamogga', 'Tumakuru', 'Udupi', 'Uttara Kannada', 'Vijayapura', 'Yadgir'],
+    'Madhya Pradesh': ['Bhopal', 'Gwalior', 'Indore', 'Jabalpur', 'Rewa', 'Sagar', 'Satna', 'Ujjain', 'Vidisha'],
+    'Maharashtra': ['Ahmednagar', 'Akola', 'Amravati', 'Aurangabad', 'Beed', 'Bhandara', 'Buldhana', 'Chandrapur', 'Dhule', 'Jalgaon', 'Jalna', 'Kolhapur', 'Latur', 'Mumbai', 'Nagpur', 'Nanded', 'Nashik', 'Osmanabad', 'Palghar', 'Parbhani', 'Pune', 'Raigad', 'Ratnagiri', 'Sangli', 'Satara', 'Sindhudurg', 'Solapur', 'Thane', 'Wardha', 'Washim', 'Yavatmal'],
+    'Punjab': ['Amritsar', 'Barnala', 'Bathinda', 'Faridkot', 'Fatehgarh Sahib', 'Fazilka', 'Ferozepur', 'Gurdaspur', 'Hoshiarpur', 'Jalandhar', 'Kapurthala', 'Ludhiana', 'Mansa', 'Moga', 'Mohali', 'Muktsar', 'Pathankot', 'Patiala', 'Rupnagar', 'Sangrur', 'Tarn Taran'],
+    'Rajasthan': ['Ajmer', 'Alwar', 'Banswara', 'Barmer', 'Bharatpur', 'Bhilwara', 'Bikaner', 'Chittorgarh', 'Churu', 'Jaipur', 'Jaisalmer', 'Jodhpur', 'Kota', 'Nagaur', 'Pali', 'Sikar', 'Tonk', 'Udaipur'],
+    'Tamil Nadu': ['Chennai', 'Coimbatore', 'Cuddalore', 'Dindigul', 'Erode', 'Kanchipuram', 'Madurai', 'Nagapattinam', 'Salem', 'Thanjavur', 'Tiruchirappalli', 'Tirunelveli', 'Vellore', 'Villupuram'],
+    'Telangana': ['Adilabad', 'Hyderabad', 'Karimnagar', 'Khammam', 'Mahabubnagar', 'Medak', 'Nalgonda', 'Nizamabad', 'Rangareddy', 'Warangal'],
+    'Uttar Pradesh': ['Agra', 'Aligarh', 'Allahabad', 'Bareilly', 'Budaun', 'Bulandshahr', 'Etawah', 'Faizabad', 'Gorakhpur', 'Jhansi', 'Kanpur', 'Lucknow', 'Mathura', 'Meerut', 'Moradabad', 'Muzaffarnagar', 'Saharanpur', 'Varanasi'],
+    'West Bengal': ['Bankura', 'Bardhaman', 'Birbhum', 'Hooghly', 'Howrah', 'Jalpaiguri', 'Kolkata', 'Malda', 'Midnapore', 'Murshidabad', 'Nadia', 'North 24 Parganas', 'South 24 Parganas'],
+};
+
 export default function MachineryListing({ items, type, viewMode = 'grid', onCompare, selectedForCompare = [], onGetPrice }: MachineryListingProps) {
+    const { user } = useAuth();
     const [selectedItem, setSelectedItem] = useState<MachineryItem | null>(null);
     const [showQuoteModal, setShowQuoteModal] = useState(false);
     const [submitSuccess, setSubmitSuccess] = useState(false);
+    const [revealedPrices, setRevealedPrices] = useState<Set<number>>(new Set());
     const [quotePhone, setQuotePhone] = useState('');
     const [quoteEmail, setQuoteEmail] = useState('');
     const [quoteErrors, setQuoteErrors] = useState<Record<string, string>>({});
+    const [quoteState, setQuoteState] = useState('');
+    const [quoteDistrict, setQuoteDistrict] = useState('');
 
     const handleQuoteSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!user) return;
         const errs: Record<string, string> = {};
         const digits = quotePhone.replace(/\D/g, '');
         if (!digits) {
@@ -61,6 +84,9 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
         }
         setQuoteErrors({});
         setSubmitSuccess(true);
+        if (selectedItem) {
+            setRevealedPrices(prev => new Set(prev).add(selectedItem.id));
+        }
     };
 
     const closeQuoteModal = () => {
@@ -68,6 +94,8 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
         setSelectedItem(null);
         setQuotePhone('');
         setQuoteEmail('');
+        setQuoteState('');
+        setQuoteDistrict('');
         setQuoteErrors({});
         setTimeout(() => setSubmitSuccess(false), 300);
     };
@@ -166,8 +194,29 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                     <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
                                         <div className="flex items-center justify-between mb-3">
                                             <div>
-                                                <span className="text-xs text-gray-500">{type === 'new' ? 'Starting from' : 'Asking Price'}</span>
-                                                <p className="text-xl font-bold text-primary">{item.price}</p>
+                                                {user && revealedPrices.has(item.id) ? (
+                                                    <>
+                                                        <span className="text-xs text-gray-500">{type === 'new' ? 'Starting from' : 'Asking Price'}</span>
+                                                        <p className="text-xl font-bold text-primary">{item.price}</p>
+                                                    </>
+                                                ) : user ? (
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedItem(item);
+                                                            setShowQuoteModal(true);
+                                                            setSubmitSuccess(false);
+                                                        }}
+                                                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-dark transition-colors"
+                                                    >
+                                                        <span className="material-symbols-outlined text-sm">currency_rupee</span>
+                                                        Check Price
+                                                    </button>
+                                                ) : (
+                                                    <Link href="/user-login" className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                                                        <span className="material-symbols-outlined text-sm">lock</span>
+                                                        Login to see price
+                                                    </Link>
+                                                )}
                                             </div>
                                         </div>
 
@@ -187,7 +236,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                                     <span className="material-symbols-outlined text-sm">location_on</span>
                                                     On-Road Price
                                                 </button>
-                                            ) : (
+                                            ) : user ? (
                                                 <button
                                                     onClick={() => {
                                                         setSelectedItem(item);
@@ -199,6 +248,14 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                                     <span className="material-symbols-outlined text-sm">currency_rupee</span>
                                                     {type === 'new' ? 'Get Price' : 'Request Quote'}
                                                 </button>
+                                            ) : (
+                                                <Link
+                                                    href="/user-login"
+                                                    className="flex-1 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-1"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">currency_rupee</span>
+                                                    {type === 'new' ? 'Get Price' : 'Request Quote'}
+                                                </Link>
                                             )}
                                         </div>
                                     </div>
@@ -291,8 +348,29 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                     {/* Price and Actions */}
                                     <div className="mt-2 md:mt-3 pt-2 md:pt-3 border-t border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                                         <div className="shrink-0">
-                                            <span className="text-[10px] md:text-xs text-gray-500">{type === 'new' ? 'Starting from' : 'Asking Price'}</span>
-                                            <p className="text-lg md:text-xl font-bold text-primary leading-tight">{item.price}</p>
+                                            {user && revealedPrices.has(item.id) ? (
+                                                <>
+                                                    <span className="text-[10px] md:text-xs text-gray-500">{type === 'new' ? 'Starting from' : 'Asking Price'}</span>
+                                                    <p className="text-lg md:text-xl font-bold text-primary leading-tight">{item.price}</p>
+                                                </>
+                                            ) : user ? (
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedItem(item);
+                                                        setShowQuoteModal(true);
+                                                        setSubmitSuccess(false);
+                                                    }}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white text-xs md:text-sm font-semibold hover:bg-primary-dark transition-colors"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">currency_rupee</span>
+                                                    Check Price
+                                                </button>
+                                            ) : (
+                                                <Link href="/user-login" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs md:text-sm font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                                                    <span className="material-symbols-outlined text-sm">lock</span>
+                                                    Login to see price
+                                                </Link>
+                                            )}
                                         </div>
                                         <div className="flex gap-2 sm:ml-auto">
                                             <button
@@ -302,17 +380,27 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                                 <span className="material-symbols-outlined text-sm">info</span>
                                                 Details
                                             </button>
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedItem(item);
-                                                    setShowQuoteModal(true);
-                                                    setSubmitSuccess(false);
-                                                }}
-                                                className="flex-1 sm:flex-none px-3 md:px-4 py-2 rounded-lg md:rounded-xl bg-primary text-white text-xs md:text-sm font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-1"
-                                            >
-                                                <span className="material-symbols-outlined text-sm">currency_rupee</span>
-                                                {type === 'new' ? 'Get Price' : 'Request Quote'}
-                                            </button>
+                                            {user ? (
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedItem(item);
+                                                        setShowQuoteModal(true);
+                                                        setSubmitSuccess(false);
+                                                    }}
+                                                    className="flex-1 sm:flex-none px-3 md:px-4 py-2 rounded-lg md:rounded-xl bg-primary text-white text-xs md:text-sm font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-1"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">currency_rupee</span>
+                                                    {type === 'new' ? 'Get Price' : 'Request Quote'}
+                                                </button>
+                                            ) : (
+                                                <Link
+                                                    href="/user-login"
+                                                    className="flex-1 sm:flex-none px-3 md:px-4 py-2 rounded-lg md:rounded-xl bg-primary text-white text-xs md:text-sm font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-1"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">currency_rupee</span>
+                                                    {type === 'new' ? 'Get Price' : 'Request Quote'}
+                                                </Link>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -351,7 +439,25 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                             <div className="grid grid-cols-2 gap-4 mb-6">
                                 <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
                                     <span className="text-sm text-gray-500">Price</span>
-                                    <p className="text-xl font-bold text-primary">{selectedItem.price}</p>
+                                    {user && revealedPrices.has(selectedItem.id) ? (
+                                        <p className="text-xl font-bold text-primary">{selectedItem.price}</p>
+                                    ) : user ? (
+                                        <button
+                                            onClick={() => {
+                                                setShowQuoteModal(true);
+                                                setSubmitSuccess(false);
+                                            }}
+                                            className="mt-1 flex items-center gap-1 text-sm font-semibold text-primary hover:text-primary-dark transition-colors"
+                                        >
+                                            <span className="material-symbols-outlined text-sm">currency_rupee</span>
+                                            Check Price
+                                        </button>
+                                    ) : (
+                                        <Link href="/user-login" className="mt-1 flex items-center gap-1 text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors">
+                                            <span className="material-symbols-outlined text-sm">lock</span>
+                                            Login to see
+                                        </Link>
+                                    )}
                                 </div>
                                 <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
                                     <span className="text-sm text-gray-500">{selectedItem.hp ? 'Horsepower' : 'Warranty'}</span>
@@ -365,15 +471,24 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                             <p className="text-gray-600 dark:text-gray-300 mb-6">{selectedItem.specs}</p>
 
                             <div className="flex gap-3">
-                                <button
-                                    onClick={() => {
-                                        setShowQuoteModal(true);
-                                        setSubmitSuccess(false);
-                                    }}
-                                    className="flex-1 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors"
-                                >
-                                    {type === 'new' ? 'Get On-Road Price' : 'Request Quote'}
-                                </button>
+                                {user ? (
+                                    <button
+                                        onClick={() => {
+                                            setShowQuoteModal(true);
+                                            setSubmitSuccess(false);
+                                        }}
+                                        className="flex-1 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors"
+                                    >
+                                        {type === 'new' ? 'Get On-Road Price' : 'Request Quote'}
+                                    </button>
+                                ) : (
+                                    <Link
+                                        href="/user-login"
+                                        className="flex-1 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors text-center"
+                                    >
+                                        Login to Get Price
+                                    </Link>
+                                )}
                                 <button className="px-6 py-3 rounded-xl border border-gray-300 dark:border-gray-600 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                     <span className="material-symbols-outlined">share</span>
                                 </button>
@@ -408,12 +523,16 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                 <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4">
                                     <span className="material-symbols-outlined text-green-500 text-3xl">check_circle</span>
                                 </div>
-                                <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Request Submitted!</h4>
-                                <p className="text-gray-500 dark:text-gray-400 mb-4">
-                                    Thank you for your interest in {selectedItem.name}.
+                                <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Here&apos;s Your Price!</h4>
+                                <p className="text-gray-500 dark:text-gray-400 mb-2">
+                                    {selectedItem.name}
                                 </p>
+                                <div className="bg-primary/10 rounded-2xl px-6 py-4 mb-4">
+                                    <span className="text-xs text-gray-500">{type === 'new' ? 'Starting from' : 'Asking Price'}</span>
+                                    <p className="text-3xl font-black text-primary">{selectedItem.price}</p>
+                                </div>
                                 <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
-                                    <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will contact you soon with the best price</p>
+                                    <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will also contact you with the best deal</p>
                                 </div>
                                 <button
                                     onClick={closeQuoteModal}
@@ -474,18 +593,30 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State *</label>
-                                        <select className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none appearance-none">
-                                            <option>Select State</option>
-                                            <option>Maharashtra</option>
-                                            <option>Karnataka</option>
-                                            <option>Punjab</option>
-                                            <option>Uttar Pradesh</option>
+                                        <select
+                                            required
+                                            value={quoteState}
+                                            onChange={e => { setQuoteState(e.target.value); setQuoteDistrict(''); }}
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none appearance-none"
+                                        >
+                                            <option value="">Select State</option>
+                                            {Object.keys(STATE_DISTRICTS).map(s => (
+                                                <option key={s} value={s}>{s}</option>
+                                            ))}
                                         </select>
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">District *</label>
-                                        <select className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none appearance-none">
-                                            <option>Select District</option>
+                                        <select
+                                            required
+                                            value={quoteDistrict}
+                                            onChange={e => setQuoteDistrict(e.target.value)}
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none appearance-none"
+                                        >
+                                            <option value="">Select District</option>
+                                            {(STATE_DISTRICTS[quoteState] || []).map(d => (
+                                                <option key={d} value={d}>{d}</option>
+                                            ))}
                                         </select>
                                     </div>
                                 </div>

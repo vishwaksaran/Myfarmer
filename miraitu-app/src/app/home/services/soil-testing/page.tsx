@@ -3,11 +3,13 @@
 import { useState, useEffect, useRef } from 'react';
 import MiraituLogo from '@/components/MiraituLogo';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
+import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 
 export default function SoilTestingPage() {
     const [headerVisible, setHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const { submit, submitting } = useBookingSubmit();
     const bookingFormRef = useRef<HTMLDivElement>(null);
@@ -296,9 +298,10 @@ export default function SoilTestingPage() {
                                     />
                                     {formErrors.location && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.location}</p>}
                                 </div>
+                                <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
                                 <button
                                     onClick={handleScheduleVisit}
-                                    disabled={submitting}
+                                    disabled={submitting || !agreedToTerms}
                                     className="w-full rounded-lg md:rounded-xl py-3 md:py-4 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-black text-base md:text-lg shadow-lg hover:shadow-green-600/30 active:scale-[0.98] transition-all mt-6 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {submitting ? (

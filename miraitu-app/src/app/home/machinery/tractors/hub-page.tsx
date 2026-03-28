@@ -55,6 +55,10 @@ export default function TractorHubPage({ brands, popularModels, latestModels, al
                     <span className="material-symbols-outlined text-base">compare_arrows</span>
                     Compare
                 </Link>
+                <Link href="/home/machinery/tractors/rent" className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 text-sm font-medium whitespace-nowrap hover:bg-teal-100 transition-colors">
+                    <span className="material-symbols-outlined text-base">handshake</span>
+                    Rent
+                </Link>
             </div>
 
             {/* 2. Popular Brands */}

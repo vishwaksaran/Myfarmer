@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 
 const landCategories = [
@@ -18,6 +19,7 @@ export default function SellLandPage() {
     const [previews, setPreviews] = useState<string[]>([]);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
         location: '',
@@ -324,8 +326,11 @@ export default function SellLandPage() {
                             </div>
                         </div>
 
+                        {/* Terms Agreement */}
+                        <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
+
                         {/* Submit */}
-                        <button type="submit" className="w-full py-3 md:py-4 bg-primary text-white font-bold text-sm md:text-lg rounded-lg md:rounded-xl hover:bg-primary/90 transition-colors shadow-lg flex items-center justify-center gap-2">
+                        <button type="submit" disabled={!agreedToTerms} className={`w-full py-3 md:py-4 bg-primary text-white font-bold text-sm md:text-lg rounded-lg md:rounded-xl hover:bg-primary/90 transition-colors shadow-lg flex items-center justify-center gap-2 ${!agreedToTerms ? 'opacity-50 cursor-not-allowed' : ''}`}>
                             <span className="material-symbols-outlined text-lg md:text-xl">publish</span>
                             Submit Listing for Review
                         </button>

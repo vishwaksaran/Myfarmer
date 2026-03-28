@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { useRouter } from 'next/navigation';
 import MiraituLogo from '@/components/MiraituLogo';
 import { useAuth } from '@/context/AuthContext';
@@ -28,6 +29,7 @@ export default function UserRegisterPage() {
     const [otpCode, setOtpCode] = useState('');
     const [otpLoading, setOtpLoading] = useState(false);
     const [otpError, setOtpError] = useState<string | null>(null);
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
 
     // Redirect if already logged in
     useEffect(() => {
@@ -247,10 +249,12 @@ export default function UserRegisterPage() {
                                     )}
 
                                     {!phoneVerified && !otpSent && (
+                                        <>
+                                        <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
                                         <button
                                             type="button"
                                             onClick={handlePhoneRegister}
-                                            disabled={otpLoading || !phoneNumber || phoneNumber.length < 10 || !fullName.trim()}
+                                            disabled={otpLoading || !phoneNumber || phoneNumber.length < 10 || !fullName.trim() || !agreedToTerms}
                                             className="w-full py-3.5 rounded-xl bg-[var(--miraitu-primary-green)] text-white font-bold text-sm flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-[var(--miraitu-primary-green)]/20"
                                         >
                                             {otpLoading ? (
@@ -262,6 +266,7 @@ export default function UserRegisterPage() {
                                                 </>
                                             )}
                                         </button>
+                                        </>
                                     )}
 
                                     {/* OTP Input */}

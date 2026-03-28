@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import MiraituLogo from '@/components/MiraituLogo';
+import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -361,6 +362,7 @@ export default function OnboardingPage() {
     const [emailError, setEmailError] = useState<string | null>(null);
     const [showDiscardModal, setShowDiscardModal] = useState(false);
     const [isDiscarding, setIsDiscarding] = useState(false);
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
     const isSubmittingRef = useRef(false);
 
     const [formData, setFormData] = useState<OnboardingData>({
@@ -1163,9 +1165,11 @@ export default function OnboardingPage() {
                                 <span className="material-symbols-outlined text-lg">arrow_forward</span>
                             </button>
                         ) : (
+                            <>
+                            <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
                             <button
                                 onClick={handleSubmit}
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || !agreedToTerms}
                                 className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-[var(--miraitu-primary-green)] to-emerald-600 text-white text-sm font-bold shadow-lg shadow-green-300/30 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
                             >
                                 {isSubmitting ? (
@@ -1177,6 +1181,7 @@ export default function OnboardingPage() {
                                     </>
                                 )}
                             </button>
+                            </>
                         )}
                     </div>
 

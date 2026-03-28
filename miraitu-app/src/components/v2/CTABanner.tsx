@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/i18n/LanguageContext';
+import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 
 export default function CTABanner() {
     const { t } = useLanguage();
@@ -12,6 +13,7 @@ export default function CTABanner() {
     const [cbPhone, setCbPhone] = useState('');
     const [cbName, setCbName] = useState('');
     const [cbErrors, setCbErrors] = useState<Record<string, string>>({});
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
 
     // Placeholder contact details
     const contactNumber = "+91 74484 10198";
@@ -190,9 +192,11 @@ export default function CTABanner() {
                                                 {cbErrors.phone && <p className="text-red-500 text-xs mt-1 ml-1">{cbErrors.phone}</p>}
                                             </div>
                                         </div>
+                                        <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
                                         <button
                                             type="submit"
-                                            className="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-primary-dark text-white font-bold text-sm shadow-lg shadow-primary/25 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                            disabled={!agreedToTerms}
+                                            className={`w-full py-4 rounded-xl bg-gradient-to-r from-primary to-primary-dark text-white font-bold text-sm shadow-lg shadow-primary/25 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all ${!agreedToTerms ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         >
                                             {t('cta.requestCallback')}
                                         </button>

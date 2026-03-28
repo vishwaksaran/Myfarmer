@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import MiraituLogo from '@/components/MiraituLogo';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
+import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 
 // ─── Machinery catalogue ─────────────────────────────────────────────────────
 
@@ -105,6 +106,7 @@ function BookingModal({
     const { submit, submitting } = useBookingSubmit();
     const [showSuccess, setShowSuccess] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [form, setForm] = useState<ModalFormData>({
         full_name: '',
         phone: '',
@@ -395,9 +397,10 @@ function BookingModal({
                     )}
 
                     {/* Submit */}
+                    <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
                     <button
                         type="submit"
-                        disabled={submitting}
+                        disabled={submitting || !agreedToTerms}
                         className="w-full rounded-xl py-4 bg-primary text-white font-black text-base shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-2"
                     >
                         {submitting ? (

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { useLoginPrompt } from '@/context/LoginPromptContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 
@@ -22,6 +23,7 @@ export default function VeterinarySection() {
         location: ''
     });
     const [showSuccess, setShowSuccess] = useState(false);
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
     const handleBookNow = (e: React.FormEvent) => {
@@ -166,9 +168,12 @@ export default function VeterinarySection() {
                                         />
                                     </div>
 
+                                    <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
+
                                     <button
                                         type="submit"
-                                        className="w-full py-4 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-lg shadow-lg hover:shadow-green-500/20 active:scale-[0.98] transition-all mt-4"
+                                        disabled={!agreedToTerms}
+                                        className={`w-full py-4 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-lg shadow-lg hover:shadow-green-500/20 active:scale-[0.98] transition-all mt-4 ${!agreedToTerms ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     >
                                         {t('vet.bookNow')}
                                     </button>

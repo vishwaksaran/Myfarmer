@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import MiraituLogo from '@/components/MiraituLogo';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
+import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 
 const serviceData: Record<string, any> = {
     'harvester': {
@@ -122,6 +123,7 @@ export default function GenericServicePage() {
     const [headerVisible, setHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [formData, setFormData] = useState({
         name: '',
@@ -319,10 +321,12 @@ export default function GenericServicePage() {
                                         className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-primary outline-none"
                                     />
 
+                                    <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
+
                                     <button
                                         type="button"
                                         onClick={handleFindProviders}
-                                        disabled={submitting || !formData.name || !formData.phone || !formData.location}
+                                        disabled={submitting || !formData.name || !formData.phone || !formData.location || !agreedToTerms}
                                         className={`w-full py-4 rounded-xl ${colors.bg} ${colors.hover} text-white font-bold text-lg transition-all shadow-lg mt-2 disabled:opacity-50 disabled:cursor-not-allowed`}>
                                         {submitting ? 'SUBMITTING…' : slug === 'register-provider' ? 'REGISTER AS PROVIDER' : 'FIND PROVIDERS'}
                                     </button>
