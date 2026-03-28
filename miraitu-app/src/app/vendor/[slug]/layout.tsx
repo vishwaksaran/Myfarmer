@@ -13,19 +13,21 @@ function VendorLayoutInner({ children }: { children: React.ReactNode }) {
     const slug = params.slug as string;
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
+    const isLoginPage = pathname.endsWith('/login');
+
     useEffect(() => {
         if (loading) return;
 
-        if (!authenticated || !vendor) {
+        if (!isLoginPage && (!authenticated || !vendor)) {
             router.replace(`/vendor/${slug}/login`);
             return;
         }
 
         // Force password change on temp password
-        if (vendor.isTempPassword && !pathname.endsWith('/settings')) {
+        if (authenticated && vendor?.isTempPassword && !pathname.endsWith('/settings')) {
             router.replace(`/vendor/${slug}/settings?force=password`);
         }
-    }, [loading, authenticated, vendor, slug, router, pathname]);
+    }, [loading, authenticated, vendor, slug, router, pathname, isLoginPage]);
 
     if (loading) {
         return (
@@ -33,6 +35,11 @@ function VendorLayoutInner({ children }: { children: React.ReactNode }) {
                 <span className="material-symbols-outlined text-5xl text-green-600 animate-spin">progress_activity</span>
             </div>
         );
+    }
+
+    // If we're on the login page, just render the login component without the sidebar
+    if (isLoginPage) {
+        return <>{children}</>;
     }
 
     if (!authenticated || !vendor) return null;
