@@ -10,10 +10,12 @@ import {
 import { logActivity } from '@/lib/activity-logger';
 
 interface CreateVendorInput {
-    shopId: string;
+    shopSlug: string;
+    shopName: string;
     username: string;
     displayName: string;
     email?: string;
+    categoryIds: string[];
 }
 
 interface FetchVendorsInput {
@@ -23,20 +25,9 @@ interface FetchVendorsInput {
     status?: string;
 }
 
-export async function createVendor({ shopId, username, displayName, email }: CreateVendorInput) {
+export async function createVendor({ shopSlug, shopName, username, displayName, email, categoryIds }: CreateVendorInput) {
     try {
         const supabase = createSupabaseAdminClient();
-
-        // Validate shop exists
-        const { data: shop, error: shopError } = await supabase
-            .from('shops')
-            .select('id, slug, name')
-            .eq('id', shopId)
-            .single();
-
-        if (shopError || !shop) {
-            return { error: 'Shop not found.', data: null };
-        }
 
         // Check username uniqueness
         const { data: existing } = await supabase
@@ -49,20 +40,44 @@ export async function createVendor({ shopId, username, displayName, email }: Cre
             return { error: 'Username is already taken.', data: null };
         }
 
+        // Find or create shop by slug
+        let shop: { id: string; slug: string; name: string };
+        const { data: existingShop } = await supabase
+            .from('shops')
+            .select('id, slug, name')
+            .eq('slug', shopSlug)
+            .single();
+
+        if (existingShop) {
+            shop = existingShop;
+        } else {
+            // Create new shop profile
+            const { data: newShop, error: shopErr } = await supabase
+                .from('shops')
+                .insert({ slug: shopSlug, name: shopName, status: 'active' })
+                .select('id, slug, name')
+                .single();
+
+            if (shopErr || !newShop) {
+                console.error('[vendor-members] Shop creation failed:', shopErr);
+                return { error: 'Failed to create vendor profile.', data: null };
+            }
+            shop = newShop;
+        }
+
         // Generate temp password
         const tempPassword = generateTempPassword();
 
-        // Hash and encrypt simultaneously
         const [passwordHash, passwordEncrypted] = await Promise.all([
             hashPassword(tempPassword),
             encryptPassword(tempPassword),
         ]);
 
-        // Insert
+        // Insert credentials
         const { data: vendor, error: insertError } = await supabase
             .from('vendor_credentials')
             .insert({
-                shop_id: shopId,
+                shop_id: shop.id,
                 username,
                 password_hash: passwordHash,
                 password_encrypted: passwordEncrypted,
@@ -79,19 +94,28 @@ export async function createVendor({ shopId, username, displayName, email }: Cre
             return { error: 'Failed to create vendor.', data: null };
         }
 
+        // Assign categories to the shop
+        if (categoryIds.length > 0) {
+            const assignments = categoryIds.map(catId => ({
+                shop_id: shop.id,
+                category_id: catId,
+            }));
+            await supabase.from('shop_category_assignments').upsert(assignments, { onConflict: 'shop_id,category_id' });
+        }
+
         // Log
         await logActivity({
             vendorId: vendor.id,
-            shopId,
+            shopId: shop.id,
             action: 'credential_created',
-            details: { username, displayName, createdBy: 'admin' },
+            details: { username, displayName, shopSlug, categoryCount: categoryIds.length, createdBy: 'admin' },
         });
 
         return {
             error: null,
             data: {
                 ...vendor,
-                tempPassword, // Return to admin so they can share it
+                tempPassword,
                 shopSlug: shop.slug,
                 shopName: shop.name,
                 loginUrl: `/vendor/${shop.slug}/login`,
@@ -318,6 +342,33 @@ export async function fetchVendors({ page = 1, pageSize = 20, search = '', statu
             return { error: 'Failed to fetch vendors.', data: [], total: 0 };
         }
 
+        // Fetch category assignments for all returned vendor shops
+        if (data && data.length > 0) {
+            const shopIds = [...new Set(data.map((v) => {
+                const shops = (v as unknown as Record<string, unknown>).shops as { id: string } | null;
+                return shops?.id;
+            }).filter(Boolean))] as string[];
+
+            const { data: assignments } = await supabase
+                .from('shop_category_assignments')
+                .select('shop_id, category_id, shop_categories(id, name, slug, icon, category_type)')
+                .in('shop_id', shopIds);
+
+            // Attach categories to each vendor
+            const catMap = new Map<string, unknown[]>();
+            for (const a of assignments || []) {
+                const arr = catMap.get(a.shop_id) || [];
+                arr.push(a.shop_categories);
+                catMap.set(a.shop_id, arr);
+            }
+
+            for (const v of data) {
+                const rec = v as unknown as Record<string, unknown>;
+                const shops = rec.shops as { id: string } | null;
+                rec.categories = shops ? (catMap.get(shops.id) || []) : [];
+            }
+        }
+
         return { error: null, data: data || [], total: count || 0 };
     } catch (err) {
         console.error('[vendor-members] Fetch error:', err);
@@ -340,5 +391,58 @@ export async function fetchShopsForDropdown() {
     } catch (err) {
         console.error('[vendor-members] Fetch shops error:', err);
         return { error: 'Unexpected error.', data: [] };
+    }
+}
+
+export async function fetchCategoriesByType() {
+    try {
+        const supabase = createSupabaseAdminClient();
+
+        const { data, error } = await supabase
+            .from('shop_categories')
+            .select('id, name, slug, icon, category_type')
+            .order('name');
+
+        if (error) return { error: 'Failed to fetch categories.', data: {} };
+
+        // Group by category_type
+        const grouped: Record<string, Array<{ id: string; name: string; slug: string; icon: string; category_type: string }>> = {
+            shop: [],
+            machinery: [],
+            service_provider: [],
+        };
+
+        for (const cat of data || []) {
+            const type = cat.category_type as string;
+            if (grouped[type]) grouped[type].push(cat);
+        }
+
+        return { error: null, data: grouped };
+    } catch (err) {
+        console.error('[vendor-members] Fetch categories error:', err);
+        return { error: 'Unexpected error.', data: {} };
+    }
+}
+
+export async function updateVendorCategories(shopId: string, categoryIds: string[]) {
+    try {
+        const supabase = createSupabaseAdminClient();
+
+        // Remove existing assignments
+        await supabase.from('shop_category_assignments').delete().eq('shop_id', shopId);
+
+        // Insert new assignments
+        if (categoryIds.length > 0) {
+            const assignments = categoryIds.map(catId => ({
+                shop_id: shopId,
+                category_id: catId,
+            }));
+            await supabase.from('shop_category_assignments').insert(assignments);
+        }
+
+        return { error: null };
+    } catch (err) {
+        console.error('[vendor-members] Update categories error:', err);
+        return { error: 'Unexpected error.' };
     }
 }

@@ -46,7 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { href: '/admin/bookings', icon: 'assignment', label: 'Bookings' },
         { href: '/admin/users', icon: 'group', label: 'Users' },
         { href: '/admin/crm/members', icon: 'badge', label: 'CRM Members' },
-        { href: '/admin/crm/shops', icon: 'storefront', label: 'CRM Shops' },
+        { href: '/admin/crm/shops', icon: 'storefront', label: 'CRM Vendors' },
         { href: '/admin/crm/activity', icon: 'history', label: 'Activity Log' },
     ];
 
