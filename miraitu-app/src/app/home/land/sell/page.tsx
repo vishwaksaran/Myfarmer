@@ -168,16 +168,14 @@ export default function SellLandPage() {
                                         key={cat.id}
                                         type="button"
                                         onClick={() => setSelectedCategory(cat.id)}
-                                        className={`p-2 md:p-4 rounded-lg md:rounded-xl border-2 text-center transition-all ${
-                                            selectedCategory === cat.id
+                                        className={`p-2 md:p-4 rounded-lg md:rounded-xl border-2 text-center transition-all ${selectedCategory === cat.id
                                                 ? 'border-primary bg-primary/5'
                                                 : 'border-gray-200 dark:border-gray-700 hover:border-primary/30'
-                                        }`}
+                                            }`}
                                     >
                                         <span className="text-xl md:text-2xl mb-0.5 md:mb-1 block">{cat.icon}</span>
-                                        <span className={`text-[10px] md:text-xs font-semibold line-clamp-2 ${
-                                            selectedCategory === cat.id ? 'text-primary' : 'text-gray-600'
-                                        }`}>{cat.name}</span>
+                                        <span className={`text-[10px] md:text-xs font-semibold line-clamp-2 ${selectedCategory === cat.id ? 'text-primary' : 'text-gray-600'
+                                            }`}>{cat.name}</span>
                                     </button>
                                 ))}
                             </div>
@@ -276,11 +274,10 @@ export default function SellLandPage() {
                             />
                             <label
                                 htmlFor="photoInput"
-                                className={`block border-2 border-dashed rounded-lg md:rounded-2xl p-4 md:p-8 text-center ${
-                                    photos.length >= 3
+                                className={`block border-2 border-dashed rounded-lg md:rounded-2xl p-4 md:p-8 text-center ${photos.length >= 3
                                         ? 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 cursor-not-allowed'
                                         : 'border-gray-300 dark:border-gray-700 hover:border-primary cursor-pointer transition-colors'
-                                }`}
+                                    }`}
                             >
                                 <span className="material-symbols-outlined text-2xl md:text-4xl text-gray-400 mb-1 md:mb-2 block">add_a_photo</span>
                                 <p className="text-xs md:text-sm text-gray-500 font-medium">{photos.length >= 3 ? 'Max 3 photos reached' : 'Tap to upload land photos'}</p>

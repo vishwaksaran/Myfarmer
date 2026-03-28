@@ -522,14 +522,14 @@ export default function BecomeSellerPage() {
                                     </button>
                                 ) : (
                                     <>
-                                    <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
-                                    <button onClick={handleSubmit} disabled={isSubmitting || !agreedToTerms} className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-base shadow-2xl shadow-orange-500/30 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed">
-                                        {isSubmitting ? (
-                                            <><span className="material-symbols-outlined text-xl animate-spin">progress_activity</span>Submitting...</>
-                                        ) : (
-                                            <><span className="material-symbols-outlined text-xl">send</span>Submit Application</>
-                                        )}
-                                    </button>
+                                        <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
+                                        <button onClick={handleSubmit} disabled={isSubmitting || !agreedToTerms} className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-base shadow-2xl shadow-orange-500/30 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+                                            {isSubmitting ? (
+                                                <><span className="material-symbols-outlined text-xl animate-spin">progress_activity</span>Submitting...</>
+                                            ) : (
+                                                <><span className="material-symbols-outlined text-xl">send</span>Submit Application</>
+                                            )}
+                                        </button>
                                     </>
                                 )}
                             </div>

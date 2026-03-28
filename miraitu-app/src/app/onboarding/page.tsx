@@ -851,8 +851,8 @@ export default function OnboardingPage() {
                                             key={role.id}
                                             onClick={() => setFormData(f => ({ ...f, role: role.id, interests: [], farm_size: '', experience_years: '' }))}
                                             className={`relative flex flex-col items-center gap-1.5 p-4 rounded-xl border-2 transition-all duration-200 group ${formData.role === role.id
-                                                    ? `${role.border} ${role.activeBg} scale-[1.02] shadow-md`
-                                                    : 'border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm'
+                                                ? `${role.border} ${role.activeBg} scale-[1.02] shadow-md`
+                                                : 'border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm'
                                                 }`}
                                         >
                                             {formData.role === role.id && (
@@ -905,8 +905,8 @@ export default function OnboardingPage() {
                                                     key={interest.id}
                                                     onClick={() => toggleInterest(interest.id)}
                                                     className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${isSelected
-                                                            ? `border-[var(--miraitu-primary-green)] bg-green-50 shadow-sm`
-                                                            : 'border-gray-100 bg-white hover:border-gray-200'
+                                                        ? `border-[var(--miraitu-primary-green)] bg-green-50 shadow-sm`
+                                                        : 'border-gray-100 bg-white hover:border-gray-200'
                                                         }`}
                                                 >
                                                     <div className={`w-8 h-8 rounded-lg ${interest.bg} flex items-center justify-center flex-shrink-0 ${isSelected ? 'scale-110' : ''
@@ -1057,8 +1057,8 @@ export default function OnboardingPage() {
                                                 key={size.id}
                                                 onClick={() => setFormData(f => ({ ...f, farm_size: f.farm_size === size.id ? '' : size.id }))}
                                                 className={`flex items-center gap-2.5 p-3 rounded-xl border-2 transition-all duration-200 ${formData.farm_size === size.id
-                                                        ? 'border-[var(--miraitu-primary-green)] bg-green-50 shadow-sm'
-                                                        : 'border-gray-100 bg-white hover:border-gray-200'
+                                                    ? 'border-[var(--miraitu-primary-green)] bg-green-50 shadow-sm'
+                                                    : 'border-gray-100 bg-white hover:border-gray-200'
                                                     }`}
                                             >
                                                 <span className={`material-symbols-outlined text-lg ${formData.farm_size === size.id ? 'text-[var(--miraitu-primary-green)]' : 'text-gray-400'}`}>{size.icon}</span>
@@ -1077,8 +1077,8 @@ export default function OnboardingPage() {
                                                 key={exp.id}
                                                 onClick={() => setFormData(f => ({ ...f, experience_years: f.experience_years === exp.id ? '' : exp.id }))}
                                                 className={`flex items-center gap-2.5 p-3.5 rounded-xl border-2 transition-all duration-200 ${formData.experience_years === exp.id
-                                                        ? 'border-[var(--miraitu-primary-green)] bg-green-50 shadow-sm'
-                                                        : 'border-gray-100 bg-white hover:border-gray-200'
+                                                    ? 'border-[var(--miraitu-primary-green)] bg-green-50 shadow-sm'
+                                                    : 'border-gray-100 bg-white hover:border-gray-200'
                                                     }`}
                                             >
                                                 <span className="text-xl">{exp.icon}</span>
@@ -1166,21 +1166,21 @@ export default function OnboardingPage() {
                             </button>
                         ) : (
                             <>
-                            <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
-                            <button
-                                onClick={handleSubmit}
-                                disabled={isSubmitting || !agreedToTerms}
-                                className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-[var(--miraitu-primary-green)] to-emerald-600 text-white text-sm font-bold shadow-lg shadow-green-300/30 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
-                            >
-                                {isSubmitting ? (
-                                    <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
-                                ) : (
-                                    <>
-                                        <span className="material-symbols-outlined text-lg">check_circle</span>
-                                        Complete Setup
-                                    </>
-                                )}
-                            </button>
+                                <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={isSubmitting || !agreedToTerms}
+                                    className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-[var(--miraitu-primary-green)] to-emerald-600 text-white text-sm font-bold shadow-lg shadow-green-300/30 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                                >
+                                    {isSubmitting ? (
+                                        <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
+                                    ) : (
+                                        <>
+                                            <span className="material-symbols-outlined text-lg">check_circle</span>
+                                            Complete Setup
+                                        </>
+                                    )}
+                                </button>
                             </>
                         )}
                     </div>
@@ -1191,10 +1191,10 @@ export default function OnboardingPage() {
                             <div
                                 key={step}
                                 className={`h-2 rounded-full transition-all duration-300 ${step === currentStep
-                                        ? 'w-8 bg-[var(--miraitu-primary-green)]'
-                                        : step < currentStep
-                                            ? 'w-2 bg-[var(--miraitu-primary-green)]/60'
-                                            : 'w-2 bg-gray-300'
+                                    ? 'w-8 bg-[var(--miraitu-primary-green)]'
+                                    : step < currentStep
+                                        ? 'w-2 bg-[var(--miraitu-primary-green)]/60'
+                                        : 'w-2 bg-gray-300'
                                     }`}
                             />
                         ))}

@@ -222,11 +222,10 @@ export default function RentFarmLandPage() {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex flex-col md:flex-row md:items-center gap-1.5 md:gap-3 p-3 md:p-4 rounded-lg md:rounded-2xl font-bold transition-all text-center md:text-left ${
-                                activeTab === tab.id
+                            className={`flex flex-col md:flex-row md:items-center gap-1.5 md:gap-3 p-3 md:p-4 rounded-lg md:rounded-2xl font-bold transition-all text-center md:text-left ${activeTab === tab.id
                                     ? `${tab.bgColor} text-white shadow-lg`
                                     : 'bg-white dark:bg-[#1a231a] text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-primary/30'
-                            }`}
+                                }`}
                         >
                             <div className={`w-8 md:w-10 h-8 md:h-10 rounded-lg md:rounded-xl mx-auto md:mx-0 flex items-center justify-center ${activeTab === tab.id ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-800'}`}>
                                 <span className="material-symbols-outlined text-lg md:text-xl">{tab.icon}</span>
@@ -258,11 +257,10 @@ export default function RentFarmLandPage() {
                                 <button
                                     key={period}
                                     onClick={() => setActivePeriod(period)}
-                                    className={`px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all ${
-                                        activePeriod === period
+                                    className={`px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all ${activePeriod === period
                                             ? 'bg-primary text-white shadow-md'
                                             : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-primary/10'
-                                    }`}
+                                        }`}
                                 >
                                     {period}
                                 </button>
@@ -412,11 +410,10 @@ export default function RentFarmLandPage() {
                                     />
                                     <label
                                         htmlFor="photoInputRent"
-                                        className={`block border-2 border-dashed rounded-lg md:rounded-2xl p-4 md:p-8 text-center ${
-                                            photos.length >= 3
+                                        className={`block border-2 border-dashed rounded-lg md:rounded-2xl p-4 md:p-8 text-center ${photos.length >= 3
                                                 ? 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 cursor-not-allowed'
                                                 : 'border-gray-300 dark:border-gray-700 hover:border-primary cursor-pointer transition-colors'
-                                        }`}
+                                            }`}
                                     >
                                         <span className="material-symbols-outlined text-2xl md:text-4xl text-gray-400 mb-1 md:mb-2 block">add_a_photo</span>
                                         <p className="text-xs md:text-sm text-gray-500 font-medium">{photos.length >= 3 ? 'Max 3 photos reached' : 'Upload land photos'}</p>

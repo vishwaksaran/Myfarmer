@@ -208,48 +208,47 @@ export default function UserRegisterPage() {
                                 <label className="flex flex-col gap-2">
                                     <span className="text-[#0f1a11] text-sm font-bold uppercase tracking-wide ml-1">
                                         {t('register.mobileNumber')}
-                                            {phoneVerified && (
-                                                <span className="ml-2 text-[var(--miraitu-primary-green)] text-xs normal-case font-bold inline-flex items-center gap-1">
-                                                    <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-                                                    {t('register.verified')}
-                                                </span>
-                                            )}
-                                        </span>
-                                        <div className="relative">
-                                            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">call</span>
-                                            <input
-                                                value={phoneNumber}
-                                                onChange={(e) => {
-                                                    setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10));
-                                                    if (phoneVerified) {
-                                                        setPhoneVerified(false);
-                                                        setOtpSent(false);
-                                                        setOtpCode('');
-                                                    }
-                                                }}
-                                                disabled={phoneVerified}
-                                                className={`skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border bg-[#fcfdfc] outline-none ${
-                                                    phoneVerified
-                                                        ? 'border-[var(--miraitu-primary-green)] bg-green-50/50 text-gray-600'
-                                                        : 'border-gray-200 focus:border-[var(--miraitu-primary-green)]'
+                                        {phoneVerified && (
+                                            <span className="ml-2 text-[var(--miraitu-primary-green)] text-xs normal-case font-bold inline-flex items-center gap-1">
+                                                <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                                {t('register.verified')}
+                                            </span>
+                                        )}
+                                    </span>
+                                    <div className="relative">
+                                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">call</span>
+                                        <input
+                                            value={phoneNumber}
+                                            onChange={(e) => {
+                                                setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10));
+                                                if (phoneVerified) {
+                                                    setPhoneVerified(false);
+                                                    setOtpSent(false);
+                                                    setOtpCode('');
+                                                }
+                                            }}
+                                            disabled={phoneVerified}
+                                            className={`skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border bg-[#fcfdfc] outline-none ${phoneVerified
+                                                    ? 'border-[var(--miraitu-primary-green)] bg-green-50/50 text-gray-600'
+                                                    : 'border-gray-200 focus:border-[var(--miraitu-primary-green)]'
                                                 }`}
-                                                placeholder="+91 XXXXX XXXXX"
-                                                type="tel"
-                                                required
-                                            />
-                                        </div>
-                                    </label>
+                                            placeholder="+91 XXXXX XXXXX"
+                                            type="tel"
+                                            required
+                                        />
+                                    </div>
+                                </label>
 
-                                    {/* OTP Error */}
-                                    {otpError && (
-                                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs font-medium flex items-center gap-1.5">
-                                            <span className="material-symbols-outlined text-sm">error</span>
-                                            {otpError}
-                                        </div>
-                                    )}
+                                {/* OTP Error */}
+                                {otpError && (
+                                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs font-medium flex items-center gap-1.5">
+                                        <span className="material-symbols-outlined text-sm">error</span>
+                                        {otpError}
+                                    </div>
+                                )}
 
-                                    {!phoneVerified && !otpSent && (
-                                        <>
+                                {!phoneVerified && !otpSent && (
+                                    <>
                                         <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
                                         <button
                                             type="button"
@@ -266,55 +265,55 @@ export default function UserRegisterPage() {
                                                 </>
                                             )}
                                         </button>
-                                        </>
-                                    )}
+                                    </>
+                                )}
 
-                                    {/* OTP Input */}
-                                    {otpSent && !phoneVerified && (
-                                        <div className="space-y-3">
-                                            <p className="text-xs text-gray-500 font-medium">
-                                                {t('register.otpSentTo')} <span className="font-bold text-[var(--miraitu-primary-green)]">+91{phoneNumber}</span>
-                                            </p>
-                                            <div className="flex gap-2">
-                                                <div className="relative flex-1">
-                                                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">lock</span>
-                                                    <input
-                                                        value={otpCode}
-                                                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                                        className="skeuo-input w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none text-center tracking-[0.3em] font-bold text-lg"
-                                                        placeholder="• • • • • •"
-                                                        type="text"
-                                                        maxLength={6}
-                                                        autoFocus
-                                                    />
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={handleVerifyOtp}
-                                                    disabled={otpLoading || otpCode.length < 4}
-                                                    className="px-5 py-3 rounded-xl bg-[var(--miraitu-primary-green)] text-white font-bold text-sm flex items-center gap-1.5 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
-                                                >
-                                                    {otpLoading ? (
-                                                        <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
-                                                    ) : (
-                                                        <>
-                                                            <span className="material-symbols-outlined text-lg">check</span>
-                                                            {t('register.verify')}
-                                                        </>
-                                                    )}
-                                                </button>
+                                {/* OTP Input */}
+                                {otpSent && !phoneVerified && (
+                                    <div className="space-y-3">
+                                        <p className="text-xs text-gray-500 font-medium">
+                                            {t('register.otpSentTo')} <span className="font-bold text-[var(--miraitu-primary-green)]">+91{phoneNumber}</span>
+                                        </p>
+                                        <div className="flex gap-2">
+                                            <div className="relative flex-1">
+                                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">lock</span>
+                                                <input
+                                                    value={otpCode}
+                                                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                                    className="skeuo-input w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none text-center tracking-[0.3em] font-bold text-lg"
+                                                    placeholder="• • • • • •"
+                                                    type="text"
+                                                    maxLength={6}
+                                                    autoFocus
+                                                />
                                             </div>
                                             <button
                                                 type="button"
-                                                onClick={handleSendOtp}
-                                                disabled={otpLoading}
-                                                className="text-xs font-bold text-[var(--miraitu-primary-green)] hover:underline"
+                                                onClick={handleVerifyOtp}
+                                                disabled={otpLoading || otpCode.length < 4}
+                                                className="px-5 py-3 rounded-xl bg-[var(--miraitu-primary-green)] text-white font-bold text-sm flex items-center gap-1.5 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
                                             >
-                                                {t('register.resendOtp')}
+                                                {otpLoading ? (
+                                                    <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
+                                                ) : (
+                                                    <>
+                                                        <span className="material-symbols-outlined text-lg">check</span>
+                                                        {t('register.verify')}
+                                                    </>
+                                                )}
                                             </button>
                                         </div>
-                                    )}
-                                </div>
+                                        <button
+                                            type="button"
+                                            onClick={handleSendOtp}
+                                            disabled={otpLoading}
+                                            className="text-xs font-bold text-[var(--miraitu-primary-green)] hover:underline"
+                                        >
+                                            {t('register.resendOtp')}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
 
                             {/* Divider */}
                             <div className="flex items-center gap-4 my-2">
