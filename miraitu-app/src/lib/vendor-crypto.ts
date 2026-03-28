@@ -1,4 +1,4 @@
-'use server';
+// Server-only utility — imported by API routes and server actions
 
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';

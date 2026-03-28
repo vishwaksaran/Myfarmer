@@ -1,4 +1,4 @@
-'use server';
+// Server-only utility — imported by API routes and server actions
 
 import { createSupabaseAdminClient } from '@/lib/supabase-admin';
 
