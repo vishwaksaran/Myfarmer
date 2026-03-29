@@ -23,10 +23,10 @@ function VendorLayoutInner({ children }: { children: React.ReactNode }) {
             return;
         }
 
-        // Force password change on temp password
-        if (authenticated && vendor?.isTempPassword && !pathname.endsWith('/settings')) {
-            router.replace(`/vendor/${slug}/settings?force=password`);
-        }
+        // NOTE: User requested not to force password changes even if using a temp password.
+        // if (authenticated && vendor?.isTempPassword && !pathname.endsWith('/settings')) {
+        //     router.replace(`/vendor/${slug}/settings?force=password`);
+        // }
     }, [loading, authenticated, vendor, slug, router, pathname, isLoginPage]);
 
     if (loading) {
