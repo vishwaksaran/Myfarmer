@@ -4,16 +4,16 @@ import Link from 'next/link';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 const popularBrands = [
-    { name: 'Mahindra', slug: 'mahindra', logo: '/images/brands/tractors/mahindra.png', color: '#e41e26' },
-    { name: 'John Deere', slug: 'john-deere', logo: '/images/brands/tractors/john-deere.png', color: '#367c2b' },
-    { name: 'Sonalika', slug: 'sonalika', logo: '/images/brands/tractors/sonalika.png', color: '#00529b' },
-    { name: 'Swaraj', slug: 'swaraj', logo: '/images/brands/tractors/swaraj.png', color: '#c60c30' },
-    { name: 'Kubota', slug: 'kubota', logo: '/images/brands/tractors/kubota.png', color: '#f47920' },
-    { name: 'Eicher', slug: 'eicher', logo: '/images/brands/tractors/eicher.png', color: '#003d79' },
-    { name: 'New Holland', slug: 'new-holland', logo: '/images/brands/tractors/new-holland.png', color: '#0033a0' },
-    { name: 'Massey Ferguson', slug: 'massey-ferguson', logo: '/images/brands/tractors/massey-ferguson.png', color: '#c8102e' },
-    { name: 'Farmtrac', slug: 'farmtrac', logo: '/images/brands/tractors/farmtrac.png', color: '#e31e24' },
-    { name: 'Powertrac', slug: 'powertrac', logo: '/images/brands/tractors/powertrac.png', color: '#d80027' },
+    { name: 'Mahindra', slug: 'mahindra', logo: '/images/brands/tractors/mahindra.svg', color: '#e41e26' },
+    { name: 'John Deere', slug: 'john-deere', logo: '/images/brands/tractors/john-deere.svg', color: '#367c2b' },
+    { name: 'Sonalika', slug: 'sonalika', logo: '/images/brands/tractors/sonalika.svg', color: '#00529b' },
+    { name: 'Swaraj', slug: 'swaraj', logo: '/images/brands/tractors/swaraj.svg', color: '#c60c30' },
+    { name: 'Kubota', slug: 'kubota', logo: '/images/brands/tractors/kubota.svg', color: '#f47920' },
+    { name: 'Eicher', slug: 'eicher', logo: '/images/brands/tractors/eicher.svg', color: '#003d79' },
+    { name: 'New Holland', slug: 'new-holland', logo: '/images/brands/tractors/new-holland.svg', color: '#0033a0' },
+    { name: 'Massey Ferguson', slug: 'massey-ferguson', logo: '/images/brands/tractors/massey-ferguson.svg', color: '#c8102e' },
+    { name: 'Farmtrac', slug: 'farmtrac', logo: '/images/brands/tractors/farmtrac.svg', color: '#e31e24' },
+    { name: 'Powertrac', slug: 'powertrac', logo: '/images/brands/tractors/powertrac.svg', color: '#d80027' },
 ];
 
 export default function MachinerySection() {
