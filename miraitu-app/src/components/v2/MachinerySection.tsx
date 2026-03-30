@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 const popularBrands = [
@@ -90,7 +89,7 @@ export default function MachinerySection() {
                             Popular Tractor Brands
                         </h3>
                         <Link
-                            href="/home/machinery/tractors/brands"
+                            href="/home/machinery/tractors"
                             className="text-sm text-green-600 dark:text-green-400 font-medium hover:underline"
                         >
                             View All →
@@ -104,7 +103,7 @@ export default function MachinerySection() {
                                 className="group flex flex-col items-center gap-1.5 p-2 md:p-3 rounded-xl bg-gray-50 dark:bg-[#1a231a] border border-gray-100 dark:border-gray-800 hover:shadow-md hover:border-green-200 dark:hover:border-green-700 transition-all"
                             >
                                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center overflow-hidden bg-white dark:bg-gray-700 p-1">
-                                    <Image
+                                    <img
                                         src={brand.logo}
                                         alt={brand.name}
                                         width={48}
