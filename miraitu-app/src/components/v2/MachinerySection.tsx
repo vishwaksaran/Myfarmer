@@ -1,7 +1,21 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useLanguage } from '@/i18n/LanguageContext';
+
+const popularBrands = [
+    { name: 'Mahindra', slug: 'mahindra', logo: '/images/brands/tractors/mahindra.png', color: '#e41e26' },
+    { name: 'John Deere', slug: 'john-deere', logo: '/images/brands/tractors/john-deere.png', color: '#367c2b' },
+    { name: 'Sonalika', slug: 'sonalika', logo: '/images/brands/tractors/sonalika.png', color: '#00529b' },
+    { name: 'Swaraj', slug: 'swaraj', logo: '/images/brands/tractors/swaraj.png', color: '#c60c30' },
+    { name: 'Kubota', slug: 'kubota', logo: '/images/brands/tractors/kubota.png', color: '#f47920' },
+    { name: 'Eicher', slug: 'eicher', logo: '/images/brands/tractors/eicher.png', color: '#003d79' },
+    { name: 'New Holland', slug: 'new-holland', logo: '/images/brands/tractors/new-holland.png', color: '#0033a0' },
+    { name: 'Massey Ferguson', slug: 'massey-ferguson', logo: '/images/brands/tractors/massey-ferguson.png', color: '#c8102e' },
+    { name: 'Farmtrac', slug: 'farmtrac', logo: '/images/brands/tractors/farmtrac.png', color: '#e31e24' },
+    { name: 'Powertrac', slug: 'powertrac', logo: '/images/brands/tractors/powertrac.png', color: '#d80027' },
+];
 
 export default function MachinerySection() {
     const { t } = useLanguage();
@@ -67,6 +81,44 @@ export default function MachinerySection() {
                             </div>
                         </Link>
                     ))}
+                </div>
+
+                {/* Popular Tractor Brands */}
+                <div className="mt-10">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg md:text-xl font-bold text-[#121811] dark:text-[#f9fbf9]">
+                            Popular Tractor Brands
+                        </h3>
+                        <Link
+                            href="/home/machinery/tractors/brands"
+                            className="text-sm text-green-600 dark:text-green-400 font-medium hover:underline"
+                        >
+                            View All →
+                        </Link>
+                    </div>
+                    <div className="grid grid-cols-5 md:grid-cols-10 gap-2 md:gap-3">
+                        {popularBrands.map((brand) => (
+                            <Link
+                                key={brand.slug}
+                                href={`/home/machinery/tractors/brand/${brand.slug}`}
+                                className="group flex flex-col items-center gap-1.5 p-2 md:p-3 rounded-xl bg-gray-50 dark:bg-[#1a231a] border border-gray-100 dark:border-gray-800 hover:shadow-md hover:border-green-200 dark:hover:border-green-700 transition-all"
+                            >
+                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center overflow-hidden bg-white dark:bg-gray-700 p-1">
+                                    <Image
+                                        src={brand.logo}
+                                        alt={brand.name}
+                                        width={48}
+                                        height={48}
+                                        className="w-full h-full object-contain"
+                                        loading="lazy"
+                                    />
+                                </div>
+                                <span className="text-[10px] md:text-xs font-medium text-gray-700 dark:text-gray-300 text-center leading-tight group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors truncate w-full">
+                                    {brand.name}
+                                </span>
+                            </Link>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Mobile CTA */}

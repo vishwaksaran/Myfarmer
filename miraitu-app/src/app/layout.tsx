@@ -14,6 +14,9 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "700", "800"],
   display: "swap",
+  fallback: ["system-ui", "arial"],
+  preload: true,
+  adjustFontFallback: true,
 });
 
 const notoSans = Noto_Sans({
@@ -21,6 +24,9 @@ const notoSans = Noto_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
   display: "swap",
+  fallback: ["system-ui", "arial"],
+  preload: false,
+  adjustFontFallback: true,
 });
 
 export const metadata: Metadata = {

@@ -1,26 +1,29 @@
+import dynamic from 'next/dynamic';
 import Header from '@/components/v2/Header';
 import HeroSection from '@/components/v2/HeroSection';
 import QuickServices from '@/components/v2/QuickServices';
-import LivestockMarketplace from '@/components/v2/LivestockMarketplace';
-import VeterinarySection from '@/components/v2/VeterinarySection';
-import FPOBanner from '@/components/v2/FPOBanner';
-import FinanceBanner from '@/components/v2/FinanceBanner';
-import FarmerServicesGrid from '@/components/v2/FarmerServicesGrid';
-import MachinerySection from '@/components/v2/MachinerySection';
-import CropMarketplaceSection from '@/components/v2/CropMarketplaceSection';
-import StorageSection from '@/components/v2/StorageSection';
-import ShopSection from '@/components/v2/ShopSection';
-import FarmLandSection from '@/components/v2/FarmLandSection';
-import ServicesSection from '@/components/v2/ServicesSection';
-import WaterEnergySection from '@/components/v2/WaterEnergySection';
-import ToolboxSection from '@/components/v2/ToolboxSection';
-import Footer from '@/components/v2/Footer';
-import CTABanner from '@/components/v2/CTABanner';
-import TestimonialsSection from '@/components/v2/TestimonialsSection';
-import FeaturedVideosSection from '@/components/v2/FeaturedVideosSection';
-import FloatingActionButtons from '@/components/FloatingActionButtons';
-import BottomNav from '@/components/v2/BottomNav';
 import { CartProvider } from '@/context/CartContext';
+
+// Below-the-fold sections loaded lazily — reduces initial compile & JS bundle
+const FinanceBanner = dynamic(() => import('@/components/v2/FinanceBanner'));
+const MachinerySection = dynamic(() => import('@/components/v2/MachinerySection'));
+const FPOBanner = dynamic(() => import('@/components/v2/FPOBanner'));
+const FarmerServicesGrid = dynamic(() => import('@/components/v2/FarmerServicesGrid'));
+const LivestockMarketplace = dynamic(() => import('@/components/v2/LivestockMarketplace'));
+const VeterinarySection = dynamic(() => import('@/components/v2/VeterinarySection'));
+const CTABanner = dynamic(() => import('@/components/v2/CTABanner'));
+const CropMarketplaceSection = dynamic(() => import('@/components/v2/CropMarketplaceSection'));
+const StorageSection = dynamic(() => import('@/components/v2/StorageSection'));
+const ShopSection = dynamic(() => import('@/components/v2/ShopSection'));
+const FarmLandSection = dynamic(() => import('@/components/v2/FarmLandSection'));
+const ServicesSection = dynamic(() => import('@/components/v2/ServicesSection'));
+const WaterEnergySection = dynamic(() => import('@/components/v2/WaterEnergySection'));
+const ToolboxSection = dynamic(() => import('@/components/v2/ToolboxSection'));
+const TestimonialsSection = dynamic(() => import('@/components/v2/TestimonialsSection'));
+const FeaturedVideosSection = dynamic(() => import('@/components/v2/FeaturedVideosSection'));
+const Footer = dynamic(() => import('@/components/v2/Footer'));
+const FloatingActionButtons = dynamic(() => import('@/components/FloatingActionButtons'));
+const BottomNav = dynamic(() => import('@/components/v2/BottomNav'));
 import './home/globals-v2.css';
 
 export const metadata = {

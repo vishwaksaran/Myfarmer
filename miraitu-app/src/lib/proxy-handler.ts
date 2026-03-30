@@ -47,6 +47,15 @@ export async function proxy(request: NextRequest) {
         return supabaseResponse;
     }
 
+    const requestPathname = request.nextUrl.pathname;
+
+    // Only run Supabase auth on routes that actually need it (/admin/*)
+    // All other routes skip the network roundtrip entirely for faster response.
+    const needsAuth = requestPathname.startsWith('/admin');
+    if (!needsAuth) {
+        return supabaseResponse;
+    }
+
     const supabase = createServerClient(
         supabaseUrl,
         supabaseAnonKey,
@@ -75,8 +84,6 @@ export async function proxy(request: NextRequest) {
     const {
         data: { user },
     } = await supabase.auth.getUser();
-
-    const requestPathname = request.nextUrl.pathname;
 
     // ── Admin route protection ───────────────────────────────────────
     // Protect all /admin/* routes — only users with role='admin' can access
