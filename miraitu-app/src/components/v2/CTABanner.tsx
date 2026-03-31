@@ -169,6 +169,7 @@ export default function CTABanner() {
                                     <form onSubmit={handleCallbackRequest} className="space-y-3 mt-4">
                                         <div className="space-y-3">
                                             <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('cta.yourName')} <span className="text-red-500">*</span></label>
                                                 <input
                                                     type="text"
                                                     placeholder={t('cta.yourName')}
@@ -180,6 +181,7 @@ export default function CTABanner() {
                                                 {cbErrors.name && <p className="text-red-500 text-xs mt-1 ml-1">{cbErrors.name}</p>}
                                             </div>
                                             <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('cta.phonePlaceholder')} <span className="text-red-500">*</span></label>
                                                 <input
                                                     type="tel"
                                                     placeholder={t('cta.phonePlaceholder')}

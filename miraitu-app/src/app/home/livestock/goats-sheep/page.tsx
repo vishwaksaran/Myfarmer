@@ -123,12 +123,27 @@ export default function GoatsSheepPage() {
                             <h2 className="text-2xl font-bold text-primary text-center mb-6">Sell Goats & Sheep</h2>
                             <div className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
-                                    <select className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800"><option>Select Breed</option>{breeds.slice(1).map(b => <option key={b}>{b}</option>)}</select>
-                                    <input type="number" placeholder="Count" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800" />
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Breed</label>
+                                        <select className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800"><option>Select Breed</option>{breeds.slice(1).map(b => <option key={b}>{b}</option>)}</select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Count</label>
+                                        <input type="number" placeholder="Enter count" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800" />
+                                    </div>
                                 </div>
-                                <input placeholder="Price (₹)" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800" />
-                                <input placeholder="Location" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800" />
-                                <textarea placeholder="Description" rows={3} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 resize-none" />
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price (₹)</label>
+                                    <input placeholder="Enter price" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location</label>
+                                    <input placeholder="Enter location" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                                    <textarea placeholder="Describe your livestock" rows={3} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 resize-none" />
+                                </div>
                                 <button className="w-full py-4 rounded-xl bg-primary text-white font-bold">Publish Listing</button>
                             </div>
                         </div>

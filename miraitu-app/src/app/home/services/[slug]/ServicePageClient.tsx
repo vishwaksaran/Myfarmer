@@ -284,9 +284,10 @@ export default function GenericServicePage() {
 
                                 <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                                     <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your Name <span className="text-red-500">*</span></label>
                                         <input
                                             type="text"
-                                            placeholder="Your Name *"
+                                            placeholder="Your Name"
                                             value={formData.name}
                                             onChange={(e) => { setFormData({ ...formData, name: e.target.value }); setFormErrors(prev => { const { name, ...r } = prev; return r; }); }}
                                             className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 ${formErrors.name ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none`}
@@ -294,9 +295,10 @@ export default function GenericServicePage() {
                                         {formErrors.name && <p className="text-red-500 text-xs mt-1 ml-1">{formErrors.name}</p>}
                                     </div>
                                     <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number <span className="text-red-500">*</span></label>
                                         <input
                                             type="tel"
-                                            placeholder="Phone Number (10 digits) *"
+                                            placeholder="10 digit phone number"
                                             value={formData.phone}
                                             onChange={(e) => { setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const { phone, ...r } = prev; return r; }); }}
                                             className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 ${formErrors.phone ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none`}
@@ -305,21 +307,25 @@ export default function GenericServicePage() {
                                         {formErrors.phone && <p className="text-red-500 text-xs mt-1 ml-1">{formErrors.phone}</p>}
                                     </div>
                                     <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location/Village <span className="text-red-500">*</span></label>
                                         <input
                                             type="text"
-                                            placeholder="Location/Village *"
+                                            placeholder="Enter your location"
                                             value={formData.location}
                                             onChange={(e) => { setFormData({ ...formData, location: e.target.value }); setFormErrors(prev => { const { location, ...r } = prev; return r; }); }}
                                             className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 ${formErrors.location ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none`}
                                         />
                                         {formErrors.location && <p className="text-red-500 text-xs mt-1 ml-1">{formErrors.location}</p>}
                                     </div>
-                                    <input
-                                        type="date"
-                                        value={formData.date}
-                                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                        className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-primary outline-none"
-                                    />
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Preferred Date</label>
+                                        <input
+                                            type="date"
+                                            value={formData.date}
+                                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                            className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-primary outline-none"
+                                        />
+                                    </div>
 
                                     <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
 

@@ -106,11 +106,26 @@ export default function OthersPage() {
                         <div className="max-w-2xl mx-auto bg-white dark:bg-[#1a231a] rounded-2xl p-8 border border-gray-100 dark:border-gray-800">
                             <h2 className="text-2xl font-bold text-primary text-center mb-6">Sell Other Livestock</h2>
                             <div className="space-y-4">
-                                <select className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800"><option>Select Type</option>{types.slice(1).map(t => <option key={t}>{t}</option>)}</select>
-                                <input type="number" placeholder="Count/Quantity" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800" />
-                                <input placeholder="Price (₹)" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800" />
-                                <input placeholder="Location" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800" />
-                                <textarea placeholder="Description" rows={3} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 resize-none" />
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Livestock Type</label>
+                                    <select className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800"><option>Select Type</option>{types.slice(1).map(t => <option key={t}>{t}</option>)}</select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Count/Quantity</label>
+                                    <input type="number" placeholder="Enter count" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price (₹)</label>
+                                    <input placeholder="Enter price" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location</label>
+                                    <input placeholder="Enter location" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                                    <textarea placeholder="Describe your livestock" rows={3} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 resize-none" />
+                                </div>
                                 <button className="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-emerald-600 text-white font-bold">Publish Listing</button>
                             </div>
                         </div>

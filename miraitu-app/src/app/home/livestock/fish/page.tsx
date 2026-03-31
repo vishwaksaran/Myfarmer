@@ -97,10 +97,22 @@ export default function FishPage() {
                         <div className="max-w-2xl mx-auto bg-white dark:bg-[#1a231a] rounded-2xl p-8 border border-gray-100 dark:border-gray-800">
                             <h2 className="text-2xl font-bold text-primary text-center mb-6">Sell Fish / Aquaculture</h2>
                             <div className="space-y-4">
-                                <select className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800"><option>Fish Type</option><option>Rohu</option><option>Catla</option><option>Tilapia</option><option>Prawn</option></select>
-                                <input placeholder="Quantity" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800" />
-                                <input placeholder="Price (₹)" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800" />
-                                <input placeholder="Location" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800" />
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fish Type</label>
+                                    <select className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800"><option>Fish Type</option><option>Rohu</option><option>Catla</option><option>Tilapia</option><option>Prawn</option></select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantity</label>
+                                    <input placeholder="Enter quantity" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price (₹)</label>
+                                    <input placeholder="Enter price" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location</label>
+                                    <input placeholder="Enter location" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800" />
+                                </div>
                                 <button className="w-full py-4 rounded-xl bg-primary text-white font-bold">Publish</button>
                             </div>
                         </div>

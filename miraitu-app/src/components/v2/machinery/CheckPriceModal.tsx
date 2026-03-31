@@ -100,62 +100,77 @@ export default function CheckPriceModal({ isOpen, onClose, tractorName }: CheckP
                             <form onSubmit={handleSubmit} className="space-y-3">
                                 {/* Name & Mobile */}
                                 <div className="grid grid-cols-2 gap-3">
-                                    <input
-                                        type="text"
-                                        placeholder="Enter Your Name"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        required
-                                        className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
-                                    />
-                                    <input
-                                        type="tel"
-                                        placeholder="Enter Mobile Number"
-                                        value={mobile}
-                                        onChange={(e) => {
-                                            const val = e.target.value.replace(/\D/g, '').slice(0, 10);
-                                            setMobile(val);
-                                        }}
-                                        required
-                                        pattern="[0-9]{10}"
-                                        className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
-                                    />
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Your Name <span className="text-red-500">*</span></label>
+                                        <input
+                                            type="text"
+                                            placeholder="Enter Your Name"
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                            required
+                                            className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Mobile Number <span className="text-red-500">*</span></label>
+                                        <input
+                                            type="tel"
+                                            placeholder="Enter Mobile Number"
+                                            value={mobile}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                                setMobile(val);
+                                            }}
+                                            required
+                                            pattern="[0-9]{10}"
+                                            className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
+                                        />
+                                    </div>
                                 </div>
 
                                 {/* State & District */}
                                 <div className="grid grid-cols-2 gap-3">
-                                    <select
-                                        value={state}
-                                        onChange={(e) => {
-                                            setState(e.target.value);
-                                            setDistrict('');
-                                            setTehsil('');
-                                        }}
-                                        required
-                                        className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none appearance-none"
-                                    >
-                                        <option value="">Select State</option>
-                                        {INDIAN_STATES.map((s) => (
-                                            <option key={s} value={s}>{s}</option>
-                                        ))}
-                                    </select>
-                                    <input
-                                        type="text"
-                                        placeholder="Select District"
-                                        value={district}
-                                        onChange={(e) => setDistrict(e.target.value)}
-                                        className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
-                                    />
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">State <span className="text-red-500">*</span></label>
+                                        <select
+                                            value={state}
+                                            onChange={(e) => {
+                                                setState(e.target.value);
+                                                setDistrict('');
+                                                setTehsil('');
+                                            }}
+                                            required
+                                            className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none appearance-none"
+                                        >
+                                            <option value="">Select State</option>
+                                            {INDIAN_STATES.map((s) => (
+                                                <option key={s} value={s}>{s}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">District</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Enter District"
+                                            value={district}
+                                            onChange={(e) => setDistrict(e.target.value)}
+                                            className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
+                                        />
+                                    </div>
                                 </div>
 
                                 {/* Tehsil */}
-                                <input
-                                    type="text"
-                                    placeholder="Select Tehsil"
-                                    value={tehsil}
-                                    onChange={(e) => setTehsil(e.target.value)}
-                                    className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
-                                />
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tehsil</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter Tehsil"
+                                        value={tehsil}
+                                        onChange={(e) => setTehsil(e.target.value)}
+                                        className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
+                                    />
+                                </div>
 
                                 {/* Loan checkbox */}
                                 <label className="flex items-center gap-2 cursor-pointer">
