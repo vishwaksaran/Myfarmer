@@ -62,6 +62,20 @@ export default function ServiceWorkerRegistration() {
       e.preventDefault();
       setInstallPrompt(e as BeforeInstallPromptEvent);
 
+      // Check if user recently dismissed the banner (10-minute cooldown)
+      const dismissedAt = localStorage.getItem('pwa-install-dismissed-at');
+      if (dismissedAt) {
+        const elapsed = Date.now() - parseInt(dismissedAt, 10);
+        const TEN_MINUTES = 10 * 60 * 1000;
+        if (elapsed < TEN_MINUTES) {
+          // Still within cooldown, schedule banner for remaining time
+          setTimeout(() => {
+            setShowInstallBanner(true);
+          }, TEN_MINUTES - elapsed);
+          return;
+        }
+      }
+
       // Show banner after a short delay (don't interrupt user immediately)
       setTimeout(() => {
         setShowInstallBanner(true);
@@ -100,6 +114,7 @@ export default function ServiceWorkerRegistration() {
 
   const handleDismiss = () => {
     setShowInstallBanner(false);
+    localStorage.setItem('pwa-install-dismissed-at', Date.now().toString());
   };
 
   if (isInstalled || !showInstallBanner || !installPrompt) {
