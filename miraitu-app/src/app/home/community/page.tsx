@@ -527,6 +527,7 @@ export default function CommunityPage() {
                                                     username: `@${(user?.displayName || 'user').toLowerCase().replace(/\s+/g, '')}`,
                                                     avatar: user?.photoURL || '',
                                                     verified: false,
+                                                    location: '',
                                                     time: 'Just now',
                                                     content: inlineText,
                                                     images: inlineImages.length > 0 ? inlineImages : undefined,
