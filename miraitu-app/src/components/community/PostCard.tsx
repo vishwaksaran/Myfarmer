@@ -122,7 +122,9 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
   const [doubleTapReaction, setDoubleTapReaction] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const reactionTimeout = useRef<NodeJS.Timeout | null>(null);
   const lastTap = useRef(0);
 
@@ -394,16 +396,43 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
 
       {/* Video */}
       {post.video && !post.images?.length && (
-        <div className="relative aspect-[4/3] bg-gray-100 dark:bg-gray-800 overflow-hidden" onClick={handleDoubleTap}>
-          <img src={post.video} alt="Video thumbnail" className="w-full h-full object-cover" loading="lazy" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-16 h-16 rounded-full bg-black/50 flex items-center justify-center backdrop-blur-sm">
-              <span className="material-symbols-outlined text-white text-3xl ml-1">play_arrow</span>
+        <div
+          className="relative aspect-video bg-gray-100 dark:bg-gray-800 overflow-hidden"
+          onClick={() => {
+            if (videoRef.current) {
+              if (videoRef.current.paused) {
+                videoRef.current.play();
+                setVideoPlaying(true);
+              } else {
+                videoRef.current.pause();
+                setVideoPlaying(false);
+              }
+            }
+            handleDoubleTap();
+          }}
+        >
+          <video
+            ref={videoRef}
+            src={post.video}
+            className="w-full h-full object-contain bg-black"
+            playsInline
+            loop
+            preload="metadata"
+            onEnded={() => setVideoPlaying(false)}
+            onPause={() => setVideoPlaying(false)}
+            onPlay={() => setVideoPlaying(true)}
+          />
+          {/* Play overlay — shown when paused */}
+          {!videoPlaying && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-16 h-16 rounded-full bg-black/50 flex items-center justify-center backdrop-blur-sm">
+                <span className="material-symbols-outlined text-white text-3xl ml-1">play_arrow</span>
+              </div>
             </div>
-          </div>
-          <div className="absolute bottom-3 left-3 px-2 py-1 rounded-full bg-black/40 text-white text-xs font-medium flex items-center gap-1">
+          )}
+          <div className="absolute bottom-3 left-3 px-2 py-1 rounded-full bg-black/40 text-white text-xs font-medium flex items-center gap-1 pointer-events-none">
             <span className="material-symbols-outlined text-xs">videocam</span>
-            Video
+            {videoPlaying ? 'Playing' : 'Video'}
           </div>
           {doubleTapReaction && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
