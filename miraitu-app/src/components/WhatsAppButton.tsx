@@ -34,10 +34,10 @@ export default function WhatsAppButton({
         <div className="flex flex-col items-center gap-3">
             <div className="relative group cursor-pointer hover:scale-105 transition-transform">
                 {/* Pulse Effect */}
-                <div className="absolute inset-0 rounded-full bg-[#25D366]/30 animate-ping opacity-75"></div>
+                <div className="absolute inset-0 rounded-full bg-[#25D366]/20 animate-ping opacity-50 hidden md:block"></div>
                 <button
                     onClick={handleClick}
-                    className={`relative flex ${sizeClasses[size]} items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_20px_40px_-10px_rgba(37,211,102,0.6)] border-4 border-[#B0EA3C]/30 z-10 active:scale-95 transition-transform overflow-hidden`}
+                    className={`relative flex ${sizeClasses[size]} items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg border-2 border-white/30 z-10 active:scale-95 transition-transform overflow-hidden`}
                 >
                     {/* Shine effect */}
                     <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none"></div>
@@ -52,7 +52,7 @@ export default function WhatsAppButton({
                     </svg>
 
                     {/* Animated background */}
-                    <div className="absolute inset-0 bg-[#B0EA3C]/10 animate-pulse"></div>
+                    <div className="absolute inset-0 bg-[#25D366]/10 animate-pulse hidden md:block"></div>
                 </button>
             </div>
 

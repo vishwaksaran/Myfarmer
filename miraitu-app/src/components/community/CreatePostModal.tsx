@@ -17,6 +17,11 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit, userAvatar,
   const [showTagInput, setShowTagInput] = useState(false);
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
+  const [location, setLocation] = useState('');
+  const [showLocationInput, setShowLocationInput] = useState(false);
+  const [pollOptions, setPollOptions] = useState<string[]>([]);
+  const [showPollInput, setShowPollInput] = useState(false);
+  const [pollOptionInput, setPollOptionInput] = useState('');
   const [activeTab, setActiveTab] = useState<'post' | 'image' | 'video'>('post');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -85,6 +90,11 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit, userAvatar,
     setVideo(null);
     setTags([]);
     setTagInput('');
+    setLocation('');
+    setShowLocationInput(false);
+    setPollOptions([]);
+    setShowPollInput(false);
+    setPollOptionInput('');
     onClose();
   };
 
@@ -170,6 +180,79 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit, userAvatar,
             </div>
           )}
 
+          {/* Location Input */}
+          {showLocationInput && (
+            <div className="flex items-center gap-2 mb-3 px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+              <span className="material-symbols-outlined text-[#22c33d] text-lg">location_on</span>
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Enter your location (e.g. Punjab, India)"
+                className="flex-1 bg-transparent text-sm text-gray-900 dark:text-white placeholder:text-gray-400 outline-none border-0"
+                autoFocus
+              />
+              {location && (
+                <button onClick={() => { setLocation(''); setShowLocationInput(false); }} className="text-gray-400 hover:text-gray-600">
+                  <span className="material-symbols-outlined text-sm">close</span>
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Poll Options */}
+          {showPollInput && (
+            <div className="mb-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="material-symbols-outlined text-[#22c33d]">poll</span>
+                <span className="text-sm font-bold text-gray-900 dark:text-white">Poll Options</span>
+              </div>
+              {pollOptions.map((opt, i) => (
+                <div key={i} className="flex items-center gap-2 mb-2">
+                  <span className="text-xs text-gray-400 w-5">{i + 1}.</span>
+                  <span className="flex-1 text-sm text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">{opt}</span>
+                  <button onClick={() => setPollOptions(prev => prev.filter((_, idx) => idx !== i))} className="text-gray-400 hover:text-red-500">
+                    <span className="material-symbols-outlined text-sm">close</span>
+                  </button>
+                </div>
+              ))}
+              {pollOptions.length < 4 && (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={pollOptionInput}
+                    onChange={(e) => setPollOptionInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const opt = pollOptionInput.trim();
+                        if (opt && pollOptions.length < 4) {
+                          setPollOptions(prev => [...prev, opt]);
+                          setPollOptionInput('');
+                        }
+                      }
+                    }}
+                    placeholder={`Option ${pollOptions.length + 1}...`}
+                    className="flex-1 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 text-sm border border-gray-200 dark:border-gray-700 outline-none focus:ring-2 focus:ring-[#22c33d]/30"
+                  />
+                  <button
+                    onClick={() => {
+                      const opt = pollOptionInput.trim();
+                      if (opt && pollOptions.length < 4) {
+                        setPollOptions(prev => [...prev, opt]);
+                        setPollOptionInput('');
+                      }
+                    }}
+                    className="px-3 py-2 rounded-lg bg-[#22c33d] text-white text-xs font-semibold"
+                  >
+                    Add
+                  </button>
+                </div>
+              )}
+              <p className="text-[10px] text-gray-400 mt-2">Add up to 4 options</p>
+            </div>
+          )}
+
           {/* Image Previews */}
           {images.length > 0 && (
             <div className={`grid gap-2 mb-3 ${images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
@@ -226,10 +309,18 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit, userAvatar,
               >
                 <span className="material-symbols-outlined">tag</span>
               </button>
-              <button className="p-2.5 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Add location">
+              <button
+                onClick={() => setShowLocationInput(!showLocationInput)}
+                className={`p-2.5 rounded-xl transition-colors ${showLocationInput || location ? 'bg-[#22c33d]/10 text-[#22c33d]' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                title="Add location"
+              >
                 <span className="material-symbols-outlined">location_on</span>
               </button>
-              <button className="p-2.5 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Create poll">
+              <button
+                onClick={() => setShowPollInput(!showPollInput)}
+                className={`p-2.5 rounded-xl transition-colors ${showPollInput || pollOptions.length > 0 ? 'bg-[#22c33d]/10 text-[#22c33d]' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                title="Create poll"
+              >
                 <span className="material-symbols-outlined">poll</span>
               </button>
             </div>
