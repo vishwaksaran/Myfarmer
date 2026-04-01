@@ -538,7 +538,7 @@ export default function CommunityPage() {
                                                     shares: 0,
                                                     saved: false,
                                                     tags,
-                                                    type: inlineVideo ? 'video' : inlineImages.length > 0 ? 'image' : 'text',
+                                                    type: inlineVideo ? 'video' : inlineImages.length > 0 ? 'image' : 'post',
                                                     isOwn: true,
                                                 };
                                                 setPosts(prev => [newPost, ...prev]);
