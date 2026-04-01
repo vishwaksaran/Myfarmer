@@ -213,8 +213,12 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
     <article className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
       {/* Post Header */}
       <div className="p-3 sm:p-4 flex items-start gap-2 sm:gap-3">
-        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#22c33d]/20 to-[#8CDA4F]/10 flex items-center justify-center text-2xl ring-2 ring-[#22c33d]/10">
-          {post.avatar}
+        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#22c33d]/20 to-[#8CDA4F]/10 flex items-center justify-center text-2xl ring-2 ring-[#22c33d]/10 overflow-hidden shrink-0">
+          {post.avatar && (post.avatar.startsWith('http') || post.avatar.startsWith('data:')) ? (
+            <img src={post.avatar} alt={post.author} className="w-full h-full object-cover" />
+          ) : (
+            <span>{post.avatar || '🧑‍🌾'}</span>
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
@@ -397,7 +401,7 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
       {/* Video */}
       {post.video && !post.images?.length && (
         <div
-          className="relative aspect-video bg-gray-100 dark:bg-gray-800 overflow-hidden"
+          className="relative bg-black overflow-hidden"
           onClick={() => {
             if (videoRef.current) {
               if (videoRef.current.paused) {
@@ -414,7 +418,7 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
           <video
             ref={videoRef}
             src={post.video}
-            className="w-full h-full object-contain bg-black"
+            className="w-full max-h-[80vh] object-contain mx-auto"
             playsInline
             loop
             preload="metadata"

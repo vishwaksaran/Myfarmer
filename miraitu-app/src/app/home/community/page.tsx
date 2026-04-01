@@ -31,6 +31,7 @@ export default function CommunityPage() {
     const [inlineText, setInlineText] = useState('');
     const [inlineImages, setInlineImages] = useState<string[]>([]);
     const [inlineVideo, setInlineVideo] = useState<string | null>(null);
+    const [uploadError, setUploadError] = useState<string | null>(null);
     const inlinePhotoRef = useRef<HTMLInputElement>(null);
     const inlineVideoRef = useRef<HTMLInputElement>(null);
 
@@ -466,12 +467,21 @@ export default function CommunityPage() {
                                     onChange={(e) => {
                                         const files = e.target.files;
                                         if (!files) return;
+                                        setUploadError(null);
                                         Array.from(files).forEach(file => {
-                                            if (file.size > 10 * 1024 * 1024) return;
+                                            if (file.size > 10 * 1024 * 1024) {
+                                                setUploadError('Image must be under 10MB');
+                                                return;
+                                            }
+                                            if (!file.type.startsWith('image/')) {
+                                                setUploadError('Only image files are allowed');
+                                                return;
+                                            }
                                             const reader = new FileReader();
                                             reader.onload = (ev) => {
                                                 if (ev.target?.result) setInlineImages(prev => [...prev, ev.target!.result as string]);
                                             };
+                                            reader.onerror = () => setUploadError('Failed to read image. Please try again.');
                                             reader.readAsDataURL(file);
                                         });
                                         e.target.value = '';
@@ -484,15 +494,38 @@ export default function CommunityPage() {
                                     className="hidden"
                                     onChange={(e) => {
                                         const file = e.target.files?.[0];
-                                        if (!file || file.size > 50 * 1024 * 1024) return;
+                                        setUploadError(null);
+                                        if (!file) return;
+                                        if (!file.type.startsWith('video/')) {
+                                            setUploadError('Only video files are allowed');
+                                            e.target.value = '';
+                                            return;
+                                        }
+                                        if (file.size > 50 * 1024 * 1024) {
+                                            setUploadError(`Video too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Max size is 50MB.`);
+                                            e.target.value = '';
+                                            return;
+                                        }
                                         const reader = new FileReader();
                                         reader.onload = (ev) => {
                                             if (ev.target?.result) setInlineVideo(ev.target.result as string);
                                         };
+                                        reader.onerror = () => setUploadError('Failed to process video. Please try a different file.');
                                         reader.readAsDataURL(file);
                                         e.target.value = '';
                                     }}
                                 />
+
+                                {/* Upload Error Message */}
+                                {uploadError && (
+                                    <div className="mt-3 flex items-center gap-2 p-2.5 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                                        <span className="material-symbols-outlined text-red-500 text-lg">error</span>
+                                        <span className="text-xs text-red-600 dark:text-red-400 font-medium flex-1">{uploadError}</span>
+                                        <button onClick={() => setUploadError(null)} className="text-red-400 hover:text-red-600">
+                                            <span className="material-symbols-outlined text-sm">close</span>
+                                        </button>
+                                    </div>
+                                )}
 
                                 <div className="flex items-center gap-0.5 sm:gap-1 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
                                     <button

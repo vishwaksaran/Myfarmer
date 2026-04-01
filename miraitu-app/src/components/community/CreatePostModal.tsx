@@ -23,6 +23,7 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit, userAvatar,
   const [showPollInput, setShowPollInput] = useState(false);
   const [pollOptionInput, setPollOptionInput] = useState('');
   const [activeTab, setActiveTab] = useState<'post' | 'image' | 'video'>('post');
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
@@ -31,14 +32,23 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit, userAvatar,
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
+    setUploadError(null);
     Array.from(files).forEach(file => {
-      if (file.size > 10 * 1024 * 1024) return; // 10MB limit
+      if (file.size > 10 * 1024 * 1024) {
+        setUploadError('Image must be under 10MB');
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        setUploadError('Only image files are allowed');
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (ev) => {
         if (ev.target?.result) {
           setImages(prev => [...prev, ev.target!.result as string]);
         }
       };
+      reader.onerror = () => setUploadError('Failed to read image. Please try again.');
       reader.readAsDataURL(file);
     });
     setActiveTab('image');
@@ -46,7 +56,16 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit, userAvatar,
 
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || file.size > 50 * 1024 * 1024) return; // 50MB limit
+    setUploadError(null);
+    if (!file) return;
+    if (!file.type.startsWith('video/')) {
+      setUploadError('Only video files are allowed');
+      return;
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      setUploadError(`Video too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Max size is 50MB.`);
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (ev) => {
       if (ev.target?.result) {
@@ -54,6 +73,7 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit, userAvatar,
         setActiveTab('video');
       }
     };
+    reader.onerror = () => setUploadError('Failed to process video. Please try a different file.');
     reader.readAsDataURL(file);
   };
 
@@ -272,12 +292,23 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit, userAvatar,
 
           {/* Video Preview */}
           {video && (
-            <div className="relative rounded-xl overflow-hidden aspect-video bg-gray-100 dark:bg-gray-800 mb-3">
-              <video src={video} className="w-full h-full object-cover" controls />
+            <div className="relative rounded-xl overflow-hidden bg-black mb-3">
+              <video src={video} className="w-full max-h-[50vh] object-contain mx-auto" controls />
               <button
                 onClick={() => setVideo(null)}
                 className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
               >
+                <span className="material-symbols-outlined text-sm">close</span>
+              </button>
+            </div>
+          )}
+
+          {/* Upload Error */}
+          {uploadError && (
+            <div className="flex items-center gap-2 p-2.5 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 mb-3">
+              <span className="material-symbols-outlined text-red-500 text-lg">error</span>
+              <span className="text-xs text-red-600 dark:text-red-400 font-medium flex-1">{uploadError}</span>
+              <button onClick={() => setUploadError(null)} className="text-red-400 hover:text-red-600">
                 <span className="material-symbols-outlined text-sm">close</span>
               </button>
             </div>
