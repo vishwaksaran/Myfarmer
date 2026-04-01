@@ -25,16 +25,16 @@ function formatCount(n: number): string {
 
 function ReactionPicker({ onSelect, currentReaction }: { onSelect: (r: ReactionType) => void; currentReaction: ReactionType | null | undefined }) {
   return (
-    <div className="flex items-center gap-1 p-2 bg-white dark:bg-[#222c22] rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-bottom-2 duration-200">
+    <div className="flex items-center gap-0.5 sm:gap-1 p-1.5 sm:p-2 bg-white dark:bg-[#222c22] rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-bottom-2 duration-200">
       {(Object.entries(REACTION_EMOJIS) as [ReactionType, { emoji: string; label: string }][]).map(([key, { emoji, label }]) => (
         <button
           key={key}
           onClick={() => onSelect(key)}
-          className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-all hover:scale-125 hover:bg-gray-100 dark:hover:bg-gray-700 ${currentReaction === key ? 'scale-110 bg-[#22c33d]/10' : ''}`}
+          className={`flex flex-col items-center gap-0.5 p-1 sm:p-1.5 rounded-xl transition-all hover:scale-125 hover:bg-gray-100 dark:hover:bg-gray-700 ${currentReaction === key ? 'scale-110 bg-[#22c33d]/10' : ''}`}
           title={label}
         >
-          <span className="text-2xl leading-none">{emoji}</span>
-          <span className="text-[9px] font-medium text-gray-500">{label}</span>
+          <span className="text-xl sm:text-2xl leading-none">{emoji}</span>
+          <span className="text-[8px] sm:text-[9px] font-medium text-gray-500">{label}</span>
         </button>
       ))}
     </div>
@@ -210,7 +210,7 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
   return (
     <article className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
       {/* Post Header */}
-      <div className="p-4 flex items-start gap-3">
+      <div className="p-3 sm:p-4 flex items-start gap-2 sm:gap-3">
         <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#22c33d]/20 to-[#8CDA4F]/10 flex items-center justify-center text-2xl ring-2 ring-[#22c33d]/10">
           {post.avatar}
         </div>
@@ -316,8 +316,8 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
       </div>
 
       {/* Post Content */}
-      <div className="px-4 pb-3">
-        <p className="text-gray-800 dark:text-gray-200 text-[15px] leading-relaxed whitespace-pre-line">
+      <div className="px-3 sm:px-4 pb-3">
+        <p className="text-gray-800 dark:text-gray-200 text-sm sm:text-[15px] leading-relaxed whitespace-pre-line break-words">
           {post.content}
         </p>
         {post.tags.length > 0 && (
@@ -414,8 +414,8 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
       )}
 
       {/* Reaction Summary */}
-      <div className="px-4 py-2.5 flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
+      <div className="px-3 sm:px-4 py-2.5 flex items-center justify-between">
+        <div className="flex items-center gap-1.5 min-w-0">
           {topReactions.length > 0 && (
             <div className="flex -space-x-1">
               {topReactions.map((emoji, i) => (
@@ -434,7 +434,7 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
       </div>
 
       {/* Action Buttons */}
-      <div className="px-3 py-1.5 flex items-center border-t border-gray-100 dark:border-gray-800 relative">
+      <div className="px-2 sm:px-3 py-1.5 flex items-center border-t border-gray-100 dark:border-gray-800 relative">
         {/* Reaction Picker Popup */}
         {showReactionPicker && (
           <div className="absolute bottom-full left-2 mb-2 z-20" onClick={(e) => e.stopPropagation()}>
@@ -449,36 +449,36 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
           onMouseLeave={handleReactionMouseUp}
           onTouchStart={handleReactionMouseDown}
           onTouchEnd={handleReactionMouseUp}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all ${
+          className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2.5 rounded-xl transition-all ${
             post.myReaction
               ? 'text-[#22c33d] bg-[#22c33d]/5 font-bold'
               : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
           }`}
         >
           {post.myReaction ? (
-            <span className="text-xl leading-none">{REACTION_EMOJIS[post.myReaction].emoji}</span>
+            <span className="text-lg sm:text-xl leading-none">{REACTION_EMOJIS[post.myReaction].emoji}</span>
           ) : (
-            <span className="material-symbols-outlined text-xl">thumb_up</span>
+            <span className="material-symbols-outlined text-lg sm:text-xl">thumb_up</span>
           )}
-          <span className="text-sm font-medium">{post.myReaction ? REACTION_EMOJIS[post.myReaction].label : 'Like'}</span>
+          <span className="text-xs sm:text-sm font-medium">{post.myReaction ? REACTION_EMOJIS[post.myReaction].label : 'Like'}</span>
         </button>
 
         <button
           onClick={() => setShowComments(!showComments)}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all ${
+          className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2.5 rounded-xl transition-all ${
             showComments ? 'text-[#22c33d] bg-[#22c33d]/5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
           }`}
         >
-          <span className="material-symbols-outlined text-xl">chat_bubble</span>
-          <span className="text-sm font-medium">Comment</span>
+          <span className="material-symbols-outlined text-lg sm:text-xl">chat_bubble</span>
+          <span className="text-xs sm:text-sm font-medium">Comment</span>
         </button>
 
         <button
           onClick={() => onShare(post.id)}
-          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+          className="flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
         >
-          <span className="material-symbols-outlined text-xl">share</span>
-          <span className="text-sm font-medium">Share</span>
+          <span className="material-symbols-outlined text-lg sm:text-xl">share</span>
+          <span className="text-xs sm:text-sm font-medium">Share</span>
         </button>
 
         <button
@@ -495,7 +495,7 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
 
       {/* Comments Section */}
       {showComments && (
-        <div className="border-t border-gray-100 dark:border-gray-800 px-4 pb-4">
+        <div className="border-t border-gray-100 dark:border-gray-800 px-3 sm:px-4 pb-4">
           {/* Comment List */}
           {post.comments.length > 0 && (
             <div className="pt-3 space-y-3 mb-3">

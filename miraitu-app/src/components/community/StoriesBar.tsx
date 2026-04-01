@@ -19,17 +19,17 @@ export default function StoriesBar({ stories, userAvatar, onAddStory, onViewStor
   };
 
   return (
-    <div className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 p-4 mb-6">
-      <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+    <div className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 p-3 sm:p-4 mb-4 sm:mb-6 overflow-hidden">
+      <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
         {stories.map((story) => {
           const isSeen = story.seen || viewedStories.has(story.id);
           return (
             <button
               key={story.id}
               onClick={() => story.isOwn ? onAddStory() : handleView(story)}
-              className="flex flex-col items-center gap-1.5 shrink-0 group"
+              className="flex flex-col items-center gap-1 sm:gap-1.5 shrink-0 group"
             >
-              <div className={`relative w-16 h-16 rounded-full p-[3px] ${
+              <div className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full p-[3px] ${
                 story.isOwn
                   ? 'bg-gray-200 dark:bg-gray-700'
                   : isSeen
@@ -55,7 +55,7 @@ export default function StoriesBar({ stories, userAvatar, onAddStory, onViewStor
                   </div>
                 )}
               </div>
-              <span className={`text-[11px] font-medium w-16 text-center truncate ${
+              <span className={`text-[10px] sm:text-[11px] font-medium w-14 sm:w-16 text-center truncate ${
                 story.isOwn ? 'text-gray-600 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'
               }`}>
                 {story.author}

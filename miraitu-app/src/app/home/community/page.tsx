@@ -272,9 +272,9 @@ export default function CommunityPage() {
         <div className="min-h-screen bg-[#f4f6f0] dark:bg-[#0d110d]">
             <Header />
 
-            <main className="py-6">
-                <div className="mx-auto max-w-[1360px] px-4 sm:px-6">
-                    <div className="flex gap-6">
+            <main className="py-4 sm:py-6">
+                <div className="mx-auto max-w-[1360px] px-3 sm:px-6">
+                    <div className="flex gap-4 lg:gap-6">
                         {/* Left Sidebar */}
                         <div className="hidden lg:block w-[280px] shrink-0">
                             <div className="sticky top-24 space-y-5">
@@ -377,7 +377,7 @@ export default function CommunityPage() {
                         </div>
 
                         {/* Main Feed */}
-                        <div className="flex-1 max-w-[640px]">
+                        <div className="flex-1 min-w-0 max-w-full lg:max-w-[640px]">
                             {/* Stories */}
                             <StoriesBar
                                 stories={sampleStories}
@@ -387,7 +387,7 @@ export default function CommunityPage() {
                             />
 
                             {/* Feed Tabs */}
-                            <div className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 mb-5 p-1 flex">
+                            <div className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 mb-4 sm:mb-5 p-1 flex">
                                 {[
                                     { key: 'forYou', label: 'For You', icon: 'auto_awesome' },
                                     { key: 'following', label: 'Following', icon: 'people' },
@@ -396,20 +396,20 @@ export default function CommunityPage() {
                                     <button
                                         key={tab.key}
                                         onClick={() => setFeedTab(tab.key as typeof feedTab)}
-                                        className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${
+                                        className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                                             feedTab === tab.key
                                                 ? 'bg-[#22c33d] text-white shadow-md'
                                                 : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                                         }`}
                                     >
-                                        <span className="material-symbols-outlined text-lg">{tab.icon}</span>
+                                        <span className="material-symbols-outlined text-base sm:text-lg">{tab.icon}</span>
                                         {tab.label}
                                     </button>
                                 ))}
                             </div>
 
                             {/* Inline Create Post */}
-                            <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-4 border border-gray-100 dark:border-gray-800 mb-5">
+                            <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-3 sm:p-4 border border-gray-100 dark:border-gray-800 mb-4 sm:mb-5">
                                 <div className="flex gap-3">
                                     <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-[#22c33d]/10">
                                         {user?.photoURL ? (
@@ -494,27 +494,27 @@ export default function CommunityPage() {
                                     }}
                                 />
 
-                                <div className="flex items-center gap-1 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+                                <div className="flex items-center gap-0.5 sm:gap-1 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
                                     <button
                                         onClick={() => inlinePhotoRef.current?.click()}
-                                        className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium"
+                                        className="flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2 rounded-xl text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-xs sm:text-sm font-medium"
                                     >
-                                        <span className="material-symbols-outlined text-[#22c33d]">image</span>
-                                        Photo
+                                        <span className="material-symbols-outlined text-base sm:text-xl text-[#22c33d]">image</span>
+                                        <span className="hidden xs:inline">Photo</span>
                                     </button>
                                     <button
                                         onClick={() => inlineVideoRef.current?.click()}
-                                        className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium"
+                                        className="flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2 rounded-xl text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-xs sm:text-sm font-medium"
                                     >
-                                        <span className="material-symbols-outlined text-[#FF9F1C]">videocam</span>
-                                        Video
+                                        <span className="material-symbols-outlined text-base sm:text-xl text-[#FF9F1C]">videocam</span>
+                                        <span className="hidden xs:inline">Video</span>
                                     </button>
                                     <button
                                         onClick={() => setShowCreatePost(true)}
-                                        className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium"
+                                        className="flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2 rounded-xl text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-xs sm:text-sm font-medium"
                                     >
-                                        <span className="material-symbols-outlined text-[#E0C040]">tag</span>
-                                        Hashtag
+                                        <span className="material-symbols-outlined text-base sm:text-xl text-[#E0C040]">tag</span>
+                                        <span className="hidden xs:inline">Hashtag</span>
                                     </button>
                                     {(inlineText.trim() || inlineImages.length > 0 || inlineVideo) && (
                                         <button
