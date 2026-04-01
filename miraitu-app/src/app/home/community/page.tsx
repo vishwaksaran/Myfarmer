@@ -1,601 +1,644 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import LoginModal from '@/components/auth/LoginModal';
 
-interface Post {
-    id: number;
-    author: string;
-    avatar: string;
-    location: string;
-    time: string;
-    content: string;
-    image?: string;
-    likes: number;
-    comments: number;
-    shares: number;
-    tags: string[];
-    liked?: boolean;
-    showComments?: boolean;
-    commentList?: { author: string; text: string; time: string }[];
-}
-
-// Sample community posts
-const initialPosts: Post[] = [
-    {
-        id: 1,
-        author: 'Rajesh Kumar',
-        avatar: '\uD83D\uDC68\u200D\uD83C\uDF3E',
-        location: 'Punjab, India',
-        time: '2 hours ago',
-        content: 'Just harvested my first organic wheat crop this season! The yield was 20% higher than last year thanks to the new irrigation techniques I learned from this community. \uD83C\uDF3E\u2728',
-        image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&h=400&fit=crop',
-        likes: 245,
-        comments: 32,
-        shares: 15,
-        tags: ['#OrganicFarming', '#WheatHarvest', '#Punjab'],
-        liked: false,
-        commentList: [
-            { author: 'Priya S.', text: 'Congratulations! What irrigation method did you use?', time: '1h ago' },
-            { author: 'Amit P.', text: 'Amazing yield! Keep it up \uD83D\uDC4F', time: '45m ago' },
-        ],
-    },
-    {
-        id: 2,
-        author: 'Priya Sharma',
-        avatar: '\uD83D\uDC69\u200D\uD83C\uDF3E',
-        location: 'Maharashtra, India',
-        time: '5 hours ago',
-        content: 'Has anyone tried using neem-based pesticides for cotton crops? Looking for natural alternatives to chemical pesticides. Would appreciate any recommendations! \uD83C\uDF31',
-        likes: 89,
-        comments: 56,
-        shares: 8,
-        tags: ['#NaturalPesticides', '#CottonFarming', '#Sustainable'],
-        liked: false,
-        commentList: [
-            { author: 'Karthik R.', text: 'Yes! Neem oil works great. Mix 2ml per litre of water.', time: '4h ago' },
-        ],
-    },
-    {
-        id: 3,
-        author: 'Amit Patel',
-        avatar: '\uD83E\uDDD1\u200D\uD83C\uDF3E',
-        location: 'Gujarat, India',
-        time: '8 hours ago',
-        content: 'Sharing my experience with drip irrigation! Saved 40% water this season and my tomato yield increased significantly. Here\'s my setup:',
-        image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&h=400&fit=crop',
-        likes: 412,
-        comments: 78,
-        shares: 45,
-        tags: ['#DripIrrigation', '#WaterSaving', '#SmartFarming'],
-        liked: false,
-        commentList: [
-            { author: 'Sunita D.', text: 'How much did the setup cost?', time: '6h ago' },
-            { author: 'Rajesh K.', text: 'Drip irrigation is the way to go!', time: '5h ago' },
-        ],
-    },
-    {
-        id: 4,
-        author: 'Sunita Devi',
-        avatar: '\uD83D\uDC69\u200D\uD83C\uDF3E',
-        location: 'Uttar Pradesh, India',
-        time: '1 day ago',
-        content: 'Our women\'s farming cooperative just got approved for government subsidy! We\'re planning to buy a new tractor together. Community power! \uD83D\uDCAA\uD83D\uDE9C',
-        likes: 623,
-        comments: 94,
-        shares: 112,
-        tags: ['#WomenInAgriculture', '#Cooperative', '#Success'],
-        liked: false,
-        commentList: [],
-    },
-    {
-        id: 5,
-        author: 'Karthik Reddy',
-        avatar: '\uD83D\uDC68\u200D\uD83C\uDF3E',
-        location: 'Andhra Pradesh, India',
-        time: '2 days ago',
-        content: 'Weather prediction apps saved my rice crop from unexpected rainfall last week. Which weather apps do you all use for farming?',
-        image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&h=400&fit=crop',
-        likes: 178,
-        comments: 65,
-        shares: 23,
-        tags: ['#AgriTech', '#WeatherForecast', '#RiceFarming'],
-        liked: false,
-        commentList: [
-            { author: 'Amit P.', text: 'I use Miraitu weather card - very accurate!', time: '1d ago' },
-        ],
-    },
-];
-
-const trendingTopics = [
-    { tag: '#OrganicFarming', posts: '12.5K' },
-    { tag: '#MonsoonTips', posts: '8.3K' },
-    { tag: '#DroneAgriculture', posts: '6.1K' },
-    { tag: '#SoilHealth', posts: '5.8K' },
-    { tag: '#FarmersMarket', posts: '4.2K' },
-];
-
-const suggestedGroups = [
-    { name: 'Organic Farmers India', members: '45K', emoji: '\uD83C\uDF31', joined: false },
-    { name: 'Drone Agriculture', members: '12K', emoji: '\uD83D\uDE81', joined: false },
-    { name: 'Women in Farming', members: '28K', emoji: '\uD83D\uDC69\u200D\uD83C\uDF3E', joined: false },
-];
+import { Post, ReactionType } from '@/components/community/types';
+import { samplePosts, sampleStories, sampleNewsEvents, trendingTopics, suggestedUsers } from '@/components/community/sampleData';
+import StoriesBar from '@/components/community/StoriesBar';
+import CreatePostModal from '@/components/community/CreatePostModal';
+import EditPostModal from '@/components/community/EditPostModal';
+import PostCard from '@/components/community/PostCard';
+import HashtagSearch from '@/components/community/HashtagSearch';
+import NewsEvents from '@/components/community/NewsEvents';
+import SuggestedUsers from '@/components/community/SuggestedUsers';
 
 export default function CommunityPage() {
     const { user } = useAuth();
     const router = useRouter();
     const [showLoginModal, setShowLoginModal] = useState(false);
-    const [posts, setPosts] = useState<Post[]>(initialPosts);
-    const [newPostText, setNewPostText] = useState('');
-    const [groups, setGroups] = useState(suggestedGroups);
-    const [commentInputs, setCommentInputs] = useState<Record<number, string>>({});
+    const [showCreatePost, setShowCreatePost] = useState(false);
+    const [editingPost, setEditingPost] = useState<Post | null>(null);
+    const [posts, setPosts] = useState<Post[]>(samplePosts);
+    const [users, setUsers] = useState(suggestedUsers);
     const [activeNav, setActiveNav] = useState('Feed');
+    const [activeTag, setActiveTag] = useState<string | null>(null);
+    const [feedTab, setFeedTab] = useState<'forYou' | 'following' | 'trending'>('forYou');
+    const [inlineText, setInlineText] = useState('');
+    const [inlineImages, setInlineImages] = useState<string[]>([]);
+    const [inlineVideo, setInlineVideo] = useState<string | null>(null);
+    const inlinePhotoRef = useRef<HTMLInputElement>(null);
+    const inlineVideoRef = useRef<HTMLInputElement>(null);
 
-    // Check if user is logged in, show login modal if not
+    // User is guaranteed logged in at this point (auth gate above)
     const requireAuth = useCallback((action: () => void) => {
-        if (!user) {
-            setShowLoginModal(true);
-        } else {
-            action();
-        }
-    }, [user]);
+        action();
+    }, []);
 
-    // Like/unlike a post
-    const handleLike = (postId: number) => {
-        requireAuth(() => {
-            setPosts(prev => prev.map(p =>
-                p.id === postId
-                    ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 }
-                    : p
-            ));
-        });
+    // React to a post (toggle or switch reaction)
+    const handleReact = (postId: string, reaction: ReactionType) => {
+        setPosts(prev => prev.map(p => {
+            if (p.id !== postId) return p;
+            const prev_reaction = p.myReaction;
+            const newReactions = { ...p.reactions };
+            let totalDelta = 0;
+
+            if (prev_reaction === reaction) {
+                // Remove reaction
+                newReactions[reaction] = Math.max(0, newReactions[reaction] - 1);
+                totalDelta = -1;
+                return { ...p, reactions: newReactions, myReaction: null, totalReactions: p.totalReactions + totalDelta };
+            } else {
+                // Switch or add reaction
+                if (prev_reaction) {
+                    newReactions[prev_reaction] = Math.max(0, newReactions[prev_reaction] - 1);
+                } else {
+                    totalDelta = 1;
+                }
+                newReactions[reaction] = newReactions[reaction] + 1;
+                return { ...p, reactions: newReactions, myReaction: reaction, totalReactions: p.totalReactions + totalDelta };
+            }
+        }));
     };
 
-    // Toggle comment section
-    const handleToggleComments = (postId: number) => {
-        setPosts(prev => prev.map(p =>
-            p.id === postId ? { ...p, showComments: !p.showComments } : p
-        ));
+    // Add comment
+    const handleComment = (postId: string, text: string, parentId?: string) => {
+        setPosts(prev => prev.map(p => {
+            if (p.id !== postId) return p;
+            const newComment = {
+                id: 'c' + Date.now(),
+                author: user?.displayName || 'You',
+                avatar: '🧑‍🌾',
+                text,
+                time: 'Just now',
+                likes: 0,
+                liked: false,
+                replies: [],
+            };
+
+            if (parentId) {
+                // Nested reply
+                const addReply = (comments: typeof p.comments): typeof p.comments =>
+                    comments.map(c =>
+                        c.id === parentId
+                            ? { ...c, replies: [...(c.replies || []), newComment] }
+                            : { ...c, replies: c.replies ? addReply(c.replies) : [] }
+                    );
+                return { ...p, comments: addReply(p.comments), commentCount: p.commentCount + 1 };
+            }
+            return { ...p, comments: [...p.comments, newComment], commentCount: p.commentCount + 1 };
+        }));
     };
 
-    // Add a comment
-    const handleAddComment = (postId: number) => {
-        const text = commentInputs[postId]?.trim();
-        if (!text) return;
-        requireAuth(() => {
-            setPosts(prev => prev.map(p =>
-                p.id === postId
-                    ? {
-                        ...p,
-                        comments: p.comments + 1,
-                        commentList: [...(p.commentList || []), {
-                            author: user?.displayName || 'You',
-                            text,
-                            time: 'Just now',
-                        }],
-                    }
-                    : p
-            ));
-            setCommentInputs(prev => ({ ...prev, [postId]: '' }));
-        });
+    // Like a comment
+    const handleLikeComment = (postId: string, commentId: string) => {
+        setPosts(prev => prev.map(p => {
+            if (p.id !== postId) return p;
+            const toggleLike = (comments: typeof p.comments): typeof p.comments =>
+                comments.map(c =>
+                    c.id === commentId
+                        ? { ...c, liked: !c.liked, likes: c.liked ? c.likes - 1 : c.likes + 1 }
+                        : { ...c, replies: c.replies ? toggleLike(c.replies) : [] }
+                );
+            return { ...p, comments: toggleLike(p.comments) };
+        }));
     };
 
     // Share post
-    const handleShare = (postId: number) => {
-        setPosts(prev => prev.map(p =>
-            p.id === postId ? { ...p, shares: p.shares + 1 } : p
-        ));
-        // Attempt native share
-        if (navigator.share) {
+    const handleShare = (postId: string) => {
+        setPosts(prev => prev.map(p => p.id === postId ? { ...p, shares: p.shares + 1 } : p));
+        if (typeof navigator !== 'undefined' && navigator.share) {
             const post = posts.find(p => p.id === postId);
             navigator.share({
                 title: `Post by ${post?.author}`,
                 text: post?.content?.slice(0, 100),
                 url: window.location.href,
-            }).catch(() => { /* user cancelled */ });
+            }).catch(() => { });
         }
     };
 
-    // Create new post
-    const handleCreatePost = () => {
-        if (!newPostText.trim()) return;
-        requireAuth(() => {
-            const newPost: Post = {
-                id: Date.now(),
-                author: user?.displayName || 'You',
-                avatar: '\uD83E\uDDD1\u200D\uD83C\uDF3E',
-                location: 'India',
-                time: 'Just now',
-                content: newPostText.trim(),
-                likes: 0,
-                comments: 0,
-                shares: 0,
-                tags: [],
-                liked: false,
-                commentList: [],
-            };
-            setPosts(prev => [newPost, ...prev]);
-            setNewPostText('');
-        });
+    // Save/bookmark post
+    const handleSave = (postId: string) => {
+        setPosts(prev => prev.map(p => p.id === postId ? { ...p, saved: !p.saved } : p));
     };
 
-    // Join/leave group
-    const handleJoinGroup = (groupName: string) => {
-        requireAuth(() => {
-            setGroups(prev => prev.map(g =>
-                g.name === groupName ? { ...g, joined: !g.joined } : g
-            ));
-        });
+    // Create new post
+    const handleCreatePost = (data: { content: string; images: string[]; video: string | null; tags: string[] }) => {
+        const newPost: Post = {
+            id: 'p' + Date.now(),
+            author: user?.displayName || 'You',
+            username: 'you',
+            avatar: '🧑‍🌾',
+            verified: false,
+            location: 'India',
+            time: 'Just now',
+            content: data.content,
+            images: data.images.length > 0 ? data.images : undefined,
+            video: data.video || undefined,
+            reactions: { like: 0, love: 0, celebrate: 0, insightful: 0, funny: 0, growth: 0 },
+            myReaction: null,
+            totalReactions: 0,
+            comments: [],
+            commentCount: 0,
+            shares: 0,
+            saved: false,
+            tags: data.tags,
+            type: data.video ? 'video' : data.images.length > 0 ? 'image' : 'post',
+            isOwn: true,
+        };
+        setPosts(prev => [newPost, ...prev]);
     };
+
+    // Follow/unfollow user
+    const handleFollow = (username: string) => {
+        setUsers(prev => prev.map(u =>
+            u.username === username ? { ...u, following: !u.following } : u
+        ));
+    };
+
+    // Edit post — open edit modal
+    const handleEdit = (postId: string) => {
+        const post = posts.find(p => p.id === postId);
+        if (post) setEditingPost(post);
+    };
+
+    // Save edited post
+    const handleEditSave = (postId: string, data: { content: string; images: string[]; video: string | null; tags: string[] }) => {
+        setPosts(prev => prev.map(p =>
+            p.id === postId
+                ? {
+                    ...p,
+                    content: data.content,
+                    images: data.images.length > 0 ? data.images : undefined,
+                    video: data.video || undefined,
+                    tags: data.tags,
+                    type: data.video ? 'video' as const : data.images.length > 0 ? 'image' as const : 'post' as const,
+                }
+                : p
+        ));
+    };
+
+    // Delete post
+    const handleDelete = (postId: string) => {
+        setPosts(prev => prev.filter(p => p.id !== postId));
+    };
+
+    // Hashtag search/filter
+    const handleTagClick = (tag: string) => {
+        setActiveTag(activeTag === tag ? null : tag);
+    };
+
+    const handleSearch = (query: string) => {
+        setActiveTag(query);
+    };
+
+    // Filter posts by tag
+    const filteredPosts = activeTag
+        ? posts.filter(p => p.tags.some(t => t.toLowerCase().includes(activeTag.toLowerCase())))
+        : posts;
+
+    // Auth gate — non-logged-in users see a login wall
+    if (!user) {
+        return (
+            <div className="min-h-screen bg-[#f4f6f0] dark:bg-[#0d110d]">
+                <Header />
+                <main className="py-12 px-4">
+                    <div className="mx-auto max-w-lg text-center">
+                        {/* Hero illustration */}
+                        <div className="relative w-32 h-32 mx-auto mb-8">
+                            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#22c33d]/20 to-[#8CDA4F]/10 animate-pulse" />
+                            <div className="absolute inset-2 rounded-full bg-white dark:bg-[#1a231a] flex items-center justify-center">
+                                <span className="material-symbols-outlined text-6xl text-[#22c33d]">diversity_3</span>
+                            </div>
+                        </div>
+
+                        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-3">
+                            Join India&apos;s Largest<br />
+                            <span className="text-[#22c33d]">Farmer Community</span>
+                        </h1>
+                        <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg mb-8 max-w-md mx-auto leading-relaxed">
+                            Connect with 10L+ farmers. Share experiences, get crop advice, discover farming tips, and stay updated with agri news.
+                        </p>
+
+                        {/* Feature highlights */}
+                        <div className="grid grid-cols-2 gap-3 mb-8 max-w-sm mx-auto text-left">
+                            {[
+                                { icon: 'dynamic_feed', text: 'Farming Tips & Posts' },
+                                { icon: 'chat_bubble', text: 'Ask & Get Answers' },
+                                { icon: 'trending_up', text: 'Trending Agri Topics' },
+                                { icon: 'newspaper', text: 'World Agri News' },
+                                { icon: 'groups', text: 'Farmer Groups' },
+                                { icon: 'bookmark', text: 'Save & Share Posts' },
+                            ].map((f) => (
+                                <div key={f.text} className="flex items-center gap-2 p-2.5 rounded-xl bg-white dark:bg-[#1a231a] border border-gray-100 dark:border-gray-800">
+                                    <span className="material-symbols-outlined text-[#22c33d] text-lg">{f.icon}</span>
+                                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{f.text}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* CTA buttons */}
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto">
+                            <button
+                                onClick={() => router.push('/user-register')}
+                                className="flex-1 py-3.5 rounded-xl bg-[#22c33d] text-white font-bold text-base hover:brightness-110 transition-all shadow-lg shadow-[#22c33d]/20"
+                            >
+                                Sign Up Free
+                            </button>
+                            <button
+                                onClick={() => setShowLoginModal(true)}
+                                className="flex-1 py-3.5 rounded-xl border-2 border-[#22c33d] text-[#22c33d] font-bold text-base hover:bg-[#22c33d]/5 transition-all"
+                            >
+                                Log In
+                            </button>
+                        </div>
+
+                        <p className="text-xs text-gray-400 mt-6">
+                            Free to join &bull; No spam &bull; Built for Indian farmers
+                        </p>
+                    </div>
+                </main>
+                <Footer />
+                <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-[#0d110d]">
+        <div className="min-h-screen bg-[#f4f6f0] dark:bg-[#0d110d]">
             <Header />
 
-            <main className="py-8">
-                <div className="mx-auto max-w-[1280px] px-6">
-                    <div className="flex gap-8">
+            <main className="py-6">
+                <div className="mx-auto max-w-[1360px] px-4 sm:px-6">
+                    <div className="flex gap-6">
                         {/* Left Sidebar */}
-                        <div className="hidden lg:block w-64 shrink-0">
-                            <div className="sticky top-24 space-y-6">
-                                {/* User Card */}
-                                <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-6 border border-gray-100 dark:border-gray-800">
-                                    <div className="text-center">
-                                        {user ? (
-                                            <>
-                                                <div className="w-16 h-16 rounded-full bg-primary/10 mx-auto mb-4 flex items-center justify-center overflow-hidden ring-2 ring-primary/20">
+                        <div className="hidden lg:block w-[280px] shrink-0">
+                            <div className="sticky top-24 space-y-5">
+                                {/* User Profile Card */}
+                                <div className="bg-white dark:bg-[#1a231a] rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800">
+                                    {/* Cover */}
+                                    <div className="h-20 bg-gradient-to-br from-[#22c33d] via-[#2c5926] to-[#8CDA4F] relative">
+                                        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.08%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-50" />
+                                    </div>
+                                    <div className="px-5 pb-5">
+                                        <div className="-mt-10 text-center">
+                                            <div className="w-20 h-20 rounded-full bg-white dark:bg-[#1a231a] p-1 mx-auto mb-3">
+                                                <div className="w-full h-full rounded-full bg-primary/10 flex items-center justify-center overflow-hidden ring-2 ring-[#22c33d]/30">
                                                     {user.photoURL ? (
                                                         <img src={user.photoURL} alt="User" className="w-full h-full object-cover" />
                                                     ) : (
-                                                        <span className="material-symbols-outlined text-3xl text-primary">person</span>
+                                                        <span className="material-symbols-outlined text-3xl text-[#22c33d]">person</span>
                                                     )}
                                                 </div>
-                                                <h3 className="font-bold text-gray-900 dark:text-white mb-1">{user.displayName || 'Farmer'}</h3>
-                                                <p className="text-sm text-gray-500 mb-4">{user.email || 'Community Member'}</p>
-                                                <button
-                                                    onClick={() => router.push('/home/settings')}
-                                                    className="w-full py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-sm"
-                                                >
-                                                    Edit Profile
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 mx-auto mb-4 flex items-center justify-center">
-                                                    <span className="material-symbols-outlined text-3xl text-gray-400">person</span>
+                                            </div>
+                                            <h3 className="font-bold text-gray-900 dark:text-white">{user.displayName || 'Farmer'}</h3>
+                                            <p className="text-xs text-gray-500 mt-0.5 mb-3">{user.email || 'Community Member'}</p>
+                                            <div className="flex items-center justify-center gap-6 py-3 border-t border-gray-100 dark:border-gray-800">
+                                                <div className="text-center">
+                                                    <p className="font-bold text-gray-900 dark:text-white">{posts.filter(p => p.author === (user.displayName || 'You')).length}</p>
+                                                    <p className="text-[11px] text-gray-500">Posts</p>
                                                 </div>
-                                                <h3 className="font-bold text-gray-900 dark:text-white mb-2">Join Our Community</h3>
-                                                <p className="text-sm text-gray-500 mb-4">Connect with farmers across India</p>
-                                                <button
-                                                    onClick={() => router.push('/user-register')}
-                                                    className="w-full py-2.5 rounded-xl bg-primary text-white font-semibold hover:brightness-110 transition-all"
-                                                >
-                                                    Sign Up
-                                                </button>
-                                                <button
-                                                    onClick={() => setShowLoginModal(true)}
-                                                    className="w-full py-2.5 mt-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
-                                                >
-                                                    Log In
-                                                </button>
-                                            </>
-                                        )}
+                                                <div className="text-center">
+                                                    <p className="font-bold text-gray-900 dark:text-white">128</p>
+                                                    <p className="text-[11px] text-gray-500">Following</p>
+                                                </div>
+                                                <div className="text-center">
+                                                    <p className="font-bold text-gray-900 dark:text-white">56</p>
+                                                    <p className="text-[11px] text-gray-500">Followers</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => router.push('/home/settings')}
+                                                className="w-full py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-sm"
+                                            >
+                                                Edit Profile
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Quick Links */}
-                                <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
-                                    <h4 className="font-bold text-gray-900 dark:text-white mb-3 px-2">Quick Links</h4>
-                                    <nav className="space-y-1">
+                                {/* Quick Navigation */}
+                                <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-3 border border-gray-100 dark:border-gray-800">
+                                    <nav className="space-y-0.5">
                                         {[
-                                            { icon: 'home', label: 'Feed' },
-                                            { icon: 'people', label: 'My Network' },
-                                            { icon: 'bookmark', label: 'Saved Posts' },
-                                            { icon: 'groups', label: 'Groups' },
-                                            { icon: 'event', label: 'Events' },
+                                            { icon: 'dynamic_feed', label: 'Feed', count: null },
+                                            { icon: 'people', label: 'My Network', count: '3' },
+                                            { icon: 'bookmark', label: 'Saved Posts', count: posts.filter(p => p.saved).length.toString() },
+                                            { icon: 'groups', label: 'Groups', count: null },
+                                            { icon: 'event', label: 'Events', count: '2' },
+                                            { icon: 'newspaper', label: 'News', count: null },
                                         ].map((item) => (
                                             <button
                                                 key={item.label}
-                                                onClick={() => {
-                                                    if (item.label === 'Feed') {
-                                                        setActiveNav(item.label);
-                                                    } else {
-                                                        requireAuth(() => setActiveNav(item.label));
-                                                    }
-                                                }}
-                                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${activeNav === item.label
-                                                    ? 'bg-primary/10 text-primary'
+                                                onClick={() => setActiveNav(item.label)}
+                                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${activeNav === item.label
+                                                    ? 'bg-[#22c33d]/10 text-[#22c33d] shadow-sm'
                                                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
                                                     }`}
                                             >
                                                 <span className="material-symbols-outlined text-lg">{item.icon}</span>
-                                                {item.label}
+                                                <span className="flex-1 text-left">{item.label}</span>
+                                                {item.count && item.count !== '0' && (
+                                                    <span className="px-2 py-0.5 rounded-full bg-[#22c33d]/10 text-[#22c33d] text-xs font-bold">
+                                                        {item.count}
+                                                    </span>
+                                                )}
                                             </button>
                                         ))}
                                     </nav>
+                                </div>
+
+                                {/* Community Stats */}
+                                <div className="bg-gradient-to-br from-[#22c33d] to-[#2c5926] rounded-2xl p-5 text-white">
+                                    <h4 className="font-bold mb-3 flex items-center gap-2">
+                                        <span className="material-symbols-outlined">diversity_3</span>
+                                        Community Stats
+                                    </h4>
+                                    <div className="space-y-2.5">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-white/80">Active Farmers</span>
+                                            <span className="font-bold">10,24,500</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-white/80">Posts Today</span>
+                                            <span className="font-bold">2,847</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-white/80">Solutions Shared</span>
+                                            <span className="font-bold">45,120</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Main Feed */}
-                        <div className="flex-1 max-w-2xl">
-                            {/* Create Post */}
-                            <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-4 border border-gray-100 dark:border-gray-800 mb-6">
-                                <div className="flex gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
-                                        {user?.photoURL ? (
-                                            <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <span className="material-symbols-outlined text-primary/60">person</span>
-                                        )}
-                                    </div>
-                                    <div className="flex-1">
-                                        <textarea
-                                            value={newPostText}
-                                            onChange={(e) => setNewPostText(e.target.value)}
-                                            onFocus={() => { if (!user) setShowLoginModal(true); }}
-                                            placeholder="Share your farming experience, tips, or questions..."
-                                            className="w-full bg-gray-50 dark:bg-gray-800/50 rounded-xl px-4 py-3 text-sm resize-none border-0 focus:ring-2 focus:ring-primary/30 outline-none"
-                                            rows={3}
-                                        />
-                                        <div className="flex items-center justify-between mt-3">
-                                            <div className="flex items-center gap-2">
-                                                <button className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                                                    <span className="material-symbols-outlined">image</span>
-                                                </button>
-                                                <button className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                                                    <span className="material-symbols-outlined">videocam</span>
-                                                </button>
-                                                <button className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                                                    <span className="material-symbols-outlined">poll</span>
-                                                </button>
-                                            </div>
-                                            <button
-                                                onClick={handleCreatePost}
-                                                disabled={!newPostText.trim()}
-                                                className="px-5 py-2 rounded-xl bg-primary text-white text-sm font-semibold hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                                            >
-                                                Post
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div className="flex-1 max-w-[640px]">
+                            {/* Stories */}
+                            <StoriesBar
+                                stories={sampleStories}
+                                userAvatar={user?.photoURL}
+                                onAddStory={() => setShowCreatePost(true)}
+                                onViewStory={() => { }}
+                            />
 
-                            {/* Posts Feed */}
-                            <div className="space-y-6">
-                                {posts.map((post) => (
-                                    <article
-                                        key={post.id}
-                                        className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden"
+                            {/* Feed Tabs */}
+                            <div className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 mb-5 p-1 flex">
+                                {[
+                                    { key: 'forYou', label: 'For You', icon: 'auto_awesome' },
+                                    { key: 'following', label: 'Following', icon: 'people' },
+                                    { key: 'trending', label: 'Trending', icon: 'trending_up' },
+                                ].map(tab => (
+                                    <button
+                                        key={tab.key}
+                                        onClick={() => setFeedTab(tab.key as typeof feedTab)}
+                                        className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${
+                                            feedTab === tab.key
+                                                ? 'bg-[#22c33d] text-white shadow-md'
+                                                : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                                        }`}
                                     >
-                                        {/* Post Header */}
-                                        <div className="p-4 flex items-start gap-3">
-                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-2xl">
-                                                {post.avatar}
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2">
-                                                    <h4 className="font-bold text-gray-900 dark:text-white">{post.author}</h4>
-                                                    <span className="text-xs text-gray-400">&bull;</span>
-                                                    <span className="text-xs text-gray-500">{post.time}</span>
-                                                </div>
-                                                <p className="text-xs text-gray-500 flex items-center gap-1">
-                                                    <span className="material-symbols-outlined text-sm">location_on</span>
-                                                    {post.location}
-                                                </p>
-                                            </div>
-                                            <button className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                                                <span className="material-symbols-outlined">more_horiz</span>
-                                            </button>
-                                        </div>
-
-                                        {/* Post Content */}
-                                        <div className="px-4 pb-3">
-                                            <p className="text-gray-800 dark:text-gray-200 leading-relaxed">
-                                                {post.content}
-                                            </p>
-                                            {post.tags.length > 0 && (
-                                                <div className="flex flex-wrap gap-2 mt-3">
-                                                    {post.tags.map((tag) => (
-                                                        <span
-                                                            key={tag}
-                                                            className="text-xs text-primary font-medium hover:underline cursor-pointer"
-                                                        >
-                                                            {tag}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Post Image */}
-                                        {post.image && (
-                                            <div className="aspect-video bg-gray-100 dark:bg-gray-800">
-                                                <img
-                                                    src={post.image}
-                                                    alt="Post"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            </div>
-                                        )}
-
-                                        {/* Post Stats */}
-                                        <div className="px-4 py-2 flex items-center justify-between text-sm text-gray-500 border-t border-gray-100 dark:border-gray-800">
-                                            <span>{post.likes} likes</span>
-                                            <div className="flex gap-4">
-                                                <span>{post.comments} comments</span>
-                                                <span>{post.shares} shares</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Post Actions */}
-                                        <div className="px-4 py-2 flex items-center border-t border-gray-100 dark:border-gray-800">
-                                            <button
-                                                onClick={() => handleLike(post.id)}
-                                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-colors ${post.liked
-                                                    ? 'text-primary bg-primary/5'
-                                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                                                    }`}
-                                            >
-                                                <span className="material-symbols-outlined">{post.liked ? 'thumb_up' : 'thumb_up'}</span>
-                                                <span className="text-sm font-medium">{post.liked ? 'Liked' : 'Like'}</span>
-                                            </button>
-                                            <button
-                                                onClick={() => handleToggleComments(post.id)}
-                                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-colors ${post.showComments
-                                                    ? 'text-primary bg-primary/5'
-                                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                                                    }`}
-                                            >
-                                                <span className="material-symbols-outlined">chat_bubble</span>
-                                                <span className="text-sm font-medium">Comment</span>
-                                            </button>
-                                            <button
-                                                onClick={() => handleShare(post.id)}
-                                                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                                            >
-                                                <span className="material-symbols-outlined">share</span>
-                                                <span className="text-sm font-medium">Share</span>
-                                            </button>
-                                        </div>
-
-                                        {/* Comments Section */}
-                                        {post.showComments && (
-                                            <div className="px-4 pb-4 border-t border-gray-100 dark:border-gray-800">
-                                                {/* Existing comments */}
-                                                {(post.commentList || []).length > 0 && (
-                                                    <div className="pt-3 space-y-3 mb-3">
-                                                        {(post.commentList || []).map((comment, i) => (
-                                                            <div key={i} className="flex gap-2">
-                                                                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                                                    <span className="material-symbols-outlined text-xs text-primary">person</span>
-                                                                </div>
-                                                                <div className="flex-1 bg-gray-50 dark:bg-gray-800/50 rounded-xl px-3 py-2">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span className="text-xs font-bold text-gray-900 dark:text-white">{comment.author}</span>
-                                                                        <span className="text-[10px] text-gray-400">{comment.time}</span>
-                                                                    </div>
-                                                                    <p className="text-xs text-gray-700 dark:text-gray-300 mt-0.5">{comment.text}</p>
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                                {/* Add comment input */}
-                                                <div className="flex gap-2 pt-2">
-                                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
-                                                        {user?.photoURL ? (
-                                                            <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            <span className="material-symbols-outlined text-sm text-primary/60">person</span>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex-1 flex gap-2">
-                                                        <input
-                                                            type="text"
-                                                            value={commentInputs[post.id] || ''}
-                                                            onChange={(e) => setCommentInputs(prev => ({ ...prev, [post.id]: e.target.value }))}
-                                                            onFocus={() => { if (!user) setShowLoginModal(true); }}
-                                                            onKeyDown={(e) => { if (e.key === 'Enter') handleAddComment(post.id); }}
-                                                            placeholder="Write a comment..."
-                                                            className="flex-1 px-3 py-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 text-sm border-0 focus:ring-2 focus:ring-primary/30 outline-none"
-                                                        />
-                                                        <button
-                                                            onClick={() => handleAddComment(post.id)}
-                                                            disabled={!commentInputs[post.id]?.trim()}
-                                                            className="px-3 py-2 rounded-xl bg-primary text-white text-xs font-semibold hover:brightness-110 transition-all disabled:opacity-40"
-                                                        >
-                                                            <span className="material-symbols-outlined text-sm">send</span>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </article>
+                                        <span className="material-symbols-outlined text-lg">{tab.icon}</span>
+                                        {tab.label}
+                                    </button>
                                 ))}
                             </div>
 
-                            {/* Load More */}
-                            <div className="text-center mt-8">
-                                <p className="text-sm text-gray-400 font-medium py-4">
-                                    You&apos;re all caught up! Check back later for new posts.
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Right Sidebar */}
-                        <div className="hidden xl:block w-80 shrink-0">
-                            <div className="sticky top-24 space-y-6">
-                                {/* Trending Topics */}
-                                <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
-                                    <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-primary">trending_up</span>
-                                        Trending Topics
-                                    </h4>
-                                    <div className="space-y-3">
-                                        {trendingTopics.map((topic, index) => (
-                                            <button
-                                                key={topic.tag}
-                                                className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
-                                            >
-                                                <div>
-                                                    <p className="font-semibold text-primary">{topic.tag}</p>
-                                                    <p className="text-xs text-gray-500">{topic.posts} posts</p>
-                                                </div>
-                                                <span className="text-lg font-bold text-gray-300">#{index + 1}</span>
-                                            </button>
-                                        ))}
+                            {/* Inline Create Post */}
+                            <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-4 border border-gray-100 dark:border-gray-800 mb-5">
+                                <div className="flex gap-3">
+                                    <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-[#22c33d]/10">
+                                        {user?.photoURL ? (
+                                            <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="material-symbols-outlined text-xl text-[#22c33d]/50">person</span>
+                                        )}
                                     </div>
+                                    <textarea
+                                        value={inlineText}
+                                        onChange={(e) => setInlineText(e.target.value)}
+                                        placeholder="Share your farming experience, tips, or questions..."
+                                        rows={2}
+                                        className="flex-1 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#22c33d]/30 transition-colors"
+                                    />
                                 </div>
 
-                                {/* Suggested Groups */}
-                                <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
-                                    <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-primary">groups</span>
-                                        Suggested Groups
-                                    </h4>
-                                    <div className="space-y-3">
-                                        {groups.map((group) => (
-                                            <div
-                                                key={group.name}
-                                                className="flex items-center gap-3 p-2"
-                                            >
-                                                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-xl">
-                                                    {group.emoji}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{group.name}</p>
-                                                    <p className="text-xs text-gray-500">{group.members} members</p>
-                                                </div>
+                                {/* Inline previews */}
+                                {(inlineImages.length > 0 || inlineVideo) && (
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {inlineImages.map((src, i) => (
+                                            <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                                                <img src={src} alt="" className="w-full h-full object-cover" />
                                                 <button
-                                                    onClick={() => handleJoinGroup(group.name)}
-                                                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${group.joined
-                                                        ? 'bg-primary text-white'
-                                                        : 'bg-primary/10 text-primary hover:bg-primary/20'
-                                                        }`}
+                                                    onClick={() => setInlineImages(prev => prev.filter((_, idx) => idx !== i))}
+                                                    className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center"
                                                 >
-                                                    {group.joined ? 'Joined' : 'Join'}
+                                                    <span className="material-symbols-outlined text-white text-xs">close</span>
                                                 </button>
                                             </div>
                                         ))}
+                                        {inlineVideo && (
+                                            <div className="relative w-32 h-20 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-black flex items-center justify-center">
+                                                <video src={inlineVideo} className="w-full h-full object-cover" />
+                                                <span className="absolute material-symbols-outlined text-white text-2xl">play_circle</span>
+                                                <button
+                                                    onClick={() => setInlineVideo(null)}
+                                                    className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center"
+                                                >
+                                                    <span className="material-symbols-outlined text-white text-xs">close</span>
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Hidden file inputs */}
+                                <input
+                                    ref={inlinePhotoRef}
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    className="hidden"
+                                    onChange={(e) => {
+                                        const files = e.target.files;
+                                        if (!files) return;
+                                        Array.from(files).forEach(file => {
+                                            if (file.size > 10 * 1024 * 1024) return;
+                                            const reader = new FileReader();
+                                            reader.onload = (ev) => {
+                                                if (ev.target?.result) setInlineImages(prev => [...prev, ev.target!.result as string]);
+                                            };
+                                            reader.readAsDataURL(file);
+                                        });
+                                        e.target.value = '';
+                                    }}
+                                />
+                                <input
+                                    ref={inlineVideoRef}
+                                    type="file"
+                                    accept="video/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file || file.size > 50 * 1024 * 1024) return;
+                                        const reader = new FileReader();
+                                        reader.onload = (ev) => {
+                                            if (ev.target?.result) setInlineVideo(ev.target.result as string);
+                                        };
+                                        reader.readAsDataURL(file);
+                                        e.target.value = '';
+                                    }}
+                                />
+
+                                <div className="flex items-center gap-1 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+                                    <button
+                                        onClick={() => inlinePhotoRef.current?.click()}
+                                        className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium"
+                                    >
+                                        <span className="material-symbols-outlined text-[#22c33d]">image</span>
+                                        Photo
+                                    </button>
+                                    <button
+                                        onClick={() => inlineVideoRef.current?.click()}
+                                        className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium"
+                                    >
+                                        <span className="material-symbols-outlined text-[#FF9F1C]">videocam</span>
+                                        Video
+                                    </button>
+                                    <button
+                                        onClick={() => setShowCreatePost(true)}
+                                        className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium"
+                                    >
+                                        <span className="material-symbols-outlined text-[#E0C040]">tag</span>
+                                        Hashtag
+                                    </button>
+                                    {(inlineText.trim() || inlineImages.length > 0 || inlineVideo) && (
+                                        <button
+                                            onClick={() => {
+                                                if (!inlineText.trim() && inlineImages.length === 0 && !inlineVideo) return;
+                                                const tags = inlineText.match(/#\w+/g)?.map(t => t.slice(1)) || [];
+                                                const newPost: Post = {
+                                                    id: `p${Date.now()}`,
+                                                    author: user?.displayName || 'You',
+                                                    username: `@${(user?.displayName || 'user').toLowerCase().replace(/\s+/g, '')}`,
+                                                    avatar: user?.photoURL || '',
+                                                    verified: false,
+                                                    time: 'Just now',
+                                                    content: inlineText,
+                                                    images: inlineImages.length > 0 ? inlineImages : undefined,
+                                                    video: inlineVideo || undefined,
+                                                    reactions: { like: 0, love: 0, celebrate: 0, insightful: 0, funny: 0, growth: 0 },
+                                                    totalReactions: 0,
+                                                    comments: [],
+                                                    commentCount: 0,
+                                                    shares: 0,
+                                                    saved: false,
+                                                    tags,
+                                                    type: inlineVideo ? 'video' : inlineImages.length > 0 ? 'image' : 'text',
+                                                    isOwn: true,
+                                                };
+                                                setPosts(prev => [newPost, ...prev]);
+                                                setInlineText('');
+                                                setInlineImages([]);
+                                                setInlineVideo(null);
+                                            }}
+                                            className="px-5 py-2 rounded-xl bg-[#22c33d] text-white text-sm font-semibold hover:bg-[#1ba332] transition-colors"
+                                        >
+                                            Post
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Active filter indicator */}
+                            {activeTag && (
+                                <div className="mb-4 flex items-center gap-2 p-3 rounded-xl bg-[#22c33d]/10 border border-[#22c33d]/20">
+                                    <span className="material-symbols-outlined text-[#22c33d]">filter_alt</span>
+                                    <span className="text-sm font-semibold text-[#22c33d]">Showing posts for {activeTag}</span>
+                                    <button
+                                        onClick={() => setActiveTag(null)}
+                                        className="ml-auto text-sm font-bold text-[#22c33d] hover:underline"
+                                    >
+                                        Clear
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Posts Feed */}
+                            <div className="space-y-5">
+                                {filteredPosts.length > 0 ? filteredPosts.map((post) => (
+                                    <PostCard
+                                        key={post.id}
+                                        post={post}
+                                        onReact={handleReact}
+                                        onComment={handleComment}
+                                        onShare={handleShare}
+                                        onSave={handleSave}
+                                        onTagClick={handleTagClick}
+                                        onLikeComment={handleLikeComment}
+                                        onEdit={handleEdit}
+                                        onDelete={handleDelete}
+                                        userAvatar={user?.photoURL}
+                                        requireAuth={requireAuth}
+                                    />
+                                )) : (
+                                    <div className="text-center py-16 bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800">
+                                        <span className="material-symbols-outlined text-5xl text-gray-300 mb-3">search_off</span>
+                                        <p className="text-gray-500 font-medium">No posts found for &ldquo;{activeTag}&rdquo;</p>
+                                        <button onClick={() => setActiveTag(null)} className="mt-3 text-sm font-bold text-[#22c33d] hover:underline">
+                                            Clear filter
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Load More */}
+                            {filteredPosts.length > 0 && (
+                                <div className="text-center mt-8 mb-4">
+                                    <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white dark:bg-[#1a231a] border border-gray-100 dark:border-gray-800 text-sm text-gray-400 font-medium">
+                                        <span className="material-symbols-outlined text-[#22c33d]">check_circle</span>
+                                        You&apos;re all caught up! Check back later for new posts.
                                     </div>
                                 </div>
+                            )}
+                        </div>
+
+                        {/* Right Sidebar */}
+                        <div className="hidden xl:block w-[320px] shrink-0">
+                            <div className="sticky top-24 space-y-5">
+                                {/* Hashtag Search & Trending */}
+                                <HashtagSearch
+                                    trendingTopics={trendingTopics}
+                                    onSearch={handleSearch}
+                                    onTagClick={handleTagClick}
+                                    activeTag={activeTag}
+                                    onClearFilter={() => setActiveTag(null)}
+                                />
+
+                                {/* Suggested Users */}
+                                <SuggestedUsers users={users} onFollow={handleFollow} />
+
+                                {/* News & Events */}
+                                <NewsEvents events={sampleNewsEvents} />
 
                                 {/* App Download */}
-                                <div className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-5 text-white">
-                                    <h4 className="font-bold mb-2">Get the Miraitu App</h4>
-                                    <p className="text-sm text-white/80 mb-4">Connect with farmers on the go!</p>
-                                    <div className="flex gap-2">
-                                        <button className="flex-1 py-2 rounded-lg bg-white/20 text-sm font-medium hover:bg-white/30 transition-colors">
-                                            App Store
+                                <div className="bg-gradient-to-br from-[#22c33d] to-[#2c5926] rounded-2xl p-5 text-white relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
+                                    <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-6 -translate-x-6" />
+                                    <h4 className="font-bold mb-2 relative z-10">Get the Miraitu App</h4>
+                                    <p className="text-sm text-white/80 mb-4 relative z-10">Connect with farmers on the go!</p>
+                                    <div className="flex gap-2 relative z-10">
+                                        <button className="flex-1 py-2.5 rounded-xl bg-white/20 backdrop-blur-sm text-sm font-semibold hover:bg-white/30 transition-colors flex items-center justify-center gap-1.5">
+                                            <span className="material-symbols-outlined text-sm">phone_iphone</span>
+                                            iOS
                                         </button>
-                                        <button className="flex-1 py-2 rounded-lg bg-white/20 text-sm font-medium hover:bg-white/30 transition-colors">
-                                            Play Store
+                                        <button className="flex-1 py-2.5 rounded-xl bg-white/20 backdrop-blur-sm text-sm font-semibold hover:bg-white/30 transition-colors flex items-center justify-center gap-1.5">
+                                            <span className="material-symbols-outlined text-sm">android</span>
+                                            Android
                                         </button>
                                     </div>
                                 </div>
@@ -607,7 +650,34 @@ export default function CommunityPage() {
 
             <Footer />
 
-            {/* Login Modal - uses real auth */}
+            {/* Mobile FAB - Create Post */}
+            <button
+                onClick={() => setShowCreatePost(true)}
+                className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-[#22c33d] text-white shadow-lg shadow-[#22c33d]/30 flex items-center justify-center hover:brightness-110 active:scale-95 transition-all z-40 md:hidden"
+            >
+                <span className="material-symbols-outlined text-2xl">add</span>
+            </button>
+
+            {/* Create Post Modal */}
+            <CreatePostModal
+                isOpen={showCreatePost}
+                onClose={() => setShowCreatePost(false)}
+                onSubmit={handleCreatePost}
+                userAvatar={user?.photoURL}
+                userName={user?.displayName}
+            />
+
+            {/* Edit Post Modal */}
+            <EditPostModal
+                isOpen={!!editingPost}
+                post={editingPost}
+                onClose={() => setEditingPost(null)}
+                onSave={handleEditSave}
+                userAvatar={user?.photoURL}
+                userName={user?.displayName}
+            />
+
+            {/* Login Modal */}
             <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
         </div>
     );

@@ -174,17 +174,21 @@ export default function Footer() {
                             <a href="/home/privacy-policy" className="hover:text-white transition-colors">{t('footer.privacy')}</a>
                             <a href="/home/about" className="hover:text-white transition-colors">{t('footer.secureFaq')}</a>
                             <a href="/home/about" className="hover:text-white transition-colors">{t('footer.refund')}</a>
+                            <a href="https://www.dmca.com/r/x8z5rk9" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors flex items-center gap-1">
+                                <span className="material-symbols-outlined text-xs">shield</span>
+                                DMCA Protected
+                            </a>
                         </div>
                         <div className="flex items-center gap-4">
                             <a
-                                href="//www.dmca.com/Protection/Status.aspx?ID=4c54c1ed-55fe-45ef-ba01-6ee8a0c0cc3a"
+                                href="https://www.dmca.com/r/x8z5rk9"
                                 title="DMCA.com Protection Status"
                                 className="dmca-badge"
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
                                 <img
-                                    src="https://images.dmca.com/Badges/dmca_protected_1_120.png?ID=4c54c1ed-55fe-45ef-ba01-6ee8a0c0cc3a"
+                                    src="https://images.dmca.com/Badges/dmca_protected_sml_120am.png?ID=x8z5rk9"
                                     alt="DMCA.com Protection Status"
                                     className="h-6"
                                 />
