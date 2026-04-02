@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
 interface LoginPromptContextType {
@@ -17,14 +18,17 @@ const LoginPromptContext = createContext<LoginPromptContextType | undefined>(und
 
 export function LoginPromptProvider({ children }: { children: ReactNode }) {
     const { user } = useAuth();
+    const router = useRouter();
     const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
     const [isDismissed, setIsDismissed] = useState(false);
 
+    const redirectToLogin = useCallback(() => {
+        router.push('/user-login');
+    }, [router]);
+
     const showLoginPrompt = useCallback(() => {
-        if (!isDismissed) {
-            setIsLoginPromptOpen(true);
-        }
-    }, [isDismissed]);
+        redirectToLogin();
+    }, [redirectToLogin]);
 
     const closeLoginPrompt = useCallback(() => {
         setIsLoginPromptOpen(false);
@@ -37,11 +41,9 @@ export function LoginPromptProvider({ children }: { children: ReactNode }) {
 
     const requireLogin = useCallback(() => {
         if (user) return true;
-        if (!isDismissed) {
-            setIsLoginPromptOpen(true);
-        }
+        redirectToLogin();
         return false;
-    }, [user, isDismissed]);
+    }, [user, redirectToLogin]);
 
     return (
         <LoginPromptContext.Provider value={{ showLoginPrompt, isLoginPromptOpen, closeLoginPrompt, dismissLoginPrompt, isDismissed, requireLogin }}>

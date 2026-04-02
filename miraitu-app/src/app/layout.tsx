@@ -3,8 +3,6 @@ import { Plus_Jakarta_Sans, Noto_Sans } from "next/font/google";
 import { AuthProvider } from "@/context/AuthContext";
 import { LoginPromptProvider } from "@/context/LoginPromptContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
-import LoginPromptOverlay from "@/components/auth/LoginPromptOverlay";
-import GlobalLoginInterceptor from "@/components/auth/GlobalLoginInterceptor";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import SplashScreen from "@/components/SplashScreen";
 import "./globals.css";
@@ -321,8 +319,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <LoginPromptProvider>
             <LanguageProvider>
               {children}
-              <LoginPromptOverlay />
-              <GlobalLoginInterceptor />
               <ServiceWorkerRegistration />
             </LanguageProvider>
           </LoginPromptProvider>
