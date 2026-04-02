@@ -30,6 +30,24 @@ export default function UserLoginPage() {
     const [loginEmail, setLoginEmail] = useState('');
     const [loginPassword, setLoginPassword] = useState('');
     const [emailError, setEmailError] = useState<string | null>(null);
+    const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+    const normalizeEmail = (value: string) => value.trim().toLowerCase();
+
+    const getEmailSuggestion = (email: string): string | null => {
+        const typoFixes: Record<string, string> = {
+            '@gmai.com': '@gmail.com',
+            '@gmial.com': '@gmail.com',
+            '@gmail.co': '@gmail.com',
+            '@yaho.com': '@yahoo.com',
+            '@outlok.com': '@outlook.com',
+            '@hotnail.com': '@hotmail.com',
+        };
+
+        const typoSuffix = Object.keys(typoFixes).find(suffix => email.endsWith(suffix));
+        if (!typoSuffix) return null;
+        return email.replace(typoSuffix, typoFixes[typoSuffix]);
+    };
 
     const allLanguages: { name: string; sub: string; code: LangCode }[] = [
         { name: 'English', sub: 'EN', code: 'en' },
@@ -160,7 +178,15 @@ export default function UserLoginPage() {
         setEmailError(null);
         setError(null);
 
-        if (!loginEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginEmail)) {
+        const normalizedEmail = normalizeEmail(loginEmail);
+        const suggestedEmail = getEmailSuggestion(normalizedEmail);
+        if (suggestedEmail) {
+            setLoginEmail(suggestedEmail);
+            setEmailError(`Did you mean ${suggestedEmail}? We corrected it, please tap Log In again.`);
+            return;
+        }
+
+        if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
             setEmailError(t('login.errorInvalidEmail'));
             return;
         }
@@ -173,7 +199,7 @@ export default function UserLoginPage() {
         try {
             const { default: supabase } = await import('@/lib/supabase');
             const { data, error: signInError } = await supabase.auth.signInWithPassword({
-                email: loginEmail.trim(),
+                email: normalizedEmail,
                 password: loginPassword,
             });
 
@@ -208,12 +234,83 @@ export default function UserLoginPage() {
         }
     };
 
+    const openResetPasswordConfirm = () => {
+        setEmailError(null);
+        setError(null);
+        setSuccessMessage(null);
+
+        const normalizedEmail = normalizeEmail(loginEmail);
+        if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+            setEmailError('Please enter a valid email address to reset password.');
+            return;
+        }
+
+        setShowResetConfirm(true);
+    };
+
+    const handleResetPassword = async () => {
+        const normalizedEmail = normalizeEmail(loginEmail);
+        if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+            setShowResetConfirm(false);
+            setEmailError('Please enter a valid email address to reset password.');
+            return;
+        }
+
+        setIsSigningIn(true);
+        try {
+            const { default: supabase } = await import('@/lib/supabase');
+            const { error: resetError } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+                redirectTo: `${window.location.origin}/user-login`,
+            });
+
+            if (resetError) {
+                setEmailError(resetError.message || 'Failed to send reset link. Please try again.');
+                return;
+            }
+
+            setSuccessMessage(`✅ Password reset link sent to ${normalizedEmail}`);
+            setShowResetConfirm(false);
+        } catch {
+            setEmailError('Failed to send reset link. Please try again.');
+        } finally {
+            setIsSigningIn(false);
+        }
+    };
+
     if (loading) {
         return <LoadingSpinner />;
     }
 
     return (
         <div className="relative min-h-screen bg-[var(--miraitu-background-light)] font-display" data-no-auth>
+            {showResetConfirm && (
+                <div className="fixed inset-0 z-[80] flex items-center justify-center px-4 bg-black/45 backdrop-blur-sm">
+                    <div className="w-full max-w-sm rounded-2xl bg-white shadow-2xl border border-gray-100 p-5">
+                        <h3 className="text-lg font-black text-[#0f1a11] mb-2">Send Reset Link?</h3>
+                        <p className="text-sm text-gray-600 mb-5">
+                            We will send a password reset link to <span className="font-bold text-[#0f1a11]">{normalizeEmail(loginEmail)}</span>.
+                        </p>
+                        <div className="flex gap-2.5">
+                            <button
+                                type="button"
+                                onClick={() => setShowResetConfirm(false)}
+                                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleResetPassword}
+                                disabled={isSigningIn}
+                                className="flex-1 py-2.5 rounded-xl bg-[var(--miraitu-primary-green)] text-white text-sm font-bold hover:brightness-110 disabled:opacity-60"
+                            >
+                                {isSigningIn ? 'Sending...' : 'Send Link'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Scalable CSS Background */}
             <div className="fixed inset-0 z-0 overflow-hidden">
                 {/* Base Gradient */}
@@ -544,6 +641,16 @@ export default function UserLoginPage() {
                                                 required
                                                 minLength={6}
                                             />
+                                        </div>
+                                        <div className="flex justify-end">
+                                            <button
+                                                type="button"
+                                                onClick={openResetPasswordConfirm}
+                                                disabled={isSigningIn}
+                                                className="text-xs font-bold text-[var(--miraitu-primary-green)] hover:underline disabled:opacity-50"
+                                            >
+                                                Reset Password
+                                            </button>
                                         </div>
                                     </div>
 

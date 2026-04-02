@@ -5,12 +5,14 @@ import Link from 'next/link';
 export default function TermsAgreementCheckbox({
     checked,
     onChange,
+    className,
 }: {
     checked: boolean;
     onChange: (checked: boolean) => void;
+    className?: string;
 }) {
     return (
-        <label className="flex items-start gap-3 cursor-pointer select-none my-3">
+        <label className={`flex items-start gap-3 cursor-pointer select-none ${className || ''}`}>
             <input
                 type="checkbox"
                 checked={checked}

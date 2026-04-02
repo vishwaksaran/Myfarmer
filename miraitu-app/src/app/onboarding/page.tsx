@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import MiraituLogo from '@/components/MiraituLogo';
@@ -200,6 +200,29 @@ const INDIAN_STATES = [
     'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry',
 ];
 
+const LOCATION_SUGGESTIONS = [
+    'Nashik', 'Pune', 'Mumbai', 'Nagpur', 'Aurangabad', 'Kolhapur',
+    'Ahmednagar', 'Satara', 'Solapur', 'Jalgaon', 'Sangli', 'Amravati',
+    'Nanded', 'Parbhani', 'Latur', 'Akola', 'Yavatmal', 'Dhule',
+    'Navi Mumbai', 'Thane', 'Noida', 'Ghaziabad', 'Lucknow', 'Kanpur',
+    'Jaipur', 'Udaipur', 'Jodhpur', 'Bhopal', 'Indore', 'Gwalior',
+    'Patna', 'Ranchi', 'Bengaluru', 'Mysuru', 'Mangaluru', 'Chennai',
+    'Coimbatore', 'Madurai', 'Hyderabad', 'Warangal', 'Kochi', 'Thiruvananthapuram',
+    'Kolkata', 'Siliguri', 'Guwahati', 'Bhubaneswar', 'Cuttack', 'Chandigarh',
+    'Amritsar', 'Ludhiana', 'Dehradun', 'Haridwar', 'Shimla', 'Jammu',
+];
+
+const DISTRICT_SUGGESTIONS = [
+    'Nashik', 'Pune', 'Mumbai Suburban', 'Nagpur', 'Aurangabad', 'Kolhapur',
+    'Ahmednagar', 'Satara', 'Solapur', 'Jalgaon', 'Sangli', 'Amravati',
+    'Nanded', 'Parbhani', 'Latur', 'Akola', 'Yavatmal', 'Dhule',
+    'Thane', 'Palghar', 'Raigad', 'Ratnagiri', 'Sindhudurg', 'Wardha',
+    'Lucknow', 'Kanpur Nagar', 'Noida', 'Jaipur', 'Udaipur', 'Jodhpur',
+    'Indore', 'Bhopal', 'Patna', 'Ranchi', 'Bengaluru Urban', 'Mysuru',
+    'Chennai', 'Coimbatore', 'Madurai', 'Hyderabad', 'Kochi', 'Kolkata',
+    'Guwahati', 'Bhubaneswar', 'Chandigarh', 'Amritsar', 'Ludhiana', 'Dehradun',
+];
+
 // ─── Role-Specific Step 4 Config ──────────────────────────────────
 
 interface Step4Config {
@@ -366,6 +389,9 @@ export default function OnboardingPage() {
     const [showDiscardModal, setShowDiscardModal] = useState(false);
     const [isDiscarding, setIsDiscarding] = useState(false);
     const [agreedToTerms, setAgreedToTerms] = useState(false);
+    const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+    const [showDistrictSuggestions, setShowDistrictSuggestions] = useState(false);
+    const [showStateSuggestions, setShowStateSuggestions] = useState(false);
     const isSubmittingRef = useRef(false);
 
     const [formData, setFormData] = useState<OnboardingData>({
@@ -381,6 +407,24 @@ export default function OnboardingPage() {
         experience_years: '',
         phone: '',
     });
+
+    const locationMatches = useMemo(() => {
+        const query = formData.farm_location.trim().toLowerCase();
+        if (!query) return LOCATION_SUGGESTIONS.slice(0, 8);
+        return LOCATION_SUGGESTIONS.filter(item => item.toLowerCase().includes(query)).slice(0, 8);
+    }, [formData.farm_location]);
+
+    const districtMatches = useMemo(() => {
+        const query = formData.district.trim().toLowerCase();
+        if (!query) return DISTRICT_SUGGESTIONS.slice(0, 8);
+        return DISTRICT_SUGGESTIONS.filter(item => item.toLowerCase().includes(query)).slice(0, 8);
+    }, [formData.district]);
+
+    const stateMatches = useMemo(() => {
+        const query = formData.state.trim().toLowerCase();
+        if (!query) return INDIAN_STATES.slice(0, 10);
+        return INDIAN_STATES.filter(item => item.toLowerCase().includes(query)).slice(0, 10);
+    }, [formData.state]);
 
     // Pre-fill name and phone from auth if available
     useEffect(() => {
@@ -650,20 +694,23 @@ export default function OnboardingPage() {
             await new Promise(r => setTimeout(r, 500));
 
             if (formData.email.trim()) {
-                const { default: supabase } = await import('@/lib/supabase');
-                const { error: authUpdateError } = await supabase.auth.updateUser({
-                    email: formData.email.trim().toLowerCase(),
-                    password: emailPassword,
+                const response = await fetch('/api/auth/set-email-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: formData.email.trim().toLowerCase(),
+                        password: emailPassword,
+                    }),
                 });
 
-                if (authUpdateError) {
-                    const msg = authUpdateError.message?.toLowerCase() || '';
+                const data = await response.json();
+                if (!response.ok || data.error) {
+                    const msg = String(data?.error || '').toLowerCase();
                     if (msg.includes('already') || msg.includes('taken')) {
                         setEmailError('This email is already linked to another account. Please use a different email.');
-                        setCurrentStep(1);
-                        return;
+                    } else {
+                        setError(data?.error || 'Failed to set email/password. Please try again.');
                     }
-                    setError(authUpdateError.message || 'Failed to set email/password. Please try again.');
                     setCurrentStep(1);
                     return;
                 }
@@ -1062,11 +1109,35 @@ export default function OnboardingPage() {
                                         <input
                                             type="text"
                                             value={formData.farm_location}
-                                            onChange={(e) => setFormData(f => ({ ...f, farm_location: e.target.value }))}
+                                            onFocus={() => setShowLocationSuggestions(true)}
+                                            onBlur={() => setTimeout(() => setShowLocationSuggestions(false), 120)}
+                                            onChange={(e) => {
+                                                setFormData(f => ({ ...f, farm_location: e.target.value }));
+                                                setShowLocationSuggestions(true);
+                                            }}
                                             className="w-full pl-11 pr-4 py-3 rounded-xl border border-green-200 bg-white focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-sm font-medium placeholder:text-gray-400"
                                             placeholder="e.g. Nashik, Karjat"
                                         />
                                     </div>
+                                    {showLocationSuggestions && (
+                                        <div className="mt-1.5 rounded-xl border border-green-200 bg-white shadow-sm max-h-40 overflow-y-auto">
+                                            {locationMatches.length > 0 ? locationMatches.map((city) => (
+                                                <button
+                                                    key={city}
+                                                    type="button"
+                                                    onMouseDown={() => {
+                                                        setFormData(f => ({ ...f, farm_location: city }));
+                                                        setShowLocationSuggestions(false);
+                                                    }}
+                                                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-green-50"
+                                                >
+                                                    {city}
+                                                </button>
+                                            )) : (
+                                                <p className="px-3 py-2 text-xs text-gray-500">No exact match. You can continue typing your own location.</p>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* District */}
@@ -1077,11 +1148,35 @@ export default function OnboardingPage() {
                                         <input
                                             type="text"
                                             value={formData.district}
-                                            onChange={(e) => setFormData(f => ({ ...f, district: e.target.value }))}
+                                            onFocus={() => setShowDistrictSuggestions(true)}
+                                            onBlur={() => setTimeout(() => setShowDistrictSuggestions(false), 120)}
+                                            onChange={(e) => {
+                                                setFormData(f => ({ ...f, district: e.target.value }));
+                                                setShowDistrictSuggestions(true);
+                                            }}
                                             className="w-full pl-11 pr-4 py-3 rounded-xl border border-green-200 bg-white focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-sm font-medium placeholder:text-gray-400"
                                             placeholder="e.g. Nashik, Pune"
                                         />
                                     </div>
+                                    {showDistrictSuggestions && (
+                                        <div className="mt-1.5 rounded-xl border border-green-200 bg-white shadow-sm max-h-40 overflow-y-auto">
+                                            {districtMatches.length > 0 ? districtMatches.map((district) => (
+                                                <button
+                                                    key={district}
+                                                    type="button"
+                                                    onMouseDown={() => {
+                                                        setFormData(f => ({ ...f, district }));
+                                                        setShowDistrictSuggestions(false);
+                                                    }}
+                                                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-green-50"
+                                                >
+                                                    {district}
+                                                </button>
+                                            )) : (
+                                                <p className="px-3 py-2 text-xs text-gray-500">No exact match. You can continue typing your own district.</p>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* State Dropdown */}
@@ -1089,18 +1184,39 @@ export default function OnboardingPage() {
                                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">State *</label>
                                     <div className="relative">
                                         <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-green-500/60 text-lg">flag</span>
-                                        <select
+                                        <input
+                                            type="text"
                                             value={formData.state}
-                                            onChange={(e) => setFormData(f => ({ ...f, state: e.target.value }))}
-                                            className="w-full pl-11 pr-4 py-3 rounded-xl border border-green-200 bg-white focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-sm font-medium appearance-none"
-                                        >
-                                            <option value="">Select your state</option>
-                                            {INDIAN_STATES.map(s => (
-                                                <option key={s} value={s}>{s}</option>
-                                            ))}
-                                        </select>
-                                        <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg pointer-events-none">expand_more</span>
+                                            onFocus={() => setShowStateSuggestions(true)}
+                                            onBlur={() => setTimeout(() => setShowStateSuggestions(false), 120)}
+                                            onChange={(e) => {
+                                                setFormData(f => ({ ...f, state: e.target.value }));
+                                                setShowStateSuggestions(true);
+                                            }}
+                                            className="w-full pl-11 pr-10 py-3 rounded-xl border border-green-200 bg-white focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-sm font-medium placeholder:text-gray-400"
+                                            placeholder="Select your state"
+                                        />
+                                        <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg pointer-events-none">keyboard_arrow_down</span>
                                     </div>
+                                    {showStateSuggestions && (
+                                        <div className="mt-1.5 rounded-xl border border-green-200 bg-white shadow-sm max-h-44 overflow-y-auto">
+                                            {stateMatches.length > 0 ? stateMatches.map((stateName) => (
+                                                <button
+                                                    key={stateName}
+                                                    type="button"
+                                                    onMouseDown={() => {
+                                                        setFormData(f => ({ ...f, state: stateName }));
+                                                        setShowStateSuggestions(false);
+                                                    }}
+                                                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-green-50"
+                                                >
+                                                    {stateName}
+                                                </button>
+                                            )) : (
+                                                <p className="px-3 py-2 text-xs text-gray-500">No exact match. You can continue typing your own state.</p>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Pincode */}
@@ -1237,11 +1353,11 @@ export default function OnboardingPage() {
                     )}
 
                     {/* Navigation Buttons */}
-                    <div className="flex gap-3 mt-8 mb-12">
+                    <div className="mt-8 mb-12">
                         {currentStep > 1 && (
                             <button
                                 onClick={handleBack}
-                                className="flex-1 py-3.5 rounded-xl border-2 border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
+                                className={`py-3.5 rounded-xl border-2 border-white/70 bg-white/95 text-sm font-bold text-gray-800 shadow-sm hover:bg-white transition-all flex items-center justify-center gap-2 ${currentStep < TOTAL_STEPS ? 'w-full' : 'w-full lg:w-28 lg:flex-none'}`}
                             >
                                 <span className="material-symbols-outlined text-lg">arrow_back</span>
                                 Back
@@ -1250,18 +1366,18 @@ export default function OnboardingPage() {
                         {currentStep < TOTAL_STEPS ? (
                             <button
                                 onClick={handleNext}
-                                className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-[var(--miraitu-primary-green)] to-emerald-600 text-white text-sm font-bold shadow-lg shadow-green-300/30 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                                className="w-full mt-3 py-3.5 rounded-xl bg-gradient-to-r from-[var(--miraitu-primary-green)] to-emerald-600 text-white text-sm font-bold shadow-lg shadow-green-300/30 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
                             >
                                 Continue
                                 <span className="material-symbols-outlined text-lg">arrow_forward</span>
                             </button>
                         ) : (
-                            <>
-                                <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
+                            <div className="mt-3 flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4">
+                                <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} className="flex-1 min-w-0 my-0 px-1" />
                                 <button
                                     onClick={handleSubmit}
                                     disabled={isSubmitting || !agreedToTerms}
-                                    className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-[var(--miraitu-primary-green)] to-emerald-600 text-white text-sm font-bold shadow-lg shadow-green-300/30 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                                    className="w-full lg:w-auto lg:min-w-[180px] py-3.5 px-5 rounded-xl bg-gradient-to-r from-[var(--miraitu-primary-green)] to-emerald-600 text-white text-sm font-bold shadow-lg shadow-green-300/30 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
                                 >
                                     {isSubmitting ? (
                                         <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
@@ -1272,7 +1388,7 @@ export default function OnboardingPage() {
                                         </>
                                     )}
                                 </button>
-                            </>
+                            </div>
                         )}
                     </div>
 
