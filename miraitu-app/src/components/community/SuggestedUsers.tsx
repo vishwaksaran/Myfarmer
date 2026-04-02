@@ -1,6 +1,7 @@
 'use client';
 
 import { SuggestedUser } from './types';
+import { resolveAvatarSrc } from './avatarUtils';
 
 interface SuggestedUsersProps {
   users: SuggestedUser[];
@@ -17,8 +18,8 @@ export default function SuggestedUsers({ users, onFollow }: SuggestedUsersProps)
       <div className="space-y-3">
         {users.map((user) => (
           <div key={user.username} className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#22c33d]/20 to-[#8CDA4F]/10 flex items-center justify-center text-xl shrink-0 ring-2 ring-[#22c33d]/10">
-              {user.avatar}
+            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#22c33d]/20 to-[#8CDA4F]/10 flex items-center justify-center text-xl shrink-0 ring-2 ring-[#22c33d]/10 overflow-hidden">
+              <img src={resolveAvatarSrc(user.avatar, user.name)} alt={user.name} className="w-full h-full object-cover object-center" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{user.name}</p>

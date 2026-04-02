@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/agri-news/refresh",
+      "schedule": "*/30 * * * *"
+    }
+  ]
+}

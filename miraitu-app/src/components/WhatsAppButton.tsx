@@ -21,7 +21,7 @@ export default function WhatsAppButton({
     const sizeClasses = {
         sm: 'h-12 w-12 lg:h-14 lg:w-14',
         md: 'h-14 w-14 lg:h-16 lg:w-16',
-        lg: 'h-12 w-12 lg:h-16 lg:w-16',
+        lg: 'h-14 w-14 lg:h-16 lg:w-16',
     };
 
     const iconSizes = {

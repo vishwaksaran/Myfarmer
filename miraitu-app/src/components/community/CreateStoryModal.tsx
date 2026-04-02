@@ -5,57 +5,58 @@ import { useRef, useState } from 'react';
 interface CreateStoryModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (image: string) => void;
+    onSubmit: (images: string[]) => void;
 }
 
 export default function CreateStoryModal({ isOpen, onClose, onSubmit }: CreateStoryModalProps) {
-    const [image, setImage] = useState<string | null>(null);
+    const [images, setImages] = useState<string[]>([]);
     const [error, setError] = useState<string | null>(null);
     const fileRef = useRef<HTMLInputElement>(null);
 
     if (!isOpen) return null;
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+        const files = Array.from(e.target.files || []);
         setError(null);
-        if (!file) return;
+        if (files.length === 0) return;
 
-        if (!file.type.startsWith('image/')) {
-            setError('Only image files are allowed for stories.');
-            e.target.value = '';
-            return;
-        }
-
-        if (file.size > 10 * 1024 * 1024) {
-            setError('Story image must be under 10MB.');
-            e.target.value = '';
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            if (ev.target?.result) {
-                setImage(ev.target.result as string);
+        files.forEach((file) => {
+            if (!file.type.startsWith('image/')) {
+                setError('Only image files are allowed for stories.');
+                return;
             }
-        };
-        reader.onerror = () => setError('Failed to read image. Please try another file.');
-        reader.readAsDataURL(file);
+
+            if (file.size > 10 * 1024 * 1024) {
+                setError('Each story image must be under 10MB.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                if (ev.target?.result) {
+                    setImages(prev => [...prev, ev.target!.result as string]);
+                }
+            };
+            reader.onerror = () => setError('Failed to read one of the images. Please try again.');
+            reader.readAsDataURL(file);
+        });
+
         e.target.value = '';
     };
 
     const handlePostStory = () => {
-        if (!image) {
-            setError('Please choose an image to post your story.');
+        if (images.length === 0) {
+            setError('Please choose at least one image to post your story.');
             return;
         }
 
-        onSubmit(image);
-        setImage(null);
+        onSubmit(images);
+        setImages([]);
         setError(null);
     };
 
     const handleClose = () => {
-        setImage(null);
+        setImages([]);
         setError(null);
         onClose();
     };
@@ -73,7 +74,7 @@ export default function CreateStoryModal({ isOpen, onClose, onSubmit }: CreateSt
                 </div>
 
                 <div className="p-4">
-                    {!image ? (
+                    {images.length === 0 ? (
                         <button
                             onClick={() => fileRef.current?.click()}
                             className="w-full min-h-[280px] rounded-2xl border-2 border-dashed border-[#22c33d]/40 bg-[#22c33d]/5 hover:bg-[#22c33d]/10 transition-colors flex flex-col items-center justify-center gap-2"
@@ -83,14 +84,21 @@ export default function CreateStoryModal({ isOpen, onClose, onSubmit }: CreateSt
                             <p className="text-xs text-gray-500">Tap to choose image</p>
                         </button>
                     ) : (
-                        <div className="relative rounded-2xl overflow-hidden bg-black">
-                            <img src={image} alt="Story preview" className="w-full h-[420px] object-cover" />
-                            <button
-                                onClick={() => setImage(null)}
-                                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80"
-                            >
-                                <span className="material-symbols-outlined text-sm">close</span>
-                            </button>
+                        <div className="space-y-3">
+                            <p className="text-xs font-semibold text-gray-600 dark:text-gray-300">Selected stories: {images.length}</p>
+                            <div className="grid grid-cols-3 gap-2 max-h-[420px] overflow-y-auto">
+                                {images.map((image, idx) => (
+                                    <div key={`${idx}-${image.slice(0, 24)}`} className="relative rounded-xl overflow-hidden bg-black aspect-[3/4]">
+                                        <img src={image} alt={`Story preview ${idx + 1}`} className="w-full h-full object-cover" />
+                                        <button
+                                            onClick={() => setImages(prev => prev.filter((_, i) => i !== idx))}
+                                            className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80"
+                                        >
+                                            <span className="material-symbols-outlined text-xs">close</span>
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
 
@@ -105,19 +113,19 @@ export default function CreateStoryModal({ isOpen, onClose, onSubmit }: CreateSt
                             onClick={() => fileRef.current?.click()}
                             className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                         >
-                            {image ? 'Change Photo' : 'Select Photo'}
+                            {images.length > 0 ? 'Add More Photos' : 'Select Photo'}
                         </button>
                         <button
                             onClick={handlePostStory}
                             className="flex-1 py-2.5 rounded-xl bg-[#22c33d] text-white text-sm font-bold hover:brightness-110 disabled:opacity-50"
-                            disabled={!image}
+                            disabled={images.length === 0}
                         >
-                            Post Story
+                            Post {images.length > 1 ? `${images.length} Stories` : 'Story'}
                         </button>
                     </div>
                 </div>
 
-                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
             </div>
         </div>
     );

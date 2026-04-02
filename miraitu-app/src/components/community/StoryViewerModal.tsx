@@ -21,6 +21,12 @@ export default function StoryViewerModal({ stories, currentIndex, onClose, onSto
 
     useEffect(() => {
         if (!isOpen) return;
+        const clamped = Math.max(0, Math.min(currentIndex, safeStories.length - 1));
+        setActiveIndex(clamped);
+    }, [currentIndex, isOpen, safeStories.length]);
+
+    useEffect(() => {
+        if (!isOpen) return;
 
         setTick(0);
 
@@ -32,13 +38,11 @@ export default function StoryViewerModal({ stories, currentIndex, onClose, onSto
 
             if (elapsed >= STORY_DURATION_MS) {
                 setTick(0);
-                setActiveIndex(prev => {
-                    if (prev >= safeStories.length - 1) {
-                        onClose();
-                        return prev;
-                    }
-                    return prev + 1;
-                });
+                if (activeIndex >= safeStories.length - 1) {
+                    onClose();
+                    return;
+                }
+                setActiveIndex(prev => prev + 1);
             }
         }, 60);
 
@@ -47,12 +51,19 @@ export default function StoryViewerModal({ stories, currentIndex, onClose, onSto
 
     useEffect(() => {
         if (!isOpen) return;
-        onStorySeen?.(safeStories[activeIndex].id);
+        const currentStory = safeStories[activeIndex];
+        if (!currentStory) return;
+        onStorySeen?.(currentStory.id);
     }, [activeIndex, isOpen, onStorySeen, safeStories]);
 
     if (!isOpen) return null;
 
     const story = safeStories[activeIndex];
+    const currentAuthorStoryIndices = safeStories
+        .map((item, idx) => ({ item, idx }))
+        .filter(({ item }) => item.author === story.author)
+        .map(({ idx }) => idx);
+    const currentAuthorStoryPosition = currentAuthorStoryIndices.findIndex(idx => idx === activeIndex);
 
     const goPrevious = () => {
         setTick(0);
@@ -61,13 +72,11 @@ export default function StoryViewerModal({ stories, currentIndex, onClose, onSto
 
     const goNext = () => {
         setTick(0);
-        setActiveIndex(prev => {
-            if (prev >= safeStories.length - 1) {
-                onClose();
-                return prev;
-            }
-            return prev + 1;
-        });
+        if (activeIndex >= safeStories.length - 1) {
+            onClose();
+            return;
+        }
+        setActiveIndex(prev => prev + 1);
     };
 
     return (
@@ -83,8 +92,9 @@ export default function StoryViewerModal({ stories, currentIndex, onClose, onSto
 
                 <div className="absolute inset-x-0 top-0 p-3 bg-gradient-to-b from-black/70 to-transparent">
                     <div className="flex gap-1 mb-3">
-                        {safeStories.map((item, idx) => {
-                            const progress = idx < activeIndex ? 100 : idx === activeIndex ? tick : 0;
+                        {currentAuthorStoryIndices.map((storyIndex) => {
+                            const item = safeStories[storyIndex];
+                            const progress = storyIndex < activeIndex ? 100 : storyIndex === activeIndex ? tick : 0;
                             return (
                                 <div key={item.id} className="h-1 flex-1 rounded-full bg-white/30 overflow-hidden">
                                     <div className="h-full bg-white transition-[width] duration-75" style={{ width: `${progress}%` }} />
@@ -104,7 +114,9 @@ export default function StoryViewerModal({ stories, currentIndex, onClose, onSto
                             </div>
                             <div>
                                 <p className="text-sm font-semibold text-white">{story.author}</p>
-                                <p className="text-xs text-white/70">Story</p>
+                                <p className="text-xs text-white/70">
+                                    Story {currentAuthorStoryPosition + 1} / {currentAuthorStoryIndices.length}
+                                </p>
                             </div>
                         </div>
 

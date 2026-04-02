@@ -3,6 +3,8 @@ import { Post, Story, NewsEvent, TrendingTopic, SuggestedUser } from './types';
 export const sampleStories: Story[] = [
   { id: 'own', author: 'Your Story', avatar: '', image: '', seen: false, isOwn: true },
   { id: 's1', author: 'Rajesh K.', avatar: '👨‍🌾', image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&h=700&fit=crop', seen: false, isOwn: false },
+  { id: 's1b', author: 'Rajesh K.', avatar: '👨‍🌾', image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=700&fit=crop', seen: false, isOwn: false },
+  { id: 's1c', author: 'Rajesh K.', avatar: '👨‍🌾', image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=700&fit=crop', seen: false, isOwn: false },
   { id: 's2', author: 'Priya S.', avatar: '👩‍🌾', image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=700&fit=crop', seen: false, isOwn: false },
   { id: 's3', author: 'Amit P.', avatar: '🧑‍🌾', image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=700&fit=crop', seen: false, isOwn: false },
   { id: 's4', author: 'Sunita D.', avatar: '👩‍🌾', image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=700&fit=crop', seen: true, isOwn: false },

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { NewsEvent } from './types';
 
 interface NewsEventsProps {
@@ -15,11 +15,61 @@ const categoryColors: Record<string, string> = {
 };
 
 export default function NewsEvents({ events }: NewsEventsProps) {
+  const [liveEvents, setLiveEvents] = useState<NewsEvent[] | null>(null);
+  const [liveWorldEvent, setLiveWorldEvent] = useState<NewsEvent | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
 
-  const categories = ['All', ...new Set(events.map(e => e.category))];
-  const filtered = selectedCategory ? events.filter(e => e.category === selectedCategory) : events;
+  useEffect(() => {
+    let mounted = true;
+
+    const loadNews = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/agri-news');
+        const data = await response.json();
+
+        if (!mounted) return;
+        if (response.ok && Array.isArray(data.items) && data.items.length > 0) {
+          setLiveEvents(data.items as NewsEvent[]);
+          if (data.liveEvent) {
+            setLiveWorldEvent(data.liveEvent as NewsEvent);
+          }
+        } else {
+          setLiveEvents(null);
+          setLiveWorldEvent(null);
+        }
+      } catch {
+        if (mounted) {
+          setLiveEvents(null);
+          setLiveWorldEvent(null);
+        }
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    };
+
+    loadNews();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const sourceEvents = useMemo(() => {
+    if (liveEvents && liveEvents.length > 0) return liveEvents;
+    return events;
+  }, [events, liveEvents]);
+
+  const fallbackLiveEvent = useMemo(() => {
+    const fromSource = sourceEvents.find((event) => event.category === 'World Event');
+    return fromSource || sourceEvents[0] || null;
+  }, [sourceEvents]);
+
+  const liveEventCard = liveWorldEvent || fallbackLiveEvent;
+
+  const categories = ['All', ...new Set(sourceEvents.map(e => e.category))];
+  const filtered = selectedCategory ? sourceEvents.filter(e => e.category === selectedCategory) : sourceEvents;
   const displayed = expanded ? filtered : filtered.slice(0, 3);
 
   return (
@@ -50,7 +100,22 @@ export default function NewsEvents({ events }: NewsEventsProps) {
 
       {/* News List */}
       <div className="px-4 pb-4 space-y-3">
-        {displayed.map((event) => (
+        {isLoading && (
+          <div className="space-y-3">
+            {[1, 2, 3].map((idx) => (
+              <div key={idx} className="flex gap-3 p-2 rounded-xl animate-pulse">
+                <div className="w-20 h-16 rounded-xl bg-gray-100 dark:bg-gray-800 shrink-0" />
+                <div className="flex-1">
+                  <div className="h-3 w-20 rounded bg-gray-100 dark:bg-gray-800 mb-2" />
+                  <div className="h-4 w-full rounded bg-gray-100 dark:bg-gray-800 mb-1.5" />
+                  <div className="h-3 w-28 rounded bg-gray-100 dark:bg-gray-800" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!isLoading && displayed.map((event) => (
           <a
             key={event.id}
             href={event.url}
@@ -76,7 +141,7 @@ export default function NewsEvents({ events }: NewsEventsProps) {
           </a>
         ))}
 
-        {filtered.length > 3 && (
+        {!isLoading && filtered.length > 3 && (
           <button
             onClick={() => setExpanded(!expanded)}
             className="w-full py-2 text-center text-xs font-bold text-[#22c33d] hover:bg-[#22c33d]/5 rounded-xl transition-colors"
@@ -95,13 +160,26 @@ export default function NewsEvents({ events }: NewsEventsProps) {
           </span>
           <span className="text-xs font-bold text-gray-900 dark:text-white">Live Events</span>
         </div>
-        <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-          Global Food Summit 2026 is happening now in Rome. India&apos;s delegation presents climate-resilient millets initiative.
-        </p>
-        <button className="mt-2 text-[11px] font-bold text-[#22c33d] hover:underline flex items-center gap-1">
-          Watch live
-          <span className="material-symbols-outlined text-xs">open_in_new</span>
-        </button>
+        {liveEventCard ? (
+          <>
+            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-3">
+              {liveEventCard.title}
+            </p>
+            <a
+              href={liveEventCard.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 text-[11px] font-bold text-[#22c33d] hover:underline flex items-center gap-1"
+            >
+              Watch live
+              <span className="material-symbols-outlined text-xs">open_in_new</span>
+            </a>
+          </>
+        ) : (
+          <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+            Live global agriculture events will appear here when available.
+          </p>
+        )}
       </div>
     </div>
   );

@@ -7,14 +7,19 @@ import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import { samplePosts, suggestedUsers } from '@/components/community/sampleData';
 import { getFollowedUsernames, normalizeUsername, toggleFollowedUsername } from '@/components/community/followStore';
+import { resolveAvatarSrc } from '@/components/community/avatarUtils';
+import { useAuth } from '@/context/AuthContext';
 
 const baseFollowersCount = 560;
 
 export default function CommunityUserProfilePage() {
     const params = useParams<{ username: string }>();
     const router = useRouter();
+    const { user } = useAuth();
     const routeUsername = decodeURIComponent(params.username || '');
     const normalizedRouteUsername = normalizeUsername(routeUsername);
+    const normalizedLoggedInName = normalizeUsername(user?.displayName || '');
+    const isLoggedInUsersProfile = !!user && !!normalizedLoggedInName && normalizedLoggedInName === normalizedRouteUsername;
 
     const authorPosts = useMemo(
         () => samplePosts.filter(post => normalizeUsername(post.username) === normalizedRouteUsername),
@@ -26,8 +31,13 @@ export default function CommunityUserProfilePage() {
         [normalizedRouteUsername]
     );
 
-    const displayName = authorPosts[0]?.author || suggestedProfile?.name || routeUsername || 'Community User';
-    const avatar = authorPosts[0]?.avatar || suggestedProfile?.avatar || '🧑‍🌾';
+    const displayName = isLoggedInUsersProfile
+        ? (user?.displayName || routeUsername || 'Community User')
+        : (authorPosts[0]?.author || suggestedProfile?.name || routeUsername || 'Community User');
+    const avatar = isLoggedInUsersProfile
+        ? (user?.photoURL || '')
+        : (authorPosts[0]?.avatar || suggestedProfile?.avatar || '');
+    const resolvedProfileAvatar = resolveAvatarSrc(avatar, displayName);
     const location = authorPosts[0]?.location || 'India';
     const bio = suggestedProfile?.bio || 'Active member of the Miraitu farming community.';
 
@@ -63,7 +73,7 @@ export default function CommunityUserProfilePage() {
 
             <main className="py-6 sm:py-10">
                 <div className="mx-auto max-w-[980px] px-4 sm:px-6 space-y-5 sm:space-y-6">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <div className="inline-flex items-center gap-2 text-sm text-gray-500 bg-white/70 dark:bg-[#1a231a]/70 border border-gray-100 dark:border-gray-800 rounded-xl px-3 py-2 sm:px-4">
                         <Link href="/home/community" className="hover:text-[#22c33d] transition-colors">Community</Link>
                         <span>/</span>
                         <span className="font-semibold text-[#22c33d]">{displayName}</span>
@@ -78,11 +88,7 @@ export default function CommunityUserProfilePage() {
                                 <div className="flex items-start gap-4 min-w-0">
                                     <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-white/95 p-1.5 shadow-xl border border-white/80 shrink-0">
                                         <div className="w-full h-full rounded-2xl bg-[#eaf6ec] flex items-center justify-center text-3xl overflow-hidden">
-                                            {avatar.startsWith('http') || avatar.startsWith('data:') ? (
-                                                <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <span>{avatar}</span>
-                                            )}
+                                            <img src={resolvedProfileAvatar} alt={displayName} className="w-full h-full object-cover" />
                                         </div>
                                     </div>
 

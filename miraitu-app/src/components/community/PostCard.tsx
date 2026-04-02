@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Post, Comment, ReactionType, REACTION_EMOJIS } from './types';
+import { resolveAvatarSrc } from './avatarUtils';
 
 interface PostCardProps {
   post: Post;
@@ -62,8 +63,8 @@ function CommentItem({
   return (
     <div className={`${depth > 0 ? 'ml-8 mt-2' : ''}`}>
       <div className="flex gap-2 group">
-        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-lg">
-          {comment.avatar}
+        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-lg overflow-hidden">
+          <img src={resolveAvatarSrc(comment.avatar, comment.author)} alt={comment.author} className="w-full h-full object-cover object-center" />
         </div>
         <div className="flex-1">
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl px-3.5 py-2.5">
@@ -278,33 +279,28 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
       <div className="p-3 sm:p-4 flex items-start gap-2 sm:gap-3">
         <button
           onClick={() => onAuthorClick?.(post.username)}
-          className="w-11 h-11 rounded-full bg-gradient-to-br from-[#22c33d]/20 to-[#8CDA4F]/10 flex items-center justify-center text-2xl ring-2 ring-[#22c33d]/10 overflow-hidden shrink-0"
+          className="flex-1 min-w-0 flex items-start gap-2 sm:gap-3 text-left"
         >
-          {post.avatar && (post.avatar.startsWith('http') || post.avatar.startsWith('data:')) ? (
-            <img src={post.avatar} alt={post.author} className="w-full h-full object-cover" />
-          ) : (
-            <span>{post.avatar || '🧑‍🌾'}</span>
-          )}
-        </button>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={() => onAuthorClick?.(post.username)}
-              className="font-bold text-gray-900 dark:text-white text-sm truncate hover:text-[#22c33d] transition-colors"
-            >
-              {post.author}
-            </button>
+          <span className="w-11 h-11 rounded-full bg-gradient-to-br from-[#22c33d]/20 to-[#8CDA4F]/10 flex items-center justify-center text-2xl ring-2 ring-[#22c33d]/10 overflow-hidden shrink-0">
+            <img src={resolveAvatarSrc(post.avatar, post.author)} alt={post.author} className="w-full h-full object-cover object-center" />
+          </span>
+          <span className="min-w-0">
+            <span className="flex items-center gap-1.5 min-w-0">
+              <span className="font-bold text-gray-900 dark:text-white text-sm leading-tight whitespace-normal break-words text-left hover:text-[#22c33d] transition-colors">
+                {post.author}
+              </span>
             {post.verified && (
               <span className="material-symbols-outlined text-[#22c33d] text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
             )}
-            <span className="text-gray-300 dark:text-gray-600">·</span>
-            <span className="text-xs text-gray-500 shrink-0">{post.time}</span>
-          </div>
-          <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-            <span className="material-symbols-outlined text-[13px]">location_on</span>
-            {post.location}
-          </p>
-        </div>
+            </span>
+            <span className="text-xs text-gray-500 flex flex-wrap items-center gap-1 mt-0.5">
+              <span className="material-symbols-outlined text-[13px]">location_on</span>
+              {post.location}
+              <span className="text-gray-300 dark:text-gray-600 mx-0.5">·</span>
+              <span className="shrink-0">{post.time}</span>
+            </span>
+          </span>
+        </button>
         {!post.isOwn && onToggleFollowAuthor && (
           <button
             onClick={() => requireAuth(() => onToggleFollowAuthor(post.username))}

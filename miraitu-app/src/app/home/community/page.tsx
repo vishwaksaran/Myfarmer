@@ -19,6 +19,7 @@ import HashtagSearch from '@/components/community/HashtagSearch';
 import NewsEvents from '@/components/community/NewsEvents';
 import SuggestedUsers from '@/components/community/SuggestedUsers';
 import { getFollowedUsernames, normalizeUsername, saveFollowedUsernames } from '@/components/community/followStore';
+import { resolveAvatarSrc } from '@/components/community/avatarUtils';
 
 const BASE_FOLLOWING_COUNT = 128;
 
@@ -89,7 +90,7 @@ export default function CommunityPage() {
             const newComment = {
                 id: 'c' + Date.now(),
                 author: user?.displayName || 'You',
-                avatar: '🧑‍🌾',
+                avatar: user?.photoURL || '',
                 text,
                 time: 'Just now',
                 likes: 0,
@@ -170,24 +171,38 @@ export default function CommunityPage() {
         setPosts(prev => [newPost, ...prev]);
     };
 
-    // Create/update own story
-    const handleCreateStory = (image: string) => {
-        const ownStory: Story = {
+    // Create/update own stories
+    const handleCreateStory = (images: string[]) => {
+        if (images.length === 0) return;
+
+        const stamp = Date.now();
+        const newOwnStories: Story[] = images.map((image, index) => ({
+            id: `own-${stamp}-${index}`,
+            author: 'Your Story',
+            avatar: user?.photoURL || '',
+            image,
+            seen: false,
+            isOwn: true,
+        }));
+
+        const placeholder: Story = {
             id: 'own',
             author: 'Your Story',
-            avatar: user?.photoURL || '🧑‍🌾',
-            image,
+            avatar: user?.photoURL || '',
+            image: '',
             seen: false,
             isOwn: true,
         };
 
         setStories(prev => {
-            const others = prev.filter(story => !story.isOwn);
-            return [ownStory, ...others];
+            const withoutPlaceholder = prev.filter(story => story.id !== 'own');
+            const ownStories = withoutPlaceholder.filter(story => story.isOwn);
+            const otherStories = withoutPlaceholder.filter(story => !story.isOwn);
+            return [placeholder, ...newOwnStories, ...ownStories, ...otherStories];
         });
 
         setShowCreateStory(false);
-        setViewingStoryIndex(0);
+        setViewingStoryIndex(1);
     };
 
     // Open story viewer
@@ -199,8 +214,7 @@ export default function CommunityPage() {
         setStories(prev => prev.map((s, i) => (i === idx ? { ...s, seen: true } : s)));
     };
 
-    const ownStory = stories.find(story => story.isOwn);
-    const hasOwnStory = !!ownStory?.image;
+    const hasOwnStory = stories.some(story => story.isOwn && !!story.image);
     const visibleStories = stories.filter(story => !!story.image);
     const currentStoryId = viewingStoryIndex !== null ? stories[viewingStoryIndex]?.id : null;
     const currentVisibleStoryIndex = currentStoryId
@@ -258,6 +272,25 @@ export default function CommunityPage() {
     }, []);
 
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+        if (window.innerWidth >= 768) return;
+        if (window.location.pathname !== '/home/community') return;
+
+        const marker = { communityLock: true };
+        window.history.replaceState(marker, '', window.location.href);
+        window.history.pushState(marker, '', window.location.href);
+
+        const handlePopState = () => {
+            if (window.location.pathname === '/home/community') {
+                window.history.pushState(marker, '', window.location.href);
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
+    useEffect(() => {
         saveFollowedUsernames(followedUsernames);
         setUsers(prev => prev.map(userItem => ({
             ...userItem,
@@ -267,6 +300,11 @@ export default function CommunityPage() {
 
     const handleOpenUserProfile = (username: string) => {
         const normalized = normalizeUsername(username);
+        const myNormalizedDisplayName = normalizeUsername(user?.displayName || '');
+        if (!normalized || normalized === 'you' || (myNormalizedDisplayName && normalized === myNormalizedDisplayName)) {
+            router.push('/home/profile');
+            return;
+        }
         router.push(`/home/community/user/${encodeURIComponent(normalized)}`);
     };
 
@@ -565,9 +603,21 @@ export default function CommunityPage() {
                                 <div className="flex gap-3">
                                     <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-[#22c33d]/10">
                                         {user?.photoURL ? (
-                                            <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
+                                            <button
+                                                onClick={() => router.push(`/home/community/user/${encodeURIComponent(normalizeUsername(user?.displayName || 'you'))}`)}
+                                                className="w-full h-full cursor-pointer"
+                                                aria-label="Open profile"
+                                            >
+                                                <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
+                                            </button>
                                         ) : (
-                                            <span className="material-symbols-outlined text-xl text-[#22c33d]/50">person</span>
+                                            <button
+                                                onClick={() => router.push(`/home/community/user/${encodeURIComponent(normalizeUsername(user?.displayName || 'you'))}`)}
+                                                className="w-full h-full flex items-center justify-center cursor-pointer"
+                                                aria-label="Open profile"
+                                            >
+                                                <span className="material-symbols-outlined text-xl text-[#22c33d]/50">person</span>
+                                            </button>
                                         )}
                                     </div>
                                     <textarea
@@ -802,6 +852,11 @@ export default function CommunityPage() {
                                     </div>
                                 </div>
                             )}
+
+                            {/* News & Events - Mobile/Tablet */}
+                            <div className="xl:hidden mt-4 sm:mt-5">
+                                <NewsEvents events={sampleNewsEvents} />
+                            </div>
                         </div>
 
                         {/* Right Sidebar */}
@@ -917,11 +972,7 @@ export default function CommunityPage() {
                                                 className="flex-1 min-w-0 flex items-center gap-3 text-left"
                                             >
                                                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden text-xl shrink-0">
-                                                    {profile.avatar.startsWith('http') || profile.avatar.startsWith('data:') ? (
-                                                        <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <span>{profile.avatar}</span>
-                                                    )}
+                                                    <img src={resolveAvatarSrc(profile.avatar, profile.name)} alt={profile.name} className="w-full h-full object-cover" />
                                                 </div>
                                                 <div className="min-w-0 text-left">
                                                     <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{profile.name}</p>

@@ -1,10 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import WhatsAppButton from './WhatsAppButton';
 
 export default function FloatingActionButtons() {
     const [showTooltip, setShowTooltip] = useState(false);
+    const pathname = usePathname();
+    const hideWhatsAppOnThisPage = pathname?.startsWith('/home/community');
 
     return (
         <div className="fixed z-50 flex flex-col items-end gap-4 bottom-24 md:bottom-6 right-4 lg:bottom-10 lg:right-10">
@@ -42,9 +45,11 @@ export default function FloatingActionButtons() {
             </div>
 
             {/* WhatsApp Button */}
-            <div>
-                <WhatsAppButton size="lg" showLabel={false} />
-            </div>
+            {!hideWhatsAppOnThisPage && (
+                <div>
+                    <WhatsAppButton size="lg" showLabel={false} />
+                </div>
+            )}
         </div>
     );
 }
