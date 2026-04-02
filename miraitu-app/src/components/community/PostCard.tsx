@@ -13,6 +13,9 @@ interface PostCardProps {
   onLikeComment: (postId: string, commentId: string) => void;
   onEdit?: (postId: string) => void;
   onDelete?: (postId: string) => void;
+  isFollowingAuthor?: boolean;
+  onToggleFollowAuthor?: (username: string) => void;
+  onAuthorClick?: (username: string) => void;
   userAvatar?: string | null;
   requireAuth: (action: () => void) => void;
 }
@@ -113,7 +116,7 @@ function CommentItem({
   );
 }
 
-export default function PostCard({ post, onReact, onComment, onShare, onSave, onTagClick, onLikeComment, onEdit, onDelete, userAvatar, requireAuth }: PostCardProps) {
+export default function PostCard({ post, onReact, onComment, onShare, onSave, onTagClick, onLikeComment, onEdit, onDelete, isFollowingAuthor = false, onToggleFollowAuthor, onAuthorClick, userAvatar, requireAuth }: PostCardProps) {
   const [showReactionPicker, setShowReactionPicker] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -123,8 +126,10 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [videoPlaying, setVideoPlaying] = useState(false);
+  const [videoError, setVideoError] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const autoPausedRef = useRef(false);
   const reactionTimeout = useRef<NodeJS.Timeout | null>(null);
   const lastTap = useRef(0);
 
@@ -209,20 +214,86 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
     }
   }, [showReactionPicker]);
 
+  useEffect(() => {
+    setVideoError(false);
+    setVideoPlaying(false);
+  }, [post.id, post.video]);
+
+  useEffect(() => {
+    const videoEl = videoRef.current;
+    if (!videoEl || !post.video || post.images?.length) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting && !videoEl.paused) {
+          videoEl.pause();
+          autoPausedRef.current = true;
+          setVideoPlaying(false);
+          return;
+        }
+
+        if (entry.isIntersecting && videoEl.paused && autoPausedRef.current && !document.hidden) {
+          videoEl.play().then(() => {
+            autoPausedRef.current = false;
+            setVideoPlaying(true);
+          }).catch(() => {
+            // Ignore autoplay rejection and keep paused state.
+          });
+        }
+      },
+      { threshold: 0.35 }
+    );
+
+    observer.observe(videoEl);
+
+    const handleVisibilityChange = () => {
+      if (document.hidden && !videoEl.paused) {
+        videoEl.pause();
+        autoPausedRef.current = true;
+        setVideoPlaying(false);
+        return;
+      }
+
+      if (!document.hidden && videoEl.paused && autoPausedRef.current) {
+        videoEl.play().then(() => {
+          autoPausedRef.current = false;
+          setVideoPlaying(true);
+        }).catch(() => {
+          // Ignore autoplay rejection and keep paused state.
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [post.video, post.images]);
+
   return (
     <article className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
       {/* Post Header */}
       <div className="p-3 sm:p-4 flex items-start gap-2 sm:gap-3">
-        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#22c33d]/20 to-[#8CDA4F]/10 flex items-center justify-center text-2xl ring-2 ring-[#22c33d]/10 overflow-hidden shrink-0">
+        <button
+          onClick={() => onAuthorClick?.(post.username)}
+          className="w-11 h-11 rounded-full bg-gradient-to-br from-[#22c33d]/20 to-[#8CDA4F]/10 flex items-center justify-center text-2xl ring-2 ring-[#22c33d]/10 overflow-hidden shrink-0"
+        >
           {post.avatar && (post.avatar.startsWith('http') || post.avatar.startsWith('data:')) ? (
             <img src={post.avatar} alt={post.author} className="w-full h-full object-cover" />
           ) : (
             <span>{post.avatar || '🧑‍🌾'}</span>
           )}
-        </div>
+        </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <h4 className="font-bold text-gray-900 dark:text-white text-sm truncate">{post.author}</h4>
+            <button
+              onClick={() => onAuthorClick?.(post.username)}
+              className="font-bold text-gray-900 dark:text-white text-sm truncate hover:text-[#22c33d] transition-colors"
+            >
+              {post.author}
+            </button>
             {post.verified && (
               <span className="material-symbols-outlined text-[#22c33d] text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
             )}
@@ -234,6 +305,17 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
             {post.location}
           </p>
         </div>
+        {!post.isOwn && onToggleFollowAuthor && (
+          <button
+            onClick={() => requireAuth(() => onToggleFollowAuthor(post.username))}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${isFollowingAuthor
+                ? 'border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                : 'bg-[#22c33d] text-white hover:brightness-110'
+              }`}
+          >
+            {isFollowingAuthor ? 'Following' : 'Follow'}
+          </button>
+        )}
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setShowMenu(!showMenu)}
@@ -403,12 +485,15 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
         <div
           className="relative bg-black overflow-hidden"
           onClick={() => {
+            if (videoError) return;
             if (videoRef.current) {
               if (videoRef.current.paused) {
                 videoRef.current.play();
+                autoPausedRef.current = false;
                 setVideoPlaying(true);
               } else {
                 videoRef.current.pause();
+                autoPausedRef.current = false;
                 setVideoPlaying(false);
               }
             }
@@ -422,12 +507,27 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
             playsInline
             loop
             preload="metadata"
+            onError={() => {
+              setVideoError(true);
+              setVideoPlaying(false);
+            }}
             onEnded={() => setVideoPlaying(false)}
             onPause={() => setVideoPlaying(false)}
-            onPlay={() => setVideoPlaying(true)}
+            onPlay={() => {
+              autoPausedRef.current = false;
+              setVideoError(false);
+              setVideoPlaying(true);
+            }}
           />
+          {videoError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white bg-black/80 px-4 text-center">
+              <span className="material-symbols-outlined text-4xl">videocam_off</span>
+              <p className="text-sm font-semibold">Video unavailable</p>
+              <p className="text-xs text-white/70">Could not load this video. Please try another post or upload a different file.</p>
+            </div>
+          )}
           {/* Play overlay — shown when paused */}
-          {!videoPlaying && (
+          {!videoPlaying && !videoError && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="w-16 h-16 rounded-full bg-black/50 flex items-center justify-center backdrop-blur-sm">
                 <span className="material-symbols-outlined text-white text-3xl ml-1">play_arrow</span>
@@ -436,7 +536,7 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
           )}
           <div className="absolute bottom-3 left-3 px-2 py-1 rounded-full bg-black/40 text-white text-xs font-medium flex items-center gap-1 pointer-events-none">
             <span className="material-symbols-outlined text-xs">videocam</span>
-            {videoPlaying ? 'Playing' : 'Video'}
+            {videoError ? 'Unavailable' : videoPlaying ? 'Playing' : 'Video'}
           </div>
           {doubleTapReaction && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -482,11 +582,10 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
           onMouseLeave={handleReactionMouseUp}
           onTouchStart={handleReactionMouseDown}
           onTouchEnd={handleReactionMouseUp}
-          className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2.5 rounded-xl transition-all ${
-            post.myReaction
+          className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2.5 rounded-xl transition-all ${post.myReaction
               ? 'text-[#22c33d] bg-[#22c33d]/5 font-bold'
               : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-          }`}
+            }`}
         >
           {post.myReaction ? (
             <span className="text-lg sm:text-xl leading-none">{REACTION_EMOJIS[post.myReaction].emoji}</span>
@@ -498,9 +597,8 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
 
         <button
           onClick={() => setShowComments(!showComments)}
-          className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2.5 rounded-xl transition-all ${
-            showComments ? 'text-[#22c33d] bg-[#22c33d]/5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-          }`}
+          className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2.5 rounded-xl transition-all ${showComments ? 'text-[#22c33d] bg-[#22c33d]/5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+            }`}
         >
           <span className="material-symbols-outlined text-lg sm:text-xl">chat_bubble</span>
           <span className="text-xs sm:text-sm font-medium">Comment</span>
@@ -516,9 +614,8 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
 
         <button
           onClick={() => { requireAuth(() => onSave(post.id)); }}
-          className={`flex items-center justify-center p-2.5 rounded-xl transition-all ${
-            post.saved ? 'text-[#FF9F1C]' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-          }`}
+          className={`flex items-center justify-center p-2.5 rounded-xl transition-all ${post.saved ? 'text-[#FF9F1C]' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+            }`}
         >
           <span className="material-symbols-outlined text-xl" style={post.saved ? { fontVariationSettings: "'FILL' 1" } : {}}>
             bookmark

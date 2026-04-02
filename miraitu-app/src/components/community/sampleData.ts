@@ -29,10 +29,12 @@ export const samplePosts: Post[] = [
     myReaction: null,
     totalReactions: 336,
     comments: [
-      { id: 'c1', author: 'Priya Sharma', avatar: '👩‍🌾', text: 'Congratulations Rajesh bhai! 🎉 What irrigation brand did you use? I want to try the same setup for my cotton field.', time: '1h ago', likes: 24, liked: false, replies: [
-        { id: 'c1r1', author: 'Rajesh Kumar', avatar: '👨‍🌾', text: '@Priya I used Jain Irrigation drip system. Very cost effective and the government subsidy covers 55%!', time: '45m ago', likes: 18, liked: false },
-        { id: 'c1r2', author: 'Amit Patel', avatar: '🧑‍🌾', text: 'Jain is great! I\'ve been using it for 2 years now. Worth every rupee.', time: '30m ago', likes: 8, liked: false },
-      ]},
+      {
+        id: 'c1', author: 'Priya Sharma', avatar: '👩‍🌾', text: 'Congratulations Rajesh bhai! 🎉 What irrigation brand did you use? I want to try the same setup for my cotton field.', time: '1h ago', likes: 24, liked: false, replies: [
+          { id: 'c1r1', author: 'Rajesh Kumar', avatar: '👨‍🌾', text: '@Priya I used Jain Irrigation drip system. Very cost effective and the government subsidy covers 55%!', time: '45m ago', likes: 18, liked: false },
+          { id: 'c1r2', author: 'Amit Patel', avatar: '🧑‍🌾', text: 'Jain is great! I\'ve been using it for 2 years now. Worth every rupee.', time: '30m ago', likes: 8, liked: false },
+        ]
+      },
       { id: 'c2', author: 'Karthik Reddy', avatar: '👨‍🌾', text: 'Amazing yield! 20% increase is incredible. How much water did you save compared to flood irrigation?', time: '55m ago', likes: 15, liked: false, replies: [] },
       { id: 'c3', author: 'Sunita Devi', avatar: '👩‍🌾', text: 'This gives me so much hope! Our cooperative is also planning to go organic next season. 💪', time: '40m ago', likes: 31, liked: false, replies: [] },
     ],
@@ -51,15 +53,17 @@ export const samplePosts: Post[] = [
     location: 'Maharashtra, India',
     time: '5 hours ago',
     content: '🎥 Watch how I set up my low-cost polyhouse for growing capsicum in just ₹50,000! Many people think polyhouse farming requires lakhs but with the right materials and government subsidy, it\'s very affordable.\n\nDrop a "🌶️" if you want the complete cost breakdown!',
-    video: 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=800&h=600&fit=crop',
+    video: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
     reactions: { like: 67, love: 123, celebrate: 34, insightful: 89, funny: 2, growth: 56 },
     myReaction: null,
     totalReactions: 371,
     comments: [
       { id: 'c4', author: 'Meena Verma', avatar: '👩‍🌾', text: '🌶️🌶️🌶️ Please share the breakdown! This is exactly what I needed!', time: '4h ago', likes: 45, liked: false, replies: [] },
-      { id: 'c5', author: 'Vikram Singh', avatar: '👨‍🌾', text: 'Which subsidy scheme did you use? MIDH or state scheme?', time: '3h ago', likes: 22, liked: false, replies: [
-        { id: 'c5r1', author: 'Priya Sharma', avatar: '👩‍🌾', text: 'I got subsidy under NHM (National Horticulture Mission). They cover up to 50% for polyhouse.', time: '2h ago', likes: 33, liked: false },
-      ]},
+      {
+        id: 'c5', author: 'Vikram Singh', avatar: '👨‍🌾', text: 'Which subsidy scheme did you use? MIDH or state scheme?', time: '3h ago', likes: 22, liked: false, replies: [
+          { id: 'c5r1', author: 'Priya Sharma', avatar: '👩‍🌾', text: 'I got subsidy under NHM (National Horticulture Mission). They cover up to 50% for polyhouse.', time: '2h ago', likes: 33, liked: false },
+        ]
+      },
     ],
     commentCount: 56,
     shares: 89,
@@ -85,9 +89,11 @@ export const samplePosts: Post[] = [
     myReaction: null,
     totalReactions: 727,
     comments: [
-      { id: 'c6', author: 'Rajesh Kumar', avatar: '👨‍🌾', text: 'Amit bhai, what capacity pump did you install? I have 3 acres and need to decide the HP.', time: '6h ago', likes: 12, liked: false, replies: [
-        { id: 'c6r1', author: 'Amit Patel', avatar: '🧑‍🌾', text: '5HP for 5 acres is perfect. For 3 acres, 3HP should be enough. The dealer will do a site assessment too.', time: '5h ago', likes: 8, liked: false },
-      ]},
+      {
+        id: 'c6', author: 'Rajesh Kumar', avatar: '👨‍🌾', text: 'Amit bhai, what capacity pump did you install? I have 3 acres and need to decide the HP.', time: '6h ago', likes: 12, liked: false, replies: [
+          { id: 'c6r1', author: 'Amit Patel', avatar: '🧑‍🌾', text: '5HP for 5 acres is perfect. For 3 acres, 3HP should be enough. The dealer will do a site assessment too.', time: '5h ago', likes: 8, liked: false },
+        ]
+      },
       { id: 'c7', author: 'Lakshmi N.', avatar: '👩‍🌾', text: 'Can we apply online for PM-KUSUM? Or do we need to visit the agriculture office?', time: '5h ago', likes: 28, liked: false, replies: [] },
     ],
     commentCount: 78,
@@ -114,9 +120,11 @@ export const samplePosts: Post[] = [
     comments: [
       { id: 'c8', author: 'Dr. Anita G.', avatar: '👩‍⚕️', text: 'Incredible journey Sunita ji! Would love to feature your cooperative in our agricultural magazine. Please DM me!', time: '20h ago', likes: 89, liked: false, replies: [] },
       { id: 'c9', author: 'Ravi Shankar', avatar: '👨‍🌾', text: 'Massive inspiration! This is what community farming is all about! 🙏', time: '18h ago', likes: 56, liked: false, replies: [] },
-      { id: 'c10', author: 'Priya Sharma', avatar: '👩‍🌾', text: 'Sunita didi you are my role model! How do I start a cooperative in my village?', time: '16h ago', likes: 43, liked: false, replies: [
-        { id: 'c10r1', author: 'Sunita Devi', avatar: '👩‍🌾', text: 'Thank you beta! First register with the District Cooperative Society. I\'ll make a detailed post with step-by-step guide soon. 🌱', time: '14h ago', likes: 67, liked: false },
-      ]},
+      {
+        id: 'c10', author: 'Priya Sharma', avatar: '👩‍🌾', text: 'Sunita didi you are my role model! How do I start a cooperative in my village?', time: '16h ago', likes: 43, liked: false, replies: [
+          { id: 'c10r1', author: 'Sunita Devi', avatar: '👩‍🌾', text: 'Thank you beta! First register with the District Cooperative Society. I\'ll make a detailed post with step-by-step guide soon. 🌱', time: '14h ago', likes: 67, liked: false },
+        ]
+      },
     ],
     commentCount: 94,
     shares: 312,
@@ -162,9 +170,11 @@ export const samplePosts: Post[] = [
     totalReactions: 563,
     comments: [
       { id: 'c12', author: 'Mohan K.', avatar: '👨‍🌾', text: 'Thank you Doctor! We noticed some damage in our field yesterday. Will follow these steps immediately.', time: '2d ago', likes: 18, liked: false, replies: [] },
-      { id: 'c13', author: 'Lakshmi N.', avatar: '👩‍🌾', text: 'Can neem oil be used as alternative? My field is organic certified.', time: '2d ago', likes: 25, liked: false, replies: [
-        { id: 'c13r1', author: 'Dr. Mangesh Thakur', avatar: '👨‍🔬', text: 'Yes! Neem oil (Azadirachtin 1500ppm) @ 5ml/litre is effective for organic fields. Apply in evening hours for best results.', time: '2d ago', likes: 41, liked: false },
-      ]},
+      {
+        id: 'c13', author: 'Lakshmi N.', avatar: '👩‍🌾', text: 'Can neem oil be used as alternative? My field is organic certified.', time: '2d ago', likes: 25, liked: false, replies: [
+          { id: 'c13r1', author: 'Dr. Mangesh Thakur', avatar: '👨‍🔬', text: 'Yes! Neem oil (Azadirachtin 1500ppm) @ 5ml/litre is effective for organic fields. Apply in evening hours for best results.', time: '2d ago', likes: 41, liked: false },
+        ]
+      },
     ],
     commentCount: 45,
     shares: 567,

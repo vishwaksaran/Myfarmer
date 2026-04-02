@@ -1,21 +1,30 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import LoginModal from '@/components/auth/LoginModal';
 
-import { Post, ReactionType } from '@/components/community/types';
+import { Post, ReactionType, Story } from '@/components/community/types';
 import { samplePosts, sampleStories, sampleNewsEvents, trendingTopics, suggestedUsers } from '@/components/community/sampleData';
 import StoriesBar from '@/components/community/StoriesBar';
 import CreatePostModal from '@/components/community/CreatePostModal';
+import CreateStoryModal from '@/components/community/CreateStoryModal';
+import StoryViewerModal from '../../../components/community/StoryViewerModal';
 import EditPostModal from '@/components/community/EditPostModal';
 import PostCard from '@/components/community/PostCard';
 import HashtagSearch from '@/components/community/HashtagSearch';
 import NewsEvents from '@/components/community/NewsEvents';
 import SuggestedUsers from '@/components/community/SuggestedUsers';
+import { getFollowedUsernames, normalizeUsername, saveFollowedUsernames } from '@/components/community/followStore';
+
+const BASE_FOLLOWING_COUNT = 128;
+
+const getTrendingScore = (post: Post) => {
+    return post.totalReactions + (post.commentCount * 2) + (post.shares * 3);
+};
 
 export default function CommunityPage() {
     const { user } = useAuth();
@@ -24,7 +33,14 @@ export default function CommunityPage() {
     const [showCreatePost, setShowCreatePost] = useState(false);
     const [editingPost, setEditingPost] = useState<Post | null>(null);
     const [posts, setPosts] = useState<Post[]>(samplePosts);
+    const [stories, setStories] = useState<Story[]>(sampleStories);
     const [users, setUsers] = useState(suggestedUsers);
+    const [followedUsernames, setFollowedUsernames] = useState<Set<string>>(
+        () => new Set<string>()
+    );
+    const [showCreateStory, setShowCreateStory] = useState(false);
+    const [viewingStoryIndex, setViewingStoryIndex] = useState<number | null>(null);
+    const [socialListView, setSocialListView] = useState<'followers' | 'following' | null>(null);
     const [activeNav, setActiveNav] = useState('Feed');
     const [activeTag, setActiveTag] = useState<string | null>(null);
     const [feedTab, setFeedTab] = useState<'forYou' | 'following' | 'trending'>('forYou');
@@ -154,11 +170,119 @@ export default function CommunityPage() {
         setPosts(prev => [newPost, ...prev]);
     };
 
+    // Create/update own story
+    const handleCreateStory = (image: string) => {
+        const ownStory: Story = {
+            id: 'own',
+            author: 'Your Story',
+            avatar: user?.photoURL || '🧑‍🌾',
+            image,
+            seen: false,
+            isOwn: true,
+        };
+
+        setStories(prev => {
+            const others = prev.filter(story => !story.isOwn);
+            return [ownStory, ...others];
+        });
+
+        setShowCreateStory(false);
+        setViewingStoryIndex(0);
+    };
+
+    // Open story viewer
+    const handleViewStory = (story: Story) => {
+        const idx = stories.findIndex(s => s.id === story.id);
+        if (idx === -1 || !stories[idx].image) return;
+
+        setViewingStoryIndex(idx);
+        setStories(prev => prev.map((s, i) => (i === idx ? { ...s, seen: true } : s)));
+    };
+
+    const ownStory = stories.find(story => story.isOwn);
+    const hasOwnStory = !!ownStory?.image;
+    const visibleStories = stories.filter(story => !!story.image);
+    const currentStoryId = viewingStoryIndex !== null ? stories[viewingStoryIndex]?.id : null;
+    const currentVisibleStoryIndex = currentStoryId
+        ? visibleStories.findIndex(story => story.id === currentStoryId)
+        : -1;
+
+    const communityProfiles = useMemo(() => {
+        const map = new Map<string, { username: string; name: string; avatar: string }>();
+
+        posts.forEach(post => {
+            const username = normalizeUsername(post.username);
+            if (!username || username === 'you') return;
+            if (!map.has(username)) {
+                map.set(username, {
+                    username,
+                    name: post.author,
+                    avatar: post.avatar || '🧑‍🌾',
+                });
+            }
+        });
+
+        users.forEach(u => {
+            const username = normalizeUsername(u.username);
+            if (!username || username === 'you') return;
+            if (!map.has(username)) {
+                map.set(username, {
+                    username,
+                    name: u.name,
+                    avatar: u.avatar || '🧑‍🌾',
+                });
+            }
+        });
+
+        return Array.from(map.values());
+    }, [posts, users]);
+
+    const followingProfiles = useMemo(
+        () => Array.from(followedUsernames).map(username => {
+            const found = communityProfiles.find(profile => profile.username === username);
+            return found || { username, name: `@${username}`, avatar: '🧑‍🌾' };
+        }),
+        [communityProfiles, followedUsernames]
+    );
+
+    const followersProfiles = useMemo(
+        () => communityProfiles
+            .filter(profile => !followedUsernames.has(profile.username))
+            .slice(0, 56),
+        [communityProfiles, followedUsernames]
+    );
+
+    useEffect(() => {
+        const stored = getFollowedUsernames();
+        setFollowedUsernames(stored);
+    }, []);
+
+    useEffect(() => {
+        saveFollowedUsernames(followedUsernames);
+        setUsers(prev => prev.map(userItem => ({
+            ...userItem,
+            following: followedUsernames.has(normalizeUsername(userItem.username)),
+        })));
+    }, [followedUsernames]);
+
+    const handleOpenUserProfile = (username: string) => {
+        const normalized = normalizeUsername(username);
+        router.push(`/home/community/user/${encodeURIComponent(normalized)}`);
+    };
+
     // Follow/unfollow user
     const handleFollow = (username: string) => {
-        setUsers(prev => prev.map(u =>
-            u.username === username ? { ...u, following: !u.following } : u
-        ));
+        const normalized = normalizeUsername(username);
+
+        setFollowedUsernames(prev => {
+            const next = new Set(prev);
+            if (next.has(normalized)) {
+                next.delete(normalized);
+            } else {
+                next.add(normalized);
+            }
+            return next;
+        });
     };
 
     // Edit post — open edit modal
@@ -197,10 +321,33 @@ export default function CommunityPage() {
         setActiveTag(query);
     };
 
-    // Filter posts by tag
+    const tabPosts = (() => {
+        if (feedTab === 'following') {
+            return posts.filter(post => {
+                const username = normalizeUsername(post.username);
+                return post.isOwn || followedUsernames.has(username);
+            });
+        }
+
+        if (feedTab === 'trending') {
+            return [...posts].sort((a, b) => getTrendingScore(b) - getTrendingScore(a));
+        }
+
+        return posts;
+    })();
+
+    // Apply hashtag filter on top of selected feed tab
     const filteredPosts = activeTag
-        ? posts.filter(p => p.tags.some(t => t.toLowerCase().includes(activeTag.toLowerCase())))
-        : posts;
+        ? tabPosts.filter(p => p.tags.some(t => t.toLowerCase().includes(activeTag.toLowerCase())))
+        : tabPosts;
+
+    const emptyStateMessage = activeTag
+        ? `No ${feedTab === 'trending' ? 'trending ' : ''}posts found for "${activeTag}"`
+        : feedTab === 'following'
+            ? 'No posts from followed users yet. Follow more farmers to build your feed.'
+            : feedTab === 'trending'
+                ? 'No trending posts right now. Check back shortly.'
+                : 'No posts available right now.';
 
     // Auth gate — non-logged-in users see a login wall
     if (!user) {
@@ -282,15 +429,15 @@ export default function CommunityPage() {
                                 {/* User Profile Card */}
                                 <div className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800">
                                     {/* Cover */}
-                                    <div className="h-20 bg-gradient-to-br from-[#22c33d] via-[#2c5926] to-[#8CDA4F] relative rounded-t-2xl overflow-hidden">
+                                    <div className="h-20 bg-gradient-to-br from-[#22c33d] via-[#2c5926] to-[#8CDA4F] relative rounded-t-2xl overflow-hidden z-0">
                                         <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.08%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-50" />
                                     </div>
-                                    <div className="px-5 pb-5">
-                                        <div className="-mt-10 text-center">
-                                            <div className="w-20 h-20 rounded-full bg-white dark:bg-[#1a231a] p-1 mx-auto mb-3">
+                                    <div className="px-5 pb-5 pt-1 relative">
+                                        <div className="-mt-11 text-center relative z-10">
+                                            <div className="w-20 h-20 rounded-full bg-white dark:bg-[#1a231a] p-1 mx-auto mb-3 shadow-sm">
                                                 <div className="w-full h-full rounded-full bg-primary/10 flex items-center justify-center overflow-hidden ring-2 ring-[#22c33d]/30">
                                                     {user.photoURL ? (
-                                                        <img src={user.photoURL} alt="User" className="w-full h-full object-cover" />
+                                                        <img src={user.photoURL} alt="User" className="w-full h-full object-cover object-center" />
                                                     ) : (
                                                         <span className="material-symbols-outlined text-3xl text-[#22c33d]">person</span>
                                                     )}
@@ -304,12 +451,16 @@ export default function CommunityPage() {
                                                     <p className="text-[11px] text-gray-500">Posts</p>
                                                 </div>
                                                 <div className="text-center">
-                                                    <p className="font-bold text-gray-900 dark:text-white">128</p>
-                                                    <p className="text-[11px] text-gray-500">Following</p>
+                                                    <button onClick={() => setSocialListView('following')} className="group">
+                                                        <p className="font-bold text-gray-900 dark:text-white group-hover:text-[#22c33d] transition-colors">{BASE_FOLLOWING_COUNT + followedUsernames.size}</p>
+                                                        <p className="text-[11px] text-gray-500 group-hover:text-[#22c33d] transition-colors">Following</p>
+                                                    </button>
                                                 </div>
                                                 <div className="text-center">
-                                                    <p className="font-bold text-gray-900 dark:text-white">56</p>
-                                                    <p className="text-[11px] text-gray-500">Followers</p>
+                                                    <button onClick={() => setSocialListView('followers')} className="group">
+                                                        <p className="font-bold text-gray-900 dark:text-white group-hover:text-[#22c33d] transition-colors">56</p>
+                                                        <p className="text-[11px] text-gray-500 group-hover:text-[#22c33d] transition-colors">Followers</p>
+                                                    </button>
                                                 </div>
                                             </div>
                                             <button
@@ -381,10 +532,11 @@ export default function CommunityPage() {
                         <div className="flex-1 min-w-0 max-w-full lg:max-w-[640px]">
                             {/* Stories */}
                             <StoriesBar
-                                stories={sampleStories}
+                                stories={stories}
                                 userAvatar={user?.photoURL}
-                                onAddStory={() => setShowCreatePost(true)}
-                                onViewStory={() => { }}
+                                hasOwnStory={hasOwnStory}
+                                onAddStory={() => setShowCreateStory(true)}
+                                onViewStory={handleViewStory}
                             />
 
                             {/* Feed Tabs */}
@@ -397,11 +549,10 @@ export default function CommunityPage() {
                                     <button
                                         key={tab.key}
                                         onClick={() => setFeedTab(tab.key as typeof feedTab)}
-                                        className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-                                            feedTab === tab.key
+                                        className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all ${feedTab === tab.key
                                                 ? 'bg-[#22c33d] text-white shadow-md'
                                                 : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                                        }`}
+                                            }`}
                                     >
                                         <span className="material-symbols-outlined text-base sm:text-lg">{tab.icon}</span>
                                         {tab.label}
@@ -616,16 +767,28 @@ export default function CommunityPage() {
                                         onLikeComment={handleLikeComment}
                                         onEdit={handleEdit}
                                         onDelete={handleDelete}
+                                        isFollowingAuthor={followedUsernames.has(normalizeUsername(post.username))}
+                                        onToggleFollowAuthor={handleFollow}
+                                        onAuthorClick={handleOpenUserProfile}
                                         userAvatar={user?.photoURL}
                                         requireAuth={requireAuth}
                                     />
                                 )) : (
                                     <div className="text-center py-16 bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800">
                                         <span className="material-symbols-outlined text-5xl text-gray-300 mb-3">search_off</span>
-                                        <p className="text-gray-500 font-medium">No posts found for &ldquo;{activeTag}&rdquo;</p>
-                                        <button onClick={() => setActiveTag(null)} className="mt-3 text-sm font-bold text-[#22c33d] hover:underline">
-                                            Clear filter
-                                        </button>
+                                        <p className="text-gray-500 font-medium">{emptyStateMessage}</p>
+                                        <div className="mt-3 flex items-center justify-center gap-3">
+                                            {activeTag && (
+                                                <button onClick={() => setActiveTag(null)} className="text-sm font-bold text-[#22c33d] hover:underline">
+                                                    Clear filter
+                                                </button>
+                                            )}
+                                            {feedTab !== 'forYou' && (
+                                                <button onClick={() => setFeedTab('forYou')} className="text-sm font-bold text-[#22c33d] hover:underline">
+                                                    Go to For You
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -700,6 +863,89 @@ export default function CommunityPage() {
                 userAvatar={user?.photoURL}
                 userName={user?.displayName}
             />
+
+            <CreateStoryModal
+                isOpen={showCreateStory}
+                onClose={() => setShowCreateStory(false)}
+                onSubmit={handleCreateStory}
+            />
+
+            {currentVisibleStoryIndex >= 0 && (
+                <StoryViewerModal
+                    key={`story-viewer-${visibleStories[currentVisibleStoryIndex]?.id || 'unknown'}-${visibleStories.length}`}
+                    stories={visibleStories}
+                    currentIndex={currentVisibleStoryIndex}
+                    onClose={() => setViewingStoryIndex(null)}
+                    onStorySeen={(storyId: string) => {
+                        setStories(prev => {
+                            const alreadySeen = prev.some(story => story.id === storyId && story.seen);
+                            if (alreadySeen) return prev;
+                            return prev.map(story => story.id === storyId ? { ...story, seen: true } : story);
+                        });
+                    }}
+                />
+            )}
+
+            {socialListView && (
+                <div className="fixed inset-0 z-[72] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={() => setSocialListView(null)} />
+                    <div className="relative w-full max-w-md max-h-[80vh] rounded-2xl bg-white dark:bg-[#1a231a] border border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+                            <h3 className="text-base font-bold text-gray-900 dark:text-white capitalize">{socialListView}</h3>
+                            <button onClick={() => setSocialListView(null)} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+
+                        <div className="max-h-[64vh] overflow-y-auto p-3">
+                            {(socialListView === 'following' ? followingProfiles : followersProfiles).length === 0 ? (
+                                <p className="text-sm text-gray-500 text-center py-8">
+                                    No {socialListView} to show yet.
+                                </p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {(socialListView === 'following' ? followingProfiles : followersProfiles).map(profile => (
+                                        <div
+                                            key={`${socialListView}-${profile.username}`}
+                                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                                        >
+                                            <button
+                                                onClick={() => {
+                                                    setSocialListView(null);
+                                                    handleOpenUserProfile(profile.username);
+                                                }}
+                                                className="flex-1 min-w-0 flex items-center gap-3 text-left"
+                                            >
+                                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden text-xl shrink-0">
+                                                    {profile.avatar.startsWith('http') || profile.avatar.startsWith('data:') ? (
+                                                        <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <span>{profile.avatar}</span>
+                                                    )}
+                                                </div>
+                                                <div className="min-w-0 text-left">
+                                                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{profile.name}</p>
+                                                    <p className="text-xs text-gray-500 truncate">@{profile.username}</p>
+                                                </div>
+                                            </button>
+
+                                            <button
+                                                onClick={() => handleFollow(profile.username)}
+                                                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${followedUsernames.has(normalizeUsername(profile.username))
+                                                        ? 'border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                                        : 'bg-[#22c33d] text-white hover:brightness-110'
+                                                    }`}
+                                            >
+                                                {followedUsernames.has(normalizeUsername(profile.username)) ? 'Following' : 'Follow'}
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Edit Post Modal */}
             <EditPostModal

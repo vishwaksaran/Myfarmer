@@ -360,6 +360,9 @@ export default function OnboardingPage() {
     const [animateIn, setAnimateIn] = useState(true);
     const [emailChecking, setEmailChecking] = useState(false);
     const [emailError, setEmailError] = useState<string | null>(null);
+    const [passwordError, setPasswordError] = useState<string | null>(null);
+    const [emailPassword, setEmailPassword] = useState('');
+    const [confirmEmailPassword, setConfirmEmailPassword] = useState('');
     const [showDiscardModal, setShowDiscardModal] = useState(false);
     const [isDiscarding, setIsDiscarding] = useState(false);
     const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -511,6 +514,7 @@ export default function OnboardingPage() {
     const handleNext = async () => {
         setError(null);
         setEmailError(null);
+        setPasswordError(null);
         // Validation for each step
         if (currentStep === 1 && !formData.full_name.trim()) {
             setError('Please enter your name');
@@ -527,6 +531,14 @@ export default function OnboardingPage() {
         if (currentStep === 1 && formData.email.trim()) {
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
                 setEmailError('Please enter a valid email address');
+                return;
+            }
+            if (!emailPassword || emailPassword.length < 6) {
+                setPasswordError('Please create a password with at least 6 characters');
+                return;
+            }
+            if (emailPassword !== confirmEmailPassword) {
+                setPasswordError('Password and confirm password do not match');
                 return;
             }
             const isDuplicate = await checkEmailDuplicate(formData.email.trim());
@@ -605,6 +617,7 @@ export default function OnboardingPage() {
 
     // Submit the onboarding form
     const handleSubmit = async () => {
+        setPasswordError(null);
         if (!formData.state) {
             setError('Please select your state');
             return;
@@ -617,12 +630,44 @@ export default function OnboardingPage() {
             setError('Please provide a valid 10-digit phone number in Step 1');
             return;
         }
+        if (formData.email.trim()) {
+            if (!emailPassword || emailPassword.length < 6) {
+                setPasswordError('Please create a password with at least 6 characters');
+                setCurrentStep(1);
+                return;
+            }
+            if (emailPassword !== confirmEmailPassword) {
+                setPasswordError('Password and confirm password do not match');
+                setCurrentStep(1);
+                return;
+            }
+        }
         setIsSubmitting(true);
         setError(null);
 
         try {
             // Wait briefly for auth state to stabilize after OTP sign-in
             await new Promise(r => setTimeout(r, 500));
+
+            if (formData.email.trim()) {
+                const { default: supabase } = await import('@/lib/supabase');
+                const { error: authUpdateError } = await supabase.auth.updateUser({
+                    email: formData.email.trim().toLowerCase(),
+                    password: emailPassword,
+                });
+
+                if (authUpdateError) {
+                    const msg = authUpdateError.message?.toLowerCase() || '';
+                    if (msg.includes('already') || msg.includes('taken')) {
+                        setEmailError('This email is already linked to another account. Please use a different email.');
+                        setCurrentStep(1);
+                        return;
+                    }
+                    setError(authUpdateError.message || 'Failed to set email/password. Please try again.');
+                    setCurrentStep(1);
+                    return;
+                }
+            }
 
             const profileData = {
                 full_name: formData.full_name.trim(),
@@ -822,8 +867,14 @@ export default function OnboardingPage() {
                                         type="email"
                                         value={formData.email}
                                         onChange={(e) => {
-                                            setFormData(f => ({ ...f, email: e.target.value }));
+                                            const nextEmail = e.target.value;
+                                            setFormData(f => ({ ...f, email: nextEmail }));
                                             setEmailError(null);
+                                            if (!nextEmail.trim()) {
+                                                setPasswordError(null);
+                                                setEmailPassword('');
+                                                setConfirmEmailPassword('');
+                                            }
                                         }}
                                         className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-white focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-base font-medium placeholder:text-gray-400 ${emailError ? 'border-red-300 bg-red-50/50' : 'border-green-200'
                                             }`}
@@ -840,6 +891,46 @@ export default function OnboardingPage() {
                                     </p>
                                 )}
                                 <p className="text-[10px] text-gray-400 mt-1">Used for account recovery & notifications</p>
+
+                                {formData.email.trim() && (
+                                    <div className="mt-3 space-y-2.5">
+                                        <div className="relative">
+                                            <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60 text-xl">lock</span>
+                                            <input
+                                                type="password"
+                                                value={emailPassword}
+                                                onChange={(e) => {
+                                                    setEmailPassword(e.target.value);
+                                                    setPasswordError(null);
+                                                }}
+                                                className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-white focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-base font-medium placeholder:text-gray-400 ${passwordError ? 'border-red-300 bg-red-50/50' : 'border-green-200'}`}
+                                                placeholder="Create password (min 6 characters)"
+                                            />
+                                        </div>
+
+                                        <div className="relative">
+                                            <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60 text-xl">lock_reset</span>
+                                            <input
+                                                type="password"
+                                                value={confirmEmailPassword}
+                                                onChange={(e) => {
+                                                    setConfirmEmailPassword(e.target.value);
+                                                    setPasswordError(null);
+                                                }}
+                                                className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-white focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-base font-medium placeholder:text-gray-400 ${passwordError ? 'border-red-300 bg-red-50/50' : 'border-green-200'}`}
+                                                placeholder="Confirm password"
+                                            />
+                                        </div>
+
+                                        {passwordError && (
+                                            <p className="text-xs text-red-600 flex items-center gap-1">
+                                                <span className="material-symbols-outlined text-sm">error</span>
+                                                {passwordError}
+                                            </p>
+                                        )}
+                                        <p className="text-[10px] text-gray-400">You can use this email + password for future login instead of OTP.</p>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Role Selection */}
