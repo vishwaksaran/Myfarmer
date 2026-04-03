@@ -102,8 +102,8 @@ export default function CommunityUserProfilePage() {
                                 <button
                                     onClick={handleToggleFollow}
                                     className={`self-start lg:self-center min-w-[120px] px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${isFollowing
-                                            ? 'bg-white/20 text-white border border-white/40 hover:bg-white/25'
-                                            : 'bg-white text-[#1f8c30] hover:bg-[#f3fff4]'
+                                        ? 'bg-white/20 text-white border border-white/40 hover:bg-white/25'
+                                        : 'bg-white text-[#1f8c30] hover:bg-[#f3fff4]'
                                         }`}
                                 >
                                     {isFollowing ? 'Following' : 'Follow'}

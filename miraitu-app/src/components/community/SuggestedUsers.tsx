@@ -28,11 +28,10 @@ export default function SuggestedUsers({ users, onFollow }: SuggestedUsersProps)
             </div>
             <button
               onClick={() => onFollow(user.username)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                user.following
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${user.following
                   ? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
                   : 'bg-[#22c33d] text-white hover:brightness-110'
-              }`}
+                }`}
             >
               {user.following ? 'Following' : 'Follow'}
             </button>

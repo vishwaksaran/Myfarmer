@@ -588,8 +588,8 @@ export default function CommunityPage() {
                                         key={tab.key}
                                         onClick={() => setFeedTab(tab.key as typeof feedTab)}
                                         className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all ${feedTab === tab.key
-                                                ? 'bg-[#22c33d] text-white shadow-md'
-                                                : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                                            ? 'bg-[#22c33d] text-white shadow-md'
+                                            : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                                             }`}
                                     >
                                         <span className="material-symbols-outlined text-base sm:text-lg">{tab.icon}</span>
@@ -983,8 +983,8 @@ export default function CommunityPage() {
                                             <button
                                                 onClick={() => handleFollow(profile.username)}
                                                 className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${followedUsernames.has(normalizeUsername(profile.username))
-                                                        ? 'border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                                                        : 'bg-[#22c33d] text-white hover:brightness-110'
+                                                    ? 'border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                                    : 'bg-[#22c33d] text-white hover:brightness-110'
                                                     }`}
                                             >
                                                 {followedUsernames.has(normalizeUsername(profile.username)) ? 'Following' : 'Follow'}

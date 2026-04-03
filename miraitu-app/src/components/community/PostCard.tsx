@@ -289,9 +289,9 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
               <span className="font-bold text-gray-900 dark:text-white text-sm leading-tight whitespace-normal break-words text-left hover:text-[#22c33d] transition-colors">
                 {post.author}
               </span>
-            {post.verified && (
-              <span className="material-symbols-outlined text-[#22c33d] text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-            )}
+              {post.verified && (
+                <span className="material-symbols-outlined text-[#22c33d] text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+              )}
             </span>
             <span className="text-xs text-gray-500 flex flex-wrap items-center gap-1 mt-0.5">
               <span className="material-symbols-outlined text-[13px]">location_on</span>
@@ -305,8 +305,8 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
           <button
             onClick={() => requireAuth(() => onToggleFollowAuthor(post.username))}
             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${isFollowingAuthor
-                ? 'border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                : 'bg-[#22c33d] text-white hover:brightness-110'
+              ? 'border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+              : 'bg-[#22c33d] text-white hover:brightness-110'
               }`}
           >
             {isFollowingAuthor ? 'Following' : 'Follow'}
@@ -579,8 +579,8 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
           onTouchStart={handleReactionMouseDown}
           onTouchEnd={handleReactionMouseUp}
           className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2.5 rounded-xl transition-all ${post.myReaction
-              ? 'text-[#22c33d] bg-[#22c33d]/5 font-bold'
-              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+            ? 'text-[#22c33d] bg-[#22c33d]/5 font-bold'
+            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
             }`}
         >
           {post.myReaction ? (

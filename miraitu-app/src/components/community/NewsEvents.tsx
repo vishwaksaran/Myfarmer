@@ -86,11 +86,10 @@ export default function NewsEvents({ events }: NewsEventsProps) {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat === 'All' ? null : cat)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                (cat === 'All' && !selectedCategory) || cat === selectedCategory
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${(cat === 'All' && !selectedCategory) || cat === selectedCategory
                   ? 'bg-[#22c33d] text-white'
                   : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-              }`}
+                }`}
             >
               {cat}
             </button>
