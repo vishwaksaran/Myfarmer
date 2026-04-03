@@ -27,7 +27,8 @@ export default function NewsEvents({ events }: NewsEventsProps) {
     const loadNews = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/agri-news');
+        const endpoint = process.env.NODE_ENV === 'development' ? '/api/agri-news?refresh=1' : '/api/agri-news';
+        const response = await fetch(endpoint);
         const data = await response.json();
 
         if (!mounted) return;
@@ -87,8 +88,8 @@ export default function NewsEvents({ events }: NewsEventsProps) {
               key={cat}
               onClick={() => setSelectedCategory(cat === 'All' ? null : cat)}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${(cat === 'All' && !selectedCategory) || cat === selectedCategory
-                  ? 'bg-[#22c33d] text-white'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                ? 'bg-[#22c33d] text-white'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
             >
               {cat}

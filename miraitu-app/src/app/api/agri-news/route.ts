@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseAdminClient } from '@/lib/supabase-admin';
 import { fetchLatestAgriNews } from '@/lib/agri-news';
 
@@ -20,8 +20,9 @@ const getLatestItemTimestamp = (items: unknown[]): number | null => {
     return latest;
 };
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
+        const forceRefresh = request.nextUrl.searchParams.get('refresh') === '1';
         const supabaseAdmin = createSupabaseAdminClient();
         const { data: cachedRows, error: cacheReadError } = await supabaseAdmin
             .from('agri_news_cache')
@@ -29,7 +30,7 @@ export async function GET() {
             .order('fetched_at', { ascending: false })
             .limit(1);
 
-        if (!cacheReadError && cachedRows && cachedRows.length > 0) {
+        if (!forceRefresh && !cacheReadError && cachedRows && cachedRows.length > 0) {
             const cached = cachedRows[0];
             const cachedItems = Array.isArray(cached.items) ? cached.items : [];
             const fetchedAtMs = Date.parse(cached.fetched_at || '');
@@ -66,7 +67,7 @@ export async function GET() {
                 items: payload.items,
                 liveEvent: payload.liveEvent,
                 fetchedAt: payload.fetchedAt,
-                source: 'live-fallback',
+                source: forceRefresh ? 'forced-refresh' : 'live-fallback',
             },
             { status: 200 }
         );
