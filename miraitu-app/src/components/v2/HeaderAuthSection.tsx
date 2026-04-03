@@ -64,8 +64,8 @@ export default function HeaderAuthSection() {
                 {/* Profile Dropdown */}
                 {isProfileOpen && (
                     <>
-                        <div className="fixed inset-0 z-40" onClick={() => setIsProfileOpen(false)} />
-                        <div className="fixed right-4 top-16 w-64 bg-white dark:bg-[#1e2a1c] rounded-2xl shadow-2xl border border-black/5 dark:border-white/10 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="fixed inset-0 z-[80]" onClick={() => setIsProfileOpen(false)} />
+                        <div className="fixed right-4 top-[72px] w-64 bg-white dark:bg-[#1e2a1c] rounded-2xl shadow-2xl border border-black/5 dark:border-white/10 overflow-hidden z-[90] animate-in fade-in slide-in-from-top-2 duration-200">
                             {/* User Info */}
                             <div className="p-4 bg-gradient-to-br from-primary/5 to-transparent border-b border-black/5 dark:border-white/10">
                                 <div className="flex items-center gap-3">
@@ -104,6 +104,14 @@ export default function HeaderAuthSection() {
                                 >
                                     <span className="material-symbols-outlined text-lg text-primary">shopping_bag</span>
                                     My Orders
+                                </Link>
+                                <Link
+                                    href="/home/dashboard"
+                                    onClick={() => setIsProfileOpen(false)}
+                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-lg text-primary">dashboard</span>
+                                    Dashboard
                                 </Link>
                                 <Link
                                     href="/home/settings"

@@ -49,20 +49,56 @@ export default function ProfilePage() {
 
     const handleAvatarClick = () => fileInputRef.current?.click();
 
+    const compressImage = (file: File, maxSize = 512, quality = 0.9): Promise<File> => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let { width, height } = img;
+                if (width > maxSize || height > maxSize) {
+                    if (width > height) { height = Math.round((height * maxSize) / width); width = maxSize; }
+                    else { width = Math.round((width * maxSize) / height); height = maxSize; }
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) { resolve(file); return; }
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(img, 0, 0, width, height);
+                canvas.toBlob(
+                    (blob) => {
+                        if (!blob) { resolve(file); return; }
+                        resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }));
+                    },
+                    'image/jpeg',
+                    quality
+                );
+            };
+            img.onerror = () => reject(new Error('Failed to load image'));
+            img.src = URL.createObjectURL(file);
+        });
+    };
+
     const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
         setUploading(true);
         setSaveMessage(null);
-        const result = await uploadAvatar(file);
-        setUploading(false);
-        if (result.error) {
-            setSaveMessage({ type: 'error', text: `Upload failed: ${result.error}` });
-        } else if (result.url) {
-            setAvatarUrl(result.url);
-            setSaveMessage({ type: 'success', text: 'Profile photo updated!' });
-            setTimeout(() => setSaveMessage(null), 3000);
+        try {
+            const compressed = await compressImage(file, 512, 0.9);
+            const result = await uploadAvatar(compressed);
+            if (result.error) {
+                setSaveMessage({ type: 'error', text: `Upload failed: ${result.error}` });
+            } else if (result.url) {
+                setAvatarUrl(result.url);
+                setSaveMessage({ type: 'success', text: 'Profile photo updated!' });
+                setTimeout(() => setSaveMessage(null), 3000);
+            }
+        } catch {
+            setSaveMessage({ type: 'error', text: 'Failed to process image' });
         }
+        setUploading(false);
     };
 
     const handleSave = async () => {
@@ -111,7 +147,7 @@ export default function ProfilePage() {
                         <div className={`mb-6 p-4 rounded-2xl font-semibold text-sm ${saveMessage.type === 'success'
                             ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
                             : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
-                        }`}>
+                            }`}>
                             <span className="material-symbols-outlined text-sm mr-2 align-middle">
                                 {saveMessage.type === 'success' ? 'check_circle' : 'error'}
                             </span>

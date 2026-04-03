@@ -42,7 +42,7 @@ export default function UserDashboardPage() {
         completedBookings: 0,
         recentBookings: [],
     });
-    const [profileData, setProfileData] = useState<{ full_name: string | null; farm_location: string | null; role: string } | null>(null);
+    const [profileData, setProfileData] = useState<{ full_name: string | null; farm_location: string | null; role: string; phone?: string | null } | null>(null);
     const [loadingData, setLoadingData] = useState(true);
 
     const loadDashboard = useCallback(async () => {
@@ -52,19 +52,28 @@ export default function UserDashboardPage() {
         const profile = await fetchProfile();
         if (profile) setProfileData(profile);
 
-        // Fetch user's bookings with assigned provider name
+        // Fetch bookings for this user; include phone fallback for older/guest-created rows.
+        const authPhoneDigits = (user.phone || '').replace(/\D/g, '');
+        const profilePhoneDigits = (profile?.phone || '').replace(/\D/g, '');
+        const filters = [`user_id.eq.${user.id}`];
+        if (authPhoneDigits.length === 10) filters.push(`phone.eq.${authPhoneDigits}`);
+        if (profilePhoneDigits.length === 10 && profilePhoneDigits !== authPhoneDigits) filters.push(`phone.eq.${profilePhoneDigits}`);
+
         const { data: bookings, error } = await supabase
             .from('service_bookings')
-            .select('id, module, category, full_name, phone, location, preferred_date, status, created_at, extra_data, provider_id, assigned_at, accepted_at, amount, provider_profile:profiles!service_bookings_provider_id_fkey(full_name)')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false })
-            .limit(5);
+            .select('id, module, category, full_name, phone, location, preferred_date, status, created_at, extra_data, provider_id, assigned_at, accepted_at, amount')
+            .or(filters.join(','))
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('[dashboard] Failed to load bookings:', error);
+        }
 
         if (!error && bookings) {
             const all = bookings as Booking[];
             setStats({
                 totalBookings: all.length,
-                pendingBookings: all.filter(b => ['pending', 'assigned', 'accepted', 'in_progress'].includes(b.status)).length,
+                pendingBookings: all.filter(b => ['pending', 'assigned', 'accepted', 'in_progress', 'contacted', 'confirmed'].includes(b.status)).length,
                 completedBookings: all.filter(b => b.status === 'completed').length,
                 recentBookings: all.slice(0, 5),
             });
