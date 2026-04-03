@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Post, Comment, ReactionType, REACTION_EMOJIS } from './types';
-import { resolveAvatarSrc } from './avatarUtils';
+import { DEFAULT_COMMUNITY_AVATAR, resolveAvatarSrc } from './avatarUtils';
 
 interface PostCardProps {
   post: Post;
@@ -64,7 +64,16 @@ function CommentItem({
     <div className={`${depth > 0 ? 'ml-8 mt-2' : ''}`}>
       <div className="flex gap-2 group">
         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-lg overflow-hidden">
-          <img src={resolveAvatarSrc(comment.avatar, comment.author)} alt={comment.author} className="w-full h-full object-cover object-center" />
+          <img
+            src={resolveAvatarSrc(comment.avatar, comment.author)}
+            alt={comment.author}
+            className="w-full h-full object-cover object-center"
+            onError={(e) => {
+              const img = e.currentTarget;
+              img.onerror = null;
+              img.src = DEFAULT_COMMUNITY_AVATAR;
+            }}
+          />
         </div>
         <div className="flex-1">
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl px-3.5 py-2.5">
@@ -282,7 +291,16 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
           className="flex-1 min-w-0 flex items-start gap-2 sm:gap-3 text-left"
         >
           <span className="w-11 h-11 rounded-full bg-gradient-to-br from-[#22c33d]/20 to-[#8CDA4F]/10 flex items-center justify-center text-2xl ring-2 ring-[#22c33d]/10 overflow-hidden shrink-0">
-            <img src={resolveAvatarSrc(post.avatar, post.author)} alt={post.author} className="w-full h-full object-cover object-center" />
+            <img
+              src={resolveAvatarSrc(post.avatar, post.author)}
+              alt={post.author}
+              className="w-full h-full object-cover object-center"
+              onError={(e) => {
+                const img = e.currentTarget;
+                img.onerror = null;
+                img.src = DEFAULT_COMMUNITY_AVATAR;
+              }}
+            />
           </span>
           <span className="min-w-0">
             <span className="flex items-center gap-1.5 min-w-0">

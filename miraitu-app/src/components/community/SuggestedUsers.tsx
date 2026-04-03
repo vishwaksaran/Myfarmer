@@ -1,7 +1,7 @@
 'use client';
 
 import { SuggestedUser } from './types';
-import { resolveAvatarSrc } from './avatarUtils';
+import { DEFAULT_COMMUNITY_AVATAR, resolveAvatarSrc } from './avatarUtils';
 
 interface SuggestedUsersProps {
   users: SuggestedUser[];
@@ -19,7 +19,16 @@ export default function SuggestedUsers({ users, onFollow }: SuggestedUsersProps)
         {users.map((user) => (
           <div key={user.username} className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#22c33d]/20 to-[#8CDA4F]/10 flex items-center justify-center text-xl shrink-0 ring-2 ring-[#22c33d]/10 overflow-hidden">
-              <img src={resolveAvatarSrc(user.avatar, user.name)} alt={user.name} className="w-full h-full object-cover object-center" />
+              <img
+                src={resolveAvatarSrc(user.avatar, user.name)}
+                alt={user.name}
+                className="w-full h-full object-cover object-center"
+                onError={(e) => {
+                  const img = e.currentTarget;
+                  img.onerror = null;
+                  img.src = DEFAULT_COMMUNITY_AVATAR;
+                }}
+              />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{user.name}</p>
@@ -29,8 +38,8 @@ export default function SuggestedUsers({ users, onFollow }: SuggestedUsersProps)
             <button
               onClick={() => onFollow(user.username)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${user.following
-                  ? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
-                  : 'bg-[#22c33d] text-white hover:brightness-110'
+                ? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                : 'bg-[#22c33d] text-white hover:brightness-110'
                 }`}
             >
               {user.following ? 'Following' : 'Follow'}

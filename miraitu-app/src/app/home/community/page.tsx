@@ -19,7 +19,7 @@ import HashtagSearch from '@/components/community/HashtagSearch';
 import NewsEvents from '@/components/community/NewsEvents';
 import SuggestedUsers from '@/components/community/SuggestedUsers';
 import { getFollowedUsernames, normalizeUsername, saveFollowedUsernames } from '@/components/community/followStore';
-import { resolveAvatarSrc } from '@/components/community/avatarUtils';
+import { DEFAULT_COMMUNITY_AVATAR, resolveAvatarSrc } from '@/components/community/avatarUtils';
 
 const BASE_FOLLOWING_COUNT = 128;
 
@@ -972,7 +972,16 @@ export default function CommunityPage() {
                                                 className="flex-1 min-w-0 flex items-center gap-3 text-left"
                                             >
                                                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden text-xl shrink-0">
-                                                    <img src={resolveAvatarSrc(profile.avatar, profile.name)} alt={profile.name} className="w-full h-full object-cover" />
+                                                    <img
+                                                        src={resolveAvatarSrc(profile.avatar, profile.name)}
+                                                        alt={profile.name}
+                                                        className="w-full h-full object-cover"
+                                                        onError={(event) => {
+                                                            const img = event.currentTarget;
+                                                            if (img.src.endsWith(DEFAULT_COMMUNITY_AVATAR)) return;
+                                                            img.src = DEFAULT_COMMUNITY_AVATAR;
+                                                        }}
+                                                    />
                                                 </div>
                                                 <div className="min-w-0 text-left">
                                                     <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{profile.name}</p>

@@ -7,7 +7,7 @@ import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import { samplePosts, suggestedUsers } from '@/components/community/sampleData';
 import { getFollowedUsernames, normalizeUsername, toggleFollowedUsername } from '@/components/community/followStore';
-import { resolveAvatarSrc } from '@/components/community/avatarUtils';
+import { DEFAULT_COMMUNITY_AVATAR, resolveAvatarSrc } from '@/components/community/avatarUtils';
 import { useAuth } from '@/context/AuthContext';
 
 const baseFollowersCount = 560;
@@ -88,7 +88,16 @@ export default function CommunityUserProfilePage() {
                                 <div className="flex items-start gap-4 min-w-0">
                                     <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-white/95 p-1.5 shadow-xl border border-white/80 shrink-0">
                                         <div className="w-full h-full rounded-2xl bg-[#eaf6ec] flex items-center justify-center text-3xl overflow-hidden">
-                                            <img src={resolvedProfileAvatar} alt={displayName} className="w-full h-full object-cover" />
+                                            <img
+                                                src={resolvedProfileAvatar}
+                                                alt={displayName}
+                                                className="w-full h-full object-cover"
+                                                onError={(event) => {
+                                                    const img = event.currentTarget;
+                                                    if (img.src.endsWith(DEFAULT_COMMUNITY_AVATAR)) return;
+                                                    img.src = DEFAULT_COMMUNITY_AVATAR;
+                                                }}
+                                            />
                                         </div>
                                     </div>
 

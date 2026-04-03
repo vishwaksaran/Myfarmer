@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Story } from './types';
-import { resolveAvatarSrc } from './avatarUtils';
+import { DEFAULT_COMMUNITY_AVATAR, resolveAvatarSrc } from './avatarUtils';
 
 interface StoriesBarProps {
   stories: Story[];
@@ -93,6 +93,11 @@ export default function StoriesBar({ stories, userAvatar, hasOwnStory = false, o
                       src={resolveAvatarSrc(group.isOwn ? userAvatar || story?.avatar : story?.avatar, story?.author || group.key)}
                       alt={story?.author || group.key}
                       className="w-full h-full object-cover object-center"
+                      onError={(e) => {
+                        const img = e.currentTarget;
+                        img.onerror = null;
+                        img.src = DEFAULT_COMMUNITY_AVATAR;
+                      }}
                     />
                   </div>
                 </div>
