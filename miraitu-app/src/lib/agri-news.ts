@@ -16,19 +16,19 @@ export type AgriNewsResponseItem = Omit<AgriNewsItem, 'publishedAt'>;
 const FEEDS = [
     {
         category: 'Trade' as const,
-        url: 'https://news.google.com/rss/search?q=agriculture+market+prices+india+OR+mandi+prices&hl=en-IN&gl=IN&ceid=IN:en',
+        url: 'https://news.google.com/rss/search?q=agriculture+market+prices+india+OR+mandi+prices+when:1d&hl=en-IN&gl=IN&ceid=IN:en',
     },
     {
         category: 'Government' as const,
-        url: 'https://news.google.com/rss/search?q=PM-KISAN+OR+MSP+OR+agriculture+scheme+india&hl=en-IN&gl=IN&ceid=IN:en',
+        url: 'https://news.google.com/rss/search?q=PM-KISAN+OR+MSP+OR+agriculture+scheme+india+when:1d&hl=en-IN&gl=IN&ceid=IN:en',
     },
     {
         category: 'World Event' as const,
-        url: 'https://news.google.com/rss/search?q=global+agriculture+summit+OR+FAO+OR+climate+resilient+crops&hl=en-IN&gl=IN&ceid=IN:en',
+        url: 'https://news.google.com/rss/search?q=global+agriculture+summit+OR+FAO+OR+climate+resilient+crops+when:1d&hl=en-IN&gl=IN&ceid=IN:en',
     },
     {
         category: 'Research' as const,
-        url: 'https://news.google.com/rss/search?q=ICAR+OR+agriculture+research+OR+crop+science&hl=en-IN&gl=IN&ceid=IN:en',
+        url: 'https://news.google.com/rss/search?q=ICAR+OR+agriculture+research+OR+crop+science+when:1d&hl=en-IN&gl=IN&ceid=IN:en',
     },
 ];
 
