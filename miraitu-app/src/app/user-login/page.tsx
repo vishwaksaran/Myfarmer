@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import MiraituLogo from '@/components/MiraituLogo';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { LangCode } from '@/i18n/translations';
@@ -31,6 +31,33 @@ export default function UserLoginPage() {
     const [loginPassword, setLoginPassword] = useState('');
     const [emailError, setEmailError] = useState<string | null>(null);
     const [showResetConfirm, setShowResetConfirm] = useState(false);
+    const [redirectPath, setRedirectPath] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const raw = new URLSearchParams(window.location.search).get('redirect');
+        if (!raw) {
+            setRedirectPath(null);
+            return;
+        }
+
+        if (!raw.startsWith('/') || raw.startsWith('//') || raw.includes('://') || raw.startsWith('/user-login')) {
+            setRedirectPath(null);
+            return;
+        }
+
+        setRedirectPath(raw);
+    }, []);
+
+    const navigateAfterLogin = useCallback((destination: string) => {
+        // Full navigation avoids cookie race for proxy-protected routes immediately after auth.
+        if (destination.startsWith('/home/shop') || destination.startsWith('/admin')) {
+            window.location.assign(destination);
+            return;
+        }
+        router.replace(destination);
+    }, [router]);
 
     const normalizeEmail = (value: string) => value.trim().toLowerCase();
 
@@ -64,10 +91,10 @@ export default function UserLoginPage() {
 
     // Redirect to home if already logged in
     useEffect(() => {
-        if (user && !loading) {
-            router.push('/');
+        if (user && !loading && !isSigningIn && !successMessage) {
+            navigateAfterLogin(redirectPath || '/');
         }
-    }, [user, loading, router]);
+    }, [user, loading, isSigningIn, successMessage, redirectPath, navigateAfterLogin]);
 
     const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -132,7 +159,8 @@ export default function UserLoginPage() {
 
                 // Use server-side onboarding check (not AuthContext which may have stale user)
                 const onboarded = data.onboarding_completed === true;
-                setTimeout(() => router.push(onboarded ? '/' : '/onboarding'), 1500);
+                const destination = onboarded ? (redirectPath || '/') : '/onboarding';
+                setTimeout(() => navigateAfterLogin(destination), 1200);
             }
         } catch {
             setError(t('login.errorVerifyOtp'));
@@ -225,7 +253,8 @@ export default function UserLoginPage() {
                     .single();
 
                 const onboarded = profile?.onboarding_completed === true;
-                setTimeout(() => router.push(onboarded ? '/' : '/onboarding'), 1500);
+                const destination = onboarded ? (redirectPath || '/') : '/onboarding';
+                setTimeout(() => navigateAfterLogin(destination), 1200);
             }
         } catch {
             setEmailError(t('login.errorGeneric'));
