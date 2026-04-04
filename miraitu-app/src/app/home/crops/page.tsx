@@ -26,7 +26,7 @@ const fallbackPopular = [
 ];
 
 const quickActions = [
-    { name: 'Mandi Hub', description: 'All mandi data in one place', icon: 'hub', href: '/home/crops/mandi', color: 'bg-primary' },
+    { name: 'Price Trends', description: 'Analyze price trends across states', icon: 'show_chart', href: '/home/crops/mandi/trends', color: 'bg-primary' },
     { name: 'Mandi Prices', description: 'Check live prices from nearby mandis', icon: 'trending_up', href: '/home/crops/mandi/prices', color: 'bg-primary' },
     { name: 'Buy Crops', description: 'Browse available produce listings', icon: 'shopping_cart', href: '/home/crops/buy', color: 'bg-primary' },
     { name: 'Buy Grains', description: 'Wheat, rice, millets & more', icon: 'grain', href: '/home/crops/buy/grains', color: 'bg-primary' },

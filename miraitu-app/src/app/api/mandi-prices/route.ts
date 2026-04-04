@@ -30,12 +30,12 @@ const STALE_HOURS = 6;
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
 
-  const state     = searchParams.get('state')     || '';
-  const commodity = searchParams.get('commodity')  || '';
-  const market    = searchParams.get('market')     || '';
-  const limit     = Math.min(Number(searchParams.get('limit'))  || 30, 500);
-  const offset    = Number(searchParams.get('offset')) || 0;
-  const source    = searchParams.get('source')     || 'auto';
+  const state = searchParams.get('state') || '';
+  const commodity = searchParams.get('commodity') || '';
+  const market = searchParams.get('market') || '';
+  const limit = Math.min(Number(searchParams.get('limit')) || 30, 500);
+  const offset = Number(searchParams.get('offset')) || 0;
+  const source = searchParams.get('source') || 'auto';
 
   /* ── 1. Try Supabase first (if available) ───────────────── */
   if (source !== 'api' && SUPABASE_URL && SUPABASE_ANON) {
@@ -48,9 +48,9 @@ export async function GET(request: NextRequest) {
         .order('arrival_date', { ascending: false })
         .range(offset, offset + limit - 1);
 
-      if (state && state !== 'All States')         query = query.eq('state', state);
-      if (commodity && commodity !== 'All Crops')   query = query.eq('commodity', commodity);
-      if (market)                                   query = query.eq('market', market);
+      if (state && state !== 'All States') query = query.ilike('state', state);
+      if (commodity && commodity !== 'All Crops') query = query.ilike('commodity', commodity);
+      if (market) query = query.ilike('market', market);
 
       const { data: rows, count, error: dbError } = await query;
 
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
         if (isStale) {
           // Fire-and-forget background sync
           const syncUrl = new URL('/api/mandi-prices/sync', request.nextUrl.origin);
-          fetch(syncUrl.toString(), { method: 'POST' }).catch(() => {});
+          fetch(syncUrl.toString(), { method: 'POST' }).catch(() => { });
         }
 
         return NextResponse.json(
@@ -108,23 +108,16 @@ export async function GET(request: NextRequest) {
 
   /* ── 2. Fallback: fetch directly from data.gov.in ────────── */
   const url = new URL(`${DATA_GOV_BASE}/${RESOURCE_ID}`);
-  url.searchParams.set('api-key', API_KEY);
+  if (API_KEY) url.searchParams.set('api-key', API_KEY);
   url.searchParams.set('format', 'json');
   url.searchParams.set('limit', String(limit));
   url.searchParams.set('offset', String(offset));
 
-  if (state && state !== 'All States')         url.searchParams.set('filters[state]', state);
-  if (commodity && commodity !== 'All Crops')   url.searchParams.set('filters[commodity]', commodity);
-  if (market)                                   url.searchParams.set('filters[market]', market);
+  if (state && state !== 'All States') url.searchParams.set('filters[state]', state);
+  if (commodity && commodity !== 'All Crops') url.searchParams.set('filters[commodity]', commodity);
+  if (market) url.searchParams.set('filters[market]', market);
 
   try {
-    if (!API_KEY) {
-      return NextResponse.json(
-        { records: [] as MandiRecord[], total: 0, updated: '', error: 'NO_API_KEY' },
-        { status: 200, headers: { 'Cache-Control': 'public, max-age=300' } },
-      );
-    }
-
     const res = await fetch(url.toString(), {
       next: { revalidate: 3600 },
       headers: { Accept: 'application/json' },
