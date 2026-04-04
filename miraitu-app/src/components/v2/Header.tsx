@@ -7,6 +7,7 @@ import MiraituLogo from '@/components/MiraituLogo';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { LangCode } from '@/i18n/translations';
 import { useCart } from '@/context/CartContext';
+import { useShopWishlist } from '@/lib/use-shop-wishlist';
 import HeaderAuthSection from './HeaderAuthSection';
 
 
@@ -42,6 +43,7 @@ const searchableItems = [
     { name: 'Weather', path: '/home/toolbox', icon: 'cloud', keywords: ['weather', 'forecast', 'rain', 'temperature', 'humidity'] },
     { name: 'Mandi Prices', path: '/home/toolbox', icon: 'trending_up', keywords: ['mandi', 'market price', 'mandi price', 'apmc', 'crop price'] },
     { name: 'Cart & Checkout', path: '/home/shop/checkout', icon: 'shopping_cart', keywords: ['cart', 'checkout', 'order', 'payment'] },
+    { name: 'Wishlist', path: '/home/shop/wishlist', icon: 'favorite', keywords: ['wishlist', 'saved products', 'liked products', 'favorites'] },
 ];
 
 const primaryNavItems = [
@@ -66,6 +68,7 @@ export default function Header() {
     const router = useRouter();
     const { lang, setLang, t } = useLanguage();
     const { totalItems } = useCart();
+    const { wishlistCount } = useShopWishlist();
 
     const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
 
@@ -410,6 +413,16 @@ export default function Header() {
                                 <span className="material-symbols-outlined text-primary text-lg">translate</span>
                                 <span className="hidden lg:inline">{allLanguages.find(lang => lang.code === selectedLang)?.name || 'English'}</span>
                             </button>
+
+                            {/* Wishlist Button */}
+                            <Link href="/home/shop/wishlist" className="relative flex items-center justify-center size-9 sm:size-10 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-black/5 dark:border-white/10 hover:bg-primary/5 hover:text-primary transition-colors skeuo-card">
+                                <span className="material-symbols-outlined text-xl">favorite</span>
+                                {wishlistCount > 0 && (
+                                    <span className="absolute -top-1.5 -right-1.5 size-5 flex items-center justify-center rounded-full bg-pink-500 text-[10px] font-bold text-white shadow-sm animate-in zoom-in duration-300">
+                                        {wishlistCount}
+                                    </span>
+                                )}
+                            </Link>
 
                             {/* Cart Button */}
                             <Link href="/home/shop/checkout" className="relative flex items-center justify-center size-9 sm:size-10 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-black/5 dark:border-white/10 hover:bg-primary/5 hover:text-primary transition-colors skeuo-card">

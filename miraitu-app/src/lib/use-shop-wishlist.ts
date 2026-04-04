@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const SHOP_WISHLIST_STORAGE_KEY = 'miraitu_shop_wishlist_ids';
+const SHOP_WISHLIST_UPDATED_EVENT = 'miraitu-shop-wishlist-updated';
 
 function parseWishlist(raw: string | null): Set<number> {
     if (!raw) return new Set<number>();
@@ -23,24 +24,43 @@ function parseWishlist(raw: string | null): Set<number> {
 
 export function useShopWishlist() {
     const [wishlistIds, setWishlistIds] = useState<Set<number>>(new Set<number>());
-    const [loaded, setLoaded] = useState(false);
 
-    useEffect(() => {
+    const syncFromStorage = useCallback(() => {
         if (typeof window === 'undefined') return;
-
         const saved = window.localStorage.getItem(SHOP_WISHLIST_STORAGE_KEY);
         setWishlistIds(parseWishlist(saved));
-        setLoaded(true);
     }, []);
 
-    useEffect(() => {
-        if (!loaded || typeof window === 'undefined') return;
+    const persistWishlist = useCallback((next: Set<number>) => {
+        if (typeof window === 'undefined') return;
 
         window.localStorage.setItem(
             SHOP_WISHLIST_STORAGE_KEY,
-            JSON.stringify(Array.from(wishlistIds))
+            JSON.stringify(Array.from(next))
         );
-    }, [wishlistIds, loaded]);
+        window.dispatchEvent(new Event(SHOP_WISHLIST_UPDATED_EVENT));
+    }, []);
+
+    useEffect(() => {
+        syncFromStorage();
+
+        const handleStorage = (event: StorageEvent) => {
+            if (event.key && event.key !== SHOP_WISHLIST_STORAGE_KEY) return;
+            syncFromStorage();
+        };
+
+        const handleWishlistUpdated = () => {
+            syncFromStorage();
+        };
+
+        window.addEventListener('storage', handleStorage);
+        window.addEventListener(SHOP_WISHLIST_UPDATED_EVENT, handleWishlistUpdated);
+
+        return () => {
+            window.removeEventListener('storage', handleStorage);
+            window.removeEventListener(SHOP_WISHLIST_UPDATED_EVENT, handleWishlistUpdated);
+        };
+    }, [syncFromStorage]);
 
     const isWishlisted = useCallback(
         (productId: number) => wishlistIds.has(productId),
@@ -55,12 +75,25 @@ export function useShopWishlist() {
             } else {
                 next.add(productId);
             }
+            persistWishlist(next);
             return next;
         });
-    }, []);
+    }, [persistWishlist]);
+
+    const clearWishlist = useCallback(() => {
+        const empty = new Set<number>();
+        setWishlistIds(empty);
+        persistWishlist(empty);
+    }, [persistWishlist]);
+
+    const wishlistCount = wishlistIds.size;
+    const wishlistIdList = useMemo(() => Array.from(wishlistIds), [wishlistIds]);
 
     return {
         isWishlisted,
         toggleWishlist,
+        clearWishlist,
+        wishlistCount,
+        wishlistIdList,
     };
 }
