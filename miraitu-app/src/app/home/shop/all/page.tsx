@@ -9,6 +9,7 @@ import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { shopCategories } from '../data';
 import { categoryProducts, categoryMeta } from '../categoryData';
+import { useShopWishlist } from '@/lib/use-shop-wishlist';
 
 type SortOption = 'popular' | 'price-low' | 'price-high' | 'rating';
 
@@ -16,6 +17,7 @@ export default function AllProductsPage() {
     const router = useRouter();
     const { user, loading } = useAuth();
     const { quantities, addItem, removeItem } = useCart();
+    const { isWishlisted, toggleWishlist } = useShopWishlist();
     const [sortBy, setSortBy] = useState<SortOption>('popular');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -117,6 +119,20 @@ export default function AllProductsPage() {
                                             {product.weight}
                                         </span>
                                     )}
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleWishlist(product.id)}
+                                        aria-label={isWishlisted(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                                        aria-pressed={isWishlisted(product.id)}
+                                        className="absolute top-2 right-2 p-1.5 rounded-lg bg-white/90 dark:bg-gray-800/90 border border-gray-200/80 dark:border-gray-700/80 text-gray-600 dark:text-gray-300 hover:scale-105 hover:shadow-md transition-all"
+                                    >
+                                        <span
+                                            className={`material-symbols-outlined text-lg ${isWishlisted(product.id) ? 'text-red-500' : 'text-gray-500'}`}
+                                            style={{ fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24" }}
+                                        >
+                                            favorite
+                                        </span>
+                                    </button>
                                 </div>
                                 <div className="p-3 md:p-4">
                                     <p className="text-[10px] text-primary font-bold uppercase tracking-wider mb-1">{product.categoryName}</p>

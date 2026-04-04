@@ -210,8 +210,11 @@ export default function CategoryPage({ categorySlug }: { categorySlug?: string }
                                         aria-pressed={isWishlisted(product.id)}
                                         className="absolute top-2 right-2 p-1.5 rounded-lg bg-white/90 dark:bg-gray-800/90 border border-gray-200/80 dark:border-gray-700/80 text-gray-600 dark:text-gray-300 hover:scale-105 hover:shadow-md transition-all"
                                     >
-                                        <span className={`material-symbols-outlined text-lg ${isWishlisted(product.id) ? 'text-red-500' : ''}`}>
-                                            {isWishlisted(product.id) ? 'favorite' : 'favorite_border'}
+                                        <span
+                                            className={`material-symbols-outlined text-lg ${isWishlisted(product.id) ? 'text-red-500' : 'text-gray-500'}`}
+                                            style={{ fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24" }}
+                                        >
+                                            favorite
                                         </span>
                                     </button>
                                 </div>
