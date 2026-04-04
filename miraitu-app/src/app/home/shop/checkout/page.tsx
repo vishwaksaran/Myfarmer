@@ -50,6 +50,18 @@ interface RazorpayCheckoutOptions {
     handler: (response: RazorpaySuccessPayload) => Promise<void>;
 }
 
+interface CheckoutInputFieldProps {
+    label: string;
+    field: string;
+    placeholder: string;
+    value: string;
+    error?: string;
+    type?: string;
+    required?: boolean;
+    maxLength?: number;
+    onChange: (field: string, value: string, type: string) => void;
+}
+
 declare global {
     interface Window {
         Razorpay?: new (options: RazorpayCheckoutOptions) => RazorpayCheckoutInstance;
@@ -66,6 +78,35 @@ function createCheckoutAttemptId(): string {
         const v = c === 'x' ? r : (r & 0x3) | 0x8;
         return v.toString(16);
     });
+}
+
+function CheckoutInputField({
+    label,
+    field,
+    placeholder,
+    value,
+    error,
+    type = 'text',
+    required = true,
+    maxLength,
+    onChange,
+}: CheckoutInputFieldProps) {
+    return (
+        <div>
+            <label className="text-[10px] md:text-xs font-bold block mb-1 md:mb-1.5 text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                {label} {required && <span className="text-red-500">*</span>}
+            </label>
+            <input
+                className={`w-full rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 px-3 md:px-4 py-2.5 md:py-3 font-medium text-sm text-gray-800 dark:text-gray-200 placeholder:text-gray-400 outline-none transition-all ${error ? 'border-red-400' : 'border-transparent focus:border-primary'}`}
+                placeholder={placeholder}
+                type={type}
+                value={value}
+                maxLength={maxLength}
+                onChange={(e) => onChange(field, e.target.value, type)}
+            />
+            {error && <p className="text-[10px] text-red-500 font-bold mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-[10px]">error</span>{error}</p>}
+        </div>
+    );
 }
 
 export default function CheckoutPage() {
@@ -145,8 +186,9 @@ export default function CheckoutPage() {
         };
     }, []);
 
-    const updateField = (field: string, value: string) => {
-        setForm(prev => ({ ...prev, [field]: value }));
+    const updateField = (field: string, value: string, type: string = 'text') => {
+        const nextValue = type === 'tel' ? value.replace(/\D/g, '') : value;
+        setForm(prev => ({ ...prev, [field]: nextValue }));
         if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
     };
 
@@ -270,23 +312,6 @@ export default function CheckoutPage() {
         }
     };
 
-    const InputField = ({ label, field, placeholder, type = 'text', required = true, maxLength }: { label: string; field: string; placeholder: string; type?: string; required?: boolean; maxLength?: number }) => (
-        <div>
-            <label className="text-[10px] md:text-xs font-bold block mb-1 md:mb-1.5 text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                {label} {required && <span className="text-red-500">*</span>}
-            </label>
-            <input
-                className={`w-full rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 px-3 md:px-4 py-2.5 md:py-3 font-medium text-sm text-gray-800 dark:text-gray-200 placeholder:text-gray-400 outline-none transition-all ${errors[field] ? 'border-red-400' : 'border-transparent focus:border-primary'}`}
-                placeholder={placeholder}
-                type={type}
-                value={(form as any)[field]}
-                maxLength={maxLength}
-                onChange={(e) => updateField(field, type === 'tel' ? e.target.value.replace(/\D/g, '') : e.target.value)}
-            />
-            {errors[field] && <p className="text-[10px] text-red-500 font-bold mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-[10px]">error</span>{errors[field]}</p>}
-        </div>
-    );
-
     if (loading || !user) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-[#0d110d] flex items-center justify-center">
@@ -405,19 +430,19 @@ export default function CheckoutPage() {
 
                                 <div className="space-y-3 md:space-y-4">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                                        <InputField label="Full Name" field="fullName" placeholder="Your full name" />
-                                        <InputField label="Phone Number" field="phone" placeholder="10-digit number" type="tel" maxLength={10} />
+                                        <CheckoutInputField label="Full Name" field="fullName" placeholder="Your full name" value={form.fullName} error={errors.fullName} onChange={updateField} />
+                                        <CheckoutInputField label="Phone Number" field="phone" placeholder="10-digit number" value={form.phone} error={errors.phone} type="tel" maxLength={10} onChange={updateField} />
                                     </div>
-                                    <InputField label="Email" field="email" placeholder="email@example.com (optional)" type="email" required={false} />
-                                    <InputField label="Full Address" field="address" placeholder="House no., street, area" />
+                                    <CheckoutInputField label="Email" field="email" placeholder="email@example.com (optional)" value={form.email} error={errors.email} type="email" required={false} onChange={updateField} />
+                                    <CheckoutInputField label="Full Address" field="address" placeholder="House no., street, area" value={form.address} error={errors.address} onChange={updateField} />
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
-                                        <InputField label="City / District" field="city" placeholder="City" />
-                                        <InputField label="State" field="state" placeholder="State" />
+                                        <CheckoutInputField label="City / District" field="city" placeholder="City" value={form.city} error={errors.city} onChange={updateField} />
+                                        <CheckoutInputField label="State" field="state" placeholder="State" value={form.state} error={errors.state} onChange={updateField} />
                                         <div className="col-span-2 sm:col-span-1">
-                                            <InputField label="Pincode" field="pincode" placeholder="6-digit pincode" type="tel" maxLength={6} />
+                                            <CheckoutInputField label="Pincode" field="pincode" placeholder="6-digit pincode" value={form.pincode} error={errors.pincode} type="tel" maxLength={6} onChange={updateField} />
                                         </div>
                                     </div>
-                                    <InputField label="Landmark" field="landmark" placeholder="Near temple, school etc. (optional)" required={false} />
+                                    <CheckoutInputField label="Landmark" field="landmark" placeholder="Near temple, school etc. (optional)" value={form.landmark} error={errors.landmark} required={false} onChange={updateField} />
                                 </div>
                             </div>
 
