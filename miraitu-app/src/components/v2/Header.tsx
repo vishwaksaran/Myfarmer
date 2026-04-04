@@ -253,7 +253,7 @@ export default function Header() {
     const isActive = (path: string) => pathname.startsWith(path);
 
     // Check if any "more" item is active
-    const isMoreActive = moreNavItems.some(item => isActive(item.path));
+    const isMoreActive = moreNavItems.some(item => isActive(item.path)) || isActive('/home/shop/wishlist');
 
     return (
         <>
@@ -369,6 +369,22 @@ export default function Header() {
                                                     {t(item.tKey)}
                                                 </Link>
                                             ))}
+                                            <Link
+                                                href="/home/shop/wishlist"
+                                                onClick={() => setIsMoreMenuOpen(false)}
+                                                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${isActive('/home/shop/wishlist')
+                                                    ? 'text-primary bg-primary/5'
+                                                    : 'text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-primary/5'
+                                                    }`}
+                                            >
+                                                <span className={`material-symbols-outlined text-lg ${isActive('/home/shop/wishlist') ? 'text-primary' : 'text-gray-400'}`}>favorite</span>
+                                                <span className="flex-1">Wishlist</span>
+                                                {wishlistCount > 0 && (
+                                                    <span className="inline-flex min-w-5 h-5 px-1.5 items-center justify-center rounded-full bg-pink-500 text-white text-[10px] font-black">
+                                                        {wishlistCount}
+                                                    </span>
+                                                )}
+                                            </Link>
                                         </div>
 
                                         {/* Become a Dealer/Seller Banner */}
@@ -413,16 +429,6 @@ export default function Header() {
                                 <span className="material-symbols-outlined text-primary text-lg">translate</span>
                                 <span className="hidden lg:inline">{allLanguages.find(lang => lang.code === selectedLang)?.name || 'English'}</span>
                             </button>
-
-                            {/* Wishlist Button */}
-                            <Link href="/home/shop/wishlist" className="relative flex items-center justify-center size-9 sm:size-10 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-black/5 dark:border-white/10 hover:bg-primary/5 hover:text-primary transition-colors skeuo-card">
-                                <span className="material-symbols-outlined text-xl">favorite</span>
-                                {wishlistCount > 0 && (
-                                    <span className="absolute -top-1.5 -right-1.5 size-5 flex items-center justify-center rounded-full bg-pink-500 text-[10px] font-bold text-white shadow-sm animate-in zoom-in duration-300">
-                                        {wishlistCount}
-                                    </span>
-                                )}
-                            </Link>
 
                             {/* Cart Button */}
                             <Link href="/home/shop/checkout" className="relative flex items-center justify-center size-9 sm:size-10 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-black/5 dark:border-white/10 hover:bg-primary/5 hover:text-primary transition-colors skeuo-card">
@@ -522,6 +528,27 @@ export default function Header() {
                                 {t(item.tKey)}
                             </Link>
                         ))}
+                    </div>
+
+                    <div className="mt-2 grid grid-cols-1 gap-2">
+                        <Link
+                            href="/home/shop/wishlist"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${isActive('/home/shop/wishlist')
+                                ? 'text-primary bg-primary/5'
+                                : 'text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-primary/5'
+                                }`}
+                        >
+                            <span className="flex items-center gap-2.5">
+                                <span className={`material-symbols-outlined text-lg ${isActive('/home/shop/wishlist') ? 'text-primary' : 'text-gray-400'}`}>favorite</span>
+                                Wishlist
+                            </span>
+                            {wishlistCount > 0 && (
+                                <span className="inline-flex min-w-5 h-5 px-1.5 items-center justify-center rounded-full bg-pink-500 text-white text-[10px] font-black">
+                                    {wishlistCount}
+                                </span>
+                            )}
+                        </Link>
                     </div>
 
                     {/* Mobile: Become a Dealer/Seller Banner */}
