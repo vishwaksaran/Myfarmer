@@ -200,17 +200,10 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                                         <p className="text-xl font-bold text-primary">{item.price}</p>
                                                     </>
                                                 ) : user ? (
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedItem(item);
-                                                            setShowQuoteModal(true);
-                                                            setSubmitSuccess(false);
-                                                        }}
-                                                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-dark transition-colors"
-                                                    >
+                                                    <p className="flex items-center gap-1.5 text-sm font-semibold text-primary">
                                                         <span className="material-symbols-outlined text-sm">currency_rupee</span>
-                                                        Check Price
-                                                    </button>
+                                                        Price on request
+                                                    </p>
                                                 ) : (
                                                     <Link href="/user-login" className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                                                         <span className="material-symbols-outlined text-sm">lock</span>
@@ -354,17 +347,10 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                                     <p className="text-lg md:text-xl font-bold text-primary leading-tight">{item.price}</p>
                                                 </>
                                             ) : user ? (
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedItem(item);
-                                                        setShowQuoteModal(true);
-                                                        setSubmitSuccess(false);
-                                                    }}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white text-xs md:text-sm font-semibold hover:bg-primary-dark transition-colors"
-                                                >
+                                                <p className="flex items-center gap-1.5 text-xs md:text-sm font-semibold text-primary">
                                                     <span className="material-symbols-outlined text-sm">currency_rupee</span>
-                                                    Check Price
-                                                </button>
+                                                    Price on request
+                                                </p>
                                             ) : (
                                                 <Link href="/user-login" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs md:text-sm font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                                                     <span className="material-symbols-outlined text-sm">lock</span>
@@ -442,16 +428,10 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                     {user && revealedPrices.has(selectedItem.id) ? (
                                         <p className="text-xl font-bold text-primary">{selectedItem.price}</p>
                                     ) : user ? (
-                                        <button
-                                            onClick={() => {
-                                                setShowQuoteModal(true);
-                                                setSubmitSuccess(false);
-                                            }}
-                                            className="mt-1 flex items-center gap-1 text-sm font-semibold text-primary hover:text-primary-dark transition-colors"
-                                        >
+                                        <p className="mt-1 flex items-center gap-1 text-sm font-semibold text-primary">
                                             <span className="material-symbols-outlined text-sm">currency_rupee</span>
-                                            Check Price
-                                        </button>
+                                            Price on request
+                                        </p>
                                     ) : (
                                         <Link href="/user-login" className="mt-1 flex items-center gap-1 text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors">
                                             <span className="material-symbols-outlined text-sm">lock</span>
