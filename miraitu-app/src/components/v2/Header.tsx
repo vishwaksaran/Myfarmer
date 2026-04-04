@@ -530,27 +530,6 @@ export default function Header() {
                         ))}
                     </div>
 
-                    <div className="mt-2 grid grid-cols-1 gap-2">
-                        <Link
-                            href="/home/shop/wishlist"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${isActive('/home/shop/wishlist')
-                                ? 'text-primary bg-primary/5'
-                                : 'text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-primary/5'
-                                }`}
-                        >
-                            <span className="flex items-center gap-2.5">
-                                <span className={`material-symbols-outlined text-lg ${isActive('/home/shop/wishlist') ? 'text-primary' : 'text-gray-400'}`}>favorite</span>
-                                Wishlist
-                            </span>
-                            {wishlistCount > 0 && (
-                                <span className="inline-flex min-w-5 h-5 px-1.5 items-center justify-center rounded-full bg-pink-500 text-white text-[10px] font-black">
-                                    {wishlistCount}
-                                </span>
-                            )}
-                        </Link>
-                    </div>
-
                     {/* Mobile: Become a Dealer/Seller Banner */}
                     <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/10">
                         <Link
