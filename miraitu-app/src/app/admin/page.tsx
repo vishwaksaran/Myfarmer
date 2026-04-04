@@ -3,18 +3,21 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { fetchAllBookings, fetchAllUsers, type BookingRecord, type UserRecord } from '@/app/actions/bookings';
+import { fetchAdminShopOrders, type AdminShopOrderRecord } from '@/app/actions/shop-orders';
 
 export default function AdminDashboard() {
     const router = useRouter();
     const [bookings, setBookings] = useState<BookingRecord[]>([]);
     const [users, setUsers] = useState<UserRecord[]>([]);
+    const [shopOrders, setShopOrders] = useState<AdminShopOrderRecord[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function load() {
-            const [b, u] = await Promise.all([fetchAllBookings(), fetchAllUsers()]);
+            const [b, u, s] = await Promise.all([fetchAllBookings(), fetchAllUsers(), fetchAdminShopOrders()]);
             setBookings(b.data);
             setUsers(u.data);
+            setShopOrders(s.data);
             setLoading(false);
         }
         load();
@@ -34,6 +37,7 @@ export default function AdminDashboard() {
         const today = new Date();
         return d.toDateString() === today.toDateString();
     }).length;
+    const paidShopOrders = shopOrders.filter(o => o.payment_status === 'paid').length;
 
     const moduleBreakdown = bookings.reduce((acc, b) => {
         acc[b.module] = (acc[b.module] || 0) + 1;
@@ -45,6 +49,7 @@ export default function AdminDashboard() {
         { label: 'Pending', value: pendingCount, icon: 'pending_actions', color: 'bg-amber-500', href: '/admin/bookings?status=pending' },
         { label: 'Today', value: todayCount, icon: 'today', color: 'bg-green-500', href: '/admin/bookings?filter=today' },
         { label: 'Total Users', value: users.length, icon: 'group', color: 'bg-purple-500', href: '/admin/users' },
+        { label: 'Paid Shop Orders', value: paidShopOrders, icon: 'payments', color: 'bg-emerald-500', href: '/admin/shop-orders' },
     ];
 
     return (
@@ -52,7 +57,7 @@ export default function AdminDashboard() {
             <h1 className="text-2xl md:text-3xl font-black text-gray-900 mb-6">Dashboard</h1>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                 {stats.map((stat) => (
                     <div
                         key={stat.label}

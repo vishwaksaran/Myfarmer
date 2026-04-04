@@ -2,9 +2,11 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 
 import { shopCategories, featuredProducts } from './data';
 
@@ -47,6 +49,8 @@ const POPULAR_CITIES = [
 ];
 
 export default function ShopPage() {
+    const router = useRouter();
+    const { user, loading } = useAuth();
     const { quantities, addItem, removeItem } = useCart();
     const [locationInput, setLocationInput] = useState('');
     const [selectedLocation, setSelectedLocation] = useState('');
@@ -67,11 +71,26 @@ export default function ShopPage() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    useEffect(() => {
+        if (loading) return;
+        if (!user) {
+            router.replace('/user-login?redirect=/home/shop');
+        }
+    }, [loading, user, router]);
+
     const handleSelectCity = (city: string) => {
         setSelectedLocation(city);
         setLocationInput(city);
         setShowLocationDropdown(false);
     };
+
+    if (loading || !user) {
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-[#0d110d] flex items-center justify-center">
+                <span className="material-symbols-outlined text-4xl text-primary animate-spin">progress_activity</span>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-[#0d110d]">

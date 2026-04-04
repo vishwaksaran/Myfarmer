@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import MiraituLogo from '@/components/MiraituLogo';
+import { fetchAdminUnreadPaymentNotificationsCount } from '@/app/actions/shop-orders';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const { user, loading, fetchProfile } = useAuth();
     const router = useRouter();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+    const [unreadPaymentAlerts, setUnreadPaymentAlerts] = useState(0);
 
     useEffect(() => {
         if (loading) return;
@@ -31,6 +33,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         });
     }, [user, loading, router, fetchProfile]);
 
+    useEffect(() => {
+        if (!isAdmin) return;
+
+        let active = true;
+        fetchAdminUnreadPaymentNotificationsCount().then((result) => {
+            if (!active) return;
+            if (!result.error) {
+                setUnreadPaymentAlerts(result.count);
+            }
+        });
+
+        return () => {
+            active = false;
+        };
+    }, [isAdmin]);
+
     if (loading || isAdmin === null) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -43,6 +61,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     const navItems = [
         { href: '/admin', icon: 'dashboard', label: 'Dashboard' },
+        { href: '/admin/shop-orders', icon: 'orders', label: 'Shop Orders', badge: unreadPaymentAlerts > 0 ? String(unreadPaymentAlerts) : '' },
         { href: '/admin/bookings', icon: 'assignment', label: 'Bookings' },
         { href: '/admin/users', icon: 'group', label: 'Users' },
         { href: '/admin/crm/members', icon: 'badge', label: 'CRM Members' },
@@ -76,7 +95,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-gray-600 hover:bg-green-50 hover:text-green-700 transition-colors"
                         >
                             <span className="material-symbols-outlined text-xl">{item.icon}</span>
-                            {item.label}
+                            <span className="flex-1">{item.label}</span>
+                            {item.badge ? (
+                                <span className="inline-flex min-w-5 h-5 px-1.5 items-center justify-center rounded-full bg-red-100 text-red-700 text-[10px] font-black">
+                                    {item.badge}
+                                </span>
+                            ) : null}
                         </Link>
                     ))}
                 </nav>

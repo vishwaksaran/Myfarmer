@@ -49,9 +49,9 @@ export async function proxy(request: NextRequest) {
 
     const requestPathname = request.nextUrl.pathname;
 
-    // Only run Supabase auth on routes that actually need it (/admin/*)
-    // All other routes skip the network roundtrip entirely for faster response.
-    const needsAuth = requestPathname.startsWith('/admin');
+    // Only run Supabase auth on routes that actually need it.
+    // We protect both admin routes and shop purchase routes.
+    const needsAuth = requestPathname.startsWith('/admin') || requestPathname.startsWith('/home/shop');
     if (!needsAuth) {
         return supabaseResponse;
     }
@@ -108,6 +108,16 @@ export async function proxy(request: NextRequest) {
             const homeUrl = new URL('/home', request.url);
             homeUrl.searchParams.set('error', 'unauthorized');
             return NextResponse.redirect(homeUrl);
+        }
+    }
+
+    // ── Shop route protection ───────────────────────────────────────
+    // No guest shopping: force login for /home/shop and all nested routes.
+    if (requestPathname.startsWith('/home/shop')) {
+        if (!user) {
+            const loginUrl = new URL('/user-login', request.url);
+            loginUrl.searchParams.set('redirect', requestPathname);
+            return NextResponse.redirect(loginUrl);
         }
     }
 

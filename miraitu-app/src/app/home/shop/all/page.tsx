@@ -1,16 +1,20 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { shopCategories } from '../data';
 import { categoryProducts, categoryMeta } from '../categoryData';
 
 type SortOption = 'popular' | 'price-low' | 'price-high' | 'rating';
 
 export default function AllProductsPage() {
+    const router = useRouter();
+    const { user, loading } = useAuth();
     const { quantities, addItem, removeItem } = useCart();
     const [sortBy, setSortBy] = useState<SortOption>('popular');
     const [searchTerm, setSearchTerm] = useState('');
@@ -36,6 +40,21 @@ export default function AllProductsPage() {
             default: return [...list].sort((a, b) => b.reviews - a.reviews);
         }
     }, [allProducts, searchTerm, sortBy, selectedCategory]);
+
+    useEffect(() => {
+        if (loading) return;
+        if (!user) {
+            router.replace('/user-login?redirect=/home/shop/all');
+        }
+    }, [loading, user, router]);
+
+    if (loading || !user) {
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-[#0d110d] flex items-center justify-center">
+                <span className="material-symbols-outlined text-4xl text-primary animate-spin">progress_activity</span>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-[#0d110d]">
