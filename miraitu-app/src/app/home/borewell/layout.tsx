@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import Header from '@/components/v2/Header';
+import '../globals-v2.css';
 
 export const metadata: Metadata = {
     title: 'Borewell Services – Professional Drilling & Pump Installation',
@@ -18,5 +20,12 @@ export default function BorewellLayout({
 }: {
     children: React.ReactNode;
 }) {
-    return <>{children}</>;
+    return (
+        <div className="min-h-screen bg-[#f8f9f7] dark:bg-[#161d15]">
+            <Header />
+            <main className="relative z-10">
+                {children}
+            </main>
+        </div>
+    );
 }

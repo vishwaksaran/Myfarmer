@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import MiraituLogo from '@/components/MiraituLogo';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 
@@ -471,15 +470,9 @@ export default function RentMachineryPage() {
             )}
 
             {/* ── Header ── */}
-            <header className={`sticky top-0 z-50 w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md transition-transform duration-300 ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+            <header className="w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
                 <div className="mx-auto max-w-[1280px] px-4 md:px-6 py-3 md:py-4">
-                    <div className="flex items-center gap-2">
-                        <a href="/home" className="flex items-center gap-2">
-                            <MiraituLogo size={36} />
-                            <h2 className="text-lg md:text-xl font-bold tracking-tight text-[#121811] dark:text-[#f9fbf9]">Miraitu</h2>
-                        </a>
-                    </div>
-                    <nav className="flex items-center gap-1 mt-1.5 text-xs md:text-sm">
+                    <nav className="flex items-center gap-1 text-xs md:text-sm">
                         <a href="/home" className="text-gray-500 hover:text-primary transition-colors font-medium">Home</a>
                         <span className="material-symbols-outlined text-gray-400 text-xs md:text-sm">chevron_right</span>
                         <a href="/home/services" className="text-gray-500 hover:text-primary transition-colors font-medium">Services</a>
