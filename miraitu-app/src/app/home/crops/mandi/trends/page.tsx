@@ -316,9 +316,11 @@ export default function PriceTrendsPage() {
                                     />
                                     <Tooltip
                                         contentStyle={{ borderRadius: 12, border: '1px solid #e5e7eb', fontSize: 12 }}
-                                        formatter={(value: number, name: string) => {
+                                        formatter={(value, name) => {
+                                            const v = Number(value) || 0;
+                                            const n = String(name);
                                             const labels: Record<string, string> = { price: 'Avg Price', min: 'Min', max: 'Max' };
-                                            return [`₹${value.toLocaleString('en-IN')}/qtl`, labels[name] || name];
+                                            return [`₹${v.toLocaleString('en-IN')}/qtl`, labels[n] || n];
                                         }}
                                     />
                                     <Area
@@ -349,9 +351,11 @@ export default function PriceTrendsPage() {
                                     />
                                     <Tooltip
                                         contentStyle={{ borderRadius: 12, border: '1px solid #e5e7eb', fontSize: 12 }}
-                                        formatter={(value: number, name: string) => {
+                                        formatter={(value, name) => {
+                                            const v = Number(value) || 0;
+                                            const n = String(name);
                                             const labels: Record<string, string> = { price: 'Avg Price', min: 'Min', max: 'Max' };
-                                            return [`₹${value.toLocaleString('en-IN')}/qtl`, labels[name] || name];
+                                            return [`₹${v.toLocaleString('en-IN')}/qtl`, labels[n] || n];
                                         }}
                                     />
                                     <Bar dataKey="price" fill="#16a34a" radius={[4, 4, 0, 0]} />
