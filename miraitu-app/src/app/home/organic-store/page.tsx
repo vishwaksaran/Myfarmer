@@ -171,8 +171,8 @@ export default function OrganicStorePage() {
                                         onClick={() => addToCart(product.id)}
                                         disabled={isInCart(product.id)}
                                         className={`w-full rounded-xl py-4 font-black text-lg transition-all ${isInCart(product.id)
-                                                ? 'bg-green-100 text-green-700 cursor-not-allowed'
-                                                : 'glossy-button text-white hover:brightness-110'
+                                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                                            : 'glossy-button text-white hover:brightness-110'
                                             }`}
                                     >
                                         {isInCart(product.id) ? '✓ ADDED TO CART' : 'ADD TO CART'}
@@ -210,8 +210,8 @@ export default function OrganicStorePage() {
                                         onClick={() => addToCart(oil.id)}
                                         disabled={isInCart(oil.id)}
                                         className={`w-full rounded-xl py-3 font-bold transition-all ${isInCart(oil.id)
-                                                ? 'bg-green-100 text-green-700 cursor-not-allowed'
-                                                : 'bg-primary/10 text-primary hover:bg-primary/20'
+                                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                                            : 'bg-primary/10 text-primary hover:bg-primary/20'
                                             }`}
                                     >
                                         {isInCart(oil.id) ? '✓ IN CART' : 'Add to Cart'}

@@ -155,7 +155,7 @@ export default function BorewellServicesPage() {
                                     <input
                                         type="text"
                                         value={formData.name}
-                                        onChange={(e) => { setFormData({ ...formData, name: e.target.value }); setFormErrors(prev => { const {name, ...r} = prev; return r; }); }}
+                                        onChange={(e) => { setFormData({ ...formData, name: e.target.value }); setFormErrors(prev => { const { name, ...r } = prev; return r; }); }}
                                         className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.name ? 'ring-2 ring-red-400' : ''}`}
                                         placeholder="Enter your name"
                                     />
@@ -166,7 +166,7 @@ export default function BorewellServicesPage() {
                                     <input
                                         type="tel"
                                         value={formData.phone}
-                                        onChange={(e) => { setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const {phone, ...r} = prev; return r; }); }}
+                                        onChange={(e) => { setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const { phone, ...r } = prev; return r; }); }}
                                         className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.phone ? 'ring-2 ring-red-400' : ''}`}
                                         placeholder="10-digit number"
                                         maxLength={10}
@@ -178,7 +178,7 @@ export default function BorewellServicesPage() {
                                     <input
                                         type="text"
                                         value={formData.location}
-                                        onChange={(e) => { setFormData({ ...formData, location: e.target.value }); setFormErrors(prev => { const {location, ...r} = prev; return r; }); }}
+                                        onChange={(e) => { setFormData({ ...formData, location: e.target.value }); setFormErrors(prev => { const { location, ...r } = prev; return r; }); }}
                                         className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.location ? 'ring-2 ring-red-400' : ''}`}
                                         placeholder="Village, District"
                                     />
@@ -193,7 +193,7 @@ export default function BorewellServicesPage() {
                                         className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none"
                                     />
                                 </div>
-                                <button 
+                                <button
                                     onClick={handleBookConsultation}
                                     disabled={!formData.name || !formData.phone || !formData.location || !formData.preferredDate}
                                     className="vibrant-gradient w-full rounded-lg md:rounded-xl py-3 md:py-4 text-white font-black text-base md:text-lg shadow-2xl shadow-primary/30 active:scale-[0.98] transition-all mt-4 md:mt-6 disabled:opacity-50 disabled:cursor-not-allowed"

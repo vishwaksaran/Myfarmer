@@ -157,8 +157,8 @@ export default function ProtectionServicesPage() {
                             <div
                                 key={sheet.id}
                                 className={`skeuo-card rounded-2xl p-6 border-4 transition-all ${sheet.popular
-                                        ? 'border-primary/30 lg:scale-105'
-                                        : 'border-white'
+                                    ? 'border-primary/30 lg:scale-105'
+                                    : 'border-white'
                                     }`}
                             >
                                 {sheet.popular && (
@@ -251,10 +251,10 @@ export default function ProtectionServicesPage() {
                                 <button
                                     onClick={() => setSelectedSheet(sheet.id)}
                                     className={`w-full rounded-xl py-4 font-black text-lg transition-all ${selectedSheet === sheet.id
-                                            ? 'bg-gradient-to-r from-cyan-600 to-teal-700 text-white shadow-2xl'
-                                            : sheet.premium
-                                                ? 'glossy-button text-white'
-                                                : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                                        ? 'bg-gradient-to-r from-cyan-600 to-teal-700 text-white shadow-2xl'
+                                        : sheet.premium
+                                            ? 'glossy-button text-white'
+                                            : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                                         }`}
                                 >
                                     {selectedSheet === sheet.id ? '✓ SELECTED' : 'REQUEST QUOTE'}
@@ -284,7 +284,7 @@ export default function ProtectionServicesPage() {
                                         <input
                                             type="text"
                                             value={formData.full_name}
-                                            onChange={(e) => { setFormData({ ...formData, full_name: e.target.value }); setFormErrors(prev => { const {full_name, ...r} = prev; return r; }); }}
+                                            onChange={(e) => { setFormData({ ...formData, full_name: e.target.value }); setFormErrors(prev => { const { full_name, ...r } = prev; return r; }); }}
                                             className={`w-full skeuo-inset rounded-xl px-4 py-3 font-bold focus:ring-0 border-none appearance-none ${formErrors.full_name ? 'ring-2 ring-red-400' : ''}`}
                                             placeholder="Enter your name"
                                         />
@@ -295,7 +295,7 @@ export default function ProtectionServicesPage() {
                                         <input
                                             type="tel"
                                             value={formData.phone}
-                                            onChange={(e) => { setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const {phone, ...r} = prev; return r; }); }}
+                                            onChange={(e) => { setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const { phone, ...r } = prev; return r; }); }}
                                             className={`w-full skeuo-inset rounded-xl px-4 py-3 font-bold focus:ring-0 border-none appearance-none ${formErrors.phone ? 'ring-2 ring-red-400' : ''}`}
                                             placeholder="10-digit number"
                                             maxLength={10}
@@ -308,7 +308,7 @@ export default function ProtectionServicesPage() {
                                     <input
                                         type="text"
                                         value={formData.location}
-                                        onChange={(e) => { setFormData({ ...formData, location: e.target.value }); setFormErrors(prev => { const {location, ...r} = prev; return r; }); }}
+                                        onChange={(e) => { setFormData({ ...formData, location: e.target.value }); setFormErrors(prev => { const { location, ...r } = prev; return r; }); }}
                                         className={`w-full skeuo-inset rounded-xl px-4 py-3 font-bold focus:ring-0 border-none appearance-none ${formErrors.location ? 'ring-2 ring-red-400' : ''}`}
                                         placeholder="Village, District, State"
                                     />
@@ -342,7 +342,7 @@ export default function ProtectionServicesPage() {
                                         {pondingSheets.find(s => s.id === selectedSheet)?.name}
                                     </p>
                                 </div>
-                                <button 
+                                <button
                                     onClick={handleGetQuotation}
                                     disabled={!formData.full_name || !formData.phone || !formData.location}
                                     className="vibrant-gradient w-full rounded-xl py-5 text-white font-black text-xl shadow-2xl shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
