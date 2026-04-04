@@ -20,6 +20,11 @@ function isValidUuid(value: string): boolean {
 
 export async function POST(request: NextRequest) {
     try {
+        const paymentMode = String(process.env.NEXT_PUBLIC_RAZORPAY_MODE || 'test').toLowerCase();
+        if (paymentMode !== 'live') {
+            return NextResponse.json({ error: 'Payment verification is disabled in test mode.' }, { status: 403 });
+        }
+
         const keyId = process.env.RAZORPAY_KEY_ID;
         const keySecret = process.env.RAZORPAY_KEY_SECRET;
 

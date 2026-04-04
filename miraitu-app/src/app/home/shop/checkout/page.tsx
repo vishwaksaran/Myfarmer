@@ -129,6 +129,8 @@ export default function CheckoutPage() {
     const [paymentError, setPaymentError] = useState('');
     const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
+    const [testPaymentAttempted, setTestPaymentAttempted] = useState(false);
+    const [testPaymentReference, setTestPaymentReference] = useState('');
     const [orderNumber, setOrderNumber] = useState('');
     const [orderStatus, setOrderStatus] = useState('confirmed');
 
@@ -247,7 +249,7 @@ export default function CheckoutPage() {
                 amount: Number(createOrderPayload.amount),
                 currency: String(createOrderPayload.currency || 'INR'),
                 name: 'Miraitu',
-                description: `Order ${createOrderPayload.orderNumber}`,
+                description: isTestMode ? 'Test Payment Attempt' : `Order ${createOrderPayload.orderNumber}`,
                 order_id: String(createOrderPayload.razorpayOrderId),
                 prefill: {
                     name: form.fullName,
@@ -255,7 +257,8 @@ export default function CheckoutPage() {
                     email: form.email,
                 },
                 notes: {
-                    app_order_id: String(createOrderPayload.appOrderId),
+                    mode: isTestMode ? 'test' : 'live',
+                    app_order_id: createOrderPayload.appOrderId ? String(createOrderPayload.appOrderId) : '',
                     order_number: String(createOrderPayload.orderNumber),
                 },
                 theme: {
@@ -265,6 +268,14 @@ export default function CheckoutPage() {
                     ondismiss: () => setPlacingOrder(false),
                 },
                 handler: async (response) => {
+                    if (isTestMode) {
+                        setTestPaymentReference(String(response.razorpay_payment_id || createOrderPayload.razorpayOrderId || 'TEST_ATTEMPT'));
+                        setTestPaymentAttempted(true);
+                        setTimeout(clearCart, 300);
+                        setPlacingOrder(false);
+                        return;
+                    }
+
                     try {
                         const verifyRes = await fetch('/api/razorpay/verify-payment', {
                             method: 'POST',
@@ -316,6 +327,47 @@ export default function CheckoutPage() {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-[#0d110d] flex items-center justify-center">
                 <span className="material-symbols-outlined text-4xl text-primary animate-spin">progress_activity</span>
+            </div>
+        );
+    }
+
+    if (testPaymentAttempted) {
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-[#0d110d]">
+                <Header />
+                <main className="py-10 md:py-20">
+                    <div className="mx-auto max-w-lg px-4 md:px-6">
+                        <div className="bg-white dark:bg-gray-900 rounded-2xl md:rounded-[2rem] p-6 md:p-10 shadow-xl border border-amber-200 dark:border-amber-700">
+                            <div className="text-center mb-6">
+                                <div className="h-20 w-20 md:h-24 md:w-24 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-xl shadow-amber-300/30">
+                                    <span className="material-symbols-outlined text-white text-4xl md:text-5xl">science</span>
+                                </div>
+                                <h1 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">Thanks For Testing Payment</h1>
+                                <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-1">
+                                    Your payment attempt was captured in Test Mode.
+                                </p>
+                                <p className="text-xs md:text-sm text-amber-700 font-semibold mb-2">
+                                    No real amount is debited/credited in test mode.
+                                </p>
+                                <p className="text-xs md:text-sm text-gray-400">Reference: {testPaymentReference}</p>
+                            </div>
+
+                            <div className="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 px-4 py-3 text-xs text-amber-800 dark:text-amber-200 mb-6 leading-relaxed">
+                                This test attempt is intentionally not stored as a real order. It will not appear in My Orders or admin order workflow.
+                            </div>
+
+                            <div className="flex gap-3">
+                                <Link href="/home/shop" className="flex-1 py-2.5 md:py-3 rounded-xl bg-primary text-white font-bold text-sm md:text-base text-center hover:brightness-110 transition-all">
+                                    Back To Shop
+                                </Link>
+                                <Link href="/home/shop/checkout" className="flex-1 py-2.5 md:py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-sm md:text-base text-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">
+                                    Try Again
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                <Footer />
             </div>
         );
     }

@@ -23,6 +23,10 @@ interface CreateOrderBody {
     shippingAddress: ShippingAddress;
 }
 
+function isLivePaymentMode(): boolean {
+    return String(process.env.NEXT_PUBLIC_RAZORPAY_MODE || 'test').toLowerCase() === 'live';
+}
+
 function isValidUuid(value: string): boolean {
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
@@ -120,6 +124,34 @@ export async function POST(request: NextRequest) {
 
         const items = normalizeItems(body.items);
         const orderMath = calculateShopOrder(items);
+        const { keyId, client } = getRazorpayClient();
+
+        // Test mode behavior: create Razorpay test order only and skip all DB writes.
+        if (!isLivePaymentMode()) {
+            const testOrderNumber = `TEST${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 90 + 10)}`;
+
+            const razorpayOrder = await client.orders.create({
+                amount: orderMath.totalPaise,
+                currency: 'INR',
+                receipt: testOrderNumber,
+                notes: {
+                    mode: 'test',
+                    user_id: user.id,
+                    checkout_attempt_id: checkoutAttemptId,
+                },
+            });
+
+            return NextResponse.json({
+                testMode: true,
+                appOrderId: null,
+                orderNumber: testOrderNumber,
+                razorpayOrderId: razorpayOrder.id,
+                amount: razorpayOrder.amount,
+                currency: razorpayOrder.currency,
+                razorpayKeyId: keyId,
+                reused: false,
+            });
+        }
 
         const admin = createSupabaseAdminClient();
 
@@ -148,8 +180,6 @@ export async function POST(request: NextRequest) {
                 }
 
                 if (existingOrder.payment_status === 'payment_pending') {
-                    const { keyId } = getRazorpayClient();
-
                     return NextResponse.json({
                         appOrderId: existingOrder.id,
                         orderNumber: existingOrder.order_number,
@@ -206,8 +236,6 @@ export async function POST(request: NextRequest) {
             await admin.from('shop_orders').delete().eq('id', createdOrder.id);
             return NextResponse.json({ error: 'Failed to initialize order items.' }, { status: 500 });
         }
-
-        const { keyId, client } = getRazorpayClient();
 
         const razorpayOrder = await client.orders.create({
             amount: orderMath.totalPaise,

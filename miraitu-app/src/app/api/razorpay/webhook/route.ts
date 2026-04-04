@@ -228,6 +228,11 @@ async function markPaymentFailed(input: {
 
 export async function POST(request: NextRequest) {
     try {
+        const paymentMode = String(process.env.NEXT_PUBLIC_RAZORPAY_MODE || 'test').toLowerCase();
+        if (paymentMode !== 'live') {
+            return NextResponse.json({ ok: true, skipped: 'test_mode' });
+        }
+
         const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
 
         if (!webhookSecret) {
