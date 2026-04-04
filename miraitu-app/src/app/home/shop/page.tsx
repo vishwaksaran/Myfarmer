@@ -7,6 +7,7 @@ import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { useShopWishlist } from '@/lib/use-shop-wishlist';
 
 import { shopCategories, featuredProducts } from './data';
 
@@ -52,6 +53,7 @@ export default function ShopPage() {
     const router = useRouter();
     const { user, loading } = useAuth();
     const { quantities, addItem, removeItem } = useCart();
+    const { isWishlisted, toggleWishlist } = useShopWishlist();
     const [locationInput, setLocationInput] = useState('');
     const [selectedLocation, setSelectedLocation] = useState('');
     const [showLocationDropdown, setShowLocationDropdown] = useState(false);
@@ -328,9 +330,15 @@ export default function ShopPage() {
                                             </span>
                                         )}
                                         <button
-                                            className="absolute top-2 right-2 p-1.5 rounded-lg bg-white/80 dark:bg-gray-800/80 text-gray-600 dark:text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            type="button"
+                                            onClick={() => toggleWishlist(product.id)}
+                                            aria-label={isWishlisted(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                                            aria-pressed={isWishlisted(product.id)}
+                                            className="absolute top-2 right-2 p-1.5 rounded-lg bg-white/90 dark:bg-gray-800/90 border border-gray-200/80 dark:border-gray-700/80 text-gray-600 dark:text-gray-300 hover:scale-105 hover:shadow-md transition-all"
                                         >
-                                            <span className="material-symbols-outlined text-lg">favorite</span>
+                                            <span className={`material-symbols-outlined text-lg ${isWishlisted(product.id) ? 'text-red-500' : ''}`}>
+                                                {isWishlisted(product.id) ? 'favorite' : 'favorite_border'}
+                                            </span>
                                         </button>
                                     </div>
 
