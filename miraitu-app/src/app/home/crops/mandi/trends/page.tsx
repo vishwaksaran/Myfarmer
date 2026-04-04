@@ -463,28 +463,48 @@ export default function PriceTrendsPage() {
                     </div>
                 )}
 
-                {/* Analysis */}
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 border border-green-200 dark:border-green-800">
-                    <div className="flex items-start gap-4">
-                        <span className="material-symbols-outlined text-3xl text-primary">insights</span>
-                        <div>
-                            <h3 className="font-bold text-gray-900 dark:text-white mb-2">AI Price Forecast</h3>
-                            <p className="text-gray-600 dark:text-gray-300">
-                                Based on historical trends, government procurement, and market demand, <strong>{selectedCrop}</strong> prices
-                                {selectedState ? ` in ${selectedState}` : ' across India'} are expected to remain{' '}
-                                <span className="text-green-500 font-semibold">stable to slightly bullish</span> over the next 2 weeks.
-                                {!useFallback && currentPrice > 0 && (
-                                    <> Consider selling if you can get above {formatPrice(Math.round(currentPrice * 1.03))}.</>
-                                )}
-                                {useFallback && <> Consider selling if you can get above ₹2,500/qtl.</>}
-                            </p>
-                            <button className="mt-4 text-primary font-semibold hover:underline flex items-center gap-1">
-                                View detailed analysis
-                                <span className="material-symbols-outlined text-lg">arrow_forward</span>
-                            </button>
+                {/* Quick Insight — based on actual data */}
+                {hasData && (
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-4 sm:p-6 border border-green-200 dark:border-green-800">
+                        <div className="flex items-start gap-3 sm:gap-4">
+                            <span className="material-symbols-outlined text-2xl sm:text-3xl text-primary flex-shrink-0">insights</span>
+                            <div className="min-w-0">
+                                <h3 className="font-bold text-gray-900 dark:text-white mb-2 text-sm sm:text-base">Quick Insight</h3>
+                                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
+                                    {(() => {
+                                        const spread = highPrice - lowPrice;
+                                        const isBullish = currentPrice > avgPrice;
+                                        const isBearish = currentPrice < avgPrice * 0.95;
+                                        const volatility = avgPrice > 0 ? Math.round((spread / avgPrice) * 100) : 0;
+
+                                        if (isBullish) return (
+                                            <>
+                                                <strong>{selectedCrop}</strong>{selectedState ? ` in ${selectedState}` : ''} is trading{' '}
+                                                <span className="text-green-600 font-semibold">above average</span> at {formatPrice(currentPrice)} vs avg {formatPrice(avgPrice)}.
+                                                {volatility > 20 && <> High price spread ({volatility}%) — check multiple mandis before selling.</>}
+                                                {volatility <= 20 && <> Prices are relatively stable across markets.</>}
+                                            </>
+                                        );
+                                        if (isBearish) return (
+                                            <>
+                                                <strong>{selectedCrop}</strong>{selectedState ? ` in ${selectedState}` : ''} is trading{' '}
+                                                <span className="text-red-500 font-semibold">below average</span> at {formatPrice(currentPrice)} vs avg {formatPrice(avgPrice)}.
+                                                {' '}Consider holding if storage is available. Highest reported price is {formatPrice(highPrice)}.
+                                            </>
+                                        );
+                                        return (
+                                            <>
+                                                <strong>{selectedCrop}</strong>{selectedState ? ` in ${selectedState}` : ''} is trading{' '}
+                                                <span className="text-blue-500 font-semibold">near average</span> at {formatPrice(currentPrice)}.
+                                                {' '}Price range: {formatPrice(lowPrice)} – {formatPrice(highPrice)} across {displayData.length} records.
+                                            </>
+                                        );
+                                    })()}
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );
