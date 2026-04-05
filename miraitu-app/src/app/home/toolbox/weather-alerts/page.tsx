@@ -185,9 +185,7 @@ export default function WeatherAlertsPage() {
             const code = err instanceof Error ? err.message : 'UNAVAILABLE';
             if (code === 'PERMISSION_DENIED') {
                 markGeoPermissionDenied(true);
-                setError('Location permission denied. Enable location permission or type district, state.');
-            } else if (code === 'INSECURE_CONTEXT') {
-                setError('Current location works only on HTTPS or localhost. For LAN IP (192.168.*), use typed district/state.');
+                setError('Location permission denied. Enable location permission in browser settings or type district, state.');
             } else if (code === 'TIMEOUT') {
                 setError('Unable to get current location in time. Please try again or enter district, state.');
             } else {

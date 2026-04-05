@@ -19,6 +19,8 @@ interface NominatimAddress {
     town?: string;
     village?: string;
     hamlet?: string;
+    suburb?: string;
+    neighbourhood?: string;
     county?: string;
     state_district?: string;
     state?: string;
@@ -328,7 +330,8 @@ const geocodeLocation = async (candidates: string[]): Promise<GeocodeResult | nu
 };
 
 const reverseGeocode = async (latitude: number, longitude: number): Promise<string | null> => {
-    const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=14&addressdetails=1&lat=${latitude}&lon=${longitude}`;
+    // Use zoom=18 for street-level accuracy to get city/town/village
+    const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&addressdetails=1&lat=${latitude}&lon=${longitude}`;
 
     try {
         const response = await fetch(nominatimUrl, {
@@ -339,24 +342,26 @@ const reverseGeocode = async (latitude: number, longitude: number): Promise<stri
         if (response.ok) {
             const payload = (await response.json()) as NominatimReverseResponse;
             const address = payload.address || {};
-            const locality = address.city || address.town || address.village || address.hamlet || address.state_district || address.county;
+            const locality = address.city || address.town || address.village || address.hamlet || address.suburb || address.neighbourhood || address.state_district || address.county;
 
-            const label = buildLocationLabel([
-                locality,
-                address.state,
-                address.country,
-            ]);
+            if (locality) {
+                const label = buildLocationLabel([
+                    locality,
+                    address.state,
+                ]);
+                if (label) return label;
+            }
 
-            if (label) return label;
-
-            const fallback = String(payload.display_name || '')
+            // If still no locality, try parsing display_name for a meaningful place name
+            const displayParts = String(payload.display_name || '')
                 .split(',')
                 .map(part => part.trim())
-                .filter(Boolean)
-                .slice(0, 3)
-                .join(', ');
-
-            if (fallback) return fallback;
+                .filter(Boolean);
+            // Skip pure numeric parts (postcodes) and country name
+            const meaningfulParts = displayParts.filter(part => !/^\d+$/.test(part) && part.toLowerCase() !== 'india');
+            if (meaningfulParts.length >= 2) {
+                return meaningfulParts.slice(0, 3).join(', ');
+            }
         }
     } catch {
         // Continue with fallback provider.
@@ -375,7 +380,6 @@ const reverseGeocode = async (latitude: number, longitude: number): Promise<stri
         const label = buildLocationLabel([
             locality,
             payload.principalSubdivision,
-            payload.countryName,
         ]);
 
         return label || null;

@@ -7,7 +7,6 @@ import MiraituLogo from '@/components/MiraituLogo';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { LangCode } from '@/i18n/translations';
 import { useCart } from '@/context/CartContext';
-import { useShopWishlist } from '@/lib/use-shop-wishlist';
 import HeaderAuthSection from './HeaderAuthSection';
 
 
@@ -68,7 +67,6 @@ export default function Header() {
     const router = useRouter();
     const { lang, setLang, t } = useLanguage();
     const { totalItems } = useCart();
-    const { wishlistCount } = useShopWishlist();
 
     const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
 
@@ -253,7 +251,7 @@ export default function Header() {
     const isActive = (path: string) => pathname.startsWith(path);
 
     // Check if any "more" item is active
-    const isMoreActive = moreNavItems.some(item => isActive(item.path)) || isActive('/home/shop/wishlist');
+    const isMoreActive = moreNavItems.some(item => isActive(item.path)) || isActive('/home/services/fpo');
 
     return (
         <>
@@ -370,20 +368,15 @@ export default function Header() {
                                                 </Link>
                                             ))}
                                             <Link
-                                                href="/home/shop/wishlist"
+                                                href="/home/services/fpo"
                                                 onClick={() => setIsMoreMenuOpen(false)}
-                                                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${isActive('/home/shop/wishlist')
+                                                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${isActive('/home/services/fpo')
                                                     ? 'text-primary bg-primary/5'
                                                     : 'text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-primary/5'
                                                     }`}
                                             >
-                                                <span className={`material-symbols-outlined text-lg ${isActive('/home/shop/wishlist') ? 'text-primary' : 'text-gray-400'}`}>favorite</span>
-                                                <span className="flex-1">Wishlist</span>
-                                                {wishlistCount > 0 && (
-                                                    <span className="inline-flex min-w-5 h-5 px-1.5 items-center justify-center rounded-full bg-pink-500 text-white text-[10px] font-black">
-                                                        {wishlistCount}
-                                                    </span>
-                                                )}
+                                                <span className={`material-symbols-outlined text-lg ${isActive('/home/services/fpo') ? 'text-primary' : 'text-gray-400'}`}>groups</span>
+                                                <span className="flex-1">FPO</span>
                                             </Link>
                                         </div>
 

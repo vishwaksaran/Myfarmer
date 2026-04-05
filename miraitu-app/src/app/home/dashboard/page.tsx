@@ -100,14 +100,14 @@ export default function UserDashboardPage() {
                 }
 
                 if (!queryString) {
-                    if (currentErrorCode === 'INSECURE_CONTEXT') {
-                        throw new Error('Current location needs HTTPS or localhost. Please use "Use Saved/Manual Location" instead.');
-                    }
                     if (currentErrorCode === 'PERMISSION_DENIED') {
                         throw new Error('Location permission was denied by browser. Please allow location access in your browser settings, then try again.');
                     }
                     if (currentErrorCode === 'TIMEOUT') {
                         throw new Error('Location detection timed out. Please check your device GPS/location settings and try again.');
+                    }
+                    if (currentErrorCode === 'UNAVAILABLE') {
+                        throw new Error('Location not available. Your browser may not support geolocation on this connection. Use manual location instead.');
                     }
                     throw new Error('Unable to detect current location. Please try again or use manual location.');
                 }
@@ -400,24 +400,24 @@ export default function UserDashboardPage() {
                                     )}
                                 </div>
 
-                                <div className="grid grid-cols-3 gap-3">
-                                    <div className="rounded-xl bg-white/80 dark:bg-black/20 px-4 py-3 border border-white/70 dark:border-white/10 min-w-[98px]">
+                                <div className="grid grid-cols-3 gap-2 md:gap-3">
+                                    <div className="rounded-xl bg-white/80 dark:bg-black/20 px-3 md:px-4 py-2.5 md:py-3 border border-white/70 dark:border-white/10">
                                         <p className="text-[11px] text-gray-500">Humidity</p>
-                                        <p className="text-lg font-black text-gray-900 dark:text-white">{weatherData ? `${weatherData.current.humidity}%` : '--'}</p>
+                                        <p className="text-base md:text-lg font-black text-gray-900 dark:text-white">{weatherData ? `${weatherData.current.humidity}%` : '--'}</p>
                                     </div>
-                                    <div className="rounded-xl bg-white/80 dark:bg-black/20 px-4 py-3 border border-white/70 dark:border-white/10 min-w-[98px]">
+                                    <div className="rounded-xl bg-white/80 dark:bg-black/20 px-3 md:px-4 py-2.5 md:py-3 border border-white/70 dark:border-white/10">
                                         <p className="text-[11px] text-gray-500">Wind</p>
-                                        <p className="text-lg font-black text-gray-900 dark:text-white">{weatherData ? `${weatherData.current.windSpeed} km/h` : '--'}</p>
+                                        <p className="text-base md:text-lg font-black text-gray-900 dark:text-white">{weatherData ? `${weatherData.current.windSpeed} km/h` : '--'}</p>
                                     </div>
-                                    <div className="rounded-xl bg-white/80 dark:bg-black/20 px-4 py-3 border border-white/70 dark:border-white/10 min-w-[98px]">
-                                        <p className="text-[11px] text-gray-500">Rain Chance</p>
-                                        <p className="text-lg font-black text-gray-900 dark:text-white">{typeof todayRainChance === 'number' ? `${todayRainChance}%` : '--'}</p>
+                                    <div className="rounded-xl bg-white/80 dark:bg-black/20 px-3 md:px-4 py-2.5 md:py-3 border border-white/70 dark:border-white/10">
+                                        <p className="text-[11px] text-gray-500">Rain</p>
+                                        <p className="text-base md:text-lg font-black text-gray-900 dark:text-white">{typeof todayRainChance === 'number' ? `${todayRainChance}%` : '--'}</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="mt-4 pt-4 border-t border-blue-100 dark:border-blue-900/30 flex items-center justify-between gap-3">
-                                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                            <div className="mt-4 pt-4 border-t border-blue-100 dark:border-blue-900/30 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+                                <p className="text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
                                     Plan spray, irrigation, and harvest windows based on live weather updates.
                                 </p>
                                 <div className="flex items-center gap-3">
@@ -425,10 +425,10 @@ export default function UserDashboardPage() {
                                         onClick={() => setShowLocationEditor(prev => !prev)}
                                         className="text-sm font-bold text-blue-700 hover:underline whitespace-nowrap"
                                     >
-                                        {showLocationEditor ? 'Close Location Editor' : 'Change Location'}
+                                        {showLocationEditor ? 'Close Editor' : 'Change Location'}
                                     </button>
                                     <Link href="/home/toolbox/weather-alerts" className="text-sm font-bold text-primary hover:underline whitespace-nowrap">
-                                        Open Weather Alerts →
+                                        Weather Alerts →
                                     </Link>
                                 </div>
                             </div>

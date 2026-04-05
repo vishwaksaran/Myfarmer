@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
+import CropAssistant from '@/components/CropAssistant';
 import '../globals-v2.css';
 
 export const metadata: Metadata = {
@@ -33,6 +34,7 @@ export default function CropsLayout({
                 {children}
             </main>
             <Footer />
+            <CropAssistant />
         </div>
     );
 }

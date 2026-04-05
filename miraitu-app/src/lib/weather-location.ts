@@ -194,9 +194,9 @@ export const requestBrowserCoords = async (): Promise<WeatherCoords> => {
         throw new Error('UNAVAILABLE');
     }
 
-    if (!isSecureGeolocationContext()) {
-        throw new Error('INSECURE_CONTEXT');
-    }
+    // Don't block on insecure context — let the browser decide.
+    // Many browsers allow geolocation on LAN IPs. If blocked, the error
+    // callback will fire with PERMISSION_DENIED or POSITION_UNAVAILABLE.
 
     return new Promise<WeatherCoords>((resolve, reject) => {
         window.navigator.geolocation.getCurrentPosition(
@@ -218,9 +218,9 @@ export const requestBrowserCoords = async (): Promise<WeatherCoords> => {
                 reject(new Error('UNAVAILABLE'));
             },
             {
-                enableHighAccuracy: false,
-                timeout: 15000,
-                maximumAge: 10 * 60 * 1000,
+                enableHighAccuracy: true,
+                timeout: 20000,
+                maximumAge: 5 * 60 * 1000,
             }
         );
     });
