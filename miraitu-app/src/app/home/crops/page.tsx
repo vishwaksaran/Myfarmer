@@ -5,6 +5,8 @@ import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import { useMandiPrices } from '@/lib/useMandiPrices';
 import { formatPrice, getCropIcon, spreadPercent } from '@/lib/mandi-api';
+import { useAuth } from '@/context/AuthContext';
+import { useLoginPrompt } from '@/context/LoginPromptContext';
 
 /* ── Fallback data (shown when API key is missing or API fails) ─── */
 const fallbackHighlights = [
@@ -40,6 +42,8 @@ function openCropAssistant() {
 
 export default function CropsPage() {
     const [selectedRegion, setSelectedRegion] = useState('Maharashtra');
+    const { user } = useAuth();
+    const { requireLogin } = useLoginPrompt();
 
     // Fetch market highlights — top 50 records for selected state, grouped by commodity
     const { data: rawData, loading, error } = useMandiPrices({ state: selectedRegion, limit: 50 });
@@ -112,7 +116,13 @@ export default function CropsPage() {
 
                     {/* Crop Assistant Banner */}
                     <button
-                        onClick={openCropAssistant}
+                        onClick={() => {
+                            if (!user) {
+                                requireLogin();
+                                return;
+                            }
+                            openCropAssistant();
+                        }}
                         className="w-full mb-10 group cursor-pointer"
                     >
                         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-green-600 to-emerald-700 p-5 sm:p-6 text-white hover:shadow-xl transition-all">

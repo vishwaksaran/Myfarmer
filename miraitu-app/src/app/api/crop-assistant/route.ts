@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { createSupabaseServerClient } from '@/lib/supabase-server';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
@@ -27,6 +28,16 @@ interface ChatMessage {
 }
 
 export async function POST(request: NextRequest) {
+    // Require authentication
+    const supabaseServer = await createSupabaseServerClient();
+    const { data: { user } } = await supabaseServer.auth.getUser();
+    if (!user) {
+        return NextResponse.json(
+            { error: 'Please login to use the Crop Assistant.' },
+            { status: 401 },
+        );
+    }
+
     if (!GEMINI_API_KEY) {
         return NextResponse.json(
             { error: 'Crop assistant is not configured. Please set GEMINI_API_KEY.' },
@@ -55,8 +66,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Message too long. Please keep it under 1000 characters.' }, { status: 400 });
     }
 
-    // Models to try in order (fallback if primary hits quota limits)
-    const MODELS = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash'];
+    // Models to try in order (fallback if primary hits quota/deprecation limits)
+    const MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash-lite'];
 
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
@@ -89,9 +100,9 @@ export async function POST(request: NextRequest) {
             const errMsg = err instanceof Error ? err.message : String(err);
             console.error(`[crop-assistant] ${modelName} error:`, errMsg);
 
-            // If it's a quota/rate-limit error, try the next model
-            if (errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('rate')) {
-                console.log(`[crop-assistant] Quota exceeded for ${modelName}, trying next model...`);
+            // If it's a quota/rate-limit or model-not-found error, try the next model
+            if (errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('rate') || errMsg.includes('404') || errMsg.includes('no longer available')) {
+                console.log(`[crop-assistant] ${modelName} unavailable, trying next model...`);
                 continue;
             }
 

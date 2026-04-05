@@ -2,15 +2,17 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import WhatsAppButton from './WhatsAppButton';
 import CropAssistant from './CropAssistant';
 
 export default function FloatingActionButtons() {
     const [showTooltip, setShowTooltip] = useState(false);
     const [isCropChatOpen, setIsCropChatOpen] = useState(false);
+    const { user } = useAuth();
     const pathname = usePathname();
     const hideWhatsAppOnThisPage = pathname?.startsWith('/home/community');
-    const showCropAssistant = pathname?.startsWith('/home/crops');
+    const showCropAssistant = pathname?.startsWith('/home/crops') && !!user;
 
     // Listen for custom event to open crop assistant from other components
     const handleOpenCropChat = useCallback(() => {
