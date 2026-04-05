@@ -14,8 +14,6 @@ export default function FloatingActionButtons() {
             {/* Talk to Expert Button — Desktop only */}
             <div
                 className="hidden md:flex items-center gap-3"
-                onMouseEnter={() => setShowTooltip(true)}
-                onMouseLeave={() => setShowTooltip(false)}
             >
                 {/* Tooltip Label */}
                 <div
@@ -34,10 +32,12 @@ export default function FloatingActionButtons() {
 
                 <a
                     href="tel:919380306475"
-                    className="group relative flex items-center justify-center h-14 w-14 lg:h-16 lg:w-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-[0_8px_25px_-5px_rgba(37,99,235,0.5)] active:scale-95 transition-all hover:-translate-y-1 hover:shadow-[0_12px_30px_-5px_rgba(37,99,235,0.6)]"
+                    onMouseEnter={() => setShowTooltip(true)}
+                    onMouseLeave={() => setShowTooltip(false)}
+                    className="group relative flex items-center justify-center h-14 w-14 lg:h-16 lg:w-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-white active:scale-95 transition-all hover:-translate-y-1"
                     aria-label="Talk to Expert"
                 >
-                    <div className="absolute inset-0 rounded-full bg-blue-500/30 animate-ping opacity-60"></div>
+                    <div className="absolute inset-0 rounded-full bg-blue-500/30 animate-ping opacity-60 pointer-events-none"></div>
                     {/* Shine overlay */}
                     <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/15 to-transparent pointer-events-none"></div>
                     <span className="material-symbols-outlined text-2xl lg:text-3xl relative z-10">support_agent</span>
