@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import supabase from '@/lib/supabase';
-import type { WeatherPayload } from '@/lib/weather-types';
+import type { WeatherPayload, WeatherLocationSuggestion } from '@/lib/weather-types';
 import {
     buildWeatherApiQuery,
     clearWeatherLocationConsent,
@@ -25,6 +25,18 @@ import {
     saveWeatherLocation,
     type WeatherLocationConsent,
 } from '@/lib/weather-location';
+
+const INDIAN_STATES = [
+    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat',
+    'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh',
+    'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
+    'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh',
+    'Uttarakhand', 'West Bengal', 'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Puducherry',
+];
+
+interface LocationSuggestionItem extends WeatherLocationSuggestion {
+    kind: 'state' | 'place';
+}
 
 interface Booking {
     id: string;
@@ -69,6 +81,11 @@ export default function UserDashboardPage() {
     const [showLocationEditor, setShowLocationEditor] = useState(false);
     const [manualLocationInput, setManualLocationInput] = useState('');
     const [locationUpdateLoading, setLocationUpdateLoading] = useState(false);
+    const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestionItem[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+    const locationInputRef = useRef<HTMLInputElement>(null);
+    const suggestionBoxRef = useRef<HTMLDivElement>(null);
 
     const loadWeather = useCallback(async (locationHint?: string | null, options?: { preferCurrent?: boolean }): Promise<boolean> => {
         const fallbackLocation = 'Hyderabad';
@@ -275,6 +292,90 @@ export default function UserDashboardPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [profileData]);
 
+    // Location suggestions (debounced search)
+    useEffect(() => {
+        const rawQuery = manualLocationInput.trim();
+        const query = rawQuery.toLowerCase();
+
+        if (query.length < 2) {
+            setLocationSuggestions([]);
+            setSuggestionsLoading(false);
+            return;
+        }
+
+        const stateMatches: LocationSuggestionItem[] = INDIAN_STATES
+            .filter(state => state.toLowerCase().includes(query))
+            .slice(0, 5)
+            .map(state => ({
+                label: state,
+                district: '',
+                state,
+                country: 'India',
+                latitude: null,
+                longitude: null,
+                kind: 'state',
+            }));
+
+        setLocationSuggestions(stateMatches);
+
+        const timer = setTimeout(async () => {
+            setSuggestionsLoading(true);
+            try {
+                const response = await fetch(`/api/weather/locations?q=${encodeURIComponent(rawQuery)}`, {
+                    cache: 'no-store',
+                });
+
+                if (!response.ok) {
+                    setLocationSuggestions(stateMatches);
+                    return;
+                }
+
+                const payload = (await response.json()) as { suggestions?: WeatherLocationSuggestion[] };
+                const placeMatches: LocationSuggestionItem[] = (payload.suggestions || []).map(item => ({
+                    ...item,
+                    kind: 'place' as const,
+                }));
+
+                const seen = new Set<string>();
+                const deduped = [...stateMatches, ...placeMatches].filter(item => {
+                    const key = `${item.label.toLowerCase()}__${item.latitude ?? 'na'}__${item.longitude ?? 'na'}`;
+                    if (seen.has(key)) return false;
+                    seen.add(key);
+                    return true;
+                }).slice(0, 10);
+
+                setLocationSuggestions(deduped);
+            } catch {
+                setLocationSuggestions(stateMatches);
+            } finally {
+                setSuggestionsLoading(false);
+            }
+        }, 280);
+
+        return () => clearTimeout(timer);
+    }, [manualLocationInput]);
+
+    // Close suggestions on outside click
+    useEffect(() => {
+        const handleOutsideClick = (event: MouseEvent) => {
+            const target = event.target as Node;
+            if (
+                locationInputRef.current && !locationInputRef.current.contains(target)
+                && suggestionBoxRef.current && !suggestionBoxRef.current.contains(target)
+            ) {
+                setShowSuggestions(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleOutsideClick);
+        return () => document.removeEventListener('mousedown', handleOutsideClick);
+    }, []);
+
+    const handleSelectLocationSuggestion = (suggestion: LocationSuggestionItem) => {
+        setShowSuggestions(false);
+        setManualLocationInput(suggestion.label);
+    };
+
     if (loading || !user) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-[#0d110d] flex items-center justify-center">
@@ -443,18 +544,54 @@ export default function UserDashboardPage() {
                                         >
                                             {locationUpdateLoading ? 'Detecting...' : 'Use Current'}
                                         </button>
-                                        <input
-                                            value={manualLocationInput}
-                                            onChange={(e) => setManualLocationInput(e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter') {
-                                                    e.preventDefault();
-                                                    void handleSaveManualLocation();
-                                                }
-                                            }}
-                                            placeholder="District, State (e.g., Bengaluru, Karnataka)"
-                                            className="skeuo-inset rounded-xl px-4 py-2.5 text-sm flex-1"
-                                        />
+                                        <div className="relative flex-1">
+                                            <input
+                                                ref={locationInputRef}
+                                                value={manualLocationInput}
+                                                onChange={(e) => {
+                                                    setManualLocationInput(e.target.value);
+                                                    setShowSuggestions(true);
+                                                }}
+                                                onFocus={() => {
+                                                    if (manualLocationInput.trim().length >= 2) setShowSuggestions(true);
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        setShowSuggestions(false);
+                                                        void handleSaveManualLocation();
+                                                    }
+                                                }}
+                                                placeholder="District, State (e.g., Bengaluru, Karnataka)"
+                                                className="skeuo-inset rounded-xl px-4 py-2.5 text-sm w-full"
+                                            />
+                                            {showSuggestions && (locationSuggestions.length > 0 || suggestionsLoading) && (
+                                                <div
+                                                    ref={suggestionBoxRef}
+                                                    className="absolute z-30 mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl max-h-60 overflow-y-auto"
+                                                >
+                                                    {locationSuggestions.map((suggestion, idx) => (
+                                                        <button
+                                                            key={`${suggestion.label}-${idx}`}
+                                                            onClick={() => handleSelectLocationSuggestion(suggestion)}
+                                                            className="w-full text-left px-4 py-2.5 hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors border-b last:border-b-0 border-gray-100 dark:border-gray-800"
+                                                        >
+                                                            <p className="text-sm font-semibold text-gray-900 dark:text-white">{suggestion.label}</p>
+                                                            <p className="text-[11px] text-gray-500">
+                                                                {suggestion.kind === 'state'
+                                                                    ? 'State'
+                                                                    : (suggestion.district && suggestion.state)
+                                                                        ? `${suggestion.district}, ${suggestion.state}`
+                                                                        : suggestion.state || 'Place'}
+                                                            </p>
+                                                        </button>
+                                                    ))}
+                                                    {suggestionsLoading && (
+                                                        <p className="px-4 py-2 text-xs text-gray-500">Searching locations...</p>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
                                         <button
                                             onClick={() => void handleSaveManualLocation()}
                                             disabled={locationUpdateLoading || !manualLocationInput.trim()}
