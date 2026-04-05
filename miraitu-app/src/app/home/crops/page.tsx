@@ -34,6 +34,10 @@ const quickActions = [
     { name: 'Nearby Mandis', description: 'Find mandis near your location', icon: 'location_on', href: '/home/crops/mandi/nearby', color: 'bg-primary' },
 ];
 
+function openCropAssistant() {
+    window.dispatchEvent(new Event('open-crop-assistant'));
+}
+
 export default function CropsPage() {
     const [selectedRegion, setSelectedRegion] = useState('Maharashtra');
 
@@ -105,6 +109,30 @@ export default function CropsPage() {
                             </Link>
                         ))}
                     </div>
+
+                    {/* Crop Assistant Banner */}
+                    <button
+                        onClick={openCropAssistant}
+                        className="w-full mb-10 group cursor-pointer"
+                    >
+                        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-green-600 to-emerald-700 p-5 sm:p-6 text-white hover:shadow-xl transition-all">
+                            <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-10 translate-x-10" />
+                            <div className="absolute bottom-0 left-1/2 w-32 h-32 bg-white/5 rounded-full translate-y-12" />
+                            <div className="relative flex items-center gap-4 sm:gap-6">
+                                <div className="flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/15 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <span className="material-symbols-outlined text-3xl sm:text-4xl">psychiatry</span>
+                                </div>
+                                <div className="flex-1 text-left">
+                                    <h3 className="text-lg sm:text-xl font-bold mb-1">Miraitu Crop Assistant</h3>
+                                    <p className="text-sm sm:text-base text-white/80">Ask anything about crops — cultivation steps, pest control, best varieties for your soil & more</p>
+                                </div>
+                                <div className="hidden sm:flex items-center gap-2 flex-shrink-0 bg-white/20 px-4 py-2 rounded-xl group-hover:bg-white/30 transition-colors">
+                                    <span className="material-symbols-outlined text-lg">chat</span>
+                                    <span className="font-semibold text-sm">Ask Now</span>
+                                </div>
+                            </div>
+                        </div>
+                    </button>
 
                     {/* Market Highlights */}
                     <div className="mb-10">

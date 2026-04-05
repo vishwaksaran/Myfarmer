@@ -55,33 +55,63 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Message too long. Please keep it under 1000 characters.' }, { status: 400 });
     }
 
-    try {
-        const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    // Models to try in order (fallback if primary hits quota limits)
+    const MODELS = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash'];
 
-        // Build chat history (exclude the last user message — it goes via sendMessage)
-        const history = messages.slice(0, -1).map((m) => ({
-            role: m.role === 'assistant' ? 'model' as const : 'user' as const,
-            parts: [{ text: m.content }],
-        }));
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
-        const chat = model.startChat({
-            history: [
-                { role: 'user', parts: [{ text: 'System instructions: ' + SYSTEM_PROMPT }] },
-                { role: 'model', parts: [{ text: 'Understood. I am Miraitu Crop Assistant. I will follow all the instructions. How can I help you with crops and farming today?' }] },
-                ...history,
-            ],
-        });
+    // Build chat history (exclude the last user message — it goes via sendMessage)
+    const history = messages.slice(0, -1).map((m) => ({
+        role: m.role === 'assistant' ? 'model' as const : 'user' as const,
+        parts: [{ text: m.content }],
+    }));
 
-        const result = await chat.sendMessage(lastMessage.content);
-        const text = result.response.text();
+    let lastError: unknown = null;
 
-        return NextResponse.json({ reply: text });
-    } catch (err) {
-        console.error('[crop-assistant] Gemini error:', err);
-        return NextResponse.json(
-            { error: 'Sorry, the crop assistant is temporarily unavailable. Please try again.' },
-            { status: 500 },
-        );
+    for (const modelName of MODELS) {
+        try {
+            const model = genAI.getGenerativeModel({ model: modelName });
+
+            const chat = model.startChat({
+                history: [
+                    { role: 'user', parts: [{ text: 'System instructions: ' + SYSTEM_PROMPT }] },
+                    { role: 'model', parts: [{ text: 'Understood. I am Miraitu Crop Assistant. I will follow all the instructions. How can I help you with crops and farming today?' }] },
+                    ...history,
+                ],
+            });
+
+            const result = await chat.sendMessage(lastMessage.content);
+            const text = result.response.text();
+
+            return NextResponse.json({ reply: text });
+        } catch (err) {
+            lastError = err;
+            const errMsg = err instanceof Error ? err.message : String(err);
+            console.error(`[crop-assistant] ${modelName} error:`, errMsg);
+
+            // If it's a quota/rate-limit error, try the next model
+            if (errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('rate')) {
+                console.log(`[crop-assistant] Quota exceeded for ${modelName}, trying next model...`);
+                continue;
+            }
+
+            // For non-quota errors, stop immediately
+            break;
+        }
     }
+
+    // All models failed
+    const errMsg = lastError instanceof Error ? lastError.message : '';
+    const isQuota = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('rate');
+
+    console.error('[crop-assistant] All models failed. Last error:', errMsg);
+
+    return NextResponse.json(
+        {
+            error: isQuota
+                ? 'The crop assistant has reached its daily usage limit. Please try again in a few minutes.'
+                : 'Sorry, the crop assistant is temporarily unavailable. Please try again.',
+        },
+        { status: isQuota ? 429 : 500 },
+    );
 }

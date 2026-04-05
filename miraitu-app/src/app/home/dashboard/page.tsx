@@ -263,8 +263,6 @@ export default function UserDashboardPage() {
     }, [loadWeather, manualLocationInput]);
 
     useEffect(() => {
-        if (manualLocationInput.trim()) return;
-
         const fromStorage = getSavedWeatherLocation();
         if (fromStorage) {
             setManualLocationInput(fromStorage);
@@ -274,7 +272,8 @@ export default function UserDashboardPage() {
         if (profileData?.farm_location) {
             setManualLocationInput(profileData.farm_location);
         }
-    }, [manualLocationInput, profileData]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [profileData]);
 
     if (loading || !user) {
         return (

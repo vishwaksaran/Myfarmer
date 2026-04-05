@@ -458,15 +458,15 @@ export default function WeatherAlertsPage() {
                                             : '✅ No high-risk alerts right now'}
                                     </p>
                                 </div>
-                                <div className="flex flex-wrap gap-2 justify-start md:justify-end w-full md:w-auto">
+                                <div className="flex flex-col sm:flex-row flex-wrap gap-2 justify-start md:justify-end w-full md:w-auto">
                                     <button
                                         onClick={() => void handleUseCurrentLocation()}
-                                        className="px-4 py-2.5 rounded-xl bg-blue-100 text-blue-700 text-sm font-bold hover:bg-blue-200 transition-colors flex items-center gap-1.5"
+                                        className="px-4 py-2.5 rounded-xl bg-blue-100 text-blue-700 text-sm font-bold hover:bg-blue-200 transition-colors flex items-center gap-1.5 w-full sm:w-auto"
                                     >
                                         <span className="material-symbols-outlined text-base">my_location</span>
                                         {locatingCurrent ? 'Locating...' : 'Use Current'}
                                     </button>
-                                    <div className="relative flex-1 md:flex-none md:w-80">
+                                    <div className="relative w-full sm:flex-1 md:flex-none md:w-80">
                                         <input
                                             ref={inputRef}
                                             type="text"
@@ -510,7 +510,7 @@ export default function WeatherAlertsPage() {
                                             </div>
                                         )}
                                     </div>
-                                    <button onClick={handleSetLocation} className="vibrant-gradient px-5 py-2.5 rounded-xl text-white font-bold text-sm">
+                                    <button onClick={handleSetLocation} className="vibrant-gradient px-5 py-2.5 rounded-xl text-white font-bold text-sm w-full sm:w-auto">
                                         {loading ? 'Loading...' : 'Set'}
                                     </button>
                                 </div>
