@@ -42,7 +42,19 @@ const searchableItems = [
     { name: 'Weather', path: '/home/toolbox', icon: 'cloud', keywords: ['weather', 'forecast', 'rain', 'temperature', 'humidity'] },
     { name: 'Mandi Prices', path: '/home/toolbox', icon: 'trending_up', keywords: ['mandi', 'market price', 'mandi price', 'apmc', 'crop price'] },
     { name: 'Cart & Checkout', path: '/home/shop/checkout', icon: 'shopping_cart', keywords: ['cart', 'checkout', 'order', 'payment'] },
-    { name: 'Wishlist', path: '/home/shop/wishlist', icon: 'favorite', keywords: ['wishlist', 'saved products', 'liked products', 'favorites'] },
+    { name: 'FPO — Farmer Producer Organization', path: '/home/services/fpo', icon: 'groups', keywords: ['fpo', 'farmer producer organization', 'collective', 'cooperative', 'group farming', 'fpo registration'] },
+    { name: 'Soil Testing', path: '/home/services/soil-testing', icon: 'science', keywords: ['soil testing', 'soil health', 'soil analysis', 'ph test', 'nutrient test'] },
+    { name: 'Storage & Godown', path: '/home/services/storage-godown', icon: 'warehouse', keywords: ['storage', 'godown', 'warehouse', 'cold storage', 'grain storage'] },
+    { name: 'Rent Machinery', path: '/home/services/rent-machinery', icon: 'agriculture', keywords: ['rent machinery', 'hire tractor', 'machinery rental', 'equipment hire'] },
+    { name: 'Drone Spray', path: '/home/services/drone-spray', icon: 'flight', keywords: ['drone spray', 'drone spraying', 'aerial spray', 'crop spraying'] },
+    { name: 'Farm Labours', path: '/home/services/farm-labours', icon: 'engineering', keywords: ['farm labour', 'labourers', 'workers', 'harvest labour', 'field workers'] },
+    { name: 'Harvester Service', path: '/home/services/harvester', icon: 'agriculture', keywords: ['harvester', 'harvest service', 'combine harvester', 'crop cutting'] },
+    { name: 'Weather Alerts', path: '/home/toolbox/weather-alerts', icon: 'cloud', keywords: ['weather alerts', 'weather forecast', 'rain alert', 'storm warning'] },
+    { name: 'Crop Costing', path: '/home/toolbox/crop-costing', icon: 'calculate', keywords: ['crop costing', 'cost calculator', 'farming cost', 'expense calculator'] },
+    { name: 'Profit Estimator', path: '/home/toolbox/profit-estimator', icon: 'trending_up', keywords: ['profit estimator', 'income calculator', 'yield estimate', 'farming profit'] },
+    { name: 'Mandi Rates', path: '/home/crops/mandi/prices', icon: 'trending_up', keywords: ['mandi rates', 'live prices', 'market rates', 'crop prices', 'apmc prices'] },
+    { name: 'Buy Crops', path: '/home/crops/buy', icon: 'shopping_cart', keywords: ['buy crops', 'purchase crops', 'buy grain', 'buy vegetables'] },
+    { name: 'Sell Crops', path: '/home/crops/sell', icon: 'sell', keywords: ['sell crops', 'sell harvest', 'list produce', 'sell grain'] },
 ];
 
 const primaryNavItems = [
