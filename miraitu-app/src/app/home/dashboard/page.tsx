@@ -101,12 +101,15 @@ export default function UserDashboardPage() {
 
                 if (!queryString) {
                     if (currentErrorCode === 'INSECURE_CONTEXT') {
-                        throw new Error('Current location needs HTTPS or localhost. Please select manual location.');
+                        throw new Error('Current location needs HTTPS or localhost. Please use "Use Saved/Manual Location" instead.');
                     }
                     if (currentErrorCode === 'PERMISSION_DENIED') {
-                        throw new Error('Location permission denied. Please allow permission or use manual location.');
+                        throw new Error('Location permission was denied by browser. Please allow location access in your browser settings, then try again.');
                     }
-                    throw new Error('Unable to detect current location. Please choose manual location.');
+                    if (currentErrorCode === 'TIMEOUT') {
+                        throw new Error('Location detection timed out. Please check your device GPS/location settings and try again.');
+                    }
+                    throw new Error('Unable to detect current location. Please try again or use manual location.');
                 }
             } else {
                 clearSavedWeatherCoords();
@@ -213,6 +216,9 @@ export default function UserDashboardPage() {
 
     const handleEnableCurrentWeather = useCallback(async () => {
         setLocationUpdateLoading(true);
+        setWeatherError(null);
+        // Clear any previous geo-denied flag so user gets a fresh prompt
+        markGeoPermissionDenied(false);
         const ok = await loadWeather(profileData?.farm_location || null, { preferCurrent: true });
         if (ok) {
             setWeatherLocationConsent('granted');
@@ -222,6 +228,7 @@ export default function UserDashboardPage() {
             return;
         }
 
+        // Keep consent as null so the consent card shows, but weatherError is now set
         clearWeatherLocationConsent();
         setLocationConsent(null);
         setLocationUpdateLoading(false);
@@ -337,20 +344,36 @@ export default function UserDashboardPage() {
                             <div className="flex flex-wrap gap-3">
                                 <button
                                     onClick={handleEnableCurrentWeather}
-                                    className="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors flex items-center gap-2"
+                                    disabled={locationUpdateLoading}
+                                    className="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-60"
                                 >
-                                    <span className="material-symbols-outlined text-base">my_location</span>
-                                    Use Current Location
+                                    {locationUpdateLoading ? (
+                                        <>
+                                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                                            Detecting...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="material-symbols-outlined text-base">my_location</span>
+                                            Use Current Location
+                                        </>
+                                    )}
                                 </button>
                                 <button
                                     onClick={handleEnableManualWeather}
-                                    className="px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-sm font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                    disabled={locationUpdateLoading}
+                                    className="px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-sm font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-60"
                                 >
                                     Use Saved/Manual Location
                                 </button>
                             </div>
-                            <p className="text-xs text-gray-500 mt-3">
-                                Current location requires HTTPS or localhost. You can always set district/state in Weather Alerts.
+                            {weatherError && (
+                                <p className="text-xs text-red-600 dark:text-red-400 mt-3">
+                                    {weatherError}
+                                </p>
+                            )}
+                            <p className="text-xs text-gray-500 mt-2">
+                                Make sure to allow location access when prompted by your browser.
                             </p>
                         </div>
                     ) : (
