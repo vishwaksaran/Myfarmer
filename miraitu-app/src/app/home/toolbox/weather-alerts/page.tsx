@@ -1,17 +1,61 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import type { WeatherAlertData, WeatherLocationSuggestion, WeatherPayload } from '@/lib/weather-types';
+import {
+    buildWeatherApiQuery,
+    clearWeatherLocationConsent,
+    getWeatherLocationConsent,
+    setWeatherLocationConsent,
+    clearSavedWeatherLocation,
+    clearSavedWeatherCoords,
+    getSavedWeatherLocation,
+    isGeoPermissionDenied,
+    isLikelyWaterLocation,
+    markGeoPermissionDenied,
+    parseDistrictStateInput,
+    requestBrowserCoords,
+    saveWeatherCoords,
+    saveWeatherLocation,
+    type WeatherLocationConsent,
+    type WeatherCoords,
+} from '@/lib/weather-location';
 
-interface Alert {
-    id: number;
-    type: 'rain' | 'heat' | 'frost' | 'storm' | 'flood' | 'wind';
-    severity: 'low' | 'medium' | 'high' | 'critical';
-    title: string;
-    description: string;
-    date: string;
-    advice: string;
+type SeverityFilter = 'all' | WeatherAlertData['severity'];
+
+interface WeatherQuery {
+    location?: string;
+    district?: string;
+    state?: string;
+    coords?: WeatherCoords | null;
 }
+
+interface LocationSuggestionItem extends WeatherLocationSuggestion {
+    kind: 'state' | 'place';
+}
+
+const INDIAN_STATES = [
+    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat',
+    'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh',
+    'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
+    'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh',
+    'Uttarakhand', 'West Bengal', 'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Puducherry',
+];
+
+const dedupeSuggestions = (items: LocationSuggestionItem[]): LocationSuggestionItem[] => {
+    const seen = new Set<string>();
+    const unique: LocationSuggestionItem[] = [];
+
+    for (const item of items) {
+        const key = `${item.label.toLowerCase()}__${item.latitude ?? 'na'}__${item.longitude ?? 'na'}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        unique.push(item);
+    }
+
+    return unique;
+};
 
 const alertMeta: Record<string, { icon: string; color: string; bg: string }> = {
     rain: { icon: 'rainy', color: 'text-blue-600', bg: 'bg-blue-500/10' },
@@ -29,32 +73,315 @@ const severityColors: Record<string, string> = {
     critical: 'bg-red-100 text-red-700',
 };
 
-const sampleAlerts: Alert[] = [
-    { id: 1, type: 'rain', severity: 'high', title: 'Heavy Rainfall Expected', description: 'Heavy rainfall of 60-80mm expected in the next 48 hours across the region.', date: 'Today – Tomorrow', advice: 'Delay sowing. Ensure proper drainage in fields. Harvest ready crops immediately.' },
-    { id: 2, type: 'heat', severity: 'medium', title: 'Heat Wave Warning', description: 'Temperature expected to rise above 42°C for the next 3 days.', date: 'Feb 21 – Feb 23', advice: 'Increase irrigation frequency. Apply mulching to conserve soil moisture. Avoid mid-day field work.' },
-    { id: 3, type: 'storm', severity: 'critical', title: 'Thunderstorm Alert', description: 'Severe thunderstorm with hail likely in the evening hours.', date: 'Today Evening', advice: 'Secure livestock. Cover harvested produce. Avoid open fields. Protect nursery beds.' },
-    { id: 4, type: 'frost', severity: 'low', title: 'Frost Advisory', description: 'Light frost possible in low-lying areas during early morning hours.', date: 'Feb 22 – Feb 24', advice: 'Cover sensitive crops with plastic sheets. Light irrigation in evening can help prevent frost damage.' },
-    { id: 5, type: 'wind', severity: 'medium', title: 'Strong Wind Advisory', description: 'Wind speeds of 40-50 km/h expected. May affect standing crops.', date: 'Tomorrow', advice: 'Stake tall crops like sugarcane and banana. Postpone spraying operations.' },
-    { id: 6, type: 'flood', severity: 'high', title: 'River Level Rising', description: 'Water levels in nearby rivers rising due to upstream rainfall.', date: 'Next 3 Days', advice: 'Move equipment to higher ground. Strengthen field bunds. Keep emergency supplies ready.' },
-];
-
 export default function WeatherAlertsPage() {
-    const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
+    const [selectedSeverity, setSelectedSeverity] = useState<SeverityFilter>('all');
     const [locationInput, setLocationInput] = useState('');
-    const [location, setLocation] = useState('Your Region');
+    const [locationConsent, setLocationConsent] = useState<WeatherLocationConsent | null>(null);
+    const [loadingLocation, setLoadingLocation] = useState('Hyderabad');
+    const [weatherData, setWeatherData] = useState<WeatherPayload | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [locatingCurrent, setLocatingCurrent] = useState(false);
+    const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestionItem[]>([]);
+    const [error, setError] = useState<string | null>(null);
+    const [lastQuery, setLastQuery] = useState<WeatherQuery | null>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const suggestionBoxRef = useRef<HTMLDivElement>(null);
 
-    const filteredAlerts = selectedSeverity === 'all'
-        ? sampleAlerts
-        : sampleAlerts.filter(a => a.severity === selectedSeverity);
+    const getFallbackQuery = useCallback((): WeatherQuery => {
+        const savedLocation = getSavedWeatherLocation();
+        if (savedLocation) {
+            if (isLikelyWaterLocation(savedLocation) || savedLocation.trim().toLowerCase() === 'india') {
+                clearSavedWeatherLocation();
+                clearSavedWeatherCoords();
+                return { location: 'Hyderabad' };
+            }
 
-    const criticalCount = sampleAlerts.filter(a => a.severity === 'critical' || a.severity === 'high').length;
+            const parsed = parseDistrictStateInput(savedLocation);
+            if (parsed) return { district: parsed.district, state: parsed.state };
+            return { location: savedLocation };
+        }
+
+        return { location: 'Hyderabad' };
+    }, []);
+
+    const loadWeather = useCallback(async (query: WeatherQuery): Promise<boolean> => {
+        const displayLabel = query.coords
+            ? 'Current location'
+            : (query.district && query.state)
+                ? `${query.district}, ${query.state}`
+                : (query.location || 'Hyderabad');
+
+        setLoading(true);
+        setError(null);
+        setLoadingLocation(displayLabel);
+        setLastQuery(query);
+
+        try {
+            const queryString = buildWeatherApiQuery(query);
+            const res = await fetch(`/api/weather/forecast?${queryString}`, {
+                cache: 'no-store',
+            });
+
+            if (!res.ok) {
+                const msg = res.status === 404 ? 'Location not found. Try village, district, or city name.' : 'Unable to fetch weather data right now.';
+                throw new Error(msg);
+            }
+
+            const data = (await res.json()) as WeatherPayload;
+
+            const resolvedLabel = String(data.location.name || '').trim();
+            const lowerResolved = resolvedLabel.toLowerCase();
+            if (query.coords && (isLikelyWaterLocation(resolvedLabel) || lowerResolved === 'india' || lowerResolved === 'bharat')) {
+                clearSavedWeatherCoords();
+                clearSavedWeatherLocation();
+                throw new Error('Current location could not be detected accurately. Please type district and state.');
+            }
+
+            setWeatherData(data);
+
+            if (query.coords) {
+                saveWeatherCoords(query.coords);
+            } else {
+                clearSavedWeatherCoords();
+            }
+
+            if (data.location.name) {
+                setLocationInput(data.location.name);
+                saveWeatherLocation(data.location.name);
+            }
+
+            return true;
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Unable to fetch weather data right now.';
+            setError(message);
+            setWeatherData(null);
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    const handleUseCurrentLocation = useCallback(async () => {
+        setLocatingCurrent(true);
+        setError(null);
+        setShowSuggestions(false);
+
+        try {
+            const coords = await requestBrowserCoords();
+            markGeoPermissionDenied(false);
+            saveWeatherCoords(coords);
+            const success = await loadWeather({ coords });
+            if (success) {
+                setLocationConsent('granted');
+                setWeatherLocationConsent('granted');
+                return;
+            }
+
+            clearWeatherLocationConsent();
+            setLocationConsent(null);
+        } catch (err) {
+            const code = err instanceof Error ? err.message : 'UNAVAILABLE';
+            if (code === 'PERMISSION_DENIED') {
+                markGeoPermissionDenied(true);
+                setError('Location permission denied. Enable location permission or type district, state.');
+            } else if (code === 'INSECURE_CONTEXT') {
+                setError('Current location works only on HTTPS or localhost. For LAN IP (192.168.*), use typed district/state.');
+            } else if (code === 'TIMEOUT') {
+                setError('Unable to get current location in time. Please try again or enter district, state.');
+            } else {
+                setError('Current location is unavailable on this device. Enter district, state manually.');
+            }
+
+            clearWeatherLocationConsent();
+            setLocationConsent(null);
+        } finally {
+            setLocatingCurrent(false);
+        }
+    }, [loadWeather]);
+
+    useEffect(() => {
+        const initializeWeather = async () => {
+            const savedLocation = getSavedWeatherLocation();
+            if (savedLocation) setLocationInput(savedLocation);
+
+            const consent = getWeatherLocationConsent();
+            setLocationConsent(consent);
+
+            if (!consent) {
+                setLoading(false);
+                setWeatherData(null);
+                setError(null);
+                return;
+            }
+
+            if (consent === 'granted') {
+                if (!isGeoPermissionDenied()) {
+                    try {
+                        const coords = await requestBrowserCoords();
+                        markGeoPermissionDenied(false);
+                        saveWeatherCoords(coords);
+                        const success = await loadWeather({ coords });
+                        if (success) return;
+                    } catch (err) {
+                        if (err instanceof Error && err.message === 'PERMISSION_DENIED') {
+                            markGeoPermissionDenied(true);
+                        }
+                    }
+                }
+
+                clearWeatherLocationConsent();
+                setLocationConsent(null);
+                setLoading(false);
+                return;
+            }
+
+            clearSavedWeatherCoords();
+            await loadWeather(getFallbackQuery());
+        };
+
+        void initializeWeather();
+    }, [getFallbackQuery, loadWeather]);
 
     const handleSetLocation = () => {
-        if (locationInput.trim()) {
-            setLocation(locationInput.trim());
-            setLocationInput('');
+        const requested = locationInput.trim();
+        if (!requested) return;
+
+        setShowSuggestions(false);
+        setLocationConsent('manual');
+        setWeatherLocationConsent('manual');
+
+        saveWeatherLocation(requested);
+        clearSavedWeatherCoords();
+
+        const parsed = parseDistrictStateInput(requested);
+        if (parsed) {
+            void loadWeather({ district: parsed.district, state: parsed.state });
+            return;
         }
+
+        void loadWeather({ location: requested });
     };
+
+    const handleEnableManualWeather = useCallback(() => {
+        setLocationConsent('manual');
+        setWeatherLocationConsent('manual');
+        clearSavedWeatherCoords();
+        setError(null);
+        void loadWeather(getFallbackQuery());
+    }, [getFallbackQuery, loadWeather]);
+
+    const handleSelectSuggestion = (suggestion: LocationSuggestionItem) => {
+        setShowSuggestions(false);
+        setLocationInput(suggestion.label);
+        setLocationConsent('manual');
+        setWeatherLocationConsent('manual');
+        saveWeatherLocation(suggestion.label);
+
+        if (typeof suggestion.latitude === 'number' && typeof suggestion.longitude === 'number') {
+            const coords: WeatherCoords = { lat: suggestion.latitude, lon: suggestion.longitude };
+            saveWeatherCoords(coords);
+            void loadWeather({ coords });
+            return;
+        }
+
+        clearSavedWeatherCoords();
+
+        if (suggestion.district && suggestion.state) {
+            void loadWeather({ district: suggestion.district, state: suggestion.state });
+            return;
+        }
+
+        if (suggestion.state) {
+            void loadWeather({ location: suggestion.state });
+            return;
+        }
+
+        void loadWeather({ location: suggestion.label });
+    };
+
+    useEffect(() => {
+        const handleOutsideClick = (event: MouseEvent) => {
+            const target = event.target as Node;
+            if (
+                inputRef.current && !inputRef.current.contains(target)
+                && suggestionBoxRef.current && !suggestionBoxRef.current.contains(target)
+            ) {
+                setShowSuggestions(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleOutsideClick);
+        return () => document.removeEventListener('mousedown', handleOutsideClick);
+    }, []);
+
+    useEffect(() => {
+        const rawQuery = locationInput.trim();
+        const query = rawQuery.toLowerCase();
+
+        if (query.length < 2) {
+            setLocationSuggestions([]);
+            setSuggestionsLoading(false);
+            return;
+        }
+
+        const stateMatches: LocationSuggestionItem[] = INDIAN_STATES
+            .filter(state => state.toLowerCase().includes(query))
+            .slice(0, 5)
+            .map(state => ({
+                label: state,
+                district: '',
+                state,
+                country: 'India',
+                latitude: null,
+                longitude: null,
+                kind: 'state',
+            }));
+
+        setLocationSuggestions(stateMatches);
+
+        const timer = setTimeout(async () => {
+            setSuggestionsLoading(true);
+            try {
+                const response = await fetch(`/api/weather/locations?q=${encodeURIComponent(rawQuery)}`, {
+                    cache: 'no-store',
+                });
+
+                if (!response.ok) {
+                    setLocationSuggestions(stateMatches);
+                    return;
+                }
+
+                const payload = (await response.json()) as { suggestions?: WeatherLocationSuggestion[] };
+                const placeMatches: LocationSuggestionItem[] = (payload.suggestions || []).map(item => ({
+                    ...item,
+                    kind: 'place',
+                }));
+
+                setLocationSuggestions(dedupeSuggestions([...stateMatches, ...placeMatches]).slice(0, 10));
+            } catch {
+                setLocationSuggestions(stateMatches);
+            } finally {
+                setSuggestionsLoading(false);
+            }
+        }, 280);
+
+        return () => clearTimeout(timer);
+    }, [locationInput]);
+
+    const allAlerts = weatherData?.alerts ?? [];
+
+    const filteredAlerts = useMemo(() => {
+        if (selectedSeverity === 'all') return allAlerts;
+        return allAlerts.filter(a => a.severity === selectedSeverity);
+    }, [allAlerts, selectedSeverity]);
+
+    const criticalCount = allAlerts.filter(a => a.severity === 'critical' || a.severity === 'high').length;
+
+    const severityOrder: SeverityFilter[] = ['all', 'critical', 'high', 'medium', 'low'];
+    const fiveDayForecast = weatherData?.daily.slice(0, 5) ?? [];
+    const updatedAt = weatherData ? new Date(weatherData.updatedAt).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }) : null;
 
     return (
         <div className="agri-grid-bg min-h-screen">
@@ -78,121 +405,225 @@ export default function WeatherAlertsPage() {
                             <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">Weather Alerts</h1>
                         </div>
                         <p className="text-sm md:text-base text-gray-500">Stay informed about weather changes that may affect your farming activities.</p>
-                    </div>
-
-                    {/* Summary Banner */}
-                    <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-6 mb-6 flex flex-col md:flex-row md:items-center gap-4">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-1">
-                                <span className="material-symbols-outlined text-blue-500 text-xl">location_on</span>
-                                <span className="font-bold text-gray-900 dark:text-white">{location}</span>
-                            </div>
-                            <p className="text-sm text-gray-500">
-                                {criticalCount > 0
-                                    ? `⚠️ ${criticalCount} high/critical alert(s) active`
-                                    : '✅ No critical alerts right now'}
-                            </p>
-                        </div>
-                        <div className="flex gap-2">
-                            <input
-                                type="text"
-                                placeholder="Enter village / district..."
-                                value={locationInput}
-                                onChange={e => setLocationInput(e.target.value)}
-                                onKeyDown={e => e.key === 'Enter' && handleSetLocation()}
-                                className="skeuo-inset rounded-xl px-4 py-2.5 text-sm flex-1 md:w-56"
-                            />
-                            <button onClick={handleSetLocation} className="vibrant-gradient px-5 py-2.5 rounded-xl text-white font-bold text-sm">
-                                Set
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* 5-Day Forecast Bar */}
-                    <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-6 mb-6">
-                        <h3 className="font-bold text-sm text-gray-900 dark:text-white mb-4">5-Day Outlook</h3>
-                        <div className="grid grid-cols-5 gap-2 md:gap-4">
-                            {[
-                                { day: 'Today', icon: 'thunderstorm', temp: '34°/26°', rain: '80%' },
-                                { day: 'Fri', icon: 'rainy', temp: '30°/24°', rain: '60%' },
-                                { day: 'Sat', icon: 'partly_cloudy_day', temp: '32°/25°', rain: '20%' },
-                                { day: 'Sun', icon: 'wb_sunny', temp: '35°/27°', rain: '5%' },
-                                { day: 'Mon', icon: 'wb_sunny', temp: '36°/27°', rain: '0%' },
-                            ].map(d => (
-                                <div key={d.day} className="flex flex-col items-center gap-1 p-2 md:p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-                                    <span className="text-xs font-bold text-gray-600">{d.day}</span>
-                                    <span className="material-symbols-outlined text-xl md:text-2xl text-blue-500">{d.icon}</span>
-                                    <span className="text-xs md:text-sm font-bold text-gray-900 dark:text-white">{d.temp}</span>
-                                    <span className="text-[10px] md:text-xs text-blue-500 font-bold">🌧 {d.rain}</span>
+                        {weatherData && (
+                            <div className="mt-4 inline-flex items-center gap-4 rounded-2xl bg-white/80 dark:bg-gray-900/50 px-4 py-3 border border-blue-100 dark:border-blue-900/40">
+                                <div className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-blue-500">{weatherData.current.icon}</span>
+                                    <span className="font-black text-gray-900 dark:text-white">{weatherData.current.temperature}°C</span>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Severity Filter */}
-                    <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
-                        {['all', 'critical', 'high', 'medium', 'low'].map(s => (
-                            <button
-                                key={s}
-                                onClick={() => setSelectedSeverity(s)}
-                                className={`px-4 py-2 rounded-xl text-sm font-bold capitalize whitespace-nowrap transition-all ${selectedSeverity === s
-                                    ? 'bg-white dark:bg-gray-800 shadow-md ring-2 ring-primary/30 text-primary'
-                                    : 'bg-gray-100 dark:bg-gray-800/50 text-gray-500 hover:bg-gray-200'
-                                    }`}
-                            >
-                                {s === 'all' ? `All Alerts (${sampleAlerts.length})` : s}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Alerts List */}
-                    <div className="space-y-4">
-                        {filteredAlerts.map(alert => {
-                            const meta = alertMeta[alert.type];
-                            return (
-                                <div key={alert.id} className="skeuo-card rounded-2xl p-5 md:p-6">
-                                    <div className="flex flex-col md:flex-row md:items-start gap-4">
-                                        <div className={`h-12 w-12 shrink-0 rounded-xl ${meta.bg} flex items-center justify-center ${meta.color}`}>
-                                            <span className="material-symbols-outlined text-2xl">{meta.icon}</span>
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="flex flex-wrap items-center gap-2 mb-2">
-                                                <h4 className="font-bold text-gray-900 dark:text-white">{alert.title}</h4>
-                                                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${severityColors[alert.severity]}`}>
-                                                    {alert.severity}
-                                                </span>
-                                                <span className="text-xs text-gray-400 font-medium ml-auto">{alert.date}</span>
-                                            </div>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{alert.description}</p>
-                                            <div className="p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200/50 dark:border-green-800/30">
-                                                <p className="text-xs font-bold text-green-700 dark:text-green-400 flex items-start gap-2">
-                                                    <span className="material-symbols-outlined text-sm mt-0.5">agriculture</span>
-                                                    <span><strong>Farming Advice:</strong> {alert.advice}</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                        {filteredAlerts.length === 0 && (
-                            <div className="skeuo-card rounded-2xl p-10 text-center">
-                                <span className="material-symbols-outlined text-4xl text-gray-300 mb-3">check_circle</span>
-                                <p className="font-bold text-gray-500">No alerts for the selected severity level.</p>
+                                <span className="text-sm text-gray-600 dark:text-gray-300">{weatherData.current.condition}</span>
+                                <span className="text-xs text-gray-500">Humidity {weatherData.current.humidity}%</span>
+                                {updatedAt && <span className="text-xs text-gray-400">Updated {updatedAt}</span>}
                             </div>
                         )}
                     </div>
 
-                    {/* Tip Card */}
-                    <div className="mt-8 skeuo-card rounded-2xl p-5 md:p-6 border-l-4 border-primary">
-                        <h4 className="font-bold text-sm mb-2 text-gray-900 dark:text-white flex items-center gap-2">
-                            <span className="material-symbols-outlined text-primary text-lg">tips_and_updates</span>
-                            Pro Tip
-                        </h4>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">
-                            Set up your location to receive hyper-local weather alerts. Alerts are updated every 3 hours using IMD (Indian Meteorological Department) data and regional weather stations. Enable notifications to never miss a critical alert during sowing or harvesting season.
-                        </p>
-                    </div>
+                    {!locationConsent ? (
+                        <div className="skeuo-card rounded-2xl md:rounded-3xl p-6 md:p-8 mb-6 border border-blue-100 dark:border-blue-900/40">
+                            <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2">Enable Live Weather</h2>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-5">
+                                Before showing live weather reports and alerts, choose how you want location to be used.
+                            </p>
+                            <div className="flex flex-wrap gap-3">
+                                <button
+                                    onClick={() => void handleUseCurrentLocation()}
+                                    className="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors flex items-center gap-2"
+                                >
+                                    <span className="material-symbols-outlined text-base">my_location</span>
+                                    Use Current Location
+                                </button>
+                                <button
+                                    onClick={handleEnableManualWeather}
+                                    className="px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-sm font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                    Select District/State Manually
+                                </button>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-4">
+                                Note: Current location works on HTTPS or localhost. On LAN HTTP URLs, choose manual location.
+                            </p>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Summary Banner */}
+                            <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-6 mb-6 flex flex-col md:flex-row md:items-center gap-4">
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-1">
+                                        <span className="material-symbols-outlined text-blue-500 text-xl">location_on</span>
+                                        <span className="font-bold text-gray-900 dark:text-white">
+                                            {weatherData?.location.name || loadingLocation || 'Your Region'}
+                                        </span>
+                                    </div>
+                                    <p className="text-sm text-gray-500">
+                                        {criticalCount > 0
+                                            ? `⚠️ ${criticalCount} high/critical alert(s) active`
+                                            : '✅ No high-risk alerts right now'}
+                                    </p>
+                                </div>
+                                <div className="flex flex-wrap gap-2 justify-start md:justify-end w-full md:w-auto">
+                                    <button
+                                        onClick={() => void handleUseCurrentLocation()}
+                                        className="px-4 py-2.5 rounded-xl bg-blue-100 text-blue-700 text-sm font-bold hover:bg-blue-200 transition-colors flex items-center gap-1.5"
+                                    >
+                                        <span className="material-symbols-outlined text-base">my_location</span>
+                                        {locatingCurrent ? 'Locating...' : 'Use Current'}
+                                    </button>
+                                    <div className="relative flex-1 md:flex-none md:w-80">
+                                        <input
+                                            ref={inputRef}
+                                            type="text"
+                                            placeholder="District, State (e.g., Mysuru, Karnataka)"
+                                            value={locationInput}
+                                            onChange={e => {
+                                                setLocationInput(e.target.value);
+                                                setShowSuggestions(true);
+                                            }}
+                                            onFocus={() => {
+                                                if (locationInput.trim().length >= 2) setShowSuggestions(true);
+                                            }}
+                                            onKeyDown={e => e.key === 'Enter' && handleSetLocation()}
+                                            className="skeuo-inset rounded-xl px-4 py-2.5 text-sm w-full"
+                                        />
+
+                                        {showSuggestions && (locationSuggestions.length > 0 || suggestionsLoading) && (
+                                            <div
+                                                ref={suggestionBoxRef}
+                                                className="absolute z-30 mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl max-h-72 overflow-y-auto"
+                                            >
+                                                {locationSuggestions.map((suggestion, idx) => (
+                                                    <button
+                                                        key={`${suggestion.label}-${idx}`}
+                                                        onClick={() => handleSelectSuggestion(suggestion)}
+                                                        className="w-full text-left px-4 py-2.5 hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors border-b last:border-b-0 border-gray-100 dark:border-gray-800"
+                                                    >
+                                                        <p className="text-sm font-semibold text-gray-900 dark:text-white">{suggestion.label}</p>
+                                                        <p className="text-[11px] text-gray-500">
+                                                            {suggestion.kind === 'state'
+                                                                ? 'State'
+                                                                : (suggestion.district && suggestion.state)
+                                                                    ? `${suggestion.district}, ${suggestion.state}`
+                                                                    : suggestion.state || 'Place'}
+                                                        </p>
+                                                    </button>
+                                                ))}
+                                                {suggestionsLoading && (
+                                                    <p className="px-4 py-2 text-xs text-gray-500">Searching locations...</p>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <button onClick={handleSetLocation} className="vibrant-gradient px-5 py-2.5 rounded-xl text-white font-bold text-sm">
+                                        {loading ? 'Loading...' : 'Set'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* 5-Day Forecast Bar */}
+                            <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-6 mb-6">
+                                <h3 className="font-bold text-sm text-gray-900 dark:text-white mb-4">5-Day Outlook</h3>
+                                {loading ? (
+                                    <div className="py-8 text-center text-sm text-gray-500">Fetching live forecast...</div>
+                                ) : fiveDayForecast.length > 0 ? (
+                                    <div className="grid grid-cols-5 gap-2 md:gap-4">
+                                        {fiveDayForecast.map(d => (
+                                            <div key={d.date} className="flex flex-col items-center gap-1 p-2 md:p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                                                <span className="text-xs font-bold text-gray-600">{d.dayLabel}</span>
+                                                <span className="material-symbols-outlined text-xl md:text-2xl text-blue-500">{d.icon}</span>
+                                                <span className="text-xs md:text-sm font-bold text-gray-900 dark:text-white">{d.tempMax}°/{d.tempMin}°</span>
+                                                <span className="text-[10px] md:text-xs text-blue-500 font-bold">🌧 {d.rainChance}%</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="py-8 text-center text-sm text-gray-500">Forecast unavailable for this location.</div>
+                                )}
+                            </div>
+
+                            {/* Severity Filter */}
+                            <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+                                {severityOrder.map(s => {
+                                    const count = s === 'all' ? allAlerts.length : allAlerts.filter(a => a.severity === s).length;
+                                    return (
+                                        <button
+                                            key={s}
+                                            onClick={() => setSelectedSeverity(s)}
+                                            className={`px-4 py-2 rounded-xl text-sm font-bold capitalize whitespace-nowrap transition-all ${selectedSeverity === s
+                                                ? 'bg-white dark:bg-gray-800 shadow-md ring-2 ring-primary/30 text-primary'
+                                                : 'bg-gray-100 dark:bg-gray-800/50 text-gray-500 hover:bg-gray-200'
+                                                }`}
+                                        >
+                                            {s === 'all' ? `All Alerts (${count})` : `${s} (${count})`}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Alerts List */}
+                            <div className="space-y-4">
+                                {error && (
+                                    <div className="skeuo-card rounded-2xl p-6 border border-red-200 dark:border-red-900/40 bg-red-50/70 dark:bg-red-900/10">
+                                        <p className="font-bold text-red-700 dark:text-red-300">{error}</p>
+                                        <button
+                                            onClick={() => {
+                                                const retryQuery = lastQuery || getFallbackQuery();
+                                                void loadWeather(retryQuery);
+                                            }}
+                                            className="mt-3 px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors"
+                                        >
+                                            Retry
+                                        </button>
+                                    </div>
+                                )}
+
+                                {!error && !loading && filteredAlerts.map(alert => {
+                                    const meta = alertMeta[alert.type];
+                                    return (
+                                        <div key={alert.id} className="skeuo-card rounded-2xl p-5 md:p-6">
+                                            <div className="flex flex-col md:flex-row md:items-start gap-4">
+                                                <div className={`h-12 w-12 shrink-0 rounded-xl ${meta.bg} flex items-center justify-center ${meta.color}`}>
+                                                    <span className="material-symbols-outlined text-2xl">{meta.icon}</span>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                                                        <h4 className="font-bold text-gray-900 dark:text-white">{alert.title}</h4>
+                                                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${severityColors[alert.severity]}`}>
+                                                            {alert.severity}
+                                                        </span>
+                                                        <span className="text-xs text-gray-400 font-medium ml-auto">{alert.date}</span>
+                                                    </div>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{alert.description}</p>
+                                                    <div className="p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200/50 dark:border-green-800/30">
+                                                        <p className="text-xs font-bold text-green-700 dark:text-green-400 flex items-start gap-2">
+                                                            <span className="material-symbols-outlined text-sm mt-0.5">agriculture</span>
+                                                            <span><strong>Farming Advice:</strong> {alert.advice}</span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+
+                                {!error && !loading && filteredAlerts.length === 0 && (
+                                    <div className="skeuo-card rounded-2xl p-10 text-center">
+                                        <span className="material-symbols-outlined text-4xl text-gray-300 mb-3">check_circle</span>
+                                        <p className="font-bold text-gray-500">No alerts for the selected severity level.</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Tip Card */}
+                            <div className="mt-8 skeuo-card rounded-2xl p-5 md:p-6 border-l-4 border-primary">
+                                <h4 className="font-bold text-sm mb-2 text-gray-900 dark:text-white flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary text-lg">tips_and_updates</span>
+                                    Pro Tip
+                                </h4>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">
+                                    Use "Use Current" for GPS-based weather, or type district and state together (example: Mysuru, Karnataka) for accurate regional forecast and alerts.
+                                </p>
+                            </div>
+                        </>
+                    )}
                 </div>
             </section>
         </div>

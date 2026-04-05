@@ -7,6 +7,24 @@ import Link from 'next/link';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import supabase from '@/lib/supabase';
+import type { WeatherPayload } from '@/lib/weather-types';
+import {
+    buildWeatherApiQuery,
+    clearWeatherLocationConsent,
+    clearSavedWeatherCoords,
+    clearSavedWeatherLocation,
+    getSavedWeatherLocation,
+    getWeatherLocationConsent,
+    isGeoPermissionDenied,
+    isLikelyWaterLocation,
+    markGeoPermissionDenied,
+    parseDistrictStateInput,
+    requestBrowserCoords,
+    setWeatherLocationConsent,
+    saveWeatherCoords,
+    saveWeatherLocation,
+    type WeatherLocationConsent,
+} from '@/lib/weather-location';
 
 interface Booking {
     id: string;
@@ -44,6 +62,94 @@ export default function UserDashboardPage() {
     });
     const [profileData, setProfileData] = useState<{ full_name: string | null; farm_location: string | null; role: string; phone?: string | null } | null>(null);
     const [loadingData, setLoadingData] = useState(true);
+    const [weatherData, setWeatherData] = useState<WeatherPayload | null>(null);
+    const [weatherLoading, setWeatherLoading] = useState(true);
+    const [weatherError, setWeatherError] = useState<string | null>(null);
+    const [locationConsent, setLocationConsent] = useState<WeatherLocationConsent | null>(null);
+    const [showLocationEditor, setShowLocationEditor] = useState(false);
+    const [manualLocationInput, setManualLocationInput] = useState('');
+    const [locationUpdateLoading, setLocationUpdateLoading] = useState(false);
+
+    const loadWeather = useCallback(async (locationHint?: string | null, options?: { preferCurrent?: boolean }): Promise<boolean> => {
+        const fallbackLocation = 'Hyderabad';
+        const cleanedHint = (locationHint || '').replace(/^[^a-zA-Z0-9]+/, '').trim();
+        const preferCurrent = Boolean(options?.preferCurrent);
+
+        setWeatherLoading(true);
+        setWeatherError(null);
+
+        try {
+            let queryString = '';
+            let currentErrorCode: string | null = null;
+
+            if (preferCurrent) {
+                if (!isGeoPermissionDenied()) {
+                    try {
+                        const coords = await requestBrowserCoords();
+                        markGeoPermissionDenied(false);
+                        saveWeatherCoords(coords);
+                        queryString = buildWeatherApiQuery({ coords });
+                    } catch (err) {
+                        if (err instanceof Error) {
+                            currentErrorCode = err.message;
+                            if (err.message === 'PERMISSION_DENIED') {
+                                markGeoPermissionDenied(true);
+                            }
+                        }
+                    }
+                }
+
+                if (!queryString) {
+                    if (currentErrorCode === 'INSECURE_CONTEXT') {
+                        throw new Error('Current location needs HTTPS or localhost. Please select manual location.');
+                    }
+                    if (currentErrorCode === 'PERMISSION_DENIED') {
+                        throw new Error('Location permission denied. Please allow permission or use manual location.');
+                    }
+                    throw new Error('Unable to detect current location. Please choose manual location.');
+                }
+            } else {
+                clearSavedWeatherCoords();
+            }
+
+            if (!queryString) {
+                const savedLocation = getSavedWeatherLocation();
+                const targetLocation = cleanedHint || savedLocation || fallbackLocation;
+                const parsed = parseDistrictStateInput(targetLocation);
+                queryString = parsed
+                    ? buildWeatherApiQuery({ district: parsed.district, state: parsed.state })
+                    : buildWeatherApiQuery({ location: targetLocation });
+            }
+
+            const response = await fetch(`/api/weather/forecast?${queryString}`, {
+                cache: 'no-store',
+            });
+
+            if (!response.ok) {
+                throw new Error('Unable to load live weather.');
+            }
+
+            const data = (await response.json()) as WeatherPayload;
+            const resolvedLocation = String(data.location.name || '').trim();
+            const lowered = resolvedLocation.toLowerCase();
+            if (preferCurrent && (isLikelyWaterLocation(resolvedLocation) || lowered === 'india' || lowered === 'bharat')) {
+                clearSavedWeatherCoords();
+                clearSavedWeatherLocation();
+                throw new Error('Current location could not be detected accurately. Choose manual location first.');
+            }
+
+            setWeatherData(data);
+            saveWeatherLocation(data.location.name || cleanedHint || fallbackLocation);
+            return true;
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Unable to load live weather.';
+            setWeatherError(message);
+            setWeatherData(null);
+            return false;
+        } finally {
+            setWeatherLoading(false);
+        }
+    }, []);
 
     const loadDashboard = useCallback(async () => {
         if (!user || user.isGuest) { setLoadingData(false); return; }
@@ -51,6 +157,22 @@ export default function UserDashboardPage() {
         // Fetch profile
         const profile = await fetchProfile();
         if (profile) setProfileData(profile);
+
+        const savedConsent = getWeatherLocationConsent();
+        setLocationConsent(savedConsent);
+        if (savedConsent === 'granted') {
+            const ok = await loadWeather(profile?.farm_location || null, { preferCurrent: true });
+            if (!ok) {
+                clearWeatherLocationConsent();
+                setLocationConsent(null);
+            }
+        } else if (savedConsent === 'manual') {
+            await loadWeather(profile?.farm_location || null, { preferCurrent: false });
+        } else {
+            setWeatherLoading(false);
+            setWeatherData(null);
+            setWeatherError(null);
+        }
 
         // Fetch bookings for this user; include phone fallback for older/guest-created rows.
         const authPhoneDigits = (user.phone || '').replace(/\D/g, '');
@@ -79,7 +201,7 @@ export default function UserDashboardPage() {
             });
         }
         setLoadingData(false);
-    }, [user, fetchProfile]);
+    }, [user, fetchProfile, loadWeather]);
 
     useEffect(() => {
         if (user) loadDashboard();
@@ -88,6 +210,64 @@ export default function UserDashboardPage() {
     useEffect(() => {
         if (!loading && !user) router.push('/user-login');
     }, [loading, user, router]);
+
+    const handleEnableCurrentWeather = useCallback(async () => {
+        setLocationUpdateLoading(true);
+        const ok = await loadWeather(profileData?.farm_location || null, { preferCurrent: true });
+        if (ok) {
+            setWeatherLocationConsent('granted');
+            setLocationConsent('granted');
+            setShowLocationEditor(false);
+            setLocationUpdateLoading(false);
+            return;
+        }
+
+        clearWeatherLocationConsent();
+        setLocationConsent(null);
+        setLocationUpdateLoading(false);
+    }, [loadWeather, profileData]);
+
+    const handleEnableManualWeather = useCallback(() => {
+        setWeatherLocationConsent('manual');
+        setLocationConsent('manual');
+        clearSavedWeatherCoords();
+        void loadWeather(profileData?.farm_location || null, { preferCurrent: false });
+    }, [loadWeather, profileData]);
+
+    const handleSaveManualLocation = useCallback(async () => {
+        const raw = manualLocationInput.trim();
+        if (!raw) {
+            setWeatherError('Please enter district and state to continue.');
+            return;
+        }
+
+        setLocationUpdateLoading(true);
+        setWeatherError(null);
+        setWeatherLocationConsent('manual');
+        setLocationConsent('manual');
+        clearSavedWeatherCoords();
+        saveWeatherLocation(raw);
+
+        const ok = await loadWeather(raw, { preferCurrent: false });
+        if (ok) {
+            setShowLocationEditor(false);
+        }
+        setLocationUpdateLoading(false);
+    }, [loadWeather, manualLocationInput]);
+
+    useEffect(() => {
+        if (manualLocationInput.trim()) return;
+
+        const fromStorage = getSavedWeatherLocation();
+        if (fromStorage) {
+            setManualLocationInput(fromStorage);
+            return;
+        }
+
+        if (profileData?.farm_location) {
+            setManualLocationInput(profileData.farm_location);
+        }
+    }, [manualLocationInput, profileData]);
 
     if (loading || !user) {
         return (
@@ -119,6 +299,12 @@ export default function UserDashboardPage() {
         cancelled: 'Cancelled',
     };
 
+    const weatherUpdatedAt = weatherData
+        ? new Date(weatherData.updatedAt).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' })
+        : null;
+
+    const todayRainChance = weatherData?.daily[0]?.rainChance;
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-[#0d110d]">
             <Header />
@@ -140,6 +326,128 @@ export default function UserDashboardPage() {
                             {profileData?.farm_location ? `📍 ${profileData.farm_location}` : 'Your farming dashboard'}
                         </p>
                     </div>
+
+                    {/* Live Weather */}
+                    {!locationConsent ? (
+                        <div className="mb-8 rounded-2xl border border-blue-100 dark:border-blue-900/30 bg-gradient-to-br from-blue-50 via-sky-50 to-white dark:from-blue-950/20 dark:via-[#132018] dark:to-[#1a231a] p-5 md:p-6">
+                            <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2">Enable Live Farm Weather</h2>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                Choose location mode first. Weather will be shown only after your selection.
+                            </p>
+                            <div className="flex flex-wrap gap-3">
+                                <button
+                                    onClick={handleEnableCurrentWeather}
+                                    className="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors flex items-center gap-2"
+                                >
+                                    <span className="material-symbols-outlined text-base">my_location</span>
+                                    Use Current Location
+                                </button>
+                                <button
+                                    onClick={handleEnableManualWeather}
+                                    className="px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-sm font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                    Use Saved/Manual Location
+                                </button>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-3">
+                                Current location requires HTTPS or localhost. You can always set district/state in Weather Alerts.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="mb-8 rounded-2xl border border-blue-100 dark:border-blue-900/30 bg-gradient-to-br from-blue-50 via-sky-50 to-white dark:from-blue-950/20 dark:via-[#132018] dark:to-[#1a231a] p-5 md:p-6">
+                            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+                                <div>
+                                    <p className="text-xs font-black uppercase tracking-wider text-blue-700 dark:text-blue-300">Live Farm Weather</p>
+                                    {weatherLoading ? (
+                                        <p className="mt-2 text-sm text-gray-500">Fetching latest forecast...</p>
+                                    ) : weatherData ? (
+                                        <>
+                                            <div className="mt-1 flex items-center gap-3">
+                                                <span className="material-symbols-outlined text-3xl text-blue-600">{weatherData.current.icon}</span>
+                                                <p className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white">{weatherData.current.temperature}°C</p>
+                                                <span className="text-sm md:text-base font-semibold text-gray-600 dark:text-gray-300">{weatherData.current.condition}</span>
+                                            </div>
+                                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{weatherData.location.name}</p>
+                                            {weatherUpdatedAt && (
+                                                <p className="mt-1 text-xs text-gray-500">Updated {weatherUpdatedAt}</p>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <p className="mt-2 text-sm text-red-600 dark:text-red-400">{weatherError || 'Weather data is currently unavailable.'}</p>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div className="rounded-xl bg-white/80 dark:bg-black/20 px-4 py-3 border border-white/70 dark:border-white/10 min-w-[98px]">
+                                        <p className="text-[11px] text-gray-500">Humidity</p>
+                                        <p className="text-lg font-black text-gray-900 dark:text-white">{weatherData ? `${weatherData.current.humidity}%` : '--'}</p>
+                                    </div>
+                                    <div className="rounded-xl bg-white/80 dark:bg-black/20 px-4 py-3 border border-white/70 dark:border-white/10 min-w-[98px]">
+                                        <p className="text-[11px] text-gray-500">Wind</p>
+                                        <p className="text-lg font-black text-gray-900 dark:text-white">{weatherData ? `${weatherData.current.windSpeed} km/h` : '--'}</p>
+                                    </div>
+                                    <div className="rounded-xl bg-white/80 dark:bg-black/20 px-4 py-3 border border-white/70 dark:border-white/10 min-w-[98px]">
+                                        <p className="text-[11px] text-gray-500">Rain Chance</p>
+                                        <p className="text-lg font-black text-gray-900 dark:text-white">{typeof todayRainChance === 'number' ? `${todayRainChance}%` : '--'}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-4 pt-4 border-t border-blue-100 dark:border-blue-900/30 flex items-center justify-between gap-3">
+                                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                                    Plan spray, irrigation, and harvest windows based on live weather updates.
+                                </p>
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => setShowLocationEditor(prev => !prev)}
+                                        className="text-sm font-bold text-blue-700 hover:underline whitespace-nowrap"
+                                    >
+                                        {showLocationEditor ? 'Close Location Editor' : 'Change Location'}
+                                    </button>
+                                    <Link href="/home/toolbox/weather-alerts" className="text-sm font-bold text-primary hover:underline whitespace-nowrap">
+                                        Open Weather Alerts →
+                                    </Link>
+                                </div>
+                            </div>
+
+                            {showLocationEditor && (
+                                <div className="mt-4 rounded-2xl border border-blue-100 dark:border-blue-900/30 bg-white/70 dark:bg-black/20 p-4 md:p-5">
+                                    <p className="text-sm font-bold text-gray-900 dark:text-white mb-3">Update Weather Location</p>
+                                    <div className="flex flex-col md:flex-row gap-2 md:items-center">
+                                        <button
+                                            onClick={handleEnableCurrentWeather}
+                                            disabled={locationUpdateLoading}
+                                            className="px-4 py-2.5 rounded-xl bg-blue-100 text-blue-700 text-sm font-bold hover:bg-blue-200 transition-colors disabled:opacity-60"
+                                        >
+                                            {locationUpdateLoading ? 'Detecting...' : 'Use Current'}
+                                        </button>
+                                        <input
+                                            value={manualLocationInput}
+                                            onChange={(e) => setManualLocationInput(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    void handleSaveManualLocation();
+                                                }
+                                            }}
+                                            placeholder="District, State (e.g., Bengaluru, Karnataka)"
+                                            className="skeuo-inset rounded-xl px-4 py-2.5 text-sm flex-1"
+                                        />
+                                        <button
+                                            onClick={() => void handleSaveManualLocation()}
+                                            disabled={locationUpdateLoading || !manualLocationInput.trim()}
+                                            className="px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-dark transition-colors disabled:opacity-60"
+                                        >
+                                            Save
+                                        </button>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-2">
+                                        For LAN HTTP URLs, use manual district/state. Current location works best on HTTPS or localhost.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {loadingData ? (
                         <div className="flex justify-center py-20">

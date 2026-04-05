@@ -1,10 +1,29 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
+import type { WeatherPayload } from '@/lib/weather-types';
+import {
+    buildWeatherApiQuery,
+    clearSavedWeatherCoords,
+    clearSavedWeatherLocation,
+    getSavedWeatherLocation,
+    getWeatherLocationConsent,
+    isGeoPermissionDenied,
+    isLikelyWaterLocation,
+    markGeoPermissionDenied,
+    parseDistrictStateInput,
+    requestBrowserCoords,
+    saveWeatherCoords,
+    saveWeatherLocation,
+    type WeatherLocationConsent,
+} from '@/lib/weather-location';
 
 export default function ToolboxPage() {
     const { t } = useLanguage();
+    const [locationConsent, setLocationConsent] = useState<WeatherLocationConsent | null>(null);
+    const [weatherData, setWeatherData] = useState<WeatherPayload | null>(null);
 
     const tools = [
         {
@@ -70,6 +89,71 @@ export default function ToolboxPage() {
         { tName: 'toolboxPage.fertilizerGuide', icon: 'compost', color: 'text-orange-600', path: '/home/toolbox/fertilizer-guide' },
     ];
 
+    useEffect(() => {
+        const loadWeather = async () => {
+            try {
+                const consent = getWeatherLocationConsent();
+                setLocationConsent(consent);
+                if (!consent) {
+                    setWeatherData(null);
+                    return;
+                }
+
+                let queryString = '';
+
+                if (consent === 'granted') {
+                    if (!isGeoPermissionDenied()) {
+                        try {
+                            const coords = await requestBrowserCoords();
+                            markGeoPermissionDenied(false);
+                            saveWeatherCoords(coords);
+                            queryString = buildWeatherApiQuery({ coords });
+                        } catch (err) {
+                            if (err instanceof Error && err.message === 'PERMISSION_DENIED') {
+                                markGeoPermissionDenied(true);
+                            }
+                        }
+                    }
+
+                    if (!queryString) {
+                        setWeatherData(null);
+                        return;
+                    }
+                } else {
+                    clearSavedWeatherCoords();
+                }
+
+                if (!queryString) {
+                    const savedLocation = getSavedWeatherLocation() || 'Hyderabad';
+                    const parsed = parseDistrictStateInput(savedLocation);
+                    queryString = parsed
+                        ? buildWeatherApiQuery({ district: parsed.district, state: parsed.state })
+                        : buildWeatherApiQuery({ location: savedLocation });
+                }
+
+                const response = await fetch(`/api/weather/forecast?${queryString}`, {
+                    cache: 'no-store',
+                });
+
+                if (!response.ok) return;
+                const payload = (await response.json()) as WeatherPayload;
+                if (consent === 'granted' && isLikelyWaterLocation(payload.location.name)) {
+                    clearSavedWeatherCoords();
+                    clearSavedWeatherLocation();
+                    setWeatherData(null);
+                    return;
+                }
+
+                setWeatherData(payload);
+                saveWeatherLocation(payload.location.name || 'Hyderabad');
+            } catch (error) {
+                console.error('[toolbox] weather load failed:', error);
+            }
+        };
+
+        void loadWeather();
+    }, []);
+
     return (
         <div className="agri-grid-bg min-h-screen">
             <section className="px-6 pt-12 pb-8">
@@ -85,15 +169,33 @@ export default function ToolboxPage() {
                             </p>
                         </div>
                         <div className="flex gap-4">
-                            <div className="skeuo-card rounded-2xl p-4 flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-600">
-                                    <span className="material-symbols-outlined font-bold">wb_sunny</span>
-                                </div>
-                                <div>
-                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('toolboxPage.localWeather')}</p>
-                                    <p className="text-xl font-bold text-gray-900 dark:text-white">32°C • Sunny</p>
-                                </div>
-                            </div>
+                            {!locationConsent ? (
+                                <Link href="/home/toolbox/weather-alerts" className="skeuo-card rounded-2xl p-4 flex items-center gap-4 hover:scale-[1.01] transition-transform">
+                                    <div className="h-12 w-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-600">
+                                        <span className="material-symbols-outlined font-bold">location_searching</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('toolboxPage.localWeather')}</p>
+                                        <p className="text-lg font-bold text-gray-900 dark:text-white">Choose weather location mode</p>
+                                        <p className="text-xs text-gray-500 mt-0.5">Tap to enable current or manual location</p>
+                                    </div>
+                                </Link>
+                            ) : (
+                                <Link href="/home/toolbox/weather-alerts" className="skeuo-card rounded-2xl p-4 flex items-center gap-4 hover:scale-[1.01] transition-transform">
+                                    <div className="h-12 w-12 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-600">
+                                        <span className="material-symbols-outlined font-bold">{weatherData?.current.icon || 'partly_cloudy_day'}</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('toolboxPage.localWeather')}</p>
+                                        <p className="text-xl font-bold text-gray-900 dark:text-white">
+                                            {weatherData ? `${weatherData.current.temperature}°C • ${weatherData.current.condition}` : 'Set location in Weather Alerts'}
+                                        </p>
+                                        {weatherData && (
+                                            <p className="text-xs text-gray-500 mt-0.5">{weatherData.location.name}</p>
+                                        )}
+                                    </div>
+                                </Link>
+                            )}
                         </div>
                     </div>
 
