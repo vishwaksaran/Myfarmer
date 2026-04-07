@@ -429,9 +429,6 @@ export default function UserDashboardPage() {
                         <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                             Welcome, {user.displayName?.split(' ')[0] || 'Farmer'}!
                         </h1>
-                        <p className="text-gray-500 dark:text-gray-400 mt-2">
-                            {profileData?.farm_location ? `📍 ${profileData.farm_location}` : 'Your farming dashboard'}
-                        </p>
                     </div>
 
                     {/* Live Weather */}

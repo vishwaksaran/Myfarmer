@@ -23,7 +23,11 @@ function parseWishlist(raw: string | null): Set<number> {
 }
 
 export function useShopWishlist() {
-    const [wishlistIds, setWishlistIds] = useState<Set<number>>(new Set<number>());
+    const [wishlistIds, setWishlistIds] = useState<Set<number>>(() => {
+        if (typeof window === 'undefined') return new Set<number>();
+        const saved = window.localStorage.getItem(SHOP_WISHLIST_STORAGE_KEY);
+        return parseWishlist(saved);
+    });
 
     const syncFromStorage = useCallback(() => {
         if (typeof window === 'undefined') return;
@@ -42,8 +46,6 @@ export function useShopWishlist() {
     }, []);
 
     useEffect(() => {
-        syncFromStorage();
-
         const handleStorage = (event: StorageEvent) => {
             if (event.key && event.key !== SHOP_WISHLIST_STORAGE_KEY) return;
             syncFromStorage();
