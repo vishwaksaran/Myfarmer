@@ -501,3 +501,44 @@ export async function deleteUser(userId: string): Promise<{ success: boolean; er
         return { success: false, error: 'Failed to delete user' };
     }
 }
+
+// ─── Public: Fetch approved land lease listings ───────────────────────
+
+export interface LeaseListingRecord {
+    id: string;
+    full_name: string;
+    location: string;
+    created_at: string;
+    extra_data: {
+        title?: string;
+        area?: string;
+        lease_price?: string;
+        duration?: string;
+        description?: string;
+        photos?: string[];
+    };
+}
+
+export async function fetchApprovedLeaseListings(): Promise<{ data: LeaseListingRecord[]; error?: string }> {
+    try {
+        const supabase = createSupabaseAdminClient();
+
+        const { data, error } = await supabase
+            .from('service_bookings')
+            .select('id, full_name, location, extra_data, created_at')
+            .eq('module', 'land')
+            .eq('category', 'lease')
+            .eq('status', 'approved')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('[fetchApprovedLeaseListings] Error:', error);
+            return { data: [], error: error.message };
+        }
+
+        return { data: data as LeaseListingRecord[] };
+    } catch (err) {
+        console.error('[fetchApprovedLeaseListings] Unexpected error:', err);
+        return { data: [], error: 'Failed to fetch listings' };
+    }
+}

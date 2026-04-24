@@ -20,6 +20,7 @@ const STATUS_OPTIONS = [
     { value: 'pending', label: 'Pending' },
     { value: 'contacted', label: 'Contacted' },
     { value: 'confirmed', label: 'Confirmed' },
+    { value: 'approved', label: 'Approved (Public)' },
     { value: 'completed', label: 'Completed' },
     { value: 'cancelled', label: 'Cancelled' },
 ];
@@ -282,8 +283,9 @@ function AdminBookingsContent() {
                                                     className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase border-0 outline-none cursor-pointer ${b.status === 'pending' ? 'bg-amber-100 text-amber-700' :
                                                             b.status === 'contacted' ? 'bg-blue-100 text-blue-700' :
                                                                 b.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                                                                    b.status === 'completed' ? 'bg-gray-100 text-gray-600' :
-                                                                        'bg-red-100 text-red-700'
+                                                                    b.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
+                                                                        b.status === 'completed' ? 'bg-gray-100 text-gray-600' :
+                                                                            'bg-red-100 text-red-700'
                                                         }`}
                                                 >
                                                     {STATUS_OPTIONS.filter(o => o.value).map(o => (
