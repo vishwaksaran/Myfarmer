@@ -649,12 +649,15 @@ export default function LeaseLandPage() {
 
                     {(() => {
                         const digits = (contactListing.phone ?? '').replace(/\D/g, '').slice(-10);
-                        const formatted = digits.replace(/(\d{5})(\d{5})/, '$1 $2') || 'N/A';
+                        // Show first 5 digits, mask last 5 — full number used in call/WA links
+                        const masked = digits.length === 10
+                            ? `${digits.slice(0, 5)} •••••`
+                            : 'N/A';
                         return (
                             <>
                                 <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                                     <span className="material-symbols-outlined" style={{ color: '#16a34a', fontSize: '20px' }}>phone</span>
-                                    <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '0.05em' }}>+91 {formatted}</span>
+                                    <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '0.05em' }}>+91 {masked}</span>
                                 </div>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                     <a
