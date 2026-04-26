@@ -6,6 +6,8 @@ import NearbyLocation from '@/components/v2/NearbyLocation';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import { fetchApprovedLeaseListings, type LeaseListingRecord } from '@/app/actions/bookings';
+import { useAuth } from '@/context/AuthContext';
+import LoginModal from '@/components/auth/LoginModal';
 
 async function uploadLeasePhoto(file: File): Promise<string | null> {
     const fd = new FormData();
@@ -40,7 +42,9 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function LeaseLandPage() {
+    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState<TabType>('browse');
+    const [showLoginModal, setShowLoginModal] = useState(false);
 
     // ── Browse tab state ─────────────────────────────────────────────
     const [listings, setListings] = useState<LeaseListingRecord[]>([]);
@@ -123,6 +127,13 @@ export default function LeaseLandPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Require login — show modal for guests
+        if (!user || user.isGuest) {
+            setShowLoginModal(true);
+            return;
+        }
+
         if (!validate()) return;
 
         // 1. Upload photos to Supabase Storage first
@@ -522,6 +533,9 @@ export default function LeaseLandPage() {
                 )}
                 <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>
             </div>
+
+            {/* Login modal — shown when guest tries to submit */}
+            <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
         </div>
     );
 }
