@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
@@ -51,6 +52,10 @@ export default function LeaseLandPage() {
 
     // ── Contact modal state ───────────────────────────────────────────
     const [contactListing, setContactListing] = useState<LeaseListingRecord | null>(null);
+
+    // Portal mount — ensures modals render at document.body, bypassing any parent stacking context
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => { setMounted(true); }, []);
 
     // Keyboard nav for lightbox
     useEffect(() => {
@@ -200,6 +205,7 @@ export default function LeaseLandPage() {
     const isBusy = submitting || uploadingPhotos;
 
     return (
+        <>
         <div className="px-3 md:px-6 pb-8 md:pb-12 py-6 md:py-8">
             <div className="mx-auto max-w-[1280px]">
                 {/* Breadcrumb */}
@@ -558,126 +564,123 @@ export default function LeaseLandPage() {
                 <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>
             </div>
 
-            {/* ── Photo Gallery Lightbox ─────────────────────────────────── */}
-            {gallery && (
-                <div
-                    className="fixed inset-0 z-[9999] bg-black/95 flex flex-col"
-                    onClick={() => setGallery(null)}
-                >
-                    {/* Top bar */}
-                    <div className="flex items-center justify-between px-4 py-3 shrink-0" onClick={e => e.stopPropagation()}>
-                        <span className="text-white text-sm font-semibold">{gallery.index + 1} / {gallery.photos.length}</span>
-                        <button onClick={() => setGallery(null)} className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
-                            <span className="material-symbols-outlined text-white text-2xl">close</span>
-                        </button>
-                    </div>
-
-                    {/* Main image */}
-                    <div className="flex-1 flex items-center justify-center px-12 relative min-h-0" onClick={e => e.stopPropagation()}>
-                        <img
-                            key={gallery.index}
-                            src={gallery.photos[gallery.index]}
-                            alt={`Photo ${gallery.index + 1}`}
-                            className="max-h-full max-w-full object-contain rounded-lg select-none"
-                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
-                        />
-                        {/* Prev */}
-                        {gallery.index > 0 && (
-                            <button
-                                onClick={() => setGallery(g => g ? { ...g, index: g.index - 1 } : g)}
-                                className="absolute left-2 p-3 rounded-full bg-white/10 hover:bg-white/25 transition-colors"
-                            >
-                                <span className="material-symbols-outlined text-white text-3xl">chevron_left</span>
-                            </button>
-                        )}
-                        {/* Next */}
-                        {gallery.index < gallery.photos.length - 1 && (
-                            <button
-                                onClick={() => setGallery(g => g ? { ...g, index: g.index + 1 } : g)}
-                                className="absolute right-2 p-3 rounded-full bg-white/10 hover:bg-white/25 transition-colors"
-                            >
-                                <span className="material-symbols-outlined text-white text-3xl">chevron_right</span>
-                            </button>
-                        )}
-                    </div>
-
-                    {/* Thumbnail strip */}
-                    {gallery.photos.length > 1 && (
-                        <div className="flex gap-2 px-4 py-3 overflow-x-auto shrink-0 justify-center" onClick={e => e.stopPropagation()}>
-                            {gallery.photos.map((src, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => setGallery(g => g ? { ...g, index: i } : g)}
-                                    className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${gallery.index === i ? 'border-white scale-110' : 'border-transparent opacity-50 hover:opacity-80'}`}
-                                >
-                                    <img src={src} alt="" className="w-full h-full object-cover" />
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* ── Contact Owner Modal ────────────────────────────────────── */}
-            {contactListing && (
-                <div
-                    className="fixed inset-0 z-[9998] flex items-end md:items-center justify-center p-4 bg-black/60"
-                    onClick={() => setContactListing(null)}
-                >
-                    <div
-                        className="bg-white dark:bg-[#1a231a] rounded-2xl p-6 w-full max-w-sm shadow-2xl"
-                        onClick={e => e.stopPropagation()}
-                    >
-                        {/* Header */}
-                        <div className="flex items-start justify-between mb-4">
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{contactListing.full_name}</h3>
-                                <p className="text-sm text-gray-500 mt-0.5">{contactListing.extra_data.title || 'Land for Lease'} · {contactListing.location}</p>
-                            </div>
-                            <button onClick={() => setContactListing(null)} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                                <span className="material-symbols-outlined text-gray-500">close</span>
-                            </button>
-                        </div>
-
-                        {/* Phone number display */}
-                        {(() => {
-                            const digits = contactListing.phone.replace(/\D/g, '').slice(-10);
-                            const formatted = digits.replace(/(\d{5})(\d{5})/, '$1 $2');
-                            return (
-                                <>
-                                    <div className="bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-3 flex items-center gap-3 mb-4">
-                                        <span className="material-symbols-outlined text-primary text-xl">phone</span>
-                                        <span className="text-lg font-bold text-gray-900 dark:text-white tracking-wide">
-                                            +91 {formatted}
-                                        </span>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <a
-                                            href={`tel:+91${digits}`}
-                                            className="flex items-center justify-center gap-2 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors text-sm"
-                                        >
-                                            <span className="material-symbols-outlined text-lg">call</span>
-                                            Call Now
-                                        </a>
-                                        <a
-                                            href={`https://wa.me/91${digits}?text=${encodeURIComponent(`Hi, I saw your land listing "${contactListing.extra_data.title || 'Land for Lease'}" at ${contactListing.location} on Miraitu. I'm interested in leasing it.`)}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex items-center justify-center gap-2 py-3 bg-[#25D366] text-white font-bold rounded-xl hover:bg-[#20b858] transition-colors text-sm"
-                                        >
-                                            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.138.563 4.14 1.539 5.875L.054 23.477a.5.5 0 0 0 .613.612l5.744-1.506A11.95 11.95 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.938a9.934 9.934 0 0 1-5.062-1.377l-.362-.215-3.757.985.995-3.65-.236-.376A9.944 9.944 0 0 1 2.062 12C2.062 6.509 6.509 2.062 12 2.062c5.491 0 9.938 4.447 9.938 9.938 0 5.491-4.447 9.938-9.938 9.938z"/></svg>
-                                            WhatsApp
-                                        </a>
-                                    </div>
-                                </>
-                            );
-                        })()}
-                    </div>
-                </div>
-            )}
-
             {/* Login modal — shown when guest tries to submit */}
             <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
         </div>
+
+        {/* ── Photo Gallery Lightbox — rendered via portal to bypass any parent stacking context ── */}
+        {mounted && gallery && createPortal(
+            <div
+                style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.95)', display: 'flex', flexDirection: 'column' }}
+                onClick={() => setGallery(null)}
+            >
+                {/* Top bar */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+                    <span style={{ color: 'white', fontSize: '14px', fontWeight: 600 }}>{gallery.index + 1} / {gallery.photos.length}</span>
+                    <button onClick={() => setGallery(null)} style={{ padding: '8px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span className="material-symbols-outlined" style={{ color: 'white', fontSize: '24px' }}>close</span>
+                    </button>
+                </div>
+
+                {/* Main image */}
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 60px', position: 'relative', minHeight: 0 }} onClick={e => e.stopPropagation()}>
+                    <img
+                        key={gallery.index}
+                        src={gallery.photos[gallery.index]}
+                        alt={`Photo ${gallery.index + 1}`}
+                        style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', borderRadius: '8px', userSelect: 'none' }}
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
+                    />
+                    {gallery.index > 0 && (
+                        <button
+                            onClick={() => setGallery(g => g ? { ...g, index: g.index - 1 } : g)}
+                            style={{ position: 'absolute', left: '8px', padding: '12px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', border: 'none', cursor: 'pointer', display: 'flex' }}
+                        >
+                            <span className="material-symbols-outlined" style={{ color: 'white', fontSize: '32px' }}>chevron_left</span>
+                        </button>
+                    )}
+                    {gallery.index < gallery.photos.length - 1 && (
+                        <button
+                            onClick={() => setGallery(g => g ? { ...g, index: g.index + 1 } : g)}
+                            style={{ position: 'absolute', right: '8px', padding: '12px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', border: 'none', cursor: 'pointer', display: 'flex' }}
+                        >
+                            <span className="material-symbols-outlined" style={{ color: 'white', fontSize: '32px' }}>chevron_right</span>
+                        </button>
+                    )}
+                </div>
+
+                {/* Thumbnail strip */}
+                {gallery.photos.length > 1 && (
+                    <div style={{ display: 'flex', gap: '8px', padding: '12px 16px', overflowX: 'auto', flexShrink: 0, justifyContent: 'center' }} onClick={e => e.stopPropagation()}>
+                        {gallery.photos.map((src, i) => (
+                            <button
+                                key={i}
+                                onClick={() => setGallery(g => g ? { ...g, index: i } : g)}
+                                style={{ flexShrink: 0, width: '56px', height: '56px', borderRadius: '8px', overflow: 'hidden', border: gallery.index === i ? '2px solid white' : '2px solid transparent', opacity: gallery.index === i ? 1 : 0.5, cursor: 'pointer', padding: 0 }}
+                            >
+                                <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>,
+            document.body
+        )}
+
+        {/* ── Contact Owner Modal — rendered via portal ── */}
+        {mounted && contactListing && createPortal(
+            <div
+                style={{ position: 'fixed', inset: 0, zIndex: 99998, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '16px' }}
+                onClick={() => setContactListing(null)}
+            >
+                <div
+                    style={{ background: 'white', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '384px', boxShadow: '0 25px 50px rgba(0,0,0,0.25)' }}
+                    onClick={e => e.stopPropagation()}
+                >
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
+                        <div>
+                            <p style={{ fontSize: '18px', fontWeight: 700, color: '#111', margin: 0 }}>{contactListing.full_name}</p>
+                            <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>{contactListing.extra_data.title || 'Land for Lease'} · {contactListing.location}</p>
+                        </div>
+                        <button onClick={() => setContactListing(null)} style={{ padding: '6px', borderRadius: '50%', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex' }}>
+                            <span className="material-symbols-outlined" style={{ color: '#6b7280', fontSize: '20px' }}>close</span>
+                        </button>
+                    </div>
+
+                    {(() => {
+                        const digits = (contactListing.phone ?? '').replace(/\D/g, '').slice(-10);
+                        const formatted = digits.replace(/(\d{5})(\d{5})/, '$1 $2') || 'N/A';
+                        return (
+                            <>
+                                <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                                    <span className="material-symbols-outlined" style={{ color: '#16a34a', fontSize: '20px' }}>phone</span>
+                                    <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '0.05em' }}>+91 {formatted}</span>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                    <a
+                                        href={`tel:+91${digits}`}
+                                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', background: '#16a34a', color: 'white', fontWeight: 700, borderRadius: '12px', textDecoration: 'none', fontSize: '14px' }}
+                                    >
+                                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>call</span>
+                                        Call Now
+                                    </a>
+                                    <a
+                                        href={`https://wa.me/91${digits}?text=${encodeURIComponent(`Hi, I saw your land listing "${contactListing.extra_data.title || 'Land for Lease'}" at ${contactListing.location} on Miraitu. I'm interested in leasing it.`)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', background: '#25D366', color: 'white', fontWeight: 700, borderRadius: '12px', textDecoration: 'none', fontSize: '14px' }}
+                                    >
+                                        <svg viewBox="0 0 24 24" style={{ width: '16px', height: '16px', fill: 'white' }}><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.138.563 4.14 1.539 5.875L.054 23.477a.5.5 0 0 0 .613.612l5.744-1.506A11.95 11.95 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.938a9.934 9.934 0 0 1-5.062-1.377l-.362-.215-3.757.985.995-3.65-.236-.376A9.944 9.944 0 0 1 2.062 12C2.062 6.509 6.509 2.062 12 2.062c5.491 0 9.938 4.447 9.938 9.938 0 5.491-4.447 9.938-9.938 9.938z"/></svg>
+                                        WhatsApp
+                                    </a>
+                                </div>
+                            </>
+                        );
+                    })()}
+                </div>
+            </div>,
+            document.body
+        )}
+        </>
     );
 }
