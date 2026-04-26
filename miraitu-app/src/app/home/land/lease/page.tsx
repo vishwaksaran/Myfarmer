@@ -46,6 +46,24 @@ export default function LeaseLandPage() {
     const [activeTab, setActiveTab] = useState<TabType>('browse');
     const [showLoginModal, setShowLoginModal] = useState(false);
 
+    // ── Gallery lightbox state ────────────────────────────────────────
+    const [gallery, setGallery] = useState<{ photos: string[]; index: number } | null>(null);
+
+    // ── Contact modal state ───────────────────────────────────────────
+    const [contactListing, setContactListing] = useState<LeaseListingRecord | null>(null);
+
+    // Keyboard nav for lightbox
+    useEffect(() => {
+        if (!gallery) return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setGallery(null);
+            if (e.key === 'ArrowRight') setGallery(g => g && g.index < g.photos.length - 1 ? { ...g, index: g.index + 1 } : g);
+            if (e.key === 'ArrowLeft') setGallery(g => g && g.index > 0 ? { ...g, index: g.index - 1 } : g);
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [gallery]);
+
     // ── Browse tab state ─────────────────────────────────────────────
     const [listings, setListings] = useState<LeaseListingRecord[]>([]);
     const [listingsLoading, setListingsLoading] = useState(false);
@@ -284,27 +302,34 @@ export default function LeaseLandPage() {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                                     {listings.map((listing) => {
                                         const ed = listing.extra_data;
-                                        const heroImage = ed.photos?.[0] || FALLBACK_IMAGE;
+                                        const photos = ed.photos?.length ? ed.photos : [FALLBACK_IMAGE];
+                                        const heroImage = photos[0];
                                         return (
                                             <div key={listing.id} className="group bg-white dark:bg-[#1a231a] rounded-xl md:rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                                                {/* Image */}
-                                                <div className="relative h-40 md:h-48 overflow-hidden bg-gray-100 dark:bg-gray-800">
+                                                {/* Clickable image → opens gallery */}
+                                                <div
+                                                    className="relative h-40 md:h-48 overflow-hidden bg-gray-100 dark:bg-gray-800 cursor-pointer"
+                                                    onClick={() => setGallery({ photos, index: 0 })}
+                                                >
                                                     <img
                                                         src={heroImage}
                                                         alt={ed.title || 'Land listing'}
                                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                                         onError={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
                                                     />
+                                                    {/* View gallery overlay hint */}
+                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                                        <span className="material-symbols-outlined text-white text-3xl opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg">zoom_in</span>
+                                                    </div>
                                                     {ed.duration && (
-                                                        <div className="absolute bottom-2 md:bottom-3 left-2 md:left-3 px-2 py-0.5 md:py-1 bg-teal-600/80 backdrop-blur-sm text-white text-[10px] md:text-xs font-semibold rounded-md md:rounded-lg">
+                                                        <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-teal-600/80 backdrop-blur-sm text-white text-[10px] md:text-xs font-semibold rounded-md">
                                                             {ed.duration} Lease
                                                         </div>
                                                     )}
-                                                    {/* Photo count badge */}
-                                                    {ed.photos && ed.photos.length > 1 && (
+                                                    {photos.length > 1 && (
                                                         <div className="absolute top-2 right-2 px-2 py-0.5 bg-black/60 text-white text-[10px] font-bold rounded-md flex items-center gap-1">
                                                             <span className="material-symbols-outlined text-xs">photo_library</span>
-                                                            {ed.photos.length}
+                                                            {photos.length}
                                                         </div>
                                                     )}
                                                 </div>
@@ -318,7 +343,6 @@ export default function LeaseLandPage() {
                                                         <span className="material-symbols-outlined text-sm md:text-base">location_on</span>
                                                         {listing.location}
                                                     </div>
-
                                                     <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4 text-xs md:text-sm">
                                                         {ed.area && (
                                                             <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
@@ -331,13 +355,9 @@ export default function LeaseLandPage() {
                                                             {listing.full_name}
                                                         </div>
                                                     </div>
-
                                                     {ed.description && (
-                                                        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">
-                                                            {ed.description}
-                                                        </p>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">{ed.description}</p>
                                                     )}
-
                                                     <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-gray-100 dark:border-gray-800">
                                                         <div>
                                                             <p className="text-base md:text-xl font-bold text-primary">
@@ -345,7 +365,11 @@ export default function LeaseLandPage() {
                                                             </p>
                                                             <p className="text-[10px] md:text-xs text-gray-500">{timeAgo(listing.created_at)}</p>
                                                         </div>
-                                                        <button className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white text-xs md:text-sm font-bold rounded-lg md:rounded-xl hover:bg-primary/90 transition-colors">
+                                                        <button
+                                                            onClick={() => setContactListing(listing)}
+                                                            className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white text-xs md:text-sm font-bold rounded-lg md:rounded-xl hover:bg-primary/90 transition-colors flex items-center gap-1"
+                                                        >
+                                                            <span className="material-symbols-outlined text-sm">call</span>
                                                             Contact Owner
                                                         </button>
                                                     </div>
@@ -533,6 +557,124 @@ export default function LeaseLandPage() {
                 )}
                 <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>
             </div>
+
+            {/* ── Photo Gallery Lightbox ─────────────────────────────────── */}
+            {gallery && (
+                <div
+                    className="fixed inset-0 z-[9999] bg-black/95 flex flex-col"
+                    onClick={() => setGallery(null)}
+                >
+                    {/* Top bar */}
+                    <div className="flex items-center justify-between px-4 py-3 shrink-0" onClick={e => e.stopPropagation()}>
+                        <span className="text-white text-sm font-semibold">{gallery.index + 1} / {gallery.photos.length}</span>
+                        <button onClick={() => setGallery(null)} className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+                            <span className="material-symbols-outlined text-white text-2xl">close</span>
+                        </button>
+                    </div>
+
+                    {/* Main image */}
+                    <div className="flex-1 flex items-center justify-center px-12 relative min-h-0" onClick={e => e.stopPropagation()}>
+                        <img
+                            key={gallery.index}
+                            src={gallery.photos[gallery.index]}
+                            alt={`Photo ${gallery.index + 1}`}
+                            className="max-h-full max-w-full object-contain rounded-lg select-none"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
+                        />
+                        {/* Prev */}
+                        {gallery.index > 0 && (
+                            <button
+                                onClick={() => setGallery(g => g ? { ...g, index: g.index - 1 } : g)}
+                                className="absolute left-2 p-3 rounded-full bg-white/10 hover:bg-white/25 transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-white text-3xl">chevron_left</span>
+                            </button>
+                        )}
+                        {/* Next */}
+                        {gallery.index < gallery.photos.length - 1 && (
+                            <button
+                                onClick={() => setGallery(g => g ? { ...g, index: g.index + 1 } : g)}
+                                className="absolute right-2 p-3 rounded-full bg-white/10 hover:bg-white/25 transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-white text-3xl">chevron_right</span>
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Thumbnail strip */}
+                    {gallery.photos.length > 1 && (
+                        <div className="flex gap-2 px-4 py-3 overflow-x-auto shrink-0 justify-center" onClick={e => e.stopPropagation()}>
+                            {gallery.photos.map((src, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setGallery(g => g ? { ...g, index: i } : g)}
+                                    className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${gallery.index === i ? 'border-white scale-110' : 'border-transparent opacity-50 hover:opacity-80'}`}
+                                >
+                                    <img src={src} alt="" className="w-full h-full object-cover" />
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* ── Contact Owner Modal ────────────────────────────────────── */}
+            {contactListing && (
+                <div
+                    className="fixed inset-0 z-[9998] flex items-end md:items-center justify-center p-4 bg-black/60"
+                    onClick={() => setContactListing(null)}
+                >
+                    <div
+                        className="bg-white dark:bg-[#1a231a] rounded-2xl p-6 w-full max-w-sm shadow-2xl"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="flex items-start justify-between mb-4">
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{contactListing.full_name}</h3>
+                                <p className="text-sm text-gray-500 mt-0.5">{contactListing.extra_data.title || 'Land for Lease'} · {contactListing.location}</p>
+                            </div>
+                            <button onClick={() => setContactListing(null)} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                                <span className="material-symbols-outlined text-gray-500">close</span>
+                            </button>
+                        </div>
+
+                        {/* Phone number display */}
+                        {(() => {
+                            const digits = contactListing.phone.replace(/\D/g, '').slice(-10);
+                            const formatted = digits.replace(/(\d{5})(\d{5})/, '$1 $2');
+                            return (
+                                <>
+                                    <div className="bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-3 flex items-center gap-3 mb-4">
+                                        <span className="material-symbols-outlined text-primary text-xl">phone</span>
+                                        <span className="text-lg font-bold text-gray-900 dark:text-white tracking-wide">
+                                            +91 {formatted}
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <a
+                                            href={`tel:+91${digits}`}
+                                            className="flex items-center justify-center gap-2 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors text-sm"
+                                        >
+                                            <span className="material-symbols-outlined text-lg">call</span>
+                                            Call Now
+                                        </a>
+                                        <a
+                                            href={`https://wa.me/91${digits}?text=${encodeURIComponent(`Hi, I saw your land listing "${contactListing.extra_data.title || 'Land for Lease'}" at ${contactListing.location} on Miraitu. I'm interested in leasing it.`)}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center justify-center gap-2 py-3 bg-[#25D366] text-white font-bold rounded-xl hover:bg-[#20b858] transition-colors text-sm"
+                                        >
+                                            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.138.563 4.14 1.539 5.875L.054 23.477a.5.5 0 0 0 .613.612l5.744-1.506A11.95 11.95 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.938a9.934 9.934 0 0 1-5.062-1.377l-.362-.215-3.757.985.995-3.65-.236-.376A9.944 9.944 0 0 1 2.062 12C2.062 6.509 6.509 2.062 12 2.062c5.491 0 9.938 4.447 9.938 9.938 0 5.491-4.447 9.938-9.938 9.938z"/></svg>
+                                            WhatsApp
+                                        </a>
+                                    </div>
+                                </>
+                            );
+                        })()}
+                    </div>
+                </div>
+            )}
 
             {/* Login modal — shown when guest tries to submit */}
             <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
