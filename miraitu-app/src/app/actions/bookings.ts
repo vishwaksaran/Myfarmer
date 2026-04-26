@@ -502,6 +502,43 @@ export async function deleteUser(userId: string): Promise<{ success: boolean; er
     }
 }
 
+// ─── Admin: Toggle public visibility of a land lease listing ─────────
+
+export async function setLeasePublished(
+    bookingId: string,
+    published: boolean
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        const supabase = createSupabaseAdminClient();
+
+        // Fetch current extra_data so we can merge rather than overwrite
+        const { data: row, error: fetchErr } = await supabase
+            .from('service_bookings')
+            .select('extra_data')
+            .eq('id', bookingId)
+            .single();
+
+        if (fetchErr) return { success: false, error: fetchErr.message };
+
+        const merged = { ...((row?.extra_data as Record<string, unknown>) ?? {}), published };
+
+        const { error } = await supabase
+            .from('service_bookings')
+            .update({ extra_data: merged })
+            .eq('id', bookingId);
+
+        if (error) {
+            console.error('[setLeasePublished] Error:', error);
+            return { success: false, error: error.message };
+        }
+
+        return { success: true };
+    } catch (err) {
+        console.error('[setLeasePublished] Unexpected error:', err);
+        return { success: false, error: 'Failed to update listing' };
+    }
+}
+
 // ─── Public: Fetch approved land lease listings ───────────────────────
 
 export interface LeaseListingRecord {
@@ -523,12 +560,14 @@ export async function fetchApprovedLeaseListings(): Promise<{ data: LeaseListing
     try {
         const supabase = createSupabaseAdminClient();
 
+        // Filter by extra_data.published = true (set by admin via Publish toggle)
+        // This avoids relying on a 'approved' status value that may violate DB CHECK constraints
         const { data, error } = await supabase
             .from('service_bookings')
             .select('id, full_name, location, extra_data, created_at')
             .eq('module', 'land')
             .eq('category', 'lease')
-            .eq('status', 'approved')
+            .filter('extra_data->>published', 'eq', 'true')
             .order('created_at', { ascending: false });
 
         if (error) {

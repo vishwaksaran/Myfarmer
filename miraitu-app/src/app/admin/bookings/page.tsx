@@ -2,7 +2,7 @@
 
 import { Fragment, Suspense, useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { fetchAllBookings, updateBookingStatus, deleteBooking, type BookingRecord } from '@/app/actions/bookings';
+import { fetchAllBookings, updateBookingStatus, deleteBooking, setLeasePublished, type BookingRecord } from '@/app/actions/bookings';
 import { downloadCSV } from '@/lib/csv-export';
 
 const MODULE_OPTIONS = [
@@ -20,7 +20,6 @@ const STATUS_OPTIONS = [
     { value: 'pending', label: 'Pending' },
     { value: 'contacted', label: 'Contacted' },
     { value: 'confirmed', label: 'Confirmed' },
-    { value: 'approved', label: 'Approved (Public)' },
     { value: 'completed', label: 'Completed' },
     { value: 'cancelled', label: 'Cancelled' },
 ];
@@ -50,6 +49,7 @@ function AdminBookingsContent() {
     const [searchQuery, setSearchQuery] = useState('');
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [publishingId, setPublishingId] = useState<string | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<BookingRecord | null>(null);
     const [actionLoading, setActionLoading] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -93,8 +93,28 @@ function AdminBookingsContent() {
         const result = await updateBookingStatus(id, newStatus);
         if (result.success) {
             setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus } : b));
+            showToast(`Status updated to "${newStatus}"`);
+        } else {
+            showToast(result.error || 'Failed to update status — the value may not be allowed by the database', 'error');
         }
         setUpdatingId(null);
+    };
+
+    const handleTogglePublish = async (booking: BookingRecord) => {
+        const isPublished = (booking.extra_data as Record<string, unknown>)?.published === true;
+        setPublishingId(booking.id);
+        const result = await setLeasePublished(booking.id, !isPublished);
+        if (result.success) {
+            setBookings(prev => prev.map(b =>
+                b.id === booking.id
+                    ? { ...b, extra_data: { ...(b.extra_data as Record<string, unknown>), published: !isPublished } }
+                    : b
+            ));
+            showToast(isPublished ? 'Listing unpublished — removed from Browse tab' : 'Listing published — now visible in Browse tab');
+        } else {
+            showToast(result.error || 'Failed to update listing', 'error');
+        }
+        setPublishingId(null);
     };
 
     const handleExportCSV = () => {
@@ -283,9 +303,8 @@ function AdminBookingsContent() {
                                                     className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase border-0 outline-none cursor-pointer ${b.status === 'pending' ? 'bg-amber-100 text-amber-700' :
                                                             b.status === 'contacted' ? 'bg-blue-100 text-blue-700' :
                                                                 b.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                                                                    b.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
-                                                                        b.status === 'completed' ? 'bg-gray-100 text-gray-600' :
-                                                                            'bg-red-100 text-red-700'
+                                                                    b.status === 'completed' ? 'bg-gray-100 text-gray-600' :
+                                                                        'bg-red-100 text-red-700'
                                                         }`}
                                                 >
                                                     {STATUS_OPTIONS.filter(o => o.value).map(o => (
@@ -345,14 +364,48 @@ function AdminBookingsContent() {
                                                             <p className="text-gray-900">{new Date(b.updated_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true })}</p>
                                                         </div>
                                                     </div>
+                                                    {/* Publish toggle — only for land/lease listings */}
+                                                    {b.module === 'land' && b.category === 'lease' && (
+                                                        <div className="mt-4 flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
+                                                            <span className="material-symbols-outlined text-emerald-600 text-xl">public</span>
+                                                            <div className="flex-1">
+                                                                <p className="text-xs font-bold text-emerald-800">Public Listing Visibility</p>
+                                                                <p className="text-[11px] text-emerald-600">
+                                                                    {(b.extra_data as Record<string, unknown>)?.published === true
+                                                                        ? 'Currently LIVE — visible in the Browse tab for all users'
+                                                                        : 'Currently HIDDEN — not visible in Browse tab'}
+                                                                </p>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => handleTogglePublish(b)}
+                                                                disabled={publishingId === b.id}
+                                                                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-colors ${
+                                                                    (b.extra_data as Record<string, unknown>)?.published === true
+                                                                        ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                                                                        : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                                                } disabled:opacity-50`}
+                                                            >
+                                                                {publishingId === b.id
+                                                                    ? <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                                                                    : <span className="material-symbols-outlined text-sm">
+                                                                        {(b.extra_data as Record<string, unknown>)?.published === true ? 'visibility_off' : 'visibility'}
+                                                                      </span>
+                                                                }
+                                                                {(b.extra_data as Record<string, unknown>)?.published === true ? 'Unpublish' : 'Publish to Browse Tab'}
+                                                            </button>
+                                                        </div>
+                                                    )}
+
                                                     {Object.keys(b.extra_data).length > 0 && (
                                                         <div className="mt-4">
                                                             <p className="font-bold text-gray-500 uppercase text-[10px] mb-2">Extra Details</p>
                                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                                                {Object.entries(b.extra_data).map(([key, val]) => (
+                                                                {Object.entries(b.extra_data).filter(([key]) => key !== 'published').map(([key, val]) => (
                                                                     <div key={key} className="bg-white rounded-lg p-2.5 border border-gray-100">
                                                                         <p className="text-[10px] font-bold text-gray-400 uppercase">{key.replace(/_/g, ' ')}</p>
-                                                                        <p className="text-xs font-semibold text-gray-800 mt-0.5">{String(val) || '—'}</p>
+                                                                        <p className="text-xs font-semibold text-gray-800 mt-0.5">
+                                                                            {Array.isArray(val) ? `${val.length} item(s)` : String(val) || '—'}
+                                                                        </p>
                                                                     </div>
                                                                 ))}
                                                             </div>
