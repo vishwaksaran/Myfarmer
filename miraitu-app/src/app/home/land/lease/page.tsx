@@ -630,7 +630,7 @@ export default function LeaseLandPage() {
         {/* ── Contact Owner Modal — rendered via portal ── */}
         {mounted && contactListing && createPortal(
             <div
-                style={{ position: 'fixed', inset: 0, zIndex: 99998, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '16px' }}
+                style={{ position: 'fixed', inset: 0, zIndex: 99998, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
                 onClick={() => setContactListing(null)}
             >
                 <div
