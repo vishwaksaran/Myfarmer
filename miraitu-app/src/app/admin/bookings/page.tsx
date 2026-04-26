@@ -47,6 +47,7 @@ function AdminBookingsContent() {
     const [statusFilter, setStatusFilter] = useState(initialStatus);
     const [todayOnly, setTodayOnly] = useState(initialFilter === 'today');
     const [searchQuery, setSearchQuery] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('');
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [publishingId, setPublishingId] = useState<string | null>(null);
@@ -72,12 +73,11 @@ function AdminBookingsContent() {
     useEffect(() => { loadBookings(); }, [loadBookings]);
 
     const filteredBookings = bookings.filter(b => {
-        // Today filter
         if (todayOnly) {
             const d = new Date(b.created_at);
-            const today = new Date();
-            if (d.toDateString() !== today.toDateString()) return false;
+            if (d.toDateString() !== new Date().toDateString()) return false;
         }
+        if (categoryFilter && b.category.toLowerCase() !== categoryFilter.toLowerCase()) return false;
         if (!searchQuery) return true;
         const q = searchQuery.toLowerCase();
         return (
@@ -222,19 +222,44 @@ function AdminBookingsContent() {
                 </button>
             </div>
 
-            {/* Category-specific CSV export */}
-            {categories.length > 1 && (
-                <div className="flex flex-wrap gap-2 mb-4">
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider self-center mr-2">Export by category:</span>
-                    {categories.map(cat => (
+            {/* Category filter chips */}
+            {categories.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-4 items-center">
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider self-center mr-1">Filter:</span>
+                    {categoryFilter && (
                         <button
-                            key={cat}
-                            onClick={() => handleExportCategory(cat)}
-                            className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:bg-green-50 hover:text-green-700 hover:border-green-200 transition-colors capitalize"
+                            onClick={() => setCategoryFilter('')}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-200 transition-colors"
                         >
-                            {cat} ({filteredBookings.filter(b => b.category === cat).length})
+                            <span className="material-symbols-outlined text-sm">close</span>
+                            Clear
                         </button>
-                    ))}
+                    )}
+                    {categories.map(cat => {
+                        const count = bookings.filter(b => b.category.toLowerCase() === cat.toLowerCase()).length;
+                        const isActive = categoryFilter.toLowerCase() === cat.toLowerCase();
+                        return (
+                            <div key={cat} className="flex items-center gap-0">
+                                <button
+                                    onClick={() => setCategoryFilter(isActive ? '' : cat)}
+                                    className={`px-3 py-1.5 rounded-l-lg text-xs font-semibold capitalize transition-colors border ${
+                                        isActive
+                                            ? 'bg-green-600 text-white border-green-600'
+                                            : 'bg-white text-gray-600 border-gray-200 hover:bg-green-50 hover:text-green-700 hover:border-green-300'
+                                    }`}
+                                >
+                                    {cat} ({count})
+                                </button>
+                                <button
+                                    onClick={() => handleExportCategory(cat)}
+                                    title={`Export ${cat} as CSV`}
+                                    className="px-2 py-1.5 bg-white border border-l-0 border-gray-200 rounded-r-lg text-gray-400 hover:text-green-700 hover:bg-green-50 hover:border-green-300 transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-sm">download</span>
+                                </button>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
 

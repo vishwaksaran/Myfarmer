@@ -560,21 +560,32 @@ export async function fetchApprovedLeaseListings(): Promise<{ data: LeaseListing
     try {
         const supabase = createSupabaseAdminClient();
 
-        // Filter by extra_data.published = true (set by admin via Publish toggle)
-        // This avoids relying on a 'approved' status value that may violate DB CHECK constraints
-        const { data, error } = await supabase
-            .from('service_bookings')
-            .select('id, full_name, location, extra_data, created_at')
-            .eq('module', 'land')
-            .eq('category', 'lease')
-            .filter('extra_data->>published', 'eq', 'true')
-            .order('created_at', { ascending: false });
+        // Fetch listings that are either:
+        // 1. status = 'confirmed' (admin set via the status dropdown)
+        // 2. extra_data.published = true (admin clicked the Publish button)
+        // Run as two queries and merge to avoid relying on OR with JSON operators.
+        const base = { module: 'land', category: 'lease' } as const;
 
-        if (error) {
-            console.error('[fetchApprovedLeaseListings] Error:', error);
-            return { data: [], error: error.message };
-        }
+        const [r1, r2] = await Promise.all([
+            supabase
+                .from('service_bookings')
+                .select('id, full_name, location, extra_data, created_at')
+                .match(base)
+                .eq('status', 'confirmed')
+                .order('created_at', { ascending: false }),
+            supabase
+                .from('service_bookings')
+                .select('id, full_name, location, extra_data, created_at')
+                .match(base)
+                .filter('extra_data->>published', 'eq', 'true')
+                .neq('status', 'confirmed') // exclude duplicates already in r1
+                .order('created_at', { ascending: false }),
+        ]);
 
+        if (r1.error) console.error('[fetchApprovedLeaseListings] r1 error:', r1.error);
+        if (r2.error) console.error('[fetchApprovedLeaseListings] r2 error:', r2.error);
+
+        const data = [...(r1.data ?? []), ...(r2.data ?? [])];
         return { data: data as LeaseListingRecord[] };
     } catch (err) {
         console.error('[fetchApprovedLeaseListings] Unexpected error:', err);
