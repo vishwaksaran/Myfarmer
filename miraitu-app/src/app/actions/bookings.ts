@@ -544,6 +544,7 @@ export async function setLeasePublished(
 export interface LeaseListingRecord {
     id: string;
     full_name: string;
+    phone: string;
     location: string;
     created_at: string;
     extra_data: {
@@ -569,13 +570,13 @@ export async function fetchApprovedLeaseListings(): Promise<{ data: LeaseListing
         const [r1, r2] = await Promise.all([
             supabase
                 .from('service_bookings')
-                .select('id, full_name, location, extra_data, created_at')
+                .select('id, full_name, phone, location, extra_data, created_at')
                 .match(base)
                 .eq('status', 'confirmed')
                 .order('created_at', { ascending: false }),
             supabase
                 .from('service_bookings')
-                .select('id, full_name, location, extra_data, created_at')
+                .select('id, full_name, phone, location, extra_data, created_at')
                 .match(base)
                 .filter('extra_data->>published', 'eq', 'true')
                 .neq('status', 'confirmed') // exclude duplicates already in r1
