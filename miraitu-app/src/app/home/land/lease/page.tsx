@@ -5,8 +5,25 @@ import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
-import { uploadLeasePhoto } from '@/app/actions/upload';
 import { fetchApprovedLeaseListings, type LeaseListingRecord } from '@/app/actions/bookings';
+
+async function uploadLeasePhoto(file: File): Promise<string | null> {
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+        const res = await fetch('/api/upload/lease-photo', { method: 'POST', body: fd });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            console.error('[uploadLeasePhoto] API error:', err);
+            return null;
+        }
+        const { url } = await res.json();
+        return url ?? null;
+    } catch (err) {
+        console.error('[uploadLeasePhoto] fetch error:', err);
+        return null;
+    }
+}
 
 type TabType = 'browse' | 'list';
 
@@ -113,13 +130,7 @@ export default function LeaseLandPage() {
         if (photos.length > 0) {
             setUploadingPhotos(true);
             try {
-                const uploads = await Promise.all(
-                    photos.map(file => {
-                        const fd = new FormData();
-                        fd.append('file', file);
-                        return uploadLeasePhoto(fd);
-                    })
-                );
+                const uploads = await Promise.all(photos.map(uploadLeasePhoto));
                 photoUrls = uploads.filter((url): url is string => url !== null);
             } finally {
                 setUploadingPhotos(false);
