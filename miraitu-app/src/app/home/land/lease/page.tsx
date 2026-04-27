@@ -432,26 +432,29 @@ export default function LeaseLandPage() {
                                                             {ed.description && (
                                                                 <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">{ed.description}</p>
                                                             )}
-                                                            <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-gray-100 dark:border-gray-800">
-                                                                <div>
+                                                            <div className="pt-3 md:pt-4 border-t border-gray-100 dark:border-gray-800">
+                                                                {/* Price row */}
+                                                                <div className="flex items-baseline justify-between mb-2">
                                                                     <p className="text-base md:text-xl font-bold text-primary">
                                                                         {ed.lease_price
                                                                             ? `₹${Number(ed.lease_price).toLocaleString('en-IN')}${isRent ? '/acre/mo' : '/acre/yr'}`
                                                                             : 'Price on request'}
                                                                     </p>
-                                                                    <p className="text-[10px] md:text-xs text-gray-500">{timeAgo(listing.created_at)}</p>
+                                                                    <p className="text-[10px] md:text-xs text-gray-500 ml-2 shrink-0">{timeAgo(listing.created_at)}</p>
                                                                 </div>
-                                                                <div className="flex items-center gap-1.5">
+                                                                {/* Actions row */}
+                                                                <div className="flex items-center gap-2">
                                                                     <button
                                                                         onClick={() => shareListing(listing)}
                                                                         title="Share"
-                                                                        className="p-1.5 md:p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-primary hover:border-primary transition-colors"
+                                                                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 text-xs font-semibold hover:text-primary hover:border-primary transition-colors"
                                                                     >
-                                                                        <span className="material-symbols-outlined text-sm md:text-base">share</span>
+                                                                        <span className="material-symbols-outlined text-sm">share</span>
+                                                                        Share
                                                                     </button>
                                                                     <button
                                                                         onClick={() => { setDetailListing(listing); setDetailPhotoIdx(0); }}
-                                                                        className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white text-xs md:text-sm font-bold rounded-lg md:rounded-xl hover:bg-primary/90 transition-colors flex items-center gap-1"
+                                                                        className="flex-1 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-1"
                                                                     >
                                                                         <span className="material-symbols-outlined text-sm">open_in_new</span>
                                                                         View Details
