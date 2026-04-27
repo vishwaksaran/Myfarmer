@@ -548,6 +548,7 @@ export interface LeaseListingRecord {
     location: string;
     created_at: string;
     extra_data: {
+        service_type?: 'lease' | 'rent';
         title?: string;
         area?: string;
         lease_price?: string;

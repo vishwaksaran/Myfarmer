@@ -73,6 +73,7 @@ export default function LeaseLandPage() {
     const [listings, setListings] = useState<LeaseListingRecord[]>([]);
     const [listingsLoading, setListingsLoading] = useState(false);
     const [listingsError, setListingsError] = useState<string | null>(null);
+    const [typeFilter, setTypeFilter] = useState<'all' | 'lease' | 'rent'>('all');
 
     useEffect(() => {
         if (activeTab !== 'browse') return;
@@ -93,6 +94,7 @@ export default function LeaseLandPage() {
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [uploadingPhotos, setUploadingPhotos] = useState(false);
+    const [serviceType, setServiceType] = useState<'lease' | 'rent'>('lease');
     const [formData, setFormData] = useState({
         title: '',
         location: '',
@@ -116,8 +118,8 @@ export default function LeaseLandPage() {
         if (!formData.location.trim()) newErrors.location = 'Location is required';
         if (!formData.area.trim()) newErrors.area = 'Area is required';
         else if (isNaN(Number(formData.area))) newErrors.area = 'Enter a valid number';
-        if (!formData.leasePrice.trim()) newErrors.leasePrice = 'Lease price is required';
-        if (!formData.duration) newErrors.duration = 'Duration is required';
+        if (!formData.leasePrice.trim()) newErrors.leasePrice = 'Price is required';
+        if (serviceType === 'lease' && !formData.duration) newErrors.duration = 'Duration is required';
         if (!formData.contactName.trim()) newErrors.contactName = 'Name is required';
         if (!formData.contactPhone.trim()) newErrors.contactPhone = 'Phone number is required';
         else if (!/^\d{10}$/.test(formData.contactPhone.replace(/[\s+-]/g, '').slice(-10))) newErrors.contactPhone = 'Enter a valid 10-digit phone number';
@@ -179,10 +181,11 @@ export default function LeaseLandPage() {
             phone: formData.contactPhone,
             location: formData.location,
             extra_data: {
+                service_type: serviceType,
                 title: formData.title,
                 area: formData.area,
                 lease_price: formData.leasePrice,
-                duration: formData.duration,
+                ...(serviceType === 'lease' && { duration: formData.duration }),
                 description: formData.description,
                 photos: photoUrls,
             },
@@ -192,6 +195,7 @@ export default function LeaseLandPage() {
             setShowSuccessModal(true);
             setTimeout(() => setShowSuccessModal(false), 6000);
             // Reset form
+            setServiceType('lease');
             setFormData({ title: '', location: '', area: '', leasePrice: '', duration: '', description: '', contactName: '', contactPhone: '' });
             previews.forEach(url => URL.revokeObjectURL(url));
             setPhotos([]);
@@ -300,92 +304,117 @@ export default function LeaseLandPage() {
                         )}
 
                         {/* Listings Grid */}
-                        {!listingsLoading && !listingsError && listings.length > 0 && (
-                            <>
-                                <p className="text-xs md:text-sm text-gray-500 mb-4">
-                                    Showing <span className="font-bold text-gray-900 dark:text-white">{listings.length}</span> lease {listings.length === 1 ? 'opportunity' : 'opportunities'}
-                                </p>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                                    {listings.map((listing) => {
-                                        const ed = listing.extra_data;
-                                        const photos = ed.photos?.length ? ed.photos : [FALLBACK_IMAGE];
-                                        const heroImage = photos[0];
-                                        return (
-                                            <div key={listing.id} className="group bg-white dark:bg-[#1a231a] rounded-xl md:rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                                                {/* Clickable image → opens gallery */}
-                                                <div
-                                                    className="relative h-40 md:h-48 overflow-hidden bg-gray-100 dark:bg-gray-800 cursor-pointer"
-                                                    onClick={() => setGallery({ photos, index: 0 })}
-                                                >
-                                                    <img
-                                                        src={heroImage}
-                                                        alt={ed.title || 'Land listing'}
-                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
-                                                    />
-                                                    {/* View gallery overlay hint */}
-                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                                        <span className="material-symbols-outlined text-white text-3xl opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg">zoom_in</span>
-                                                    </div>
-                                                    {ed.duration && (
-                                                        <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-teal-600/80 backdrop-blur-sm text-white text-[10px] md:text-xs font-semibold rounded-md">
-                                                            {ed.duration} Lease
-                                                        </div>
-                                                    )}
-                                                    {photos.length > 1 && (
-                                                        <div className="absolute top-2 right-2 px-2 py-0.5 bg-black/60 text-white text-[10px] font-bold rounded-md flex items-center gap-1">
-                                                            <span className="material-symbols-outlined text-xs">photo_library</span>
-                                                            {photos.length}
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                {/* Content */}
-                                                <div className="p-3 md:p-5">
-                                                    <h3 className="text-sm md:text-lg font-bold text-gray-900 dark:text-white mb-1.5 md:mb-2 line-clamp-2 group-hover:text-primary transition-colors">
-                                                        {ed.title || 'Land for Lease'}
-                                                    </h3>
-                                                    <div className="flex items-center gap-1 text-xs md:text-sm text-gray-500 mb-2 md:mb-3">
-                                                        <span className="material-symbols-outlined text-sm md:text-base">location_on</span>
-                                                        {listing.location}
-                                                    </div>
-                                                    <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4 text-xs md:text-sm">
-                                                        {ed.area && (
-                                                            <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                                                                <span className="material-symbols-outlined text-sm">square_foot</span>
-                                                                {ed.area} Acres
-                                                            </div>
-                                                        )}
-                                                        <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                                                            <span className="material-symbols-outlined text-sm">person</span>
-                                                            {listing.full_name}
-                                                        </div>
-                                                    </div>
-                                                    {ed.description && (
-                                                        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">{ed.description}</p>
-                                                    )}
-                                                    <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-gray-100 dark:border-gray-800">
-                                                        <div>
-                                                            <p className="text-base md:text-xl font-bold text-primary">
-                                                                {ed.lease_price ? `₹${Number(ed.lease_price).toLocaleString('en-IN')}/acre/yr` : 'Price on request'}
-                                                            </p>
-                                                            <p className="text-[10px] md:text-xs text-gray-500">{timeAgo(listing.created_at)}</p>
-                                                        </div>
-                                                        <button
-                                                            onClick={() => setContactListing(listing)}
-                                                            className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white text-xs md:text-sm font-bold rounded-lg md:rounded-xl hover:bg-primary/90 transition-colors flex items-center gap-1"
+                        {!listingsLoading && !listingsError && listings.length > 0 && (() => {
+                            const filtered = typeFilter === 'all' ? listings : listings.filter(l => (l.extra_data.service_type ?? 'lease') === typeFilter);
+                            return (
+                                <>
+                                    {/* Type filter chips */}
+                                    <div className="flex items-center gap-2 mb-4 flex-wrap">
+                                        {(['all', 'lease', 'rent'] as const).map(t => (
+                                            <button
+                                                key={t}
+                                                onClick={() => setTypeFilter(t)}
+                                                className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${typeFilter === t ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-[#1a231a] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-primary/50'}`}
+                                            >
+                                                {t === 'all' ? `All (${listings.length})` : t === 'lease' ? `Lease (${listings.filter(l => (l.extra_data.service_type ?? 'lease') === 'lease').length})` : `Rent (${listings.filter(l => l.extra_data.service_type === 'rent').length})`}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <p className="text-xs md:text-sm text-gray-500 mb-4">
+                                        Showing <span className="font-bold text-gray-900 dark:text-white">{filtered.length}</span> {typeFilter === 'all' ? '' : typeFilter + ' '}{filtered.length === 1 ? 'opportunity' : 'opportunities'}
+                                    </p>
+                                    {filtered.length === 0 ? (
+                                        <div className="text-center py-12 text-gray-400 text-sm">No {typeFilter} listings yet.</div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                                            {filtered.map((listing) => {
+                                                const ed = listing.extra_data;
+                                                const isRent = ed.service_type === 'rent';
+                                                const photos = ed.photos?.length ? ed.photos : [FALLBACK_IMAGE];
+                                                const heroImage = photos[0];
+                                                return (
+                                                    <div key={listing.id} className="group bg-white dark:bg-[#1a231a] rounded-xl md:rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                                        {/* Clickable image → opens gallery */}
+                                                        <div
+                                                            className="relative h-40 md:h-48 overflow-hidden bg-gray-100 dark:bg-gray-800 cursor-pointer"
+                                                            onClick={() => setGallery({ photos, index: 0 })}
                                                         >
-                                                            <span className="material-symbols-outlined text-sm">call</span>
-                                                            Contact Owner
-                                                        </button>
+                                                            <img
+                                                                src={heroImage}
+                                                                alt={ed.title || 'Land listing'}
+                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                                onError={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
+                                                            />
+                                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                                                <span className="material-symbols-outlined text-white text-3xl opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg">zoom_in</span>
+                                                            </div>
+                                                            {/* Service type badge */}
+                                                            <div className={`absolute bottom-2 left-2 px-2 py-0.5 backdrop-blur-sm text-white text-[10px] md:text-xs font-semibold rounded-md ${isRent ? 'bg-amber-600/80' : 'bg-teal-600/80'}`}>
+                                                                {isRent ? 'For Rent' : ed.duration ? `${ed.duration} Lease` : 'For Lease'}
+                                                            </div>
+                                                            {photos.length > 1 && (
+                                                                <div className="absolute top-2 right-2 px-2 py-0.5 bg-black/60 text-white text-[10px] font-bold rounded-md flex items-center gap-1">
+                                                                    <span className="material-symbols-outlined text-xs">photo_library</span>
+                                                                    {photos.length}
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Content */}
+                                                        <div className="p-3 md:p-5">
+                                                            <div className="flex items-start justify-between gap-2 mb-1.5 md:mb-2">
+                                                                <h3 className="text-sm md:text-lg font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-primary transition-colors flex-1">
+                                                                    {ed.title || 'Land for Lease'}
+                                                                </h3>
+                                                                <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full ${isRent ? 'bg-amber-100 text-amber-700' : 'bg-teal-100 text-teal-700'}`}>
+                                                                    {isRent ? 'RENT' : 'LEASE'}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1 text-xs md:text-sm text-gray-500 mb-2 md:mb-3">
+                                                                <span className="material-symbols-outlined text-sm md:text-base">location_on</span>
+                                                                {listing.location}
+                                                            </div>
+                                                            <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4 text-xs md:text-sm">
+                                                                {ed.area && (
+                                                                    <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                                                                        <span className="material-symbols-outlined text-sm">square_foot</span>
+                                                                        {ed.area} Acres
+                                                                    </div>
+                                                                )}
+                                                                <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                                                                    <span className="material-symbols-outlined text-sm">person</span>
+                                                                    {listing.full_name}
+                                                                </div>
+                                                            </div>
+                                                            {ed.description && (
+                                                                <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">{ed.description}</p>
+                                                            )}
+                                                            <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-gray-100 dark:border-gray-800">
+                                                                <div>
+                                                                    <p className="text-base md:text-xl font-bold text-primary">
+                                                                        {ed.lease_price
+                                                                            ? `₹${Number(ed.lease_price).toLocaleString('en-IN')}${isRent ? '/acre/mo' : '/acre/yr'}`
+                                                                            : 'Price on request'}
+                                                                    </p>
+                                                                    <p className="text-[10px] md:text-xs text-gray-500">{timeAgo(listing.created_at)}</p>
+                                                                </div>
+                                                                <button
+                                                                    onClick={() => setContactListing(listing)}
+                                                                    className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white text-xs md:text-sm font-bold rounded-lg md:rounded-xl hover:bg-primary/90 transition-colors flex items-center gap-1"
+                                                                >
+                                                                    <span className="material-symbols-outlined text-sm">call</span>
+                                                                    Contact Owner
+                                                                </button>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </>
-                        )}
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </>
+                            );
+                        })()}
                     </div>
                 )}
 
@@ -393,8 +422,23 @@ export default function LeaseLandPage() {
                 {activeTab === 'list' && (
                     <div className="animate-fadeIn max-w-3xl mx-auto">
                         <form onSubmit={handleSubmit} className="bg-white dark:bg-[#1a231a] rounded-lg md:rounded-2xl p-4 md:p-8 border border-gray-100 dark:border-gray-800 shadow-sm">
-                            <h2 className="text-xl md:text-2xl font-bold text-primary text-center mb-2">List Your Land for Lease</h2>
-                            <p className="text-sm md:text-base text-gray-500 text-center mb-6 md:mb-8">Connect with farmers looking for land to lease</p>
+                            <h2 className="text-xl md:text-2xl font-bold text-primary text-center mb-2">List Your Land</h2>
+                            <p className="text-sm md:text-base text-gray-500 text-center mb-4 md:mb-6">Connect with farmers looking for land</p>
+
+                            {/* Service type toggle */}
+                            <div className="flex rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 mb-6 md:mb-8">
+                                {(['lease', 'rent'] as const).map(type => (
+                                    <button
+                                        key={type}
+                                        type="button"
+                                        onClick={() => { setServiceType(type); setErrors({}); }}
+                                        className={`flex-1 py-2.5 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${serviceType === type ? (type === 'lease' ? 'bg-teal-600 text-white' : 'bg-amber-500 text-white') : 'bg-gray-50 dark:bg-gray-800 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                                    >
+                                        <span className="material-symbols-outlined text-lg">{type === 'lease' ? 'handshake' : 'home'}</span>
+                                        {type === 'lease' ? 'Long-term Lease' : 'Short-term Rent'}
+                                    </button>
+                                ))}
+                            </div>
 
                             <div className="space-y-4 md:space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
@@ -410,29 +454,33 @@ export default function LeaseLandPage() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                                <div className={`grid gap-3 md:gap-4 ${serviceType === 'lease' ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'}`}>
                                     <div>
                                         <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Area (Acres)</label>
                                         <input type="text" name="area" value={formData.area} onChange={handleChange} placeholder="e.g. 10" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.area ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                         {errors.area && <p className="text-red-500 text-xs mt-1">{errors.area}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Lease Price (₹/acre/year)</label>
+                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                                            {serviceType === 'lease' ? 'Lease Price (₹/acre/year)' : 'Rent Price (₹/acre/month)'}
+                                        </label>
                                         <input type="text" name="leasePrice" value={formData.leasePrice} onChange={handleChange} placeholder="e.g. 50000" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.leasePrice ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                         {errors.leasePrice && <p className="text-red-500 text-xs mt-1">{errors.leasePrice}</p>}
                                     </div>
-                                    <div>
-                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Lease Duration</label>
-                                        <select name="duration" value={formData.duration} onChange={handleChange} className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.duration ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`}>
-                                            <option value="">Select Duration</option>
-                                            <option>1 Year</option>
-                                            <option>2 Years</option>
-                                            <option>3 Years</option>
-                                            <option>5 Years</option>
-                                            <option>10 Years</option>
-                                        </select>
-                                        {errors.duration && <p className="text-red-500 text-xs mt-1">{errors.duration}</p>}
-                                    </div>
+                                    {serviceType === 'lease' && (
+                                        <div>
+                                            <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Lease Duration</label>
+                                            <select name="duration" value={formData.duration} onChange={handleChange} className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.duration ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`}>
+                                                <option value="">Select Duration</option>
+                                                <option>1 Year</option>
+                                                <option>2 Years</option>
+                                                <option>3 Years</option>
+                                                <option>5 Years</option>
+                                                <option>10 Years</option>
+                                            </select>
+                                            {errors.duration && <p className="text-red-500 text-xs mt-1">{errors.duration}</p>}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div>
@@ -529,7 +577,7 @@ export default function LeaseLandPage() {
                                     ) : (
                                         <>
                                             <span className="material-symbols-outlined text-lg md:text-xl">publish</span>
-                                            Submit Lease Listing
+                                            Submit {serviceType === 'lease' ? 'Lease' : 'Rent'} Listing
                                         </>
                                     )}
                                 </button>
