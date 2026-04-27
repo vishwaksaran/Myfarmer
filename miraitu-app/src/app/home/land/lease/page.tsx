@@ -57,9 +57,38 @@ export default function LeaseLandPage() {
     const [detailListing, setDetailListing] = useState<LeaseListingRecord | null>(null);
     const [detailPhotoIdx, setDetailPhotoIdx] = useState(0);
 
+    // ── Share / toast state ───────────────────────────────────────────
+    const [shareToast, setShareToast] = useState('');
+
     // Portal mount — ensures modals render at document.body, bypassing any parent stacking context
     const [mounted, setMounted] = useState(false);
     useEffect(() => { setMounted(true); }, []);
+
+    const shareListing = async (listing: LeaseListingRecord) => {
+        const ed = listing.extra_data;
+        const isRent = ed.service_type === 'rent';
+        const title = ed.title || 'Land for Lease';
+        const text = [
+            `${title} — ${isRent ? 'For Rent' : 'For Lease'}`,
+            `📍 ${listing.location}`,
+            ed.area ? `📐 ${ed.area} Acres` : '',
+            ed.lease_price ? `💰 ₹${Number(ed.lease_price).toLocaleString('en-IN')}${isRent ? '/acre/month' : '/acre/year'}` : '',
+            ed.description ? `\n${ed.description.slice(0, 120)}…` : '',
+            '\nFind more on Miraitu 🌾',
+        ].filter(Boolean).join('\n');
+        const url = typeof window !== 'undefined' ? window.location.href.split('?')[0] : '';
+        try {
+            if (navigator.share) {
+                await navigator.share({ title, text, url });
+            } else {
+                await navigator.clipboard.writeText(`${text}\n\n${url}`);
+                setShareToast('Link copied to clipboard!');
+                setTimeout(() => setShareToast(''), 3000);
+            }
+        } catch {
+            // user cancelled share — do nothing
+        }
+    };
 
     // Keyboard nav for lightbox
     useEffect(() => {
@@ -412,13 +441,22 @@ export default function LeaseLandPage() {
                                                                     </p>
                                                                     <p className="text-[10px] md:text-xs text-gray-500">{timeAgo(listing.created_at)}</p>
                                                                 </div>
-                                                                <button
-                                                                    onClick={() => { setDetailListing(listing); setDetailPhotoIdx(0); }}
-                                                                    className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white text-xs md:text-sm font-bold rounded-lg md:rounded-xl hover:bg-primary/90 transition-colors flex items-center gap-1"
-                                                                >
-                                                                    <span className="material-symbols-outlined text-sm">open_in_new</span>
-                                                                    View Details
-                                                                </button>
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <button
+                                                                        onClick={() => shareListing(listing)}
+                                                                        title="Share"
+                                                                        className="p-1.5 md:p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-primary hover:border-primary transition-colors"
+                                                                    >
+                                                                        <span className="material-symbols-outlined text-sm md:text-base">share</span>
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => { setDetailListing(listing); setDetailPhotoIdx(0); }}
+                                                                        className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white text-xs md:text-sm font-bold rounded-lg md:rounded-xl hover:bg-primary/90 transition-colors flex items-center gap-1"
+                                                                    >
+                                                                        <span className="material-symbols-outlined text-sm">open_in_new</span>
+                                                                        View Details
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -907,6 +945,14 @@ export default function LeaseLandPage() {
                         {/* Footer CTA */}
                         <div style={{ padding: '16px 24px', borderTop: '1px solid #f3f4f6', flexShrink: 0, display: 'flex', gap: '10px' }}>
                             <button
+                                onClick={() => shareListing(detailListing)}
+                                title="Share"
+                                style={{ padding: '12px 14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, fontSize: '14px', color: '#374151', flexShrink: 0 }}
+                            >
+                                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>share</span>
+                                Share
+                            </button>
+                            <button
                                 onClick={() => setDetailListing(null)}
                                 style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1.5px solid #e5e7eb', background: 'white', fontWeight: 700, fontSize: '14px', cursor: 'pointer', color: '#374151' }}
                             >
@@ -924,6 +970,15 @@ export default function LeaseLandPage() {
                 </div>
             );
         })(), document.body)}
+
+        {/* ── Share toast notification ── */}
+        {mounted && shareToast && createPortal(
+            <div style={{ position: 'fixed', bottom: '80px', left: '50%', transform: 'translateX(-50%)', zIndex: 999999, background: '#111', color: 'white', padding: '10px 20px', borderRadius: '24px', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#4ade80' }}>check_circle</span>
+                {shareToast}
+            </div>,
+            document.body
+        )}
         </>
     );
 }
