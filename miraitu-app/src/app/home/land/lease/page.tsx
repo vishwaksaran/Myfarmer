@@ -64,6 +64,14 @@ export default function LeaseLandPage() {
     const [mounted, setMounted] = useState(false);
     useEffect(() => { setMounted(true); }, []);
 
+    const handleContactClick = (listing: LeaseListingRecord) => {
+        if (!user || user.isGuest) {
+            setShowLoginModal(true);
+            return;
+        }
+        setContactListing(listing);
+    };
+
     const shareListing = async (listing: LeaseListingRecord) => {
         const ed = listing.extra_data;
         const isRent = ed.service_type === 'rent';
@@ -962,11 +970,11 @@ export default function LeaseLandPage() {
                                 Close
                             </button>
                             <button
-                                onClick={() => { setContactListing(detailListing); setDetailListing(null); }}
+                                onClick={() => { handleContactClick(detailListing); if (user && !user.isGuest) setDetailListing(null); }}
                                 style={{ flex: 2, padding: '12px', borderRadius: '12px', background: '#16a34a', color: 'white', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                             >
-                                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>call</span>
-                                Contact Owner
+                                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>{(!user || user.isGuest) ? 'lock' : 'call'}</span>
+                                {(!user || user.isGuest) ? 'Login to Contact' : 'Contact Owner'}
                             </button>
                         </div>
                     </div>
