@@ -53,6 +53,10 @@ export default function LeaseLandPage() {
     // ── Contact modal state ───────────────────────────────────────────
     const [contactListing, setContactListing] = useState<LeaseListingRecord | null>(null);
 
+    // ── Detail modal state ────────────────────────────────────────────
+    const [detailListing, setDetailListing] = useState<LeaseListingRecord | null>(null);
+    const [detailPhotoIdx, setDetailPhotoIdx] = useState(0);
+
     // Portal mount — ensures modals render at document.body, bypassing any parent stacking context
     const [mounted, setMounted] = useState(false);
     useEffect(() => { setMounted(true); }, []);
@@ -98,6 +102,11 @@ export default function LeaseLandPage() {
     const [formData, setFormData] = useState({
         title: '',
         location: '',
+        surveyNo: '',
+        district: '',
+        taluk: '',
+        hobli: '',
+        village: '',
         area: '',
         leasePrice: '',
         duration: '',
@@ -188,6 +197,11 @@ export default function LeaseLandPage() {
                 ...(serviceType === 'lease' && { duration: formData.duration }),
                 description: formData.description,
                 photos: photoUrls,
+                ...(formData.surveyNo && { survey_no: formData.surveyNo }),
+                ...(formData.district && { district: formData.district }),
+                ...(formData.taluk && { taluk: formData.taluk }),
+                ...(formData.hobli && { hobli: formData.hobli }),
+                ...(formData.village && { village: formData.village }),
             },
         });
 
@@ -196,7 +210,7 @@ export default function LeaseLandPage() {
             setTimeout(() => setShowSuccessModal(false), 6000);
             // Reset form
             setServiceType('lease');
-            setFormData({ title: '', location: '', area: '', leasePrice: '', duration: '', description: '', contactName: '', contactPhone: '' });
+            setFormData({ title: '', location: '', surveyNo: '', district: '', taluk: '', hobli: '', village: '', area: '', leasePrice: '', duration: '', description: '', contactName: '', contactPhone: '' });
             previews.forEach(url => URL.revokeObjectURL(url));
             setPhotos([]);
             setPreviews([]);
@@ -399,11 +413,11 @@ export default function LeaseLandPage() {
                                                                     <p className="text-[10px] md:text-xs text-gray-500">{timeAgo(listing.created_at)}</p>
                                                                 </div>
                                                                 <button
-                                                                    onClick={() => setContactListing(listing)}
+                                                                    onClick={() => { setDetailListing(listing); setDetailPhotoIdx(0); }}
                                                                     className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white text-xs md:text-sm font-bold rounded-lg md:rounded-xl hover:bg-primary/90 transition-colors flex items-center gap-1"
                                                                 >
-                                                                    <span className="material-symbols-outlined text-sm">call</span>
-                                                                    Contact Owner
+                                                                    <span className="material-symbols-outlined text-sm">open_in_new</span>
+                                                                    View Details
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -448,9 +462,36 @@ export default function LeaseLandPage() {
                                         {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Location</label>
-                                        <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="e.g. Bellary, Karnataka" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.location ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
+                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">District / City</label>
+                                        <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="e.g. Chamarajanagar" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.location ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                         {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
+                                    </div>
+                                </div>
+
+                                {/* Detailed address */}
+                                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 space-y-3">
+                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Detailed Address <span className="font-normal normal-case">(optional)</span></p>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Survey / S.No</label>
+                                            <input type="text" name="surveyNo" value={formData.surveyNo} onChange={handleChange} placeholder="e.g. 255" className="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Taluk</label>
+                                            <input type="text" name="taluk" value={formData.taluk} onChange={handleChange} placeholder="e.g. Chamarajanagar" className="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Hobli</label>
+                                            <input type="text" name="hobli" value={formData.hobli} onChange={handleChange} placeholder="e.g. Harave" className="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Village</label>
+                                            <input type="text" name="village" value={formData.village} onChange={handleChange} placeholder="e.g. Harave" className="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">District</label>
+                                            <input type="text" name="district" value={formData.district} onChange={handleChange} placeholder="e.g. Chamarajanagar" className="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm" />
+                                        </div>
                                     </div>
                                 </div>
 
@@ -477,6 +518,7 @@ export default function LeaseLandPage() {
                                                 <option>3 Years</option>
                                                 <option>5 Years</option>
                                                 <option>10 Years</option>
+                                                <option>Can be discussed</option>
                                             </select>
                                             {errors.duration && <p className="text-red-500 text-xs mt-1">{errors.duration}</p>}
                                         </div>
@@ -732,6 +774,156 @@ export default function LeaseLandPage() {
             </div>,
             document.body
         )}
+
+        {/* ── Listing Detail Modal — rendered via portal ── */}
+        {mounted && detailListing && createPortal((() => {
+            const ed = detailListing.extra_data;
+            const isRent = ed.service_type === 'rent';
+            const photos = ed.photos?.length ? ed.photos : [FALLBACK_IMAGE];
+            const heroImg = photos[detailPhotoIdx] || photos[0];
+            const priceUnit = isRent ? '/acre/month' : '/acre/year';
+            const hasAddress = ed.survey_no || ed.district || ed.taluk || ed.hobli || ed.village;
+            return (
+                <div
+                    style={{ position: 'fixed', inset: 0, zIndex: 99997, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+                    onClick={() => setDetailListing(null)}
+                >
+                    <div
+                        style={{ background: 'white', borderRadius: '20px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 32px 64px rgba(0,0,0,0.3)' }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {/* Photo section */}
+                        <div style={{ position: 'relative', height: '240px', background: '#f3f4f6', flexShrink: 0 }}>
+                            <img
+                                src={heroImg}
+                                alt={ed.title || 'Land'}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                onError={e => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
+                            />
+                            {/* overlay gradient */}
+                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%)' }} />
+                            {/* type badge */}
+                            <div style={{ position: 'absolute', top: '12px', left: '12px', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 700, color: 'white', background: isRent ? '#d97706' : '#0d9488' }}>
+                                {isRent ? 'FOR RENT' : 'FOR LEASE'}
+                            </div>
+                            {/* close */}
+                            <button onClick={() => setDetailListing(null)} style={{ position: 'absolute', top: '10px', right: '10px', padding: '6px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', border: 'none', cursor: 'pointer', display: 'flex' }}>
+                                <span className="material-symbols-outlined" style={{ color: 'white', fontSize: '20px' }}>close</span>
+                            </button>
+                            {/* photo counter + thumbnails */}
+                            {photos.length > 1 && (
+                                <div style={{ position: 'absolute', bottom: '10px', left: 0, right: 0, display: 'flex', gap: '6px', justifyContent: 'center', padding: '0 12px' }}>
+                                    {photos.map((src, i) => (
+                                        <button key={i} onClick={() => setDetailPhotoIdx(i)} style={{ width: '36px', height: '36px', borderRadius: '6px', overflow: 'hidden', border: detailPhotoIdx === i ? '2px solid white' : '2px solid rgba(255,255,255,0.4)', cursor: 'pointer', padding: 0, flexShrink: 0 }}>
+                                            <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                            {/* nav arrows */}
+                            {detailPhotoIdx > 0 && (
+                                <button onClick={() => setDetailPhotoIdx(i => i - 1)} style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', padding: '6px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', border: 'none', cursor: 'pointer', display: 'flex' }}>
+                                    <span className="material-symbols-outlined" style={{ color: 'white', fontSize: '22px' }}>chevron_left</span>
+                                </button>
+                            )}
+                            {detailPhotoIdx < photos.length - 1 && (
+                                <button onClick={() => setDetailPhotoIdx(i => i + 1)} style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', padding: '6px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', border: 'none', cursor: 'pointer', display: 'flex' }}>
+                                    <span className="material-symbols-outlined" style={{ color: 'white', fontSize: '22px' }}>chevron_right</span>
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Scrollable body */}
+                        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+                            {/* Title row */}
+                            <div style={{ marginBottom: '4px' }}>
+                                <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#111', margin: 0 }}>{ed.title || 'Land Listing'}</h2>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#6b7280', fontSize: '13px', marginBottom: '16px' }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>location_on</span>
+                                {detailListing.location}
+                            </div>
+
+                            {/* Key stats */}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
+                                {[
+                                    { icon: 'square_foot', label: 'Area', value: ed.area ? `${ed.area} Acres` : '—' },
+                                    { icon: 'payments', label: isRent ? 'Rent' : 'Lease Price', value: ed.lease_price ? `₹${Number(ed.lease_price).toLocaleString('en-IN')}${priceUnit}` : 'On request' },
+                                    { icon: 'schedule', label: 'Duration', value: isRent ? 'Flexible' : (ed.duration || '—') },
+                                ].map(stat => (
+                                    <div key={stat.label} style={{ background: '#f9fafb', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#16a34a', display: 'block', marginBottom: '4px' }}>{stat.icon}</span>
+                                        <p style={{ fontSize: '10px', color: '#9ca3af', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</p>
+                                        <p style={{ fontSize: '13px', fontWeight: 700, color: '#111', margin: 0, wordBreak: 'break-word' }}>{stat.value}</p>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Address details */}
+                            {hasAddress && (
+                                <div style={{ marginBottom: '20px' }}>
+                                    <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>Land Location Details</p>
+                                    <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '14px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                        {[
+                                            ed.survey_no && { label: 'Survey No.', value: ed.survey_no },
+                                            ed.district && { label: 'District', value: ed.district },
+                                            ed.taluk && { label: 'Taluk', value: ed.taluk },
+                                            ed.hobli && { label: 'Hobli', value: ed.hobli },
+                                            ed.village && { label: 'Village', value: ed.village },
+                                        ].filter(Boolean).map((item) => {
+                                            const { label, value } = item as { label: string; value: string };
+                                            return (
+                                                <div key={label}>
+                                                    <p style={{ fontSize: '11px', color: '#9ca3af', margin: '0 0 2px' }}>{label}</p>
+                                                    <p style={{ fontSize: '13px', fontWeight: 600, color: '#374151', margin: 0 }}>{value}</p>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Description */}
+                            {ed.description && (
+                                <div style={{ marginBottom: '20px' }}>
+                                    <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>About the Land</p>
+                                    <p style={{ fontSize: '14px', color: '#374151', lineHeight: 1.7, whiteSpace: 'pre-wrap', margin: 0 }}>{ed.description}</p>
+                                </div>
+                            )}
+
+                            {/* Listed by */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', background: '#f9fafb', borderRadius: '12px', marginBottom: '4px' }}>
+                                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <span className="material-symbols-outlined" style={{ color: 'white', fontSize: '18px' }}>person</span>
+                                </div>
+                                <div>
+                                    <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>Listed by</p>
+                                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#111', margin: 0 }}>{detailListing.full_name}</p>
+                                </div>
+                                <p style={{ marginLeft: 'auto', fontSize: '11px', color: '#9ca3af' }}>{timeAgo(detailListing.created_at)}</p>
+                            </div>
+                        </div>
+
+                        {/* Footer CTA */}
+                        <div style={{ padding: '16px 24px', borderTop: '1px solid #f3f4f6', flexShrink: 0, display: 'flex', gap: '10px' }}>
+                            <button
+                                onClick={() => setDetailListing(null)}
+                                style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1.5px solid #e5e7eb', background: 'white', fontWeight: 700, fontSize: '14px', cursor: 'pointer', color: '#374151' }}
+                            >
+                                Close
+                            </button>
+                            <button
+                                onClick={() => { setContactListing(detailListing); setDetailListing(null); }}
+                                style={{ flex: 2, padding: '12px', borderRadius: '12px', background: '#16a34a', color: 'white', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                            >
+                                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>call</span>
+                                Contact Owner
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        })(), document.body)}
         </>
     );
 }

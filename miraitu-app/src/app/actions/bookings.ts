@@ -555,6 +555,11 @@ export interface LeaseListingRecord {
         duration?: string;
         description?: string;
         photos?: string[];
+        survey_no?: string;
+        district?: string;
+        taluk?: string;
+        hobli?: string;
+        village?: string;
     };
 }
 
