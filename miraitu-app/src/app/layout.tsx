@@ -207,7 +207,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 "@type": "Brand",
                 name: "Miraitu",
               },
-              telephone: "+91-8553498691",
+              telephone: "+91-9380306475",
               email: "support@miraitu.in",
               address: {
                 "@type": "PostalAddress",
@@ -228,7 +228,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
               contactPoint: [
                 {
                   "@type": "ContactPoint",
-                  telephone: "+91-8553498691",
+                  telephone: "+91-9380306475",
                   contactType: "customer service",
                   areaServed: "IN",
                   availableLanguage: ["English", "Hindi", "Telugu", "Kannada"],

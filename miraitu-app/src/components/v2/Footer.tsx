@@ -145,7 +145,7 @@ export default function Footer() {
                                 </div>
                                 <div>
                                     <p className="font-bold text-accent text-xs mb-0.5">{t('footer.farmerHelpline')}</p>
-                                    <p className="text-gray-200 font-semibold">+91 - 8553498691</p>
+                                    <p className="text-gray-200 font-semibold">+91 - 9380306475</p>
                                     <p className="text-[10px] text-gray-400 mt-0.5">{t('footer.tollFree')}</p>
                                 </div>
                             </div>

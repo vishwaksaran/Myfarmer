@@ -60,7 +60,7 @@ async function findUserByPhone(
     mobile: string,
     syntheticEmail: string
 ) {
-    const localNumber = mobile.slice(2); // "8553498691"
+    const localNumber = mobile.slice(2); // "9380306475"
 
     // 1. Look up via profiles table (phone is stored there, indexed)
     const { data: profile } = await admin
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
         }
 
-        const mobile = phone.replace(/[+\s-]/g, ''); // e.g. "918553498691"
+        const mobile = phone.replace(/[+\s-]/g, ''); // e.g. "919380306475"
 
         if (!/^91\d{10}$/.test(mobile)) {
             return NextResponse.json({ error: 'Invalid phone number format' }, { status: 400 });
@@ -138,8 +138,8 @@ export async function POST(request: Request) {
             auth: { autoRefreshToken: false, persistSession: false },
         });
 
-        const phoneWithCode = `+${mobile}`;                           // +918553498691
-        const syntheticEmail = `phone${mobile}@phone.miraitu.app`;    // phone918553498691@phone.miraitu.app
+        const phoneWithCode = `+${mobile}`;                           // +919380306475
+        const syntheticEmail = `phone${mobile}@phone.miraitu.app`;    // phone919380306475@phone.miraitu.app
         const password = generatePhonePassword(phoneWithCode);
 
         // ── Step 3: Find existing user (paginated across ALL users) ──────────
@@ -188,9 +188,9 @@ export async function POST(request: Request) {
                     const { data: allUsers } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
                     const orphan = allUsers?.users?.find(u => {
                         const uPhone = (u.phone ?? '').replace(/[+\s-]/g, '');
-                        const targetPhone = mobile; // "918553498691"
+                        const targetPhone = mobile; // "919380306475"
                         return uPhone === targetPhone ||
-                            uPhone === targetPhone.slice(2) || // "8553498691"
+                            uPhone === targetPhone.slice(2) || // "9380306475"
                             uPhone.endsWith(targetPhone.slice(2)); // ends with local number
                     });
 
