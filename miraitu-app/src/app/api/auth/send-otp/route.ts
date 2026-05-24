@@ -62,7 +62,7 @@ export async function POST(request: Request) {
         // Format: remove + and spaces, ensure 91XXXXXXXXXX format
         const mobile = phone.replace(/[+\s-]/g, '');
 
-        if (!/^91\d{10}$/.test(mobile)) {
+        if (!/^91[6-9]\d{9}$/.test(mobile)) {
             return NextResponse.json(
                 { error: 'Please enter a valid 10-digit Indian phone number' },
                 { status: 400 }

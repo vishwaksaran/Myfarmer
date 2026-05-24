@@ -98,7 +98,7 @@ export default function UserLoginPage() {
 
     const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (phoneNumber.length !== 10) {
+        if (phoneNumber.length !== 10 || !/^[6-9]/.test(phoneNumber)) {
             setError(t('login.errorInvalidPhone'));
             return;
         }

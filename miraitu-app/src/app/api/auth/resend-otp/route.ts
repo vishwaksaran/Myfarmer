@@ -12,7 +12,7 @@ export async function POST(request: Request) {
 
         const mobile = phone.replace(/[+\s-]/g, '');
 
-        if (!/^91\d{10}$/.test(mobile)) {
+        if (!/^91[6-9]\d{9}$/.test(mobile)) {
             return NextResponse.json(
                 { error: 'Invalid phone number format' },
                 { status: 400 }

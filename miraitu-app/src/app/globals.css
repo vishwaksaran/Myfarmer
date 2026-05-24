@@ -327,6 +327,22 @@ body {
   transition: transform 0.2s ease-in-out;
 }
 
+/* APK / WebView fix: backdrop-filter is unsupported in many Android WebViews.
+   Targets two patterns used across modals:
+   1. The fixed wrapper itself carries backdrop-blur-sm (e.g. AddTaskModal)
+   2. A child overlay div carries backdrop-blur-sm (e.g. LanguageSettings, EditPostModal) */
+.fixed.inset-0.backdrop-blur-sm,
+.fixed.inset-0.backdrop-blur,
+.fixed.inset-0.backdrop-blur-md,
+.fixed.inset-0 > .backdrop-blur-sm,
+.fixed.inset-0 > .backdrop-blur,
+.fixed.inset-0 > .backdrop-blur-md,
+.absolute.inset-0.backdrop-blur-sm,
+.language-popup-overlay {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 
 /* ==========================================
    SPLASH SCREEN ANIMATIONS
