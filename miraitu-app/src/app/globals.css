@@ -343,6 +343,28 @@ body {
   -webkit-backdrop-filter: none !important;
 }
 
+/* ===== ANDROID WEBVIEW FIX ===== */
+
+/* Fix env() safe-area insets that split layout in Android WebView */
+@supports (-webkit-touch-callout: none) {
+  body {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-top: 0 !important;
+  }
+}
+
+/* Disable backdrop-filter broadly — Android WebView renders it incorrectly */
+.backdrop-blur-sm,
+.backdrop-blur,
+.backdrop-blur-md,
+.backdrop-blur-lg,
+[class*="backdrop"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
 
 /* ==========================================
    SPLASH SCREEN ANIMATIONS
