@@ -354,15 +354,22 @@ body {
   }
 }
 
-/* Disable backdrop-filter broadly — Android WebView renders it incorrectly */
+/* Disable backdrop-filter broadly — Android WebView renders it incorrectly.
+   No background-color override here: that would grey out non-overlay elements (e.g. hero buttons). */
 .backdrop-blur-sm,
 .backdrop-blur,
 .backdrop-blur-md,
 .backdrop-blur-lg,
-[class*="backdrop"] {
+[class*="backdrop-blur"] {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Modal/overlay backdrops: apply solid fallback only on full-screen fixed overlays */
+.fixed.inset-0.bg-black\/70,
+.fixed.inset-0.bg-black\/50,
+.fixed.inset-0.bg-black\/60 {
+  background-color: rgba(0, 0, 0, 0.65) !important;
 }
 
 
