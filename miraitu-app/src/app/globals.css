@@ -343,6 +343,17 @@ body {
   -webkit-backdrop-filter: none !important;
 }
 
+/* ===== SAFE AREA INSET FIX (hamburger shifting on language change) ===== */
+
+/* Ensure header respects device safe-area on the right so the hamburger
+   never gets pushed left by notch/rounded corners when the language text changes */
+header,
+nav,
+[class*="header"],
+[class*="navbar"] {
+  padding-right: max(12px, env(safe-area-inset-right)) !important;
+}
+
 /* ===== ANDROID WEBVIEW FIX ===== */
 
 /* Fix env() safe-area insets that split layout in Android WebView */
