@@ -198,6 +198,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 });
                 // Load profile data (including custom avatar) from DB
                 loadProfileAvatar(session.user.id);
+            } else {
+                // No valid session — clear any stale user restored from sessionStorage.
+                // Without this, a phantom cached user causes an infinite redirect loop
+                // on middleware-protected routes (e.g. /home/shop), which validate the
+                // session server-side via cookies.
+                setUser(null);
             }
             setLoading(false);
         });

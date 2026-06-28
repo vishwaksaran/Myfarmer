@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const services = [
     {
@@ -42,6 +45,7 @@ const stats = [
 ];
 
 export default function VeterinaryPage() {
+    const { t } = useLanguage();
     return (
         <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-[#121811] dark:text-[#f9fbf9] transition-colors duration-300">
             <div className="px-6 py-8">
@@ -50,12 +54,12 @@ export default function VeterinaryPage() {
                     <div className="mb-10">
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-3">
                             <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-                                Veterinary <span className="text-primary">Services</span>
+                                {t('vetPage.title')} <span className="text-primary">{t('vetPage.titleHighlight')}</span>
                             </h1>
                             <NearbyLocation />
                         </div>
                         <p className="text-lg text-gray-500 max-w-2xl">
-                            Expert veterinary care for your livestock. Book consultations, vaccinations, and treatments from verified professionals.
+                            {t('vetPage.subtitle')}
                         </p>
                     </div>
 
@@ -85,7 +89,7 @@ export default function VeterinaryPage() {
                                     <span className="material-symbols-outlined text-white text-4xl">science</span>
                                 </div>
                                 <div>
-                                    <h2 className="text-3xl font-black mb-2 tracking-tight">Want to find semen for your breed?</h2>
+                                    <h2 className="text-3xl font-black mb-2 tracking-tight">{t('vetPage.semenTitle')}</h2>
                                     <p className="text-green-100 font-medium text-lg">Access elite genetics for superior milk yield and disease resistance.</p>
                                 </div>
                             </div>
@@ -93,7 +97,7 @@ export default function VeterinaryPage() {
                                 href="/home/veterinary/semen-finder"
                                 className="shrink-0 px-8 py-4 bg-white text-green-700 rounded-xl font-bold hover:bg-green-50 transition-all shadow-lg hover:-translate-y-1 active:scale-95 flex items-center gap-2"
                             >
-                                Find Semen Now
+                                {t('vetPage.findSemen')}
                                 <span className="material-symbols-outlined font-bold">arrow_forward</span>
                             </Link>
                         </div>
@@ -101,7 +105,7 @@ export default function VeterinaryPage() {
 
                     {/* Services Grid */}
                     <div className="mb-10">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Our Services</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('vetPage.ourServices')}</h2>
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {services.map((service) => (
                                 <div
@@ -119,7 +123,7 @@ export default function VeterinaryPage() {
                                         rel="noopener noreferrer"
                                         className="inline-flex items-center text-primary font-semibold hover:underline"
                                     >
-                                        Enquire Now
+                                        {t('vetPage.enquireNow')}
                                         <span className="material-symbols-outlined ml-1 group-hover:translate-x-2 transition-transform">arrow_forward</span>
                                     </a>
                                 </div>
@@ -135,7 +139,7 @@ export default function VeterinaryPage() {
                                     <span className="material-symbols-outlined text-white text-3xl">emergency</span>
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-bold text-red-700 dark:text-red-400 mb-1">Emergency Services</h2>
+                                    <h2 className="text-2xl font-bold text-red-700 dark:text-red-400 mb-1">{t('vetPage.emergency')}</h2>
                                     <p className="text-red-600 dark:text-red-300">24/7 emergency veterinary care available for critical cases</p>
                                 </div>
                             </div>
@@ -156,7 +160,7 @@ export default function VeterinaryPage() {
                                 href="/home/become-seller"
                                 className="shrink-0 px-8 py-4 bg-white text-primary rounded-xl font-bold hover:bg-green-50 transition-colors shadow-lg"
                             >
-                                Register as Vet →
+                                {t('vetPage.registerVet')} →
                             </Link>
                         </div>
                     </div>

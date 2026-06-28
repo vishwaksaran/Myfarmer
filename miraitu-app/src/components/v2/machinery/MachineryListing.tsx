@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface MachineryItem {
     id: number;
@@ -55,6 +56,7 @@ const STATE_DISTRICTS: Record<string, string[]> = {
 
 export default function MachineryListing({ items, type, viewMode = 'grid', onCompare, selectedForCompare = [], onGetPrice }: MachineryListingProps) {
     const { user } = useAuth();
+    const { t } = useLanguage();
     const [selectedItem, setSelectedItem] = useState<MachineryItem | null>(null);
     const [showQuoteModal, setShowQuoteModal] = useState(false);
     const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -202,7 +204,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                                 ) : user ? (
                                                     <p className="flex items-center gap-1.5 text-sm font-semibold text-primary">
                                                         <span className="material-symbols-outlined text-sm">currency_rupee</span>
-                                                        Price on request
+                                                        {t('machineryListing.priceOnRequest')}
                                                     </p>
                                                 ) : (
                                                     <Link href="/user-login" className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
@@ -219,7 +221,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                                 className="flex-1 py-2.5 rounded-xl bg-primary/10 text-primary font-semibold hover:bg-primary/20 transition-colors flex items-center justify-center gap-1"
                                             >
                                                 <span className="material-symbols-outlined text-sm">info</span>
-                                                Details
+                                                {t('machineryListing.details')}
                                             </button>
                                             {onGetPrice ? (
                                                 <button
@@ -239,7 +241,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                                     className="flex-1 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-1"
                                                 >
                                                     <span className="material-symbols-outlined text-sm">currency_rupee</span>
-                                                    {type === 'new' ? 'Get Price' : 'Request Quote'}
+                                                    {type === 'new' ? t('machineryListing.getPrice') : t('machineryListing.requestQuote')}
                                                 </button>
                                             ) : (
                                                 <Link
@@ -247,7 +249,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                                     className="flex-1 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-1"
                                                 >
                                                     <span className="material-symbols-outlined text-sm">currency_rupee</span>
-                                                    {type === 'new' ? 'Get Price' : 'Request Quote'}
+                                                    {type === 'new' ? t('machineryListing.getPrice') : t('machineryListing.requestQuote')}
                                                 </Link>
                                             )}
                                         </div>
@@ -349,7 +351,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                             ) : user ? (
                                                 <p className="flex items-center gap-1.5 text-xs md:text-sm font-semibold text-primary">
                                                     <span className="material-symbols-outlined text-sm">currency_rupee</span>
-                                                    Price on request
+                                                    {t('machineryListing.priceOnRequest')}
                                                 </p>
                                             ) : (
                                                 <Link href="/user-login" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs md:text-sm font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
@@ -364,7 +366,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                                 className="flex-1 sm:flex-none px-3 md:px-4 py-2 rounded-lg md:rounded-xl bg-primary/10 text-primary text-xs md:text-sm font-semibold hover:bg-primary/20 transition-colors flex items-center justify-center gap-1"
                                             >
                                                 <span className="material-symbols-outlined text-sm">info</span>
-                                                Details
+                                                {t('machineryListing.details')}
                                             </button>
                                             {user ? (
                                                 <button
@@ -376,7 +378,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                                     className="flex-1 sm:flex-none px-3 md:px-4 py-2 rounded-lg md:rounded-xl bg-primary text-white text-xs md:text-sm font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-1"
                                                 >
                                                     <span className="material-symbols-outlined text-sm">currency_rupee</span>
-                                                    {type === 'new' ? 'Get Price' : 'Request Quote'}
+                                                    {type === 'new' ? t('machineryListing.getPrice') : t('machineryListing.requestQuote')}
                                                 </button>
                                             ) : (
                                                 <Link
@@ -384,7 +386,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                                     className="flex-1 sm:flex-none px-3 md:px-4 py-2 rounded-lg md:rounded-xl bg-primary text-white text-xs md:text-sm font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-1"
                                                 >
                                                     <span className="material-symbols-outlined text-sm">currency_rupee</span>
-                                                    {type === 'new' ? 'Get Price' : 'Request Quote'}
+                                                    {type === 'new' ? t('machineryListing.getPrice') : t('machineryListing.requestQuote')}
                                                 </Link>
                                             )}
                                         </div>
@@ -430,7 +432,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                     ) : user ? (
                                         <p className="mt-1 flex items-center gap-1 text-sm font-semibold text-primary">
                                             <span className="material-symbols-outlined text-sm">currency_rupee</span>
-                                            Price on request
+                                            {t('machineryListing.priceOnRequest')}
                                         </p>
                                     ) : (
                                         <Link href="/user-login" className="mt-1 flex items-center gap-1 text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors">
@@ -459,14 +461,14 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                         }}
                                         className="flex-1 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors"
                                     >
-                                        {type === 'new' ? 'Get On-Road Price' : 'Request Quote'}
+                                        {type === 'new' ? t('machineryListing.getOnRoadPrice') : t('machineryListing.requestQuote')}
                                     </button>
                                 ) : (
                                     <Link
                                         href="/user-login"
                                         className="flex-1 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors text-center"
                                     >
-                                        Login to Get Price
+                                        {t('machineryListing.loginToGetPrice')}
                                     </Link>
                                 )}
                                 <button className="px-6 py-3 rounded-xl border border-gray-300 dark:border-gray-600 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
@@ -486,7 +488,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                         <div className="p-6 border-b border-gray-200 dark:border-gray-700 shrink-0">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                                    {submitSuccess ? 'Success!' : (type === 'new' ? 'Get On-Road Price' : 'Request Quote')}
+                                    {submitSuccess ? t('machineryListing.success') : (type === 'new' ? t('machineryListing.getOnRoadPrice') : t('machineryListing.requestQuote'))}
                                 </h3>
                                 <button
                                     onClick={closeQuoteModal}
@@ -612,7 +614,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                     type="submit"
                                     className="w-full py-4 rounded-xl bg-primary text-white font-bold text-lg hover:bg-primary-dark transition-colors"
                                 >
-                                    {type === 'new' ? 'Get Price' : 'Request Quote'}
+                                    {type === 'new' ? t('machineryListing.getPrice') : t('machineryListing.requestQuote')}
                                 </button>
                             </form>
                         )}

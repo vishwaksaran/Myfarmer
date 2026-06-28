@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/i18n/LanguageContext';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import LoginModal from '@/components/auth/LoginModal';
@@ -28,6 +29,7 @@ const getTrendingScore = (post: Post) => {
 };
 
 export default function CommunityPage() {
+    const { t } = useLanguage();
     const { user } = useAuth();
     const router = useRouter();
     const [showLoginModal, setShowLoginModal] = useState(false);
@@ -403,11 +405,11 @@ export default function CommunityPage() {
                         </div>
 
                         <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-3">
-                            Join India&apos;s Largest<br />
-                            <span className="text-[#22c33d]">Farmer Community</span>
+                            {t('communityPage.title')}<br />
+                            <span className="text-[#22c33d]">{t('communityPage.titleHighlight')}</span>
                         </h1>
                         <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg mb-8 max-w-md mx-auto leading-relaxed">
-                            Connect with 10L+ farmers. Share experiences, get crop advice, discover farming tips, and stay updated with agri news.
+                            {t('communityPage.subtitle')}
                         </p>
 
                         {/* Feature highlights */}
@@ -433,13 +435,13 @@ export default function CommunityPage() {
                                 onClick={() => router.push('/user-register')}
                                 className="flex-1 py-3.5 rounded-xl bg-[#22c33d] text-white font-bold text-base hover:brightness-110 transition-all shadow-lg shadow-[#22c33d]/20"
                             >
-                                Sign Up Free
+                                {t('communityPage.signUp')}
                             </button>
                             <button
                                 onClick={() => setShowLoginModal(true)}
                                 className="flex-1 py-3.5 rounded-xl border-2 border-[#22c33d] text-[#22c33d] font-bold text-base hover:bg-[#22c33d]/5 transition-all"
                             >
-                                Log In
+                                {t('communityPage.logIn')}
                             </button>
                         </div>
 

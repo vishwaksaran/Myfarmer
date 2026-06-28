@@ -7,6 +7,7 @@ import { useMandiPrices } from '@/lib/useMandiPrices';
 import { formatPrice, getCropIcon, spreadPercent } from '@/lib/mandi-api';
 import { useAuth } from '@/context/AuthContext';
 import { useLoginPrompt } from '@/context/LoginPromptContext';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 /* ── Fallback data (shown when API key is missing or API fails) ─── */
 const fallbackHighlights = [
@@ -27,23 +28,25 @@ const fallbackPopular = [
     { name: 'Soybean', icon: 'spa', listings: 98, avgPrice: '₹4,200/qtl' },
 ];
 
-const quickActions = [
-    { name: 'Price Trends', description: 'Analyze price trends across states', icon: 'show_chart', href: '/home/crops/mandi/trends', color: 'bg-primary' },
-    { name: 'Mandi Prices', description: 'Check live prices from nearby mandis', icon: 'trending_up', href: '/home/crops/mandi/prices', color: 'bg-primary' },
-    { name: 'Buy Crops', description: 'Browse available produce listings', icon: 'shopping_cart', href: '/home/crops/buy', color: 'bg-primary' },
-    { name: 'Buy Grains', description: 'Wheat, rice, millets & more', icon: 'grain', href: '/home/crops/buy/grains', color: 'bg-primary' },
-    { name: 'Sell Crops', description: 'List your harvest for sale', icon: 'sell', href: '/home/crops/sell', color: 'bg-primary' },
-    { name: 'Nearby Mandis', description: 'Find mandis near your location', icon: 'location_on', href: '/home/crops/mandi/nearby', color: 'bg-primary' },
-];
 
 function openCropAssistant() {
     window.dispatchEvent(new Event('open-crop-assistant'));
 }
 
 export default function CropsPage() {
+    const { t } = useLanguage();
     const [selectedRegion, setSelectedRegion] = useState('Maharashtra');
     const { user } = useAuth();
     const { requireLogin } = useLoginPrompt();
+
+    const quickActions = [
+        { key: 'priceTrends', icon: 'show_chart', href: '/home/crops/mandi/trends' },
+        { key: 'mandiPrices', icon: 'trending_up', href: '/home/crops/mandi/prices' },
+        { key: 'buyCrops', icon: 'shopping_cart', href: '/home/crops/buy' },
+        { key: 'buyGrains', icon: 'grain', href: '/home/crops/buy/grains' },
+        { key: 'sellCrops', icon: 'sell', href: '/home/crops/sell' },
+        { key: 'nearbyMandis', icon: 'location_on', href: '/home/crops/mandi/nearby' },
+    ];
 
     // Fetch market highlights — top 50 records for selected state, grouped by commodity
     const { data: rawData, loading, error } = useMandiPrices({ state: selectedRegion, limit: 50 });
@@ -87,10 +90,10 @@ export default function CropsPage() {
                         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                             <div>
                                 <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
-                                    Crops <span className="text-primary">Market</span>
+                                    {t('cropsPage.title')} <span className="text-primary">{t('cropsPage.titleHighlight')}</span>
                                 </h1>
                                 <p className="text-lg text-gray-500 max-w-2xl">
-                                    Get live mandi prices, buy directly from farmers, or sell your produce at the best rates.
+                                    {t('cropsPage.subtitle')}
                                 </p>
                             </div>
                             <NearbyLocation />
@@ -101,15 +104,15 @@ export default function CropsPage() {
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
                         {quickActions.map((action) => (
                             <Link
-                                key={action.name}
+                                key={action.key}
                                 href={action.href}
                                 className="group p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all hover:-translate-y-1"
                             >
-                                <div className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                                <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                     <span className="material-symbols-outlined text-white text-2xl">{action.icon}</span>
                                 </div>
-                                <h3 className="font-bold text-gray-900 dark:text-white mb-1">{action.name}</h3>
-                                <p className="text-sm text-gray-500">{action.description}</p>
+                                <h3 className="font-bold text-gray-900 dark:text-white mb-1">{t(`cropsPage.${action.key}`)}</h3>
+                                <p className="text-sm text-gray-500">{t(`cropsPage.${action.key}Desc`)}</p>
                             </Link>
                         ))}
                     </div>
@@ -133,12 +136,12 @@ export default function CropsPage() {
                                     <span className="material-symbols-outlined text-3xl sm:text-4xl">psychiatry</span>
                                 </div>
                                 <div className="flex-1 text-left">
-                                    <h3 className="text-lg sm:text-xl font-bold mb-1">Miraitu Crop Assistant</h3>
-                                    <p className="text-sm sm:text-base text-white/80">Ask anything about crops — cultivation steps, pest control, best varieties for your soil & more</p>
+                                    <h3 className="text-lg sm:text-xl font-bold mb-1">{t('cropsPage.assistant')}</h3>
+                                    <p className="text-sm sm:text-base text-white/80">{t('cropsPage.assistantDesc')}</p>
                                 </div>
                                 <div className="hidden sm:flex items-center gap-2 flex-shrink-0 bg-white/20 px-4 py-2 rounded-xl group-hover:bg-white/30 transition-colors">
                                     <span className="material-symbols-outlined text-lg">chat</span>
-                                    <span className="font-semibold text-sm">Ask Now</span>
+                                    <span className="font-semibold text-sm">{t('cropsPage.askNow')}</span>
                                 </div>
                             </div>
                         </div>
@@ -148,15 +151,15 @@ export default function CropsPage() {
                     <div className="mb-10">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Market Highlights</h2>
+                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('cropsPage.marketHighlights')}</h2>
                                 {!useFallback && !loading && (
                                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-bold">
                                         <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                        LIVE
+                                        {t('cropsPage.live')}
                                     </span>
                                 )}
                                 {useFallback && !loading && (
-                                    <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">Sample data</span>
+                                    <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">{t('cropsPage.sampleData')}</span>
                                 )}
                             </div>
                             <select
@@ -215,9 +218,9 @@ export default function CropsPage() {
                     {/* Popular Crops */}
                     <div className="mb-10">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Popular Crops</h2>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('cropsPage.popularCrops')}</h2>
                             <Link href="/home/crops/buy" className="text-primary font-semibold hover:underline">
-                                View All →
+                                {t('cropsPage.viewAll')} →
                             </Link>
                         </div>
 
@@ -244,7 +247,7 @@ export default function CropsPage() {
                                             <span className="material-symbols-outlined text-primary text-2xl">{crop.icon}</span>
                                         </div>
                                         <h3 className="font-bold text-gray-900 dark:text-white">{crop.name}</h3>
-                                        <p className="text-sm text-gray-500">{crop.listings} {!useFallback ? 'markets' : 'listings'}</p>
+                                        <p className="text-sm text-gray-500">{crop.listings} {!useFallback ? t('cropsPage.markets') : t('cropsPage.listings')}</p>
                                         <p className="text-sm font-semibold text-primary mt-1">{crop.avgPrice}</p>
                                     </Link>
                                 ))}
@@ -256,14 +259,14 @@ export default function CropsPage() {
                     <div className="bg-gradient-to-r from-primary to-emerald-500 rounded-3xl p-8 text-white mb-10">
                         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                             <div>
-                                <h2 className="text-2xl font-bold mb-2">Ready to sell your harvest?</h2>
-                                <p className="text-white/90">List your produce and connect with buyers directly. No middlemen, better prices.</p>
+                                <h2 className="text-2xl font-bold mb-2">{t('cropsPage.sellTitle')}</h2>
+                                <p className="text-white/90">{t('cropsPage.sellDesc')}</p>
                             </div>
                             <Link
                                 href="/home/crops/sell"
                                 className="shrink-0 px-8 py-4 bg-white text-primary rounded-xl font-bold hover:bg-green-50 transition-colors shadow-lg"
                             >
-                                Start Selling →
+                                {t('cropsPage.startSelling')} →
                             </Link>
                         </div>
                     </div>

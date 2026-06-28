@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import NearbyLocation from '@/components/v2/NearbyLocation';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 // Category data with real images
 const categories = [
@@ -139,6 +140,7 @@ const featuredMachinery = [
 
 
 export default function MachineryPage() {
+    const { t } = useLanguage();
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [hpRange, setHpRange] = useState([0, 1000]);
     const [selectedBrand, setSelectedBrand] = useState('All Brands');
@@ -149,7 +151,7 @@ export default function MachineryPage() {
     // Extract unique brands from data
     const allBrands = Array.from(new Set(featuredMachinery.map((m) => m.brand))).sort();
 
-    // Category name mapping: filter label → data category values
+    // Internal English keys used for filter logic; translated only at render time
     const categoryMap: Record<string, string[]> = {
         Tractors: ['Tractor'],
         Harvesters: ['Harvester'],
@@ -157,6 +159,34 @@ export default function MachineryPage() {
         'Small Machineries': ['Small Machinery'],
         Implements: ['Implement'],
         Drones: ['Drone'],
+    };
+
+    // Translated labels for each filter key
+    const filterCategoryLabel: Record<string, string> = {
+        Tractors: t('machineryPage.filter.tractors'),
+        Harvesters: t('machineryPage.filter.harvesters'),
+        JCB: t('machineryPage.filter.jcb'),
+        'Small Machineries': t('machineryPage.filter.smallMachineries'),
+        Implements: t('machineryPage.filter.implements'),
+        Drones: t('machineryPage.filter.drones'),
+    };
+
+    // Translated category card titles/subtitles keyed by category id
+    const catTitle: Record<string, string> = {
+        tractors: t('machineryPage.cat.tractors'),
+        jcb: t('machineryPage.cat.jcbs'),
+        'small-machineries': t('machineryPage.cat.smallMachineries'),
+        implements: t('machineryPage.cat.implements'),
+        harvesters: t('machineryPage.cat.harvesters'),
+        drones: t('machineryPage.cat.agriDrones'),
+    };
+    const catSubtitle: Record<string, string> = {
+        tractors: t('machineryPage.cat.tractorsSub'),
+        jcb: t('machineryPage.cat.jcbsSub'),
+        'small-machineries': t('machineryPage.cat.smallMachineriesSub'),
+        implements: t('machineryPage.cat.implementsSub'),
+        harvesters: t('machineryPage.cat.harvestersSub'),
+        drones: t('machineryPage.cat.agriDronesSub'),
     };
 
     const filterCategories = Object.keys(categoryMap);
@@ -242,10 +272,10 @@ export default function MachineryPage() {
                         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6 md:mb-8">
                             <div className="min-w-0">
                                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                                    Agricultural Machinery
+                                    {t('machineryPage.title')}
                                 </h1>
                                 <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">
-                                    Browse our comprehensive collection of farm equipment and machinery
+                                    {t('machineryPage.subtitle')}
                                 </p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 min-w-0">
@@ -254,7 +284,7 @@ export default function MachineryPage() {
                                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors shrink-0"
                                 >
                                     <span className="material-symbols-outlined text-lg">compare_arrows</span>
-                                    Compare
+                                    {t('machineryPage.compare')}
                                 </Link>
                                 <NearbyLocation />
                             </div>
@@ -280,10 +310,10 @@ export default function MachineryPage() {
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent" />
                                                 <div className="absolute inset-x-0 bottom-1 md:bottom-1.5 z-10 p-3 md:p-4">
                                                     <h3 className="text-xl sm:text-2xl md:text-[1.75rem] font-black text-white leading-[1.08] tracking-tight drop-shadow pr-1 line-clamp-2">
-                                                        {category.cardTitle}
+                                                        {catTitle[category.id] ?? category.cardTitle}
                                                     </h3>
                                                     <p className="text-xs md:text-sm text-white/90 leading-tight mt-1 break-words line-clamp-2">
-                                                        {category.cardSubtitle ?? `${category.count}+ units available`}
+                                                        {catSubtitle[category.id] ?? `${category.count}+ units available`}
                                                     </p>
                                                 </div>
                                             </Link>
@@ -304,10 +334,10 @@ export default function MachineryPage() {
 
                                             <div className="absolute inset-x-0 bottom-1 md:bottom-1.5 z-10 p-3 md:p-4">
                                                 <h3 className="text-xl sm:text-2xl md:text-[1.75rem] font-black text-white leading-[1.08] tracking-tight drop-shadow pr-1 line-clamp-2">
-                                                    {category.cardTitle}
+                                                    {catTitle[category.id] ?? category.cardTitle}
                                                 </h3>
                                                 <p className="text-xs md:text-sm text-white/90 leading-tight mt-1 break-words line-clamp-2">
-                                                    {category.cardSubtitle ?? `${category.count}+ units available`}
+                                                    {catSubtitle[category.id] ?? `${category.count}+ units available`}
                                                 </p>
                                             </div>
                                         </button>
@@ -352,7 +382,7 @@ export default function MachineryPage() {
 
                                 {/* Action Options - scrollable */}
                                 <div className="overflow-y-auto p-4 pb-6">
-                                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">What would you like to do?</p>
+                                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">{t('machineryPage.whatToDo')}</p>
                                     <div className="space-y-2">
 
                                         <Link
@@ -364,8 +394,8 @@ export default function MachineryPage() {
                                                 <span className="material-symbols-outlined text-white text-xl">add_circle</span>
                                             </div>
                                             <div className="flex-1">
-                                                <p className="font-bold text-gray-900 dark:text-white text-sm">New {modalCategory.name}</p>
-                                                <p className="text-xs text-gray-500">Browse brand new equipment</p>
+                                                <p className="font-bold text-gray-900 dark:text-white text-sm">{t('machineryPage.modal.new')} {catTitle[modalCategory.id] ?? modalCategory.name}</p>
+                                                <p className="text-xs text-gray-500">{t('machineryPage.browseNew')}</p>
                                             </div>
                                             <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-blue-500 group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
                                         </Link>
@@ -379,8 +409,8 @@ export default function MachineryPage() {
                                                 <span className="material-symbols-outlined text-white text-xl">shopping_cart</span>
                                             </div>
                                             <div className="flex-1">
-                                                <p className="font-bold text-gray-900 dark:text-white text-sm">Buy Used {modalCategory.name}</p>
-                                                <p className="text-xs text-gray-500">Find pre-owned at great prices</p>
+                                                <p className="font-bold text-gray-900 dark:text-white text-sm">{t('machineryPage.modal.buyUsed')} {catTitle[modalCategory.id] ?? modalCategory.name}</p>
+                                                <p className="text-xs text-gray-500">{t('machineryPage.findPreowned')}</p>
                                             </div>
                                             <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-emerald-500 group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
                                         </Link>
@@ -394,8 +424,8 @@ export default function MachineryPage() {
                                                 <span className="material-symbols-outlined text-white text-xl">sell</span>
                                             </div>
                                             <div className="flex-1">
-                                                <p className="font-bold text-gray-900 dark:text-white text-sm">Sell Used {modalCategory.name}</p>
-                                                <p className="text-xs text-gray-500">List your equipment for sale</p>
+                                                <p className="font-bold text-gray-900 dark:text-white text-sm">{t('machineryPage.modal.sellUsed')} {catTitle[modalCategory.id] ?? modalCategory.name}</p>
+                                                <p className="text-xs text-gray-500">{t('machineryPage.listEquip')}</p>
                                             </div>
                                             <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-orange-500 group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
                                         </Link>
@@ -409,8 +439,8 @@ export default function MachineryPage() {
                                                 <span className="material-symbols-outlined text-white text-xl">handshake</span>
                                             </div>
                                             <div className="flex-1">
-                                                <p className="font-bold text-gray-900 dark:text-white text-sm">Rent {modalCategory.name}</p>
-                                                <p className="text-xs text-gray-500">Hire by the hour, day or season</p>
+                                                <p className="font-bold text-gray-900 dark:text-white text-sm">{t('machineryPage.modal.rent')} {catTitle[modalCategory.id] ?? modalCategory.name}</p>
+                                                <p className="text-xs text-gray-500">{t('machineryPage.hire')}</p>
                                             </div>
                                             <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-gray-500 group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
                                         </Link>
@@ -427,11 +457,11 @@ export default function MachineryPage() {
                         {/* Filters Sidebar - Hidden on Mobile */}
                         <div className="hidden md:block md:w-64 shrink-0">
                             <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 sticky top-32">
-                                <h3 className="font-bold text-gray-900 dark:text-white mb-4">Refine Search</h3>
+                                <h3 className="font-bold text-gray-900 dark:text-white mb-4">{t('machineryPage.refineSearch')}</h3>
 
                                 {/* Category Filter */}
                                 <div className="mb-6">
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Category</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">{t('machineryPage.category')}</label>
                                     <div className="space-y-2">
                                         {filterCategories.map((cat) => (
                                             <label key={cat} className="flex items-center gap-2 cursor-pointer">
@@ -441,7 +471,7 @@ export default function MachineryPage() {
                                                     onChange={() => toggleCategory(cat)}
                                                     className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
                                                 />
-                                                <span className="text-sm text-gray-700 dark:text-gray-300">{cat}</span>
+                                                <span className="text-sm text-gray-700 dark:text-gray-300">{filterCategoryLabel[cat] ?? cat}</span>
                                             </label>
                                         ))}
                                     </div>
@@ -449,7 +479,7 @@ export default function MachineryPage() {
 
                                 {/* HP Range Filter */}
                                 <div className="mb-6">
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">HP Range</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">{t('machineryPage.hpRange')}</label>
                                     <input
                                         type="range"
                                         min="0"
@@ -466,13 +496,13 @@ export default function MachineryPage() {
 
                                 {/* Brand Filter */}
                                 <div className="mb-6">
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Brand</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">{t('machineryPage.brand')}</label>
                                     <select
                                         value={selectedBrand}
                                         onChange={(e) => setSelectedBrand(e.target.value)}
                                         className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm"
                                     >
-                                        <option>All Brands</option>
+                                        <option>{t('machineryPage.allBrands')}</option>
                                         {allBrands.map((b) => <option key={b} value={b}>{b}</option>)}
                                     </select>
                                 </div>
@@ -485,9 +515,9 @@ export default function MachineryPage() {
                             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-4 md:mb-6">
                                 <div className="min-w-0">
                                     <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">
-                                        Available Machinery
+                                        {t('machineryPage.availableMachinery')}
                                     </h2>
-                                    <p className="text-xs md:text-sm text-gray-500">({filteredMachinery.length} results)</p>
+                                    <p className="text-xs md:text-sm text-gray-500">({t('machineryPage.results').replace('{count}', String(filteredMachinery.length))})</p>
                                 </div>
 
                                 <div className="flex items-center gap-2 md:gap-4 shrink-0">
@@ -497,7 +527,7 @@ export default function MachineryPage() {
                                         className="md:hidden flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
                                     >
                                         <span className="material-symbols-outlined text-base md:text-lg">tune</span>
-                                        <span className="text-xs md:text-sm">Filter</span>
+                                        <span className="text-xs md:text-sm">{t('machineryPage.filter')}</span>
                                     </button>
 
                                     {/* View Toggle */}
@@ -544,7 +574,7 @@ export default function MachineryPage() {
                             >
                                 {/* Modal Header */}
                                 <div className="flex items-center justify-between mb-6">
-                                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">Refine Search</h2>
+                                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t('machineryPage.refineSearch')}</h2>
                                     <button
                                         onClick={() => setShowFilterModal(false)}
                                         className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
@@ -555,7 +585,7 @@ export default function MachineryPage() {
 
                                 {/* Category Filter */}
                                 <div className="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Category</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">{t('machineryPage.category')}</label>
                                     <div className="space-y-3">
                                         {filterCategories.map((cat) => (
                                             <label key={cat} className="flex items-center gap-3 cursor-pointer">
@@ -565,7 +595,7 @@ export default function MachineryPage() {
                                                     onChange={() => toggleCategory(cat)}
                                                     className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
                                                 />
-                                                <span className="text-sm text-gray-700 dark:text-gray-300">{cat}</span>
+                                                <span className="text-sm text-gray-700 dark:text-gray-300">{filterCategoryLabel[cat] ?? cat}</span>
                                             </label>
                                         ))}
                                     </div>
@@ -573,7 +603,7 @@ export default function MachineryPage() {
 
                                 {/* HP Range Filter */}
                                 <div className="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">HP Range</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">{t('machineryPage.hpRange')}</label>
                                     <input
                                         type="range"
                                         min="0"
@@ -590,13 +620,13 @@ export default function MachineryPage() {
 
                                 {/* Brand Filter */}
                                 <div className="mb-8">
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Brand</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">{t('machineryPage.brand')}</label>
                                     <select
                                         value={selectedBrand}
                                         onChange={(e) => setSelectedBrand(e.target.value)}
                                         className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm"
                                     >
-                                        <option>All Brands</option>
+                                        <option>{t('machineryPage.allBrands')}</option>
                                         {allBrands.map((b) => <option key={b} value={b}>{b}</option>)}
                                     </select>
                                 </div>
@@ -611,13 +641,13 @@ export default function MachineryPage() {
                                         }}
                                         className="flex-1 px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                                     >
-                                        Reset
+                                        {t('machineryPage.reset')}
                                     </button>
                                     <button
                                         onClick={() => setShowFilterModal(false)}
                                         className="flex-1 px-4 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-colors"
                                     >
-                                        Apply Filters
+                                        {t('machineryPage.applyFilters')}
                                     </button>
                                 </div>
                             </div>

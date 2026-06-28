@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/i18n/LanguageContext';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import { useCart } from '@/context/CartContext';
@@ -50,6 +51,7 @@ const POPULAR_CITIES = [
 ];
 
 export default function ShopPage() {
+    const { t } = useLanguage();
     const router = useRouter();
     const { user, loading } = useAuth();
     const { quantities, addItem, removeItem } = useCart();
@@ -86,6 +88,43 @@ export default function ShopPage() {
         setShowLocationDropdown(false);
     };
 
+    // Translation lookup maps (data values → i18n keys). Falls back to the
+    // original English string when no key is mapped.
+    const catNameKey: Record<string, string> = {
+        'agriculture-drone': 'shopCat.agricultureDrone',
+        'seeds': 'shopCat.seeds',
+        'garden-products': 'shopCat.gardenProducts',
+        'crop-special-kit': 'shopCat.cropSpecialKit',
+        'agri-inputs': 'shopCat.agriInputs',
+        'agriculture-tools': 'shopCat.agricultureTools',
+        'cold-press-oil': 'shopCat.coldPressOil',
+        'solar-dry-products': 'shopCat.solarDryProducts',
+        'organic-manure': 'shopCat.organicManure',
+        'millets-grains': 'shopCat.milletsGrains',
+        'honey-products': 'shopCat.honeyProducts',
+        'spices-herbs': 'shopCat.spicesHerbs',
+        'dairy-products': 'shopCat.dairyProducts',
+    };
+    const productCatKey: Record<string, string> = {
+        'Agriculture Drone': 'shopCat.agricultureDrone',
+        'Seeds': 'shopCat.seeds',
+        'Garden Products': 'shopCat.gardenProducts',
+        'Crop Special Kit': 'shopCat.cropSpecialKit',
+        'Agri Inputs': 'shopCat.agriInputs',
+        'Agriculture Tools': 'shopCat.agricultureTools',
+    };
+    const badgeKey: Record<string, string> = {
+        'Best Seller': 'shopBadge.bestSeller',
+        'New': 'shopBadge.new',
+        'Eco-Friendly': 'shopBadge.ecoFriendly',
+        'Bundle': 'shopBadge.bundle',
+        'Top Rated': 'shopBadge.topRated',
+    };
+    const tMap = (map: Record<string, string>, value: string) => {
+        const key = map[value];
+        return key ? t(key) : value;
+    };
+
     if (loading || !user) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-[#0d110d] flex items-center justify-center">
@@ -106,10 +145,10 @@ export default function ShopPage() {
                         <span className="material-symbols-outlined text-primary text-xl">location_on</span>
                         <div className="relative flex-1" ref={locationRef}>
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-500 font-medium whitespace-nowrap">Deliver to:</span>
+                                <span className="text-sm text-gray-500 font-medium whitespace-nowrap">{t('shopPage.deliverTo')}</span>
                                 <input
                                     type="text"
-                                    placeholder="Enter your area, city or pincode..."
+                                    placeholder={t('shopPage.enterArea')}
                                     value={locationInput}
                                     onChange={(e) => { setLocationInput(e.target.value); setShowLocationDropdown(true); }}
                                     onFocus={() => setShowLocationDropdown(true)}
@@ -143,12 +182,12 @@ export default function ShopPage() {
                                         className="w-full flex items-center gap-3 px-4 py-3 text-sm text-primary font-bold hover:bg-green-50 dark:hover:bg-green-900/20 border-b border-gray-100 dark:border-gray-800 transition-colors"
                                     >
                                         <span className="material-symbols-outlined text-lg">my_location</span>
-                                        Use current location
+                                        {t('shopPage.useLocation')}
                                     </button>
                                     {/* City list */}
                                     {filteredCities.length > 0 ? (
                                         <div className="py-1">
-                                            <p className="px-4 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Popular Cities</p>
+                                            <p className="px-4 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('shopPage.popularCities')}</p>
                                             {filteredCities.map(city => (
                                                 <button
                                                     key={city}
@@ -183,17 +222,17 @@ export default function ShopPage() {
                         <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
                         <div className="relative z-10">
                             <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-sm text-white font-medium mb-4">
-                                🌾 Special Offer
+                                🌾 {t('shopPage.specialOffer')}
                             </span>
                             <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
-                                Farm Essentials Sale
+                                {t('shopPage.saleTitle')}
                             </h1>
                             <p className="text-white/80 text-lg mb-6 max-w-xl">
-                                Get up to 40% off on seeds, fertilizers, and farming equipment.
-                                {selectedLocation ? ` Delivering to ${selectedLocation}.` : ' Limited time offer!'}
+                                {t('shopPage.saleDesc')}
+                                {selectedLocation ? ` Delivering to ${selectedLocation}.` : ''}
                             </p>
                             <Link href="/home/shop/all" className="inline-block px-8 py-3 bg-white text-primary font-bold rounded-xl hover:bg-gray-100 transition-colors shadow-lg" data-no-auth>
-                                Shop Now
+                                {t('shopPage.shopNow')}
                             </Link>
                         </div>
                         {/* Decorative plant SVG */}
@@ -213,10 +252,10 @@ export default function ShopPage() {
                     <section className="mb-12">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                Shop By Category
+                                {t('shopPage.shopByCategory')}
                             </h2>
                             <Link href="/home/shop/all" className="text-primary font-semibold text-sm hover:underline flex items-center gap-1">
-                                View All
+                                {t('shopPage.viewAll2')}
                                 <span className="material-symbols-outlined text-lg">arrow_forward</span>
                             </Link>
                         </div>
@@ -236,10 +275,10 @@ export default function ShopPage() {
                                         )}
                                     </div>
                                     <h3 className="font-semibold text-gray-900 dark:text-white text-center text-sm leading-tight">
-                                        {category.name}
+                                        {catNameKey[category.id] ? t(catNameKey[category.id]) : category.name}
                                     </h3>
                                     <p className="text-xs text-gray-500 text-center mt-1">
-                                        {category.count} products
+                                        {category.count} {t('shopPage.products')}
                                     </p>
                                 </Link>
                             ))}
@@ -251,11 +290,11 @@ export default function ShopPage() {
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
                                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    Deals of the Day
+                                    {t('shopPage.dealsOfDay')}
                                 </h2>
                                 <span className="flex items-center gap-1 px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full text-sm font-medium">
                                     <span className="material-symbols-outlined text-lg">timer</span>
-                                    Limited Time
+                                    {t('shopPage.limitedTime')}
                                 </span>
                             </div>
                         </div>
@@ -282,7 +321,7 @@ export default function ShopPage() {
                                         </div>
                                         <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
                                             <span className="material-symbols-outlined text-sm">schedule</span>
-                                            Ends in {deal.endsIn}
+                                            {t('shopPage.endsIn')} {deal.endsIn}
                                         </div>
                                     </div>
                                 </div>
@@ -294,7 +333,7 @@ export default function ShopPage() {
                     <section className="mb-12">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                Featured Products
+                                {t('shopPage.featuredProducts')}
                             </h2>
                             <div className="flex items-center gap-2">
                                 <button className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
@@ -321,7 +360,7 @@ export default function ShopPage() {
                                         />
                                         {product.badge && (
                                             <span className="absolute top-2 left-2 px-2 py-0.5 bg-primary text-white text-xs font-bold rounded">
-                                                {product.badge}
+                                                {tMap(badgeKey, product.badge)}
                                             </span>
                                         )}
                                         {('weight' in product) && (product as any).weight && (
@@ -347,7 +386,7 @@ export default function ShopPage() {
 
                                     {/* Product Info */}
                                     <div className="p-3">
-                                        <p className="text-xs text-gray-500 mb-1">{product.category}</p>
+                                        <p className="text-xs text-gray-500 mb-1">{tMap(productCatKey, product.category)}</p>
                                         <h4 className="font-semibold text-gray-900 dark:text-white text-sm line-clamp-2 min-h-[40px]">
                                             {product.name}
                                         </h4>
@@ -383,7 +422,7 @@ export default function ShopPage() {
                                                 onClick={() => addItem(product.id)}
                                                 className="w-full mt-3 py-2 rounded-lg bg-primary/10 text-primary text-sm font-semibold hover:bg-primary hover:text-white transition-colors"
                                             >
-                                                Add to Cart
+                                                {t('shopPage.addToCart')}
                                             </button>
                                         )}
                                     </div>
@@ -399,13 +438,13 @@ export default function ShopPage() {
                                 <div className="text-5xl">🌱</div>
                                 <div>
                                     <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-1">
-                                        Organic Seeds Collection
+                                        {t('shopPage.organicSeeds')}
                                     </h3>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                                        Premium quality certified organic seeds
+                                        {t('shopPage.organicSeedsDesc')}
                                     </p>
                                     <Link href="/home/shop/seeds" className="inline-block px-4 py-2 bg-amber-500 text-white text-sm font-semibold rounded-lg hover:bg-amber-600 transition-colors">
-                                        Explore
+                                        {t('shopPage.explore')}
                                     </Link>
                                 </div>
                             </div>
@@ -413,13 +452,13 @@ export default function ShopPage() {
                                 <div className="text-5xl">🚜</div>
                                 <div>
                                     <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-1">
-                                        Farm Equipment Rentals
+                                        {t('shopPage.farmEquipRentals')}
                                     </h3>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                                        Affordable daily & monthly rentals
+                                        {t('shopPage.farmEquipRentalsDesc')}
                                     </p>
                                     <Link href="/home/machinery" className="inline-block px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors">
-                                        View Options
+                                        {t('shopPage.viewOptions')}
                                     </Link>
                                 </div>
                             </div>
@@ -429,7 +468,7 @@ export default function ShopPage() {
                     {/* Popular Brands */}
                     <section className="mb-12">
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                            Popular Brands
+                            {t('shopPage.popularBrands')}
                         </h2>
                         <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
                             {['Mahindra', 'Tata Rallis', 'Bayer', 'Syngenta', 'UPL', 'IFFCO'].map((brand) => (
@@ -447,21 +486,21 @@ export default function ShopPage() {
                     <section className="mb-12">
                         <div className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 p-8">
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-8">
-                                Why Shop With Miraitu?
+                                {t('shopPage.whyShop')}
                             </h2>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                 {[
-                                    { icon: 'verified', title: 'Genuine Products', desc: '100% authentic items' },
-                                    { icon: 'local_shipping', title: 'Fast Delivery', desc: 'Pan-India shipping' },
-                                    { icon: 'support_agent', title: 'Expert Support', desc: '24/7 farmer helpline' },
-                                    { icon: 'payments', title: 'Easy Payments', desc: 'Multiple payment options' },
+                                    { icon: 'verified', titleKey: 'shopPage.genuine', descKey: 'shopPage.genuineDesc' },
+                                    { icon: 'local_shipping', titleKey: 'shopPage.fastDelivery', descKey: 'shopPage.fastDeliveryDesc' },
+                                    { icon: 'support_agent', titleKey: 'shopPage.expertSupport', descKey: 'shopPage.expertSupportDesc' },
+                                    { icon: 'payments', titleKey: 'shopPage.easyPayments', descKey: 'shopPage.easyPaymentsDesc' },
                                 ].map((item) => (
-                                    <div key={item.title} className="text-center">
+                                    <div key={item.titleKey} className="text-center">
                                         <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
                                             <span className="material-symbols-outlined text-primary text-2xl">{item.icon}</span>
                                         </div>
-                                        <h4 className="font-bold text-gray-900 dark:text-white mb-1">{item.title}</h4>
-                                        <p className="text-sm text-gray-500">{item.desc}</p>
+                                        <h4 className="font-bold text-gray-900 dark:text-white mb-1">{t(item.titleKey)}</h4>
+                                        <p className="text-sm text-gray-500">{t(item.descKey)}</p>
                                     </div>
                                 ))}
                             </div>

@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export default function LanguageSettings() {
+    const { lang: selectedLang, setLang } = useLanguage();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedLang, setSelectedLang] = useState('pa');
     const [displayLanguages, setDisplayLanguages] = useState([
         { code: 'en', name: 'English', sub: 'ENGLISH' },
         { code: 'hi', name: 'हिंदी', sub: 'HINDI' },
@@ -25,21 +26,15 @@ export default function LanguageSettings() {
         { name: 'മലയാളം', sub: 'MALAYALAM', code: 'ml' },
     ];
 
-    const saveSelection = () => {
-        // Find the selected language from all languages
-        const selectedLanguage = allLanguages.find(lang => lang.code === selectedLang);
-
-        if (selectedLanguage) {
-            // Check if language already exists in display
-            const existsInDisplay = displayLanguages.some(lang => lang.code === selectedLang);
-
-            if (!existsInDisplay) {
-                // Replace the last language with the selected one
-                const updatedLanguages = [...displayLanguages.slice(0, 3), selectedLanguage];
-                setDisplayLanguages(updatedLanguages);
-            }
+    const handleSelect = (code: string) => {
+        setLang(code as Parameters<typeof setLang>[0]);
+        const selectedLanguage = allLanguages.find(l => l.code === code);
+        if (selectedLanguage && !displayLanguages.some(l => l.code === code)) {
+            setDisplayLanguages(prev => [...prev.slice(0, 3), selectedLanguage]);
         }
+    };
 
+    const saveSelection = () => {
         setIsModalOpen(false);
     };
 
@@ -67,7 +62,7 @@ export default function LanguageSettings() {
                             return (
                                 <button
                                     key={lang.code}
-                                    onClick={() => setSelectedLang(lang.code)}
+                                    onClick={() => handleSelect(lang.code)}
                                     className={`
                                         relative h-28 rounded-2xl p-4 flex flex-col items-center justify-center border-2 transition-all
                                         ${isSelected
@@ -131,7 +126,7 @@ export default function LanguageSettings() {
                                         return (
                                             <button
                                                 key={lang.code}
-                                                onClick={() => setSelectedLang(lang.code)}
+                                                onClick={() => handleSelect(lang.code)}
                                                 className={`
                                                     relative h-20 md:h-28 rounded-xl md:rounded-[2rem] p-2 md:p-4 flex flex-col items-center justify-center border-2 transition-all
                                                     ${isSelected

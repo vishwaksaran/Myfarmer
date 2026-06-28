@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const landServices = [
     {
-        name: 'Buy Land',
+        nameKey: 'landPage.buy',
         icon: 'landscape',
         href: '/home/land/buy',
         description: 'Browse verified agricultural land listings across the country',
@@ -15,7 +16,7 @@ const landServices = [
         iconBg: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400'
     },
     {
-        name: 'Sell Land',
+        nameKey: 'landPage.sell',
         icon: 'sell',
         href: '/home/land/sell',
         description: 'List your farm land for sale and reach genuine buyers instantly',
@@ -25,7 +26,7 @@ const landServices = [
         iconBg: 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400'
     },
     {
-        name: 'Lease / Rent',
+        nameKey: 'landPage.lease',
         icon: 'handshake',
         href: '/home/land/lease',
         description: 'Find land for lease or rent out your property for passive income',
@@ -37,6 +38,7 @@ const landServices = [
 ];
 
 export default function LandPage() {
+    const { t } = useLanguage();
     return (
         <div className="px-6 py-8">
             <div className="mx-auto max-w-[1280px]">
@@ -44,7 +46,7 @@ export default function LandPage() {
                 <div className="mb-12 text-center md:text-left">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
                         <span className="inline-block px-4 py-1.5 rounded-full bg-green-100 text-green-700 font-bold text-sm border border-green-200 shadow-sm w-fit">
-                            Farmers Land Marketplace
+                            {t('landPage.title')} {t('landPage.titleHighlight')}
                         </span>
                         <NearbyLocation />
                     </div>
@@ -55,7 +57,7 @@ export default function LandPage() {
                         </span> for Your Farming
                     </h1>
                     <p className="text-lg text-gray-500 max-w-2xl font-medium leading-relaxed">
-                        Buy, sell, or lease agricultural land with confidence. Access verified listings, transparent pricing, and direct farmer-to-farmer connections.
+                        {t('landPage.subtitle')}
                     </p>
                 </div>
 
@@ -63,7 +65,7 @@ export default function LandPage() {
                 <div className="grid md:grid-cols-3 gap-6 mb-16">
                     {landServices.map((service) => (
                         <Link
-                            key={service.name}
+                            key={service.nameKey}
                             href={service.href}
                             className={`group p-8 rounded-[2rem] bg-gradient-to-br ${service.bgGradient} border border-black/5 dark:border-white/10 hover:shadow-xl transition-all hover:-translate-y-1 relative overflow-hidden`}
                         >
@@ -81,7 +83,7 @@ export default function LandPage() {
                             </div>
 
                             <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-3 group-hover:text-primary transition-colors">
-                                {service.name}
+                                {t(service.nameKey)}
                             </h3>
                             <p className="text-gray-600 dark:text-gray-300 font-medium leading-relaxed mb-6">
                                 {service.description}

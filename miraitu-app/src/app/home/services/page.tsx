@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const services = [
     {
@@ -193,6 +194,7 @@ const stats = [
 ];
 
 export default function ServicesPage() {
+    const { t } = useLanguage();
     const [selectedState, setSelectedState] = useState('');
     const [enrolmentState, setEnrolmentState] = useState('');
     const [schemeState, setSchemeState] = useState('');
@@ -221,12 +223,12 @@ export default function ServicesPage() {
                 <div className="mb-8 md:mb-10">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-3">
                         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
-                            Farm <span className="text-primary">Services</span>
+                            {t('servicesPage.title')} <span className="text-primary">{t('servicesPage.titleHighlight')}</span>
                         </h1>
                         <NearbyLocation />
                     </div>
                     <p className="text-base md:text-lg text-gray-500 max-w-2xl">
-                        Book reliable farm services from verified providers. From harvesting to transportation, we've got you covered.
+                        {t('servicesPage.subtitle')}
                     </p>
                 </div>
 
@@ -248,7 +250,7 @@ export default function ServicesPage() {
 
                 {/* Services Grid */}
                 <div className="mb-10">
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4 md:mb-6">Our Services</h2>
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4 md:mb-6">{t('servicesPage.ourServices')}</h2>
                     <div className="grid grid-cols-2 gap-3 md:gap-6">
                         {services.map((service) => (
                             <Link
@@ -272,7 +274,7 @@ export default function ServicesPage() {
 
                 {/* How it Works */}
                 <div className="mb-10">
-                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6">How It Works</h2>
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6">{t('servicesPage.howItWorks')}</h2>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                         <div className="p-4 md:p-6 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
                             <div className="w-10 md:w-12 h-10 md:h-12 bg-primary rounded-lg md:rounded-xl flex items-center justify-center text-white font-bold text-lg md:text-xl mb-3 md:mb-4">1</div>

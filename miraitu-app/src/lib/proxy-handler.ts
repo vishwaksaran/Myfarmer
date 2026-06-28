@@ -49,9 +49,14 @@ export async function proxy(request: NextRequest) {
 
     const requestPathname = request.nextUrl.pathname;
 
-    // Only run Supabase auth on routes that actually need it.
-    // We protect both admin routes and shop purchase routes.
-    const needsAuth = requestPathname.startsWith('/admin') || requestPathname.startsWith('/home/shop');
+    // Only run Supabase auth on routes that actually need server-side protection.
+    // NOTE: /home/shop is intentionally NOT gated here. It is protected client-side
+    // in the shop page (which redirects to /user-login when there is no user).
+    // Gating it here too caused an infinite redirect loop whenever the server-side
+    // cookie session and the client-side session disagreed: the login page would
+    // redirect a "logged-in" client to /home/shop, the middleware would reject it
+    // (no readable cookie session) and bounce back to /user-login, and so on.
+    const needsAuth = requestPathname.startsWith('/admin');
     if (!needsAuth) {
         return supabaseResponse;
     }
@@ -108,16 +113,6 @@ export async function proxy(request: NextRequest) {
             const homeUrl = new URL('/home', request.url);
             homeUrl.searchParams.set('error', 'unauthorized');
             return NextResponse.redirect(homeUrl);
-        }
-    }
-
-    // ── Shop route protection ───────────────────────────────────────
-    // No guest shopping: force login for /home/shop and all nested routes.
-    if (requestPathname.startsWith('/home/shop')) {
-        if (!user) {
-            const loginUrl = new URL('/user-login', request.url);
-            loginUrl.searchParams.set('redirect', requestPathname);
-            return NextResponse.redirect(loginUrl);
         }
     }
 

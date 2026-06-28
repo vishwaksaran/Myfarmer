@@ -10,6 +10,32 @@ import { shopCategories } from '../data';
 import { categoryProducts, categoryMeta, featuredBrands } from '../categoryData';
 import FeaturedBrandBanner from '@/components/v2/FeaturedBrandBanner';
 import { useShopWishlist } from '@/lib/use-shop-wishlist';
+import { useLanguage } from '@/i18n/LanguageContext';
+
+// Category slug → i18n key for the display name
+const catNameKey: Record<string, string> = {
+    'agriculture-drone': 'shopCat.agricultureDrone',
+    'seeds': 'shopCat.seeds',
+    'garden-products': 'shopCat.gardenProducts',
+    'crop-special-kit': 'shopCat.cropSpecialKit',
+    'agri-inputs': 'shopCat.agriInputs',
+    'agriculture-tools': 'shopCat.agricultureTools',
+    'cold-press-oil': 'shopCat.coldPressOil',
+    'solar-dry-products': 'shopCat.solarDryProducts',
+    'organic-manure': 'shopCat.organicManure',
+    'millets-grains': 'shopCat.milletsGrains',
+    'honey-products': 'shopCat.honeyProducts',
+    'spices-herbs': 'shopCat.spicesHerbs',
+    'dairy-products': 'shopCat.dairyProducts',
+};
+const badgeKey: Record<string, string> = {
+    'Best Seller': 'shopBadge.bestSeller',
+    'New': 'shopBadge.new',
+    'Eco-Friendly': 'shopBadge.ecoFriendly',
+    'Bundle': 'shopBadge.bundle',
+    'Top Rated': 'shopBadge.topRated',
+    'Popular': 'shopBadge.popular',
+};
 
 type SortOption = 'all' | 'popular' | 'price-low' | 'price-high' | 'rating';
 
@@ -34,6 +60,10 @@ export default function CategoryPage({ categorySlug }: { categorySlug?: string }
     const slug = categorySlug || (params.category as string);
     const { quantities, addItem, removeItem } = useCart();
     const { isWishlisted, toggleWishlist } = useShopWishlist();
+    const { t } = useLanguage();
+    // Translated category name (falls back to the meta title)
+    const tName = (s: string, fallback: string) => (catNameKey[s] ? t(catNameKey[s]) : fallback);
+    const tBadge = (b: string) => (badgeKey[b] ? t(badgeKey[b]) : b);
 
     const [sortBy, setSortBy] = useState<SortOption>('all');
     const [searchTerm, setSearchTerm] = useState('');
@@ -68,10 +98,10 @@ export default function CategoryPage({ categorySlug }: { categorySlug?: string }
                 <Header />
                 <main className="py-20 text-center">
                     <span className="material-symbols-outlined text-6xl text-gray-300 mb-4">search_off</span>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Category Not Found</h1>
-                    <p className="text-gray-500 mb-6">The category you&apos;re looking for doesn&apos;t exist.</p>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('shopPage.categoryNotFound')}</h1>
+                    <p className="text-gray-500 mb-6">{t('shopPage.categoryNotFoundDesc')}</p>
                     <Link href="/home/shop" className="px-6 py-3 bg-primary text-white font-bold rounded-xl hover:brightness-110">
-                        Back to Shop
+                        {t('shopPage.backToShop')}
                     </Link>
                 </main>
                 <Footer />
@@ -87,11 +117,11 @@ export default function CategoryPage({ categorySlug }: { categorySlug?: string }
                 <div className="mx-auto max-w-[1280px] px-4 md:px-6">
                     {/* Breadcrumb */}
                     <nav className="flex items-center gap-1 mb-6 text-xs md:text-sm">
-                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">Home</Link>
+                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">{t('shopPage.home')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <Link href="/home/shop" className="text-gray-500 hover:text-primary font-medium">Shop</Link>
+                        <Link href="/home/shop" className="text-gray-500 hover:text-primary font-medium">{t('shopPage.shopBreadcrumb')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <span className="text-primary font-bold">{meta.title}</span>
+                        <span className="text-primary font-bold">{tName(slug, meta.title)}</span>
                     </nav>
 
                     {/* Category Banner */}
@@ -106,10 +136,10 @@ export default function CategoryPage({ categorySlug }: { categorySlug?: string }
                                 ) : (
                                     <span className="text-4xl md:text-5xl">{meta.icon}</span>
                                 )}
-                                <h1 className="text-2xl md:text-4xl font-black text-white">{meta.title}</h1>
+                                <h1 className="text-2xl md:text-4xl font-black text-white">{tName(slug, meta.title)}</h1>
                             </div>
                             <p className="text-sm md:text-base text-white/80 max-w-xl">{meta.description}</p>
-                            <p className="mt-3 text-sm text-white/60 font-bold">{products.length} products available</p>
+                            <p className="mt-3 text-sm text-white/60 font-bold">{products.length} {t('shopPage.productsAvailable')}</p>
                         </div>
                         <div className="absolute right-4 bottom-4 opacity-10 text-[120px] md:text-[180px] leading-none">
                             {catInfo?.isMatIcon ? (
@@ -140,7 +170,7 @@ export default function CategoryPage({ categorySlug }: { categorySlug?: string }
                                     <span className="material-symbols-outlined text-base">{cat.icon}</span>
                                 ) : (
                                     <span>{cat.icon}</span>
-                                )} {cat.name}
+                                )} {tName(cat.id, cat.name)}
                             </Link>
                         ))}
                     </div>
@@ -151,7 +181,7 @@ export default function CategoryPage({ categorySlug }: { categorySlug?: string }
                             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
                             <input
                                 type="text"
-                                placeholder={`Search in ${meta.title}...`}
+                                placeholder={`${t('shopPage.searchIn')} ${tName(slug, meta.title)}...`}
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
                                 className="w-full bg-white dark:bg-[#1a231a] border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
@@ -159,12 +189,12 @@ export default function CategoryPage({ categorySlug }: { categorySlug?: string }
                         </div>
                         <div className="flex gap-2.5 overflow-x-auto py-2 px-1 scrollbar-hide">
                             {([
-                                { key: 'all', label: 'All' },
-                                { key: 'popular', label: 'Popular' },
-                                { key: 'price-low', label: 'Price Low to High' },
-                                { key: 'price-high', label: 'Price High to Low' },
-                                { key: 'rating', label: 'Top Rated' },
-                            ] as { key: SortOption; label: string }[]).map(s => (
+                                { key: 'all', labelKey: 'shopPage.sortAll' },
+                                { key: 'popular', labelKey: 'shopPage.sortPopular' },
+                                { key: 'price-low', labelKey: 'shopPage.sortPriceLow' },
+                                { key: 'price-high', labelKey: 'shopPage.sortPriceHigh' },
+                                { key: 'rating', labelKey: 'shopPage.sortTopRated' },
+                            ] as { key: SortOption; labelKey: string }[]).map(s => (
                                 <button
                                     key={s.key}
                                     onClick={() => setSortBy(s.key)}
@@ -173,7 +203,7 @@ export default function CategoryPage({ categorySlug }: { categorySlug?: string }
                                         : 'bg-gray-100 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-200'
                                         }`}
                                 >
-                                    {s.label}
+                                    {t(s.labelKey)}
                                 </button>
                             ))}
                         </div>
@@ -195,7 +225,7 @@ export default function CategoryPage({ categorySlug }: { categorySlug?: string }
                                     />
                                     {product.badge && (
                                         <span className="absolute top-2 left-2 px-2 py-0.5 bg-primary text-white text-xs font-bold rounded">
-                                            {product.badge}
+                                            {tBadge(product.badge)}
                                         </span>
                                     )}
                                     {product.weight && (
@@ -256,7 +286,7 @@ export default function CategoryPage({ categorySlug }: { categorySlug?: string }
                                             onClick={() => addItem(product.id)}
                                             className="w-full mt-3 py-2 rounded-lg bg-primary/10 text-primary text-sm font-semibold hover:bg-primary hover:text-white transition-colors"
                                         >
-                                            Add to Cart
+                                            {t('shopPage.addToCart')}
                                         </button>
                                     )}
                                 </div>
@@ -267,14 +297,14 @@ export default function CategoryPage({ categorySlug }: { categorySlug?: string }
                     {filtered.length === 0 && (
                         <div className="text-center py-16">
                             <span className="material-symbols-outlined text-5xl text-gray-300 mb-3">inventory_2</span>
-                            <h3 className="text-lg font-bold text-gray-500 mb-1">No products found</h3>
-                            <p className="text-sm text-gray-400">Try a different search term</p>
+                            <h3 className="text-lg font-bold text-gray-500 mb-1">{t('shopPage.noProducts')}</h3>
+                            <p className="text-sm text-gray-400">{t('shopPage.tryDifferent')}</p>
                         </div>
                     )}
 
                     {/* Related Categories */}
                     <section className="mt-12">
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Explore Other Categories</h2>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t('shopPage.exploreOther')}</h2>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                             {shopCategories.filter(c => c.id !== slug).map(cat => (
                                 <Link
@@ -289,8 +319,8 @@ export default function CategoryPage({ categorySlug }: { categorySlug?: string }
                                             cat.icon
                                         )}
                                     </div>
-                                    <h4 className="font-semibold text-sm text-gray-900 dark:text-white">{cat.name}</h4>
-                                    <p className="text-xs text-gray-400">{cat.count} products</p>
+                                    <h4 className="font-semibold text-sm text-gray-900 dark:text-white">{tName(cat.id, cat.name)}</h4>
+                                    <p className="text-xs text-gray-400">{cat.count} {t('shopPage.products')}</p>
                                 </Link>
                             ))}
                         </div>

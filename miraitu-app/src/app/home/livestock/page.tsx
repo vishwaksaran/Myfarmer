@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/i18n/LanguageContext';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import MiraituLogo from '@/components/MiraituLogo';
 import LoginModal from '@/components/auth/LoginModal';
@@ -13,17 +14,17 @@ type TabType = 'browse' | 'buy' | 'sell';
 
 // Category data with real images
 const categories = [
-    { id: 'cattle', name: 'Cattle', image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=200&h=200&fit=crop', count: 245, path: '/home/livestock/cattle' },
-    { id: 'goats-sheep', name: 'Goats & Sheep', image: 'https://images.unsplash.com/photo-1524024973431-2ad916746881?w=200&h=200&fit=crop', count: 189, path: '/home/livestock/goats-sheep' },
-    { id: 'poultry', name: 'Poultry', image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=200&h=200&fit=crop', count: 312, path: '/home/livestock/poultry' },
-    { id: 'fish', name: 'Fish & Aquaculture', image: 'https://images.unsplash.com/photo-1731552466988-26d1dbeff4ee?w=200&h=200&fit=crop', count: 156, path: '/home/livestock/fish' },
-    { id: 'others', name: 'Others', image: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=200&h=200&fit=crop', count: 78, path: '/home/livestock/others' },
+    { id: 'cattle', nameKey: 'livestock.cattle', image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=200&h=200&fit=crop', count: 245, path: '/home/livestock/cattle' },
+    { id: 'goats-sheep', nameKey: 'livestock.goatsSheep', image: 'https://images.unsplash.com/photo-1524024973431-2ad916746881?w=200&h=200&fit=crop', count: 189, path: '/home/livestock/goats-sheep' },
+    { id: 'poultry', nameKey: 'livestock.poultry', image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=200&h=200&fit=crop', count: 312, path: '/home/livestock/poultry' },
+    { id: 'fish', nameKey: 'livestock.fishAquaculture', image: 'https://images.unsplash.com/photo-1731552466988-26d1dbeff4ee?w=200&h=200&fit=crop', count: 156, path: '/home/livestock/fish' },
+    { id: 'others', nameKey: 'livestock.others', image: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=200&h=200&fit=crop', count: 78, path: '/home/livestock/others' },
 ];
 
 const tabs = [
-    { id: 'browse' as TabType, title: 'Browse Categories', icon: 'category', bgColor: 'bg-blue-500' },
-    { id: 'buy' as TabType, title: 'Buy Livestock', icon: 'shopping_cart', bgColor: 'bg-emerald-500' },
-    { id: 'sell' as TabType, title: 'Sell Livestock', icon: 'sell', bgColor: 'bg-orange-500' },
+    { id: 'browse' as TabType, titleKey: 'livestockPage.browse', icon: 'category', bgColor: 'bg-blue-500' },
+    { id: 'buy' as TabType, titleKey: 'livestockPage.buy', icon: 'shopping_cart', bgColor: 'bg-emerald-500' },
+    { id: 'sell' as TabType, titleKey: 'livestockPage.sell', icon: 'sell', bgColor: 'bg-orange-500' },
 ];
 
 // Featured listings
@@ -44,7 +45,14 @@ const allListings = [
     { id: 8, name: 'Layer Hens - 100 Birds', category: 'Poultry', breed: 'Layer', age: '8 Months', milkYield: '-', price: '₹35,000', location: 'Namakkal, TN', image: 'https://images.unsplash.com/photo-1612170153139-6f881ff067e0?w=400&h=300&fit=crop', verified: true, seller: 'Selvam R', phone: '+91 21098 76543' },
 ];
 
-const categoryFilters = ['All', 'Cattle', 'Goats & Sheep', 'Poultry', 'Fish', 'Others'];
+const categoryFilters = [
+    { value: 'All', key: 'common.all' },
+    { value: 'Cattle', key: 'livestock.cattle' },
+    { value: 'Goats & Sheep', key: 'livestock.goatsSheep' },
+    { value: 'Poultry', key: 'livestock.poultry' },
+    { value: 'Fish', key: 'livestock.fish' },
+    { value: 'Others', key: 'livestock.others' },
+];
 
 const sellCategories = [
     { id: 'cattle', name: 'Cattle', icon: '🐄' },
@@ -55,6 +63,7 @@ const sellCategories = [
 ];
 
 export default function LivestockPage() {
+    const { t } = useLanguage();
     const [activeTab, setActiveTab] = useState<TabType>('browse');
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [selectedSellCategory, setSelectedSellCategory] = useState('');
@@ -94,6 +103,17 @@ export default function LivestockPage() {
     }, [user, pendingContact]);
 
     const filteredListings = selectedCategory === 'All' ? allListings : allListings.filter(l => l.category === selectedCategory);
+
+    const translateAge = (age: string) =>
+        age
+            .replace(/\bYears\b/g, t('common.years'))
+            .replace(/\bYear\b/g, t('common.year'))
+            .replace(/\bMonths\b/g, t('common.months'))
+            .replace(/\bMonth\b/g, t('common.month'))
+            .replace(/\bFresh\b/g, t('common.fresh'));
+
+    const translateMilkYield = (my: string) =>
+        my.replace('L/day', t('common.lperday'));
 
     const handleContactClick = (seller: string, phone: string) => {
         if (user) {
@@ -178,12 +198,12 @@ export default function LivestockPage() {
                 <img src={listing.image} alt={listing.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                 {listing.verified && (
                     <div className="absolute top-3 left-3 px-2 py-1 rounded-lg bg-primary text-white text-xs font-semibold flex items-center gap-1">
-                        <span className="material-symbols-outlined text-sm">verified</span>Verified
+                        <span className="material-symbols-outlined text-sm">verified</span>{t('common.verified')}
                     </div>
                 )}
                 {showFeaturedBadge && (
                     <div className="absolute top-3 right-3 px-2 py-1 rounded-lg bg-amber-500 text-white text-xs font-bold flex items-center gap-1">
-                        <span className="material-symbols-outlined text-sm">star</span>Featured
+                        <span className="material-symbols-outlined text-sm">star</span>{t('common.featured')}
                     </div>
                 )}
                 {!showFeaturedBadge && (
@@ -194,8 +214,8 @@ export default function LivestockPage() {
                 <h3 className="font-bold text-gray-900 dark:text-white">{listing.name}</h3>
                 <div className="flex items-center gap-2 text-xs text-gray-500 mt-1 flex-wrap">
                     <span className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800">{listing.breed}</span>
-                    <span>•</span><span>{listing.age}</span>
-                    {listing.milkYield !== '-' && <><span>•</span><span>{listing.milkYield}</span></>}
+                    <span>•</span><span>{translateAge(listing.age)}</span>
+                    {listing.milkYield !== '-' && <><span>•</span><span>{translateMilkYield(listing.milkYield)}</span></>}
                 </div>
                 <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
                     <p className="text-lg font-bold text-primary">{listing.price}</p>
@@ -210,7 +230,7 @@ export default function LivestockPage() {
                     className="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-primary to-emerald-600 text-white font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg hover:scale-[1.02] transition-all"
                 >
                     <span className="material-symbols-outlined text-lg">call</span>
-                    Contact Seller
+                    {t('livestockPage.contactSeller')}
                 </button>
             </div>
         </div>
@@ -225,10 +245,10 @@ export default function LivestockPage() {
                         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                             <div>
                                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-1 md:mb-2">
-                                    Livestock Marketplace
+                                    {t('livestockPage.title')} <span className="text-primary">{t('livestockPage.titleHighlight')}</span>
                                 </h1>
                                 <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">
-                                    Buy and sell cattle, poultry, goats, and more from verified sellers
+                                    {t('livestockPage.subtitle')}
                                 </p>
                             </div>
                             <NearbyLocation />
@@ -244,7 +264,7 @@ export default function LivestockPage() {
                                 <div className={`w-8 md:w-10 h-8 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center shrink-0 ${activeTab === tab.id ? tab.bgColor : 'bg-gray-100 dark:bg-gray-800'}`}>
                                     <span className={`material-symbols-outlined text-lg md:text-xl ${activeTab === tab.id ? 'text-white' : 'text-gray-500'}`}>{tab.icon}</span>
                                 </div>
-                                <p className={`font-bold text-xs md:text-sm text-center md:text-left leading-tight ${activeTab === tab.id ? 'text-primary' : 'text-gray-700 dark:text-gray-200'}`}>{tab.title}</p>
+                                <p className={`font-bold text-xs md:text-sm text-center md:text-left leading-tight ${activeTab === tab.id ? 'text-primary' : 'text-gray-700 dark:text-gray-200'}`}>{t(tab.titleKey)}</p>
                             </button>
                         ))}
                     </div>
@@ -261,10 +281,10 @@ export default function LivestockPage() {
                                             className="group relative rounded-lg md:rounded-2xl p-2 md:p-4 border border-gray-100 dark:border-gray-800 hover:border-primary/30 hover:shadow-xl transition-all duration-300 overflow-hidden bg-[#d4edda] dark:bg-emerald-900/30">
                                             <div className="flex flex-col items-center">
                                                 <div className="w-16 md:w-20 h-16 md:h-20 rounded-lg md:rounded-2xl bg-[#c8e6c9] dark:bg-emerald-800/50 flex items-center justify-center mb-2 md:mb-3 overflow-hidden group-hover:scale-105 transition-transform duration-300">
-                                                    <img src={category.image} alt={category.name} className="w-full h-full object-cover rounded-lg md:rounded-xl" />
+                                                    <img src={category.image} alt={t(category.nameKey)} className="w-full h-full object-cover rounded-lg md:rounded-xl" />
                                                 </div>
-                                                <h3 className="font-bold text-gray-900 dark:text-white text-center text-xs md:text-sm mb-1">{category.name}</h3>
-                                                <p className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 text-center">{category.count} listings</p>
+                                                <h3 className="font-bold text-gray-900 dark:text-white text-center text-xs md:text-sm mb-1">{t(category.nameKey)}</h3>
+                                                <p className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 text-center">{category.count} {t('common.listings')}</p>
                                             </div>
                                             <div className="absolute bottom-1 md:bottom-3 right-1 md:right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <span className="material-symbols-outlined text-primary text-base md:text-lg">arrow_forward</span>
@@ -273,11 +293,11 @@ export default function LivestockPage() {
                                     ))}
                                 </div>
 
-                                {/* Featured Listings */}
+                                {/* {t('livestockPage.featured')} */}
                                 <div className="mb-8 md:mb-10">
                                     <div className="flex items-center gap-2 mb-3 md:mb-6">
                                         <span className="material-symbols-outlined text-amber-500 text-lg md:text-xl">star</span>
-                                        <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">Featured Listings</h2>
+                                        <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">{t('livestockPage.featured')}</h2>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                                         {featuredListings.map((listing) => (
@@ -294,28 +314,28 @@ export default function LivestockPage() {
                                                 <span className="material-symbols-outlined text-primary text-lg md:text-2xl">verified_user</span>
                                             </div>
                                             <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">5,000+</p>
-                                            <p className="text-xs md:text-sm text-gray-500">Verified Sellers</p>
+                                            <p className="text-xs md:text-sm text-gray-500">{t('livestockPage.verifiedSellers')}</p>
                                         </div>
                                         <div>
                                             <div className="w-10 md:w-14 h-10 md:h-14 mx-auto mb-2 md:mb-3 rounded-lg md:rounded-2xl bg-primary/10 flex items-center justify-center">
                                                 <span className="material-symbols-outlined text-primary text-lg md:text-2xl">pets</span>
                                             </div>
                                             <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">25,000+</p>
-                                            <p className="text-xs md:text-sm text-gray-500">Animals Listed</p>
+                                            <p className="text-xs md:text-sm text-gray-500">{t('livestockPage.animalsListed')}</p>
                                         </div>
                                         <div>
                                             <div className="w-10 md:w-14 h-10 md:h-14 mx-auto mb-2 md:mb-3 rounded-lg md:rounded-2xl bg-primary/10 flex items-center justify-center">
                                                 <span className="material-symbols-outlined text-primary text-lg md:text-2xl">handshake</span>
                                             </div>
                                             <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">10,000+</p>
-                                            <p className="text-xs md:text-sm text-gray-500">Successful Trades</p>
+                                            <p className="text-xs md:text-sm text-gray-500">{t('livestockPage.successfulTrades')}</p>
                                         </div>
                                         <div>
                                             <div className="w-10 md:w-14 h-10 md:h-14 mx-auto mb-2 md:mb-3 rounded-lg md:rounded-2xl bg-primary/10 flex items-center justify-center">
                                                 <span className="material-symbols-outlined text-primary text-lg md:text-2xl">location_on</span>
                                             </div>
                                             <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">500+</p>
-                                            <p className="text-xs md:text-sm text-gray-500">Districts Covered</p>
+                                            <p className="text-xs md:text-sm text-gray-500">{t('livestockPage.districtsCovered')}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -329,7 +349,7 @@ export default function LivestockPage() {
                                 <div className="mb-6 md:mb-8">
                                     <div className="flex items-center gap-2 mb-3 md:mb-4">
                                         <span className="material-symbols-outlined text-amber-500 text-lg md:text-xl">star</span>
-                                        <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white">Featured Listings</h2>
+                                        <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white">{t('livestockPage.featured')}</h2>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                                         {featuredListings.map((listing) => (
@@ -345,16 +365,16 @@ export default function LivestockPage() {
                                     {/* Category Filters */}
                                     <div className="flex items-center gap-1.5 md:gap-2 mb-4 md:mb-6 overflow-x-auto pb-2">
                                         {categoryFilters.map((cat) => (
-                                            <button key={cat} onClick={() => setSelectedCategory(cat)}
-                                                className={`px-2 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl font-semibold text-xs md:text-sm whitespace-nowrap transition-all ${selectedCategory === cat ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:border-primary'}`}>
-                                                {cat}
+                                            <button key={cat.value} onClick={() => setSelectedCategory(cat.value)}
+                                                className={`px-2 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl font-semibold text-xs md:text-sm whitespace-nowrap transition-all ${selectedCategory === cat.value ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:border-primary'}`}>
+                                                {t(cat.key)}
                                             </button>
                                         ))}
                                     </div>
 
                                     <div className="mb-4 md:mb-6">
                                         <p className="text-xs md:text-base text-gray-600 dark:text-gray-400">
-                                            Showing <span className="font-semibold text-gray-900 dark:text-white">{filteredListings.length}</span> listings
+                                            {t('livestockPage.showingListings').replace('{count}', String(filteredListings.length))}
                                         </p>
                                     </div>
 
@@ -380,15 +400,15 @@ export default function LivestockPage() {
                                         <p className="text-sm text-gray-500 mb-6">Your listing is now active. Buyers can find it in the marketplace.</p>
                                         <div className="flex gap-3 justify-center">
                                             <button onClick={() => { setSellSuccess(false); setSellForm({ title: '', breed: '', age: '', price: '', location: '', district: '', state: '', description: '', milkYield: '', weight: '', quantity: '1', imageFiles: [] }); setSelectedSellCategory(''); }}
-                                                className="px-6 py-3 rounded-xl bg-primary text-white font-bold">List Another</button>
+                                                className="px-6 py-3 rounded-xl bg-primary text-white font-bold">{t('livestockPage.listAnother')}</button>
                                             <button onClick={() => setActiveTab('buy')}
-                                                className="px-6 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold">Browse Market</button>
+                                                className="px-6 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold">{t('livestockPage.browseMarket')}</button>
                                         </div>
                                     </div>
                                 ) : (
                                     <div className="bg-white dark:bg-[#1a231a] rounded-lg md:rounded-2xl p-4 md:p-8 border border-gray-100 dark:border-gray-800">
-                                        <h2 className="text-xl md:text-2xl font-bold text-primary text-center mb-2">Sell Your Livestock</h2>
-                                        <p className="text-sm md:text-base text-gray-500 text-center mb-6 md:mb-8">List your animals and reach thousands of buyers</p>
+                                        <h2 className="text-xl md:text-2xl font-bold text-primary text-center mb-2">{t('livestockPage.sellYourLivestock')}</h2>
+                                        <p className="text-sm md:text-base text-gray-500 text-center mb-6 md:mb-8">{t('livestockPage.sellYourLivestockDesc')}</p>
 
                                         {/* Category Selection */}
                                         <div className="mb-6 md:mb-8">
@@ -573,14 +593,14 @@ export default function LivestockPage() {
                                         <span className="material-symbols-outlined text-xl">close</span>
                                     </button>
                                     <div className="absolute bottom-4 left-6">
-                                        <h3 className="text-2xl font-black text-white">Livestock Marketplace</h3>
-                                        <p className="text-white/70 text-sm">Buy or sell livestock from verified sellers</p>
+                                        <h3 className="text-2xl font-black text-white">{t('livestockPage.title')} {t('livestockPage.titleHighlight')}</h3>
+                                        <p className="text-white/70 text-sm">{t('livestockPage.modalSubtitle')}</p>
                                     </div>
                                 </div>
 
                                 {/* Action Options */}
                                 <div className="p-6 space-y-3">
-                                    <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">What would you like to do?</p>
+                                    <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">{t('livestockPage.whatToDo')}</p>
 
                                     <button
                                         onClick={() => { setActiveTab('buy'); setShowWelcomeModal(false); }}
@@ -590,8 +610,8 @@ export default function LivestockPage() {
                                             <span className="material-symbols-outlined text-white text-3xl">shopping_cart</span>
                                         </div>
                                         <div className="flex-1">
-                                            <p className="font-bold text-gray-900 dark:text-white text-lg">Buy Livestock</p>
-                                            <p className="text-xs text-gray-500">Browse cattle, poultry, goats & more</p>
+                                            <p className="font-bold text-gray-900 dark:text-white text-lg">{t('livestockPage.buy')}</p>
+                                            <p className="text-xs text-gray-500">{t('livestockPage.buyDesc')}</p>
                                         </div>
                                         <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-primary group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
                                     </button>
@@ -604,8 +624,8 @@ export default function LivestockPage() {
                                             <span className="material-symbols-outlined text-white text-3xl">sell</span>
                                         </div>
                                         <div className="flex-1">
-                                            <p className="font-bold text-gray-900 dark:text-white text-lg">Sell Livestock</p>
-                                            <p className="text-xs text-gray-500">List your animals & reach buyers</p>
+                                            <p className="font-bold text-gray-900 dark:text-white text-lg">{t('livestockPage.sell')}</p>
+                                            <p className="text-xs text-gray-500">{t('livestockPage.sellModalDesc')}</p>
                                         </div>
                                         <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-primary group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
                                     </button>
@@ -614,7 +634,7 @@ export default function LivestockPage() {
                                         onClick={() => setShowWelcomeModal(false)}
                                         className="w-full text-center text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 pt-2 transition-colors"
                                     >
-                                        Skip — Browse all categories
+                                        {t('livestockPage.skipBrowse')}
                                     </button>
                                 </div>
                             </div>
