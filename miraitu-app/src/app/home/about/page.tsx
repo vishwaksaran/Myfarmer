@@ -58,7 +58,7 @@ const pillars = [
 ];
 
 const impactStats = [
-    { value: '200+', label: 'Districts Covered', icon: 'location_on' },
+    { value: '20+', label: 'Districts Covered', icon: 'location_on' },
     { value: '50K+', label: 'Farmers Connected', icon: 'groups' },
     { value: '10K+', label: 'Products Listed', icon: 'inventory' },
     { value: '4.8★', label: 'App Rating', icon: 'star' },

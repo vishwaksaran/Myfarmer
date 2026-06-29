@@ -164,14 +164,14 @@ export default function HeroSection() {
                         <div className="absolute bottom-20 left-10 w-48 h-48 bg-primary/10 rounded-full blur-3xl animate-float stagger-3" aria-hidden="true"></div>
 
                         {/* Content Grid */}
-                        <div className="relative z-20 flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-10 w-full items-center p-6 md:p-10 lg:p-12 min-h-[480px] md:min-h-[600px] lg:min-h-[680px]">
+                        <div className="relative z-20 flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-10 w-full items-start lg:items-center p-6 md:p-10 lg:p-12 min-h-[480px] md:min-h-[600px] lg:min-h-[680px]">
                             {/* Left Content - Text & CTA */}
-                            <div className="text-white lg:col-span-7 flex flex-col justify-center animate-fade-in-left">
+                            <div className="text-white lg:col-span-7 w-full min-w-0 flex flex-col justify-center animate-fade-in-left">
                                 <span className="mb-5 inline-flex items-center gap-2 w-fit rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-5 py-2 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-orange-500/30">
                                     <span className="material-symbols-outlined text-sm">bolt</span>
                                     {t('hero.badge')}
                                 </span>
-                                <h1 className="mb-5 text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.05] tracking-tight">
+                                <h1 className="mb-5 text-[1.6rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-snug md:leading-[1.08] tracking-tight [overflow-wrap:anywhere]">
                                     {t('hero.mainTitle1')} <br />
                                     <span className="bg-gradient-to-r from-accent via-yellow-400 to-accent bg-clip-text text-transparent animate-gradient bg-[length:200%_200%]">{t('hero.mainTitle2')}</span>
                                 </h1>
@@ -179,12 +179,12 @@ export default function HeroSection() {
                                     {t('hero.mainSubtitle')}
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-3 mb-8">
-                                    <button onClick={() => setShowGallery(true)} className="group flex items-center gap-2 rounded-2xl bg-white px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-primary shadow-xl hover:shadow-2xl hover:bg-gray-50 active:scale-[0.97] transition-all whitespace-nowrap">
-                                        <span className="material-symbols-outlined text-lg group-hover:rotate-45 transition-transform">photo_library</span>
+                                    <button onClick={() => setShowGallery(true)} className="group flex items-center justify-center text-center gap-2 w-full sm:w-auto rounded-2xl bg-white px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-primary shadow-xl hover:shadow-2xl hover:bg-gray-50 active:scale-[0.97] transition-all">
+                                        <span className="material-symbols-outlined text-lg shrink-0 group-hover:rotate-45 transition-transform">photo_library</span>
                                         {t('hero.exploreGallery')}
                                     </button>
-                                    <a href="https://www.youtube.com/@miraitu" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-white hover:bg-white/20 active:scale-[0.97] transition-all whitespace-nowrap" data-no-auth>
-                                        <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">play_circle</span>
+                                    <a href="https://www.youtube.com/@miraitu" target="_blank" rel="noopener noreferrer" className="group flex items-center justify-center text-center gap-2 w-full sm:w-auto rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm px-4 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-white hover:bg-white/20 active:scale-[0.97] transition-all" data-no-auth>
+                                        <span className="material-symbols-outlined text-lg shrink-0 group-hover:scale-110 transition-transform">play_circle</span>
                                         {t('hero.watchFarmerVideos')}
                                     </a>
                                 </div>
