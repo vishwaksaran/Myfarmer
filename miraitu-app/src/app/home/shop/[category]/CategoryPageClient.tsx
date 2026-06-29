@@ -11,6 +11,7 @@ import { categoryProducts, categoryMeta, featuredBrands } from '../categoryData'
 import FeaturedBrandBanner from '@/components/v2/FeaturedBrandBanner';
 import { useShopWishlist } from '@/lib/use-shop-wishlist';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { translateProduct } from '@/i18n/productTranslations';
 
 // Category slug → i18n key for the display name
 const catNameKey: Record<string, string> = {
@@ -60,10 +61,12 @@ export default function CategoryPage({ categorySlug }: { categorySlug?: string }
     const slug = categorySlug || (params.category as string);
     const { quantities, addItem, removeItem } = useCart();
     const { isWishlisted, toggleWishlist } = useShopWishlist();
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
     // Translated category name (falls back to the meta title)
     const tName = (s: string, fallback: string) => (catNameKey[s] ? t(catNameKey[s]) : fallback);
     const tBadge = (b: string) => (badgeKey[b] ? t(badgeKey[b]) : b);
+    // Dynamic product/content translation (falls back to English source string)
+    const tp = (s: string) => translateProduct(s, lang);
 
     const [sortBy, setSortBy] = useState<SortOption>('all');
     const [searchTerm, setSearchTerm] = useState('');
@@ -138,7 +141,7 @@ export default function CategoryPage({ categorySlug }: { categorySlug?: string }
                                 )}
                                 <h1 className="text-2xl md:text-4xl font-black text-white">{tName(slug, meta.title)}</h1>
                             </div>
-                            <p className="text-sm md:text-base text-white/80 max-w-xl">{meta.description}</p>
+                            <p className="text-sm md:text-base text-white/80 max-w-xl">{tp(meta.description)}</p>
                             <p className="mt-3 text-sm text-white/60 font-bold">{products.length} {t('shopPage.productsAvailable')}</p>
                         </div>
                         <div className="absolute right-4 bottom-4 opacity-10 text-[120px] md:text-[180px] leading-none">
@@ -252,9 +255,9 @@ export default function CategoryPage({ categorySlug }: { categorySlug?: string }
                                 {/* Info */}
                                 <div className="p-3 md:p-4">
                                     <h4 className="font-semibold text-gray-900 dark:text-white text-sm line-clamp-2 min-h-[40px]">
-                                        {product.name}
+                                        {tp(product.name)}
                                     </h4>
-                                    <p className="text-xs text-gray-400 mt-1 line-clamp-1">{product.description}</p>
+                                    <p className="text-xs text-gray-400 mt-1 line-clamp-1">{tp(product.description)}</p>
                                     <div className="flex items-center gap-1 mt-2">
                                         <span className="material-symbols-outlined text-yellow-500 text-sm">star</span>
                                         <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{product.rating}</span>

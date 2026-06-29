@@ -7,6 +7,7 @@ import MiraituLogo from '@/components/MiraituLogo';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { LangCode } from '@/i18n/translations';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import HeaderAuthSection from './HeaderAuthSection';
 
 
@@ -79,6 +80,7 @@ export default function Header() {
     const router = useRouter();
     const { lang, setLang, t } = useLanguage();
     const { totalItems } = useCart();
+    const { user, loading: authLoading } = useAuth();
 
     const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
 
@@ -270,7 +272,7 @@ export default function Header() {
             <header className={`sticky top-0 w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'z-[70]' : 'z-50'} ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} overflow-visible`}>
                 <div className="mx-auto max-w-[1400px] px-4 py-3 overflow-visible">
                     {/* Main Header Row */}
-                    <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center justify-between gap-2 sm:gap-4">
                         {/* Logo */}
                         <Link href="/" className="flex items-center gap-2 shrink-0">
                             <MiraituLogo size={36} />
@@ -415,7 +417,7 @@ export default function Header() {
                         </nav>
 
                         {/* Right Actions */}
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                             {/* Download App Buttons */}
                             <div className="hidden xl:flex items-center gap-1.5">
                                 <a href="/home/about" className="flex items-center gap-1.5 rounded-lg bg-black text-white px-3 py-1.5 text-xs font-semibold hover:bg-gray-800 transition-colors">
@@ -429,14 +431,14 @@ export default function Header() {
                             </div>
                             <button
                                 onClick={() => setIsLanguageModalOpen(true)}
-                                className="flex items-center gap-1.5 rounded-xl px-2 sm:px-3 py-2 text-sm font-semibold skeuo-card transition-transform hover:scale-105"
+                                className="flex items-center gap-1.5 rounded-xl px-2 sm:px-3 py-2 text-sm font-semibold skeuo-card transition-transform hover:scale-105 shrink-0"
                             >
                                 <span className="material-symbols-outlined text-primary text-lg">translate</span>
                                 <span className="hidden lg:inline">{allLanguages.find(lang => lang.code === selectedLang)?.name || 'English'}</span>
                             </button>
 
                             {/* Cart Button */}
-                            <Link href="/home/shop/checkout" className="relative flex items-center justify-center size-9 sm:size-10 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-black/5 dark:border-white/10 hover:bg-primary/5 hover:text-primary transition-colors skeuo-card">
+                            <Link href="/home/shop/checkout" className="relative flex items-center justify-center size-9 sm:size-10 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-black/5 dark:border-white/10 hover:bg-primary/5 hover:text-primary transition-colors skeuo-card shrink-0">
                                 <span className="material-symbols-outlined text-xl">shopping_cart</span>
                                 {totalItems > 0 && (
                                     <span className="absolute -top-1.5 -right-1.5 size-5 flex items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm animate-in zoom-in duration-300">
@@ -449,7 +451,7 @@ export default function Header() {
                             {/* Mobile Hamburger */}
                             <button
                                 onClick={() => { if (!isMobileMenuOpen) setIsHeaderVisible(true); setIsMobileMenuOpen(!isMobileMenuOpen); }}
-                                className="lg:hidden flex items-center justify-center size-10 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
+                                className="lg:hidden flex items-center justify-center size-10 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors shrink-0"
                                 aria-label="Toggle menu"
                             >
                                 <span className="material-symbols-outlined text-2xl">{isMobileMenuOpen ? 'close' : 'menu'}</span>
@@ -534,6 +536,20 @@ export default function Header() {
                             </Link>
                         ))}
                     </div>
+
+                    {/* Mobile: Login (shown only when logged out) */}
+                    {!user && !authLoading && (
+                        <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/10">
+                            <Link
+                                href="/user-login"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-base font-bold text-white shadow-lg hover:brightness-110 active:scale-95 transition-all"
+                            >
+                                <span className="material-symbols-outlined text-xl">login</span>
+                                {t('header.login')}
+                            </Link>
+                        </div>
+                    )}
 
                     {/* Mobile: Become a Dealer/Seller Banner */}
                     <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/10">

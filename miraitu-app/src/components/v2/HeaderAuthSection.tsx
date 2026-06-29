@@ -27,7 +27,7 @@ export default function HeaderAuthSection() {
     // Server render + first client render: both return the same skeleton
     if (!mounted || authLoading) {
         return (
-            <div className="flex items-center gap-2 rounded-xl bg-gray-100 px-3 py-2 animate-pulse">
+            <div className="flex items-center gap-2 rounded-xl bg-gray-100 px-3 py-2 animate-pulse shrink-0">
                 <div className="size-8 rounded-full bg-gray-200" />
                 <div className="hidden sm:block w-16 h-4 bg-gray-200 rounded" />
             </div>
@@ -36,7 +36,7 @@ export default function HeaderAuthSection() {
 
     if (user) {
         return (
-            <div className="relative" ref={profileMenuRef}>
+            <div className="relative shrink-0" ref={profileMenuRef}>
                 <button
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="relative flex items-center gap-2 rounded-xl bg-gray-100 dark:bg-gray-800 px-2.5 py-1.5 text-sm font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:scale-95"
@@ -54,10 +54,12 @@ export default function HeaderAuthSection() {
                                 <span className="material-symbols-outlined text-xl">person</span>
                             </div>
                         )}
-                        {/* Verified badge */}
-                        <div className="absolute -bottom-0.5 -right-0.5 size-4 bg-green-500 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-gray-800">
-                            <span className="material-symbols-outlined text-[10px] text-white font-bold">check</span>
-                        </div>
+                        {/* Verified badge — only for a real (non-guest) logged-in user */}
+                        {!user.isGuest && (
+                            <div className="absolute -bottom-0.5 -right-0.5 size-4 bg-green-500 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-gray-800">
+                                <span className="material-symbols-outlined text-[10px] text-white font-bold">check</span>
+                            </div>
+                        )}
                     </div>
                     <span className="hidden sm:inline max-w-[100px] truncate text-gray-700 dark:text-gray-200">{user.displayName || 'User'}</span>
                     <span className={`material-symbols-outlined text-sm text-gray-400 hidden sm:inline transition-transform ${isProfileOpen ? 'rotate-180' : ''}`}>expand_more</span>
@@ -155,7 +157,8 @@ export default function HeaderAuthSection() {
     }
 
     return (
-        <Link href="/user-login" className="flex items-center justify-center rounded-xl bg-primary px-5 py-2 text-sm font-bold text-white shadow-lg hover:brightness-110 active:scale-95 transition-all">
+        // Desktop only — on mobile/tablet (< lg) the login lives inside the hamburger menu
+        <Link href="/user-login" className="hidden lg:flex items-center justify-center rounded-xl bg-primary px-5 py-2 text-sm font-bold text-white shadow-lg hover:brightness-110 active:scale-95 transition-all whitespace-nowrap shrink-0">
             {t('header.login')}
         </Link>
     );

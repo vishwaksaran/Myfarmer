@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { translateProduct } from '@/i18n/productTranslations';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import { useCart } from '@/context/CartContext';
@@ -51,7 +52,7 @@ const POPULAR_CITIES = [
 ];
 
 export default function ShopPage() {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
     const router = useRouter();
     const { user, loading } = useAuth();
     const { quantities, addItem, removeItem } = useCart();
@@ -124,6 +125,7 @@ export default function ShopPage() {
         const key = map[value];
         return key ? t(key) : value;
     };
+    const tp = (s: string) => translateProduct(s, lang);
 
     if (loading || !user) {
         return (
@@ -313,7 +315,7 @@ export default function ShopPage() {
                                             {deal.discount}
                                         </span>
                                         <h4 className="font-semibold text-gray-900 dark:text-white text-sm truncate">
-                                            {deal.name}
+                                            {tp(deal.name)}
                                         </h4>
                                         <div className="flex items-center gap-2 mt-1">
                                             <span className="font-bold text-primary">{deal.price}</span>
@@ -388,7 +390,7 @@ export default function ShopPage() {
                                     <div className="p-3">
                                         <p className="text-xs text-gray-500 mb-1">{tMap(productCatKey, product.category)}</p>
                                         <h4 className="font-semibold text-gray-900 dark:text-white text-sm line-clamp-2 min-h-[40px]">
-                                            {product.name}
+                                            {tp(product.name)}
                                         </h4>
                                         <div className="flex items-center gap-1 mt-2">
                                             <span className="material-symbols-outlined text-yellow-500 text-sm">star</span>
