@@ -9,6 +9,7 @@ const services = [
     {
         name: 'Soil Testing',
         icon: 'science',
+        image: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400&h=400&fit=crop',
         href: '/home/services/soil-testing',
         description: 'Get detailed soil analysis for better crop planning',
         available: '35+ labs',
@@ -17,6 +18,7 @@ const services = [
     {
         name: 'Rent Machinery',
         icon: 'agriculture',
+        image: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400&h=400&fit=crop',
         href: '/home/services/rent-machinery',
         description: 'Rent tractors, harvesters, and other farm equipment',
         available: '200+ machines',
@@ -25,6 +27,7 @@ const services = [
     {
         name: 'Borewell Services',
         icon: 'water_drop',
+        image: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&h=400&fit=crop',
         href: '/home/borewell',
         description: 'Drilling, repair, and maintenance of borewells',
         available: '50+ providers',
@@ -33,6 +36,7 @@ const services = [
     {
         name: 'CCTV Installation',
         icon: 'videocam',
+        image: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=400&h=400&fit=crop',
         href: '/home/cctv',
         description: 'Security camera setup for farm monitoring',
         available: '40+ providers',
@@ -41,6 +45,7 @@ const services = [
     {
         name: 'Fencing Services',
         icon: 'fence',
+        image: 'https://images.unsplash.com/photo-1516214104703-d870798883c5?w=400&h=400&fit=crop',
         href: '/home/fencing',
         description: 'Protect your land with quality fencing solutions',
         available: '60+ providers',
@@ -49,6 +54,7 @@ const services = [
     {
         name: 'Harvester',
         icon: 'grass',
+        image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=400&fit=crop',
         href: '/home/services/harvester',
         description: 'Book harvester services for all crop types',
         available: '45+ providers',
@@ -57,6 +63,7 @@ const services = [
     {
         name: 'Drone Spray',
         icon: 'flight',
+        image: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=400&h=400&fit=crop',
         href: '/home/services/drone-spray',
         description: 'Precision drone spraying for pesticides & fertilizers',
         available: '28+ providers',
@@ -65,6 +72,7 @@ const services = [
     {
         name: 'Farm Labours',
         icon: 'group',
+        image: 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&h=400&fit=crop',
         href: '/home/services/farm-labours',
         description: 'Hire skilled farm workers for various tasks',
         available: '120+ workers',
@@ -73,6 +81,7 @@ const services = [
     {
         name: 'Transportation',
         icon: 'local_shipping',
+        image: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=400&h=400&fit=crop',
         href: '/home/services/transportation',
         description: 'Move your produce safely to markets',
         available: '80+ vehicles',
@@ -81,6 +90,7 @@ const services = [
     {
         name: 'Storage and Godown',
         icon: 'warehouse',
+        image: 'https://images.unsplash.com/photo-1553413077-190dd305871c?w=400&h=400&fit=crop',
         href: '/home/services/storage-godown',
         description: 'Secure storage & godown facilities for produce',
         available: '20+ facilities',
@@ -89,6 +99,7 @@ const services = [
     {
         name: 'Plumber',
         icon: 'plumbing',
+        image: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=400&h=400&fit=crop',
         href: '/home/services/plumber',
         description: 'Irrigation & pipeline services',
         available: '40+ available',
@@ -97,6 +108,7 @@ const services = [
     {
         name: 'Electrician',
         icon: 'electrical_services',
+        image: 'https://images.unsplash.com/photo-1565608438257-fac3c27beb36?w=400&h=400&fit=crop',
         href: '/home/services/electrician',
         description: 'Motor & wiring solutions',
         available: '35+ available',
@@ -105,6 +117,7 @@ const services = [
     {
         name: 'Mechanic',
         icon: 'build_circle',
+        image: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=400&fit=crop',
         href: '/home/services/mechanic',
         description: 'Tractor & machinery repair',
         available: '60+ mechanics',
@@ -113,6 +126,7 @@ const services = [
     {
         name: 'Milk Vendors',
         icon: 'water_drop',
+        image: 'https://images.unsplash.com/photo-1769265558223-212ef1d9c6c2?w=400&h=400&fit=crop',
         href: '/home/services/milk-vendors',
         description: 'Fresh dairy supply near you',
         available: '80+ vendors',
@@ -258,8 +272,17 @@ export default function ServicesPage() {
                                 href={service.href}
                                 className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6 p-3 md:p-6 rounded-lg md:rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all group"
                             >
-                                <div className={`w-16 md:w-20 h-16 md:h-20 ${service.color} rounded-xl md:rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                                <div className={`relative w-16 md:w-20 h-16 md:h-20 ${service.color} rounded-xl md:rounded-2xl overflow-hidden flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                                    {/* Material icon fallback (shown if the image fails to load) */}
                                     <span className="material-symbols-outlined text-white text-2xl md:text-4xl">{service.icon}</span>
+                                    {/* Real photo depicting the service */}
+                                    <img
+                                        src={service.image}
+                                        alt={service.name}
+                                        loading="lazy"
+                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                        className="absolute inset-0 w-full h-full object-cover"
+                                    />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-sm md:text-xl font-bold text-gray-900 dark:text-white mb-1 line-clamp-2">{service.name}</h3>

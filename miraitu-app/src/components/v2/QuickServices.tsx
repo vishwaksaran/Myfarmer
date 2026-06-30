@@ -12,12 +12,12 @@ const buySellOptions = [
 ];
 
 const services = [
-    { icon: 'psychiatry', tTitle: 'qs.farmServices', tDesc: 'qs.farmServicesDesc', tBtn: 'qs.bookNow', link: '/home/services' },
-    { icon: 'groups', tTitle: 'qs.bookLabour', tDesc: 'qs.bookLabourDesc', tBtn: 'qs.findLabour', link: '/home/services/farm-labours' },
-    { icon: 'storefront', tTitle: 'qs.buySell', tDesc: 'qs.buySellDesc', tBtn: 'qs.goToMarket', link: '/home/shop', isBuySell: true },
-    { icon: 'calculate', tTitle: 'qs.agriCalc', tDesc: 'qs.agriCalcDesc', tBtn: 'qs.openTools', link: '/home/toolbox' },
-    { icon: 'water_drop', tTitle: 'qs.borewellBooking', tDesc: 'qs.borewellDesc', tBtn: 'qs.requestSurvey', link: '/home/borewell' },
-    { icon: 'solar_power', tTitle: 'qs.solarSetup', tDesc: 'qs.solarDesc', tBtn: 'qs.calculate', link: '/home/cctv' },
+    { icon: 'psychiatry', image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=300&h=300&fit=crop', tTitle: 'qs.farmServices', tDesc: 'qs.farmServicesDesc', tBtn: 'qs.bookNow', link: '/home/services' },
+    { icon: 'groups', image: 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=300&h=300&fit=crop', tTitle: 'qs.bookLabour', tDesc: 'qs.bookLabourDesc', tBtn: 'qs.findLabour', link: '/home/services/farm-labours' },
+    { icon: 'storefront', image: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=300&h=300&fit=crop', tTitle: 'qs.buySell', tDesc: 'qs.buySellDesc', tBtn: 'qs.goToMarket', link: '/home/shop', isBuySell: true },
+    { icon: 'calculate', image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=300&h=300&fit=crop', tTitle: 'qs.agriCalc', tDesc: 'qs.agriCalcDesc', tBtn: 'qs.openTools', link: '/home/toolbox' },
+    { icon: 'water_drop', image: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=300&h=300&fit=crop', tTitle: 'qs.borewellBooking', tDesc: 'qs.borewellDesc', tBtn: 'qs.requestSurvey', link: '/home/borewell' },
+    { icon: 'solar_power', image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=300&h=300&fit=crop', tTitle: 'qs.solarSetup', tDesc: 'qs.solarDesc', tBtn: 'qs.calculate', link: '/home/cctv' },
 ];
 
 export default function QuickServices() {
@@ -79,11 +79,18 @@ export default function QuickServices() {
                                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-green-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                                 <div className="flex flex-col md:flex-row items-start gap-2 md:gap-4 mb-3 md:mb-4">
-                                    {/* Uniform green themed icon */}
-                                    <div className="bg-gradient-to-br from-primary to-green-500 size-10 md:size-14 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-primary/25 transition-all duration-300 shadow-md">
+                                    {/* Real photo with green-themed icon fallback */}
+                                    <div className="relative bg-gradient-to-br from-primary to-green-500 size-14 md:size-20 rounded-xl md:rounded-2xl overflow-hidden flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-primary/25 transition-all duration-300 shadow-md">
                                         <span className="material-symbols-outlined text-xl md:text-2xl text-white">
                                             {service.icon}
                                         </span>
+                                        <img
+                                            src={service.image}
+                                            alt={t(service.tTitle)}
+                                            loading="lazy"
+                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                            className="absolute inset-0 w-full h-full object-cover"
+                                        />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h3 className="text-sm md:text-lg font-black mb-0.5 md:mb-1 group-hover:text-primary transition-colors">{t(service.tTitle)}</h3>
