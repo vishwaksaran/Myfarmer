@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { normalizeIndianPhone } from '@/lib/phone';
 
 const leftServices = [
     {
@@ -190,7 +191,7 @@ export default function ToolboxSection() {
                                                 placeholder={t('toolboxSection.tenDigit')}
                                                 type="tel"
                                                 value={phone}
-                                                onChange={(e) => { setPhone(e.target.value); setErrors(prev => ({ ...prev, phone: '' })); }}
+                                                onChange={(e) => { setPhone(normalizeIndianPhone(e.target.value)); setErrors(prev => ({ ...prev, phone: '' })); }}
                                             />
                                         </div>
                                         {errors.phone && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1 flex items-center gap-1"><span className="material-symbols-outlined text-[10px]">error</span>{errors.phone}</p>}

@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import Image from 'next/image';
 import Link from 'next/link';
+import { normalizeIndianPhone } from '@/lib/phone';
 
 const STEPS = [
     { icon: 'app_registration', number: '01', titleKey: 'fpo.step1Title', descKey: 'fpo.step1Desc' },
@@ -250,9 +251,9 @@ export default function FPOPage() {
                                         className="w-full bg-transparent border-none focus:ring-0 font-bold text-sm text-gray-800 dark:text-gray-200 placeholder:text-gray-400"
                                         placeholder={t('fpo.tenDigitMobile')}
                                         type="tel"
-                                        maxLength={10}
+                                        maxLength={14}
                                         value={form.phone}
-                                        onChange={(e) => updateField('phone', e.target.value.replace(/\D/g, ''))}
+                                        onChange={(e) => updateField('phone', normalizeIndianPhone(e.target.value))}
                                     />
                                 </div>
                                 {errors.phone && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1 flex items-center gap-1"><span className="material-symbols-outlined text-[10px]">error</span>{errors.phone}</p>}

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
+import { normalizeIndianPhone } from '@/lib/phone';
 import { useLoginPrompt } from '@/context/LoginPromptContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 
@@ -149,10 +150,10 @@ export default function VeterinarySection() {
                                             required
                                             type="tel"
                                             value={formData.mobile}
-                                            onChange={(e) => { setFormData({ ...formData, mobile: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const { mobile, ...r } = prev; return r; }); }}
+                                            onChange={(e) => { setFormData({ ...formData, mobile: normalizeIndianPhone(e.target.value) }); setFormErrors(prev => { const { mobile, ...r } = prev; return r; }); }}
                                             className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${formErrors.mobile ? 'border-red-400' : 'border-transparent'} focus:border-green-500 outline-none transition-colors`}
                                             placeholder={t('vet.tenDigit')}
-                                            maxLength={10}
+                                            maxLength={14}
                                         />
                                         {formErrors.mobile && <p className="text-red-500 text-xs mt-1">{formErrors.mobile}</p>}
                                     </div>

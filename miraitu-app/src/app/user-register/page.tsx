@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import MiraituLogo from '@/components/MiraituLogo';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { normalizeIndianPhone } from '@/lib/phone';
 
 /**
  * UserRegisterPage - Phone OTP registration only
@@ -220,7 +221,7 @@ export default function UserRegisterPage() {
                                         <input
                                             value={phoneNumber}
                                             onChange={(e) => {
-                                                setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10));
+                                                setPhoneNumber(normalizeIndianPhone(e.target.value));
                                                 if (phoneVerified) {
                                                     setPhoneVerified(false);
                                                     setOtpSent(false);

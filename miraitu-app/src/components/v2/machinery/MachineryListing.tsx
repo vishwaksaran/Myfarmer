@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { normalizeIndianPhone } from '@/lib/phone';
 
 interface MachineryItem {
     id: number;
@@ -552,10 +553,10 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                         type="tel"
                                         required
                                         value={quotePhone}
-                                        onChange={e => { setQuotePhone(e.target.value.replace(/\D/g, '').slice(0, 10)); setQuoteErrors(prev => { const { phone, ...rest } = prev; return rest; }); }}
+                                        onChange={e => { setQuotePhone(normalizeIndianPhone(e.target.value)); setQuoteErrors(prev => { const { phone, ...rest } = prev; return rest; }); }}
                                         className={`w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 ${quoteErrors.phone ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none transition-colors`}
                                         placeholder="9380306475"
-                                        maxLength={10}
+                                        maxLength={14}
                                     />
                                     {quoteErrors.phone && <p className="text-red-500 text-xs mt-1">{quoteErrors.phone}</p>}
                                 </div>

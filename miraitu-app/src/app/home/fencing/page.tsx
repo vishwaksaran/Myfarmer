@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
+import { normalizeIndianPhone } from '@/lib/phone';
 
 export default function FencingInfrastructurePage() {
     const [headerVisible, setHeaderVisible] = useState(true);
@@ -282,10 +283,10 @@ export default function FencingInfrastructurePage() {
                                         <input
                                             type="tel"
                                             value={formData.phone}
-                                            onChange={(e) => { setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const { phone, ...r } = prev; return r; }); }}
+                                            onChange={(e) => { setFormData({ ...formData, phone: normalizeIndianPhone(e.target.value) }); setFormErrors(prev => { const { phone, ...r } = prev; return r; }); }}
                                             className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.phone ? 'ring-2 ring-red-400' : ''}`}
                                             placeholder="10-digit number"
-                                            maxLength={10}
+                                            maxLength={14}
                                         />
                                         {formErrors.phone && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.phone}</p>}
                                     </div>

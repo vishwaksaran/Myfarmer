@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
+import { normalizeIndianPhone } from '@/lib/phone';
 
 // ─── Storage types catalogue ───────────────────────────────────────────────
 const storageServices = [
@@ -211,7 +212,7 @@ function BookingModal({
                         <input
                             type="tel"
                             value={form.phone}
-                            onChange={e => setForm({ ...form, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                            onChange={e => setForm({ ...form, phone: normalizeIndianPhone(e.target.value) })}
                             placeholder="+91 XXXXX XXXXX"
                             className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${errors.phone ? 'border-red-400' : 'border-transparent focus:border-green-500'} outline-none transition-colors dark:text-white text-sm`}
                         />

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import MiraituLoader from '@/components/v2/MiraituLoader';
+import { normalizeIndianPhone } from '@/lib/phone';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { featuredProducts } from '../data';
@@ -190,7 +191,11 @@ export default function CheckoutPage() {
     }, []);
 
     const updateField = (field: string, value: string, type: string = 'text') => {
-        const nextValue = type === 'tel' ? value.replace(/\D/g, '') : value;
+        let nextValue = value;
+        if (type === 'tel') {
+            // Phone strips +91/91 country code from autofill; other tel fields (pincode) just keep digits
+            nextValue = field === 'phone' ? normalizeIndianPhone(value) : value.replace(/\D/g, '');
+        }
         setForm(prev => ({ ...prev, [field]: nextValue }));
         if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
     };
@@ -482,7 +487,7 @@ export default function CheckoutPage() {
                                 <div className="space-y-3 md:space-y-4">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                                         <CheckoutInputField label="Full Name" field="fullName" placeholder="Your full name" value={form.fullName} error={errors.fullName} onChange={updateField} />
-                                        <CheckoutInputField label="Phone Number" field="phone" placeholder="10-digit number" value={form.phone} error={errors.phone} type="tel" maxLength={10} onChange={updateField} />
+                                        <CheckoutInputField label="Phone Number" field="phone" placeholder="10-digit number" value={form.phone} error={errors.phone} type="tel" maxLength={14} onChange={updateField} />
                                     </div>
                                     <CheckoutInputField label="Email" field="email" placeholder="email@example.com (optional)" value={form.email} error={errors.email} type="email" required={false} onChange={updateField} />
                                     <CheckoutInputField label="Full Address" field="address" placeholder="House no., street, area" value={form.address} error={errors.address} onChange={updateField} />

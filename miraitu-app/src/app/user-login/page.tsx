@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useCallback, useEffect, useState } from 'react';
 import MiraituLogo from '@/components/MiraituLogo';
+import MiraituLoader from '@/components/v2/MiraituLoader';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { LangCode } from '@/i18n/translations';
+import { normalizeIndianPhone } from '@/lib/phone';
 
 /**
  * UserLoginPage - Login page with Phone OTP and Email Auth
@@ -31,6 +33,7 @@ export default function UserLoginPage() {
     const [loginPassword, setLoginPassword] = useState('');
     const [emailError, setEmailError] = useState<string | null>(null);
     const [showResetConfirm, setShowResetConfirm] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const [redirectPath, setRedirectPath] = useState<string | null>(null);
 
     useEffect(() => {
@@ -565,8 +568,8 @@ export default function UserLoginPage() {
                                                     inputMode="numeric"
                                                     value={phoneNumber}
                                                     onChange={(e) => {
-                                                        // Only digits, max 10
-                                                        const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                                        // Normalize: strips +91/91 country code from autofill, keeps 10 digits
+                                                        const digits = normalizeIndianPhone(e.target.value);
                                                         setPhoneNumber(digits);
                                                         setError(null);
                                                     }}
@@ -574,7 +577,7 @@ export default function UserLoginPage() {
                                                     placeholder={t('login.mobilePlaceholder')}
                                                     autoFocus
                                                     required
-                                                    maxLength={10}
+                                                    maxLength={14}
                                                 />
                                                 {phoneNumber.length > 0 && (
                                                     <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold ${phoneNumber.length === 10 ? 'text-green-500' : 'text-gray-400'
@@ -662,14 +665,22 @@ export default function UserLoginPage() {
                                         <div className="relative">
                                             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60">lock</span>
                                             <input
-                                                type="password"
+                                                type={showPassword ? 'text' : 'password'}
                                                 value={loginPassword}
                                                 onChange={(e) => { setLoginPassword(e.target.value); setEmailError(null); }}
-                                                className="skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border border-[var(--miraitu-primary-green)]/20 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none transition-all placeholder:text-gray-400 text-base font-medium"
+                                                className="skeuo-input w-full pl-12 pr-12 py-4 rounded-xl border border-[var(--miraitu-primary-green)]/20 bg-[#fcfdfc] focus:border-[var(--miraitu-primary-green)] outline-none transition-all placeholder:text-gray-400 text-base font-medium"
                                                 placeholder={t('login.passwordPlaceholder')}
                                                 required
                                                 minLength={6}
                                             />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(v => !v)}
+                                                aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-[var(--miraitu-primary-green)] transition-colors"
+                                            >
+                                                <span className="material-symbols-outlined text-xl">{showPassword ? 'visibility_off' : 'visibility'}</span>
+                                            </button>
                                         </div>
                                         <div className="flex justify-end">
                                             <button
@@ -742,15 +753,5 @@ export default function UserLoginPage() {
  */
 function LoadingSpinner() {
     const { t } = useLanguage();
-
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-[var(--miraitu-background-light)]">
-            <div className="flex flex-col items-center gap-4">
-                <span className="material-symbols-outlined text-4xl text-[var(--miraitu-primary-green)] animate-spin">
-                    progress_activity
-                </span>
-                <p className="text-[#53935d] font-medium">{t('login.loading')}</p>
-            </div>
-        </div>
-    );
+    return <MiraituLoader label={t('login.loading')} />;
 }

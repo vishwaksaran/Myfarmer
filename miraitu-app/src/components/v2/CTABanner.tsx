@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/i18n/LanguageContext';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
+import { normalizeIndianPhone } from '@/lib/phone';
 
 export default function CTABanner() {
     const { t } = useLanguage();
@@ -186,9 +187,9 @@ export default function CTABanner() {
                                                     type="tel"
                                                     placeholder={t('cta.phonePlaceholder')}
                                                     value={cbPhone}
-                                                    onChange={e => { setCbPhone(e.target.value.replace(/\D/g, '').slice(0, 10)); setCbErrors(prev => { const { phone, ...r } = prev; return r; }); }}
+                                                    onChange={e => { setCbPhone(normalizeIndianPhone(e.target.value)); setCbErrors(prev => { const { phone, ...r } = prev; return r; }); }}
                                                     className={`w-full px-5 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-800 border-none outline-none focus:ring-2 focus:ring-primary/50 text-sm font-semibold text-gray-800 dark:text-white placeholder:text-gray-400 transition-all ${cbErrors.phone ? 'ring-2 ring-red-400' : ''}`}
-                                                    maxLength={10}
+                                                    maxLength={14}
                                                     required
                                                 />
                                                 {cbErrors.phone && <p className="text-red-500 text-xs mt-1 ml-1">{cbErrors.phone}</p>}

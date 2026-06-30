@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
+import { normalizeIndianPhone } from '@/lib/phone';
 
 export default function SoilTestingPage() {
     const [headerVisible, setHeaderVisible] = useState(true);
@@ -273,10 +274,10 @@ export default function SoilTestingPage() {
                                     <input
                                         type="tel"
                                         value={formData.phone}
-                                        onChange={(e) => { setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const { phone, ...r } = prev; return r; }); }}
+                                        onChange={(e) => { setFormData({ ...formData, phone: normalizeIndianPhone(e.target.value) }); setFormErrors(prev => { const { phone, ...r } = prev; return r; }); }}
                                         className={`w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 outline-none transition-colors dark:text-white text-sm md:text-base ${formErrors.phone ? 'border-red-400' : 'border-transparent focus:border-green-500'}`}
                                         placeholder="10-digit number"
-                                        maxLength={10}
+                                        maxLength={14}
                                     />
                                     {formErrors.phone && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.phone}</p>}
                                 </div>

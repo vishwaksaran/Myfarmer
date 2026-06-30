@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import MiraituLoader from '@/components/v2/MiraituLoader';
+import { normalizeIndianPhone } from '@/lib/phone';
 
 export default function ProfilePage() {
     const { user, loading, fetchProfile, updateProfile, uploadAvatar } = useAuth();
@@ -214,7 +215,7 @@ export default function ProfilePage() {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
-                                        <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+                                        <input type="tel" value={phone} onChange={e => setPhone(normalizeIndianPhone(e.target.value))}
                                             placeholder="Enter your phone number"
                                             className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all outline-none font-medium text-gray-900 dark:text-white" />
                                     </div>

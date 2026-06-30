@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import MiraituLogo from '@/components/MiraituLogo';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
+import { normalizeIndianPhone } from '@/lib/phone';
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -386,6 +387,7 @@ export default function OnboardingPage() {
     const [passwordError, setPasswordError] = useState<string | null>(null);
     const [emailPassword, setEmailPassword] = useState('');
     const [confirmEmailPassword, setConfirmEmailPassword] = useState('');
+    const [showOnboardPassword, setShowOnboardPassword] = useState(false);
     const [showDiscardModal, setShowDiscardModal] = useState(false);
     const [isDiscarding, setIsDiscarding] = useState(false);
     const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -886,12 +888,12 @@ export default function OnboardingPage() {
                                         inputMode="numeric"
                                         value={formData.phone}
                                         onChange={(e) => {
-                                            const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                            const digits = normalizeIndianPhone(e.target.value);
                                             setFormData(f => ({ ...f, phone: digits }));
                                         }}
                                         className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-green-200 bg-white focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-base font-medium placeholder:text-gray-400"
                                         placeholder="10-digit mobile number"
-                                        maxLength={10}
+                                        maxLength={14}
                                         readOnly={!!user?.phone}
                                     />
                                 </div>
@@ -944,29 +946,45 @@ export default function OnboardingPage() {
                                         <div className="relative">
                                             <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60 text-xl">lock</span>
                                             <input
-                                                type="password"
+                                                type={showOnboardPassword ? 'text' : 'password'}
                                                 value={emailPassword}
                                                 onChange={(e) => {
                                                     setEmailPassword(e.target.value);
                                                     setPasswordError(null);
                                                 }}
-                                                className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-white focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-base font-medium placeholder:text-gray-400 ${passwordError ? 'border-red-300 bg-red-50/50' : 'border-green-200'}`}
+                                                className={`w-full pl-12 pr-12 py-3.5 rounded-xl border bg-white focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-base font-medium placeholder:text-gray-400 ${passwordError ? 'border-red-300 bg-red-50/50' : 'border-green-200'}`}
                                                 placeholder="Create password (min 6 characters)"
                                             />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowOnboardPassword(v => !v)}
+                                                aria-label={showOnboardPassword ? 'Hide password' : 'Show password'}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-[var(--miraitu-primary-green)] transition-colors"
+                                            >
+                                                <span className="material-symbols-outlined text-xl">{showOnboardPassword ? 'visibility_off' : 'visibility'}</span>
+                                            </button>
                                         </div>
 
                                         <div className="relative">
                                             <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60 text-xl">lock_reset</span>
                                             <input
-                                                type="password"
+                                                type={showOnboardPassword ? 'text' : 'password'}
                                                 value={confirmEmailPassword}
                                                 onChange={(e) => {
                                                     setConfirmEmailPassword(e.target.value);
                                                     setPasswordError(null);
                                                 }}
-                                                className={`w-full pl-12 pr-4 py-3.5 rounded-xl border bg-white focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-base font-medium placeholder:text-gray-400 ${passwordError ? 'border-red-300 bg-red-50/50' : 'border-green-200'}`}
+                                                className={`w-full pl-12 pr-12 py-3.5 rounded-xl border bg-white focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-base font-medium placeholder:text-gray-400 ${passwordError ? 'border-red-300 bg-red-50/50' : 'border-green-200'}`}
                                                 placeholder="Confirm password"
                                             />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowOnboardPassword(v => !v)}
+                                                aria-label={showOnboardPassword ? 'Hide password' : 'Show password'}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-[var(--miraitu-primary-green)] transition-colors"
+                                            >
+                                                <span className="material-symbols-outlined text-xl">{showOnboardPassword ? 'visibility_off' : 'visibility'}</span>
+                                            </button>
                                         </div>
 
                                         {passwordError && (

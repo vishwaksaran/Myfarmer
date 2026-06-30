@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
+import { normalizeIndianPhone } from '@/lib/phone';
 
 export default function ProtectionServicesPage() {
     const [headerVisible, setHeaderVisible] = useState(true);
@@ -295,10 +296,10 @@ export default function ProtectionServicesPage() {
                                         <input
                                             type="tel"
                                             value={formData.phone}
-                                            onChange={(e) => { setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const { phone, ...r } = prev; return r; }); }}
+                                            onChange={(e) => { setFormData({ ...formData, phone: normalizeIndianPhone(e.target.value) }); setFormErrors(prev => { const { phone, ...r } = prev; return r; }); }}
                                             className={`w-full skeuo-inset rounded-xl px-4 py-3 font-bold focus:ring-0 border-none appearance-none ${formErrors.phone ? 'ring-2 ring-red-400' : ''}`}
                                             placeholder="10-digit number"
-                                            maxLength={10}
+                                            maxLength={14}
                                         />
                                         {formErrors.phone && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.phone}</p>}
                                     </div>

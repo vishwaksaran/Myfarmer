@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
+import { normalizeIndianPhone } from '@/lib/phone';
 
 const serviceData: Record<string, any> = {
     'harvester': {
@@ -293,9 +294,9 @@ export default function GenericServicePage() {
                                             type="tel"
                                             placeholder="10 digit phone number"
                                             value={formData.phone}
-                                            onChange={(e) => { setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }); setFormErrors(prev => { const { phone, ...r } = prev; return r; }); }}
+                                            onChange={(e) => { setFormData({ ...formData, phone: normalizeIndianPhone(e.target.value) }); setFormErrors(prev => { const { phone, ...r } = prev; return r; }); }}
                                             className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 ${formErrors.phone ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none`}
-                                            maxLength={10}
+                                            maxLength={14}
                                         />
                                         {formErrors.phone && <p className="text-red-500 text-xs mt-1 ml-1">{formErrors.phone}</p>}
                                     </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { normalizeIndianPhone } from '@/lib/phone';
 
 const INDIAN_STATES = [
     'Andhra Pradesh', 'Bihar', 'Chhattisgarh', 'Gujarat', 'Haryana',
@@ -118,7 +119,7 @@ export default function CheckPriceModal({ isOpen, onClose, tractorName }: CheckP
                                             placeholder="Enter Mobile Number"
                                             value={mobile}
                                             onChange={(e) => {
-                                                const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                                const val = normalizeIndianPhone(e.target.value);
                                                 setMobile(val);
                                             }}
                                             required

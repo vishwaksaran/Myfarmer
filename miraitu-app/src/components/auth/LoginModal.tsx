@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import MiraituLogo from '@/components/MiraituLogo';
+import { normalizeIndianPhone } from '@/lib/phone';
 
 interface LoginModalProps {
     isOpen: boolean;
@@ -20,6 +21,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     const [otpCode, setOtpCode] = useState('');
     const [emailInput, setEmailInput] = useState('');
     const [passwordInput, setPasswordInput] = useState('');
+    const [showLoginPassword, setShowLoginPassword] = useState(false);
     const [error, setError] = useState('');
     const [sendingOtp, setSendingOtp] = useState(false);
     const [isEmailSigningIn, setIsEmailSigningIn] = useState(false);
@@ -176,8 +178,8 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                                             placeholder="Enter your phone number"
                                             type="tel"
                                             value={phoneInput}
-                                            onChange={(e) => { setPhoneInput(e.target.value); setError(''); }}
-                                            maxLength={10}
+                                            onChange={(e) => { setPhoneInput(normalizeIndianPhone(e.target.value)); setError(''); }}
+                                            maxLength={14}
                                         />
                                     </div>
                                 </div>
@@ -253,14 +255,24 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
                                 <div>
                                     <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 ml-1">Password</label>
-                                    <input
-                                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary focus:bg-white dark:focus:bg-gray-900 transition-all outline-none font-medium"
-                                        placeholder="Enter your password"
-                                        type="password"
-                                        value={passwordInput}
-                                        onChange={(e) => { setPasswordInput(e.target.value); setError(''); }}
-                                        autoComplete="current-password"
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            className="w-full px-4 pr-12 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary focus:bg-white dark:focus:bg-gray-900 transition-all outline-none font-medium"
+                                            placeholder="Enter your password"
+                                            type={showLoginPassword ? 'text' : 'password'}
+                                            value={passwordInput}
+                                            onChange={(e) => { setPasswordInput(e.target.value); setError(''); }}
+                                            autoComplete="current-password"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowLoginPassword(v => !v)}
+                                            aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-primary transition-colors"
+                                        >
+                                            <span className="material-symbols-outlined text-xl">{showLoginPassword ? 'visibility_off' : 'visibility'}</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
