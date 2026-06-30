@@ -109,7 +109,7 @@ export default function OrdersPage() {
 
                     {loadingData ? (
                         <div className="flex justify-center py-20">
-                            <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary border-t-transparent" />
+                            <MiraituLoader fullScreen={false} />
                         </div>
                     ) : filtered.length === 0 ? (
                         <div className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 p-16 text-center">

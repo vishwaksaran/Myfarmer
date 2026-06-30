@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import supabase from '@/lib/supabase';
+import MiraituLoader from '@/components/v2/MiraituLoader';
 
 /**
  * Check if user has completed onboarding by querying their profile.
@@ -110,10 +111,7 @@ function AuthCallbackContent() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-[var(--miraitu-background-light)]">
             <div className="flex flex-col items-center gap-4">
-                <span className="material-symbols-outlined text-5xl text-[var(--miraitu-primary-green)] animate-spin">
-                    progress_activity
-                </span>
-                <p className="text-[#53935d] font-semibold text-lg">Signing you in...</p>
+                <MiraituLoader fullScreen={false} label="Signing you in…" />
                 <p className="text-gray-400 text-sm">Please wait while we complete authentication</p>
             </div>
         </div>
@@ -122,15 +120,7 @@ function AuthCallbackContent() {
 
 export default function AuthCallbackPage() {
     return (
-        <Suspense
-            fallback={
-                <div className="min-h-screen flex items-center justify-center bg-[var(--miraitu-background-light)]">
-                    <span className="material-symbols-outlined text-5xl text-[var(--miraitu-primary-green)] animate-spin">
-                        progress_activity
-                    </span>
-                </div>
-            }
-        >
+        <Suspense fallback={<MiraituLoader />}>
             <AuthCallbackContent />
         </Suspense>
     );

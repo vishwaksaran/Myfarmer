@@ -106,7 +106,7 @@ export default function MyOrdersPage() {
 
                     {pageLoading ? (
                         <div className="flex items-center justify-center py-20">
-                            <span className="material-symbols-outlined text-4xl text-primary animate-spin">progress_activity</span>
+                            <MiraituLoader fullScreen={false} />
                         </div>
                     ) : orders.length === 0 ? (
                         <div className="bg-white dark:bg-gray-900 rounded-2xl p-12 border border-gray-100 dark:border-gray-800 text-center">
