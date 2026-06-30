@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { VendorAuthProvider, useVendorAuth } from '@/context/VendorAuthContext';
+import MiraituLoader from '@/components/v2/MiraituLoader';
 
 function VendorLayoutInner({ children }: { children: React.ReactNode }) {
     const { vendor, shop, loading, authenticated, logout } = useVendorAuth();
@@ -30,11 +31,7 @@ function VendorLayoutInner({ children }: { children: React.ReactNode }) {
     }, [loading, authenticated, vendor, slug, router, pathname, isLoginPage]);
 
     if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <span className="material-symbols-outlined text-5xl text-green-600 animate-spin">progress_activity</span>
-            </div>
-        );
+        return <MiraituLoader />;
     }
 
     // If we're on the login page, just render the login component without the sidebar

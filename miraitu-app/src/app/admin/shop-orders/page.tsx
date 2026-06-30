@@ -1,6 +1,7 @@
 'use client';
 
 import { Fragment, useEffect, useMemo, useState } from 'react';
+import MiraituLoader from '@/components/v2/MiraituLoader';
 import {
     fetchAdminShopOrders,
     updateAdminShopOrder,
@@ -221,7 +222,7 @@ export default function AdminShopOrdersPage() {
 
             {loading ? (
                 <div className="flex items-center justify-center py-20">
-                    <span className="material-symbols-outlined text-4xl text-green-600 animate-spin">progress_activity</span>
+                    <MiraituLoader fullScreen={false} />
                 </div>
             ) : filteredOrders.length === 0 ? (
                 <div className="bg-white rounded-2xl p-12 border border-gray-100 text-center">

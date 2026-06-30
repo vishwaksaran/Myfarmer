@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { fetchShops, createShop, updateShop, deleteShop } from '@/app/actions/vendor-shops';
+import MiraituLoader from '@/components/v2/MiraituLoader';
 
 interface ShopRow {
     id: string;
@@ -58,7 +59,7 @@ export default function CrmShopsPage() {
 
             {loading ? (
                 <div className="flex items-center justify-center py-20">
-                    <span className="material-symbols-outlined text-4xl text-green-600 animate-spin">progress_activity</span>
+                    <MiraituLoader fullScreen={false} />
                 </div>
             ) : shops.length === 0 ? (
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center py-20 text-gray-400">

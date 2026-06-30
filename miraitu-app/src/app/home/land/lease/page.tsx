@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
+import MiraituLoader from '@/components/v2/MiraituLoader';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import { fetchApprovedLeaseListings, type LeaseListingRecord } from '@/app/actions/bookings';
@@ -326,8 +327,7 @@ export default function LeaseLandPage() {
                         {/* Loading */}
                         {listingsLoading && (
                             <div className="flex flex-col items-center justify-center py-20 gap-3">
-                                <span className="material-symbols-outlined text-4xl text-teal-500 animate-spin">progress_activity</span>
-                                <p className="text-sm text-gray-500">Loading listings…</p>
+                                <MiraituLoader fullScreen={false} label="Loading listings…" />
                             </div>
                         )}
 

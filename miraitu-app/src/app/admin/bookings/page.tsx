@@ -2,6 +2,7 @@
 
 import { Fragment, Suspense, useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import MiraituLoader from '@/components/v2/MiraituLoader';
 import { fetchAllBookings, updateBookingStatus, deleteBooking, setLeasePublished, type BookingRecord } from '@/app/actions/bookings';
 import { downloadCSV } from '@/lib/csv-export';
 
@@ -28,7 +29,7 @@ export default function AdminBookingsPage() {
     return (
         <Suspense fallback={
             <div className="flex items-center justify-center py-20">
-                <span className="material-symbols-outlined text-4xl text-green-600 animate-spin">progress_activity</span>
+                <MiraituLoader fullScreen={false} />
             </div>
         }>
             <AdminBookingsContent />
@@ -266,7 +267,7 @@ function AdminBookingsContent() {
             {/* Table */}
             {loading ? (
                 <div className="flex items-center justify-center py-20">
-                    <span className="material-symbols-outlined text-4xl text-green-600 animate-spin">progress_activity</span>
+                    <MiraituLoader fullScreen={false} />
                 </div>
             ) : filteredBookings.length === 0 ? (
                 <div className="bg-white rounded-2xl p-12 border border-gray-100 text-center">

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import MiraituLoader from '@/components/v2/MiraituLoader';
 import { fetchAllBookings, fetchAllUsers, type BookingRecord, type UserRecord } from '@/app/actions/bookings';
 import { fetchAdminShopOrders, type AdminShopOrderRecord } from '@/app/actions/shop-orders';
 
@@ -26,7 +27,7 @@ export default function AdminDashboard() {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-20">
-                <span className="material-symbols-outlined text-4xl text-green-600 animate-spin">progress_activity</span>
+                <MiraituLoader fullScreen={false} />
             </div>
         );
     }

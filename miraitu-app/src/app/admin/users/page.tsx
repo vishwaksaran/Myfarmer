@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import MiraituLoader from '@/components/v2/MiraituLoader';
 import { fetchAllUsers, deleteUser, updateUserProfile, type UserRecord } from '@/app/actions/bookings';
 import { downloadCSV } from '@/lib/csv-export';
 
@@ -130,7 +131,7 @@ export default function AdminUsersPage() {
                         disabled={refreshing}
                         className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50"
                     >
-                        <span className={`material-symbols-outlined text-base ${refreshing ? 'animate-spin' : ''}`}>refresh</span>
+                        <span className="material-symbols-outlined text-base">refresh</span>
                         <span className="hidden sm:inline">{refreshing ? 'Loading...' : 'Refresh'}</span>
                     </button>
                     <button
@@ -166,9 +167,9 @@ export default function AdminUsersPage() {
             </div>
 
             {/* User Cards */}
-            {loading ? (
+            {(loading || refreshing) ? (
                 <div className="flex items-center justify-center py-20">
-                    <span className="material-symbols-outlined text-4xl text-purple-600 animate-spin">progress_activity</span>
+                    <MiraituLoader fullScreen={false} />
                 </div>
             ) : filteredUsers.length === 0 ? (
                 <div className="bg-white rounded-2xl p-12 border border-gray-100 text-center">

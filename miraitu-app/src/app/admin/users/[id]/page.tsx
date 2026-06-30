@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import MiraituLoader from '@/components/v2/MiraituLoader';
 import {
     fetchUserById,
     fetchUserBookings,
@@ -47,7 +48,7 @@ export default function UserDetailPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-20">
-                <span className="material-symbols-outlined text-4xl text-purple-600 animate-spin">progress_activity</span>
+                <MiraituLoader fullScreen={false} />
             </div>
         );
     }

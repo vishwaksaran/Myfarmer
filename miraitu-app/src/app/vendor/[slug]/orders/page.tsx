@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useVendorAuth } from '@/context/VendorAuthContext';
 import { fetchOrders, createOrder, updateOrderStatus, updatePaymentStatus } from '@/app/actions/vendor-orders';
+import MiraituLoader from '@/components/v2/MiraituLoader';
 import { fetchProducts } from '@/app/actions/vendor-products';
 
 interface Order {
@@ -182,7 +183,7 @@ export default function VendorOrdersPage() {
             {/* Orders Table */}
             {loading ? (
                 <div className="flex items-center justify-center py-20">
-                    <span className="material-symbols-outlined text-4xl text-green-600 animate-spin">progress_activity</span>
+                    <MiraituLoader fullScreen={false} />
                 </div>
             ) : orders.length === 0 ? (
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">

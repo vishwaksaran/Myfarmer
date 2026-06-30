@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useVendorAuth } from '@/context/VendorAuthContext';
 import { fetchProducts, createProduct, updateProduct, deleteProduct } from '@/app/actions/vendor-products';
+import MiraituLoader from '@/components/v2/MiraituLoader';
 
 interface Product {
     id: string;
@@ -181,7 +182,7 @@ export default function VendorProductsPage() {
             {/* Product Grid */}
             {loading ? (
                 <div className="flex items-center justify-center py-20">
-                    <span className="material-symbols-outlined text-4xl text-green-600 animate-spin">progress_activity</span>
+                    <MiraituLoader fullScreen={false} />
                 </div>
             ) : products.length === 0 ? (
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">

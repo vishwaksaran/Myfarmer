@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import MiraituLogo from '@/components/MiraituLogo';
+import MiraituLoader from '@/components/v2/MiraituLoader';
 import { fetchAdminUnreadPaymentNotificationsCount } from '@/app/actions/shop-orders';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -50,11 +51,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }, [isAdmin]);
 
     if (loading || isAdmin === null) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <span className="material-symbols-outlined text-5xl text-green-600 animate-spin">progress_activity</span>
-            </div>
-        );
+        return <MiraituLoader />;
     }
 
     if (!user || !isAdmin) return null;

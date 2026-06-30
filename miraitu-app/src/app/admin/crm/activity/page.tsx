@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { fetchActivityLog } from '@/app/actions/vendor-activity';
+import MiraituLoader from '@/components/v2/MiraituLoader';
 
 interface ActivityRow {
     id: string;
@@ -104,7 +105,7 @@ export default function ActivityLogPage() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
                 {loading ? (
                     <div className="flex items-center justify-center py-20">
-                        <span className="material-symbols-outlined text-4xl text-green-600 animate-spin">progress_activity</span>
+                        <MiraituLoader fullScreen={false} />
                     </div>
                 ) : logs.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-gray-400">
