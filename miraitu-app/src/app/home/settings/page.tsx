@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
+import MiraituLoader from '@/components/v2/MiraituLoader';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { LangCode } from '@/i18n/translations';
 
@@ -74,9 +75,7 @@ export default function SettingsPage() {
 
     if (loading || !user) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-[#0d110d] flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
-            </div>
+            <MiraituLoader />
         );
     }
 

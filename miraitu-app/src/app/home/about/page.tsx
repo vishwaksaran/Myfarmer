@@ -122,7 +122,7 @@ export default function AboutPage() {
     ];
 
     const impactStats = [
-        { value: '200+', label: t('about.districtsCovered'), icon: 'location_on' },
+        { value: '20+', label: t('about.districtsCovered'), icon: 'location_on' },
         { value: '50K+', label: t('about.farmersConnected'), icon: 'groups' },
         { value: '10K+', label: t('about.productsListed'), icon: 'inventory' },
         { value: '4.8\u2605', label: t('about.appRating'), icon: 'star' },

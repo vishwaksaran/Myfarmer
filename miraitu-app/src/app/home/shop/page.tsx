@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { translateProduct } from '@/i18n/productTranslations';
+import MiraituLoader from '@/components/v2/MiraituLoader';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import { useCart } from '@/context/CartContext';
@@ -128,11 +129,7 @@ export default function ShopPage() {
     const tp = (s: string) => translateProduct(s, lang);
 
     if (loading || !user) {
-        return (
-            <div className="min-h-screen bg-gray-50 dark:bg-[#0d110d] flex items-center justify-center">
-                <span className="material-symbols-outlined text-4xl text-primary animate-spin">progress_activity</span>
-            </div>
-        );
+        return <MiraituLoader />;
     }
 
     return (

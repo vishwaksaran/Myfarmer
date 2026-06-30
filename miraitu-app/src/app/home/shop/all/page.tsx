@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
+import MiraituLoader from '@/components/v2/MiraituLoader';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { shopCategories } from '../data';
@@ -52,9 +53,7 @@ export default function AllProductsPage() {
 
     if (loading || !user) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-[#0d110d] flex items-center justify-center">
-                <span className="material-symbols-outlined text-4xl text-primary animate-spin">progress_activity</span>
-            </div>
+            <MiraituLoader />
         );
     }
 
