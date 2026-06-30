@@ -534,19 +534,19 @@ export default function UserLoginPage() {
                                     {/* Phone Login Button */}
                                     <button
                                         onClick={() => setAuthMethod('phone')}
-                                        className="w-full h-14 flex items-center justify-center gap-3 bg-[var(--miraitu-background-light)] border-2 border-[var(--miraitu-primary-green)]/20 rounded-xl font-bold text-[#0f1a11] hover:bg-[var(--miraitu-primary-green)]/5 hover:border-[var(--miraitu-primary-green)]/40 transition-all"
+                                        className="w-full min-h-14 py-3 flex items-center justify-center gap-3 bg-[var(--miraitu-background-light)] border-2 border-[var(--miraitu-primary-green)]/20 rounded-xl font-bold text-[#0f1a11] hover:bg-[var(--miraitu-primary-green)]/5 hover:border-[var(--miraitu-primary-green)]/40 transition-all"
                                     >
-                                        <span className="material-symbols-outlined text-[var(--miraitu-primary-green)]">smartphone</span>
-                                        <span>{t('login.continuePhone')}</span>
+                                        <span className="material-symbols-outlined text-[var(--miraitu-primary-green)] shrink-0">smartphone</span>
+                                        <span className="text-center leading-snug">{t('login.continuePhone')}</span>
                                     </button>
 
                                     {/* Email Login Button */}
                                     <button
                                         onClick={() => setAuthMethod('email')}
-                                        className="w-full h-14 flex items-center justify-center gap-3 bg-[var(--miraitu-background-light)] border-2 border-[var(--miraitu-primary-green)]/20 rounded-xl font-bold text-[#0f1a11] hover:bg-[var(--miraitu-primary-green)]/5 hover:border-[var(--miraitu-primary-green)]/40 transition-all"
+                                        className="w-full min-h-14 py-3 flex items-center justify-center gap-3 bg-[var(--miraitu-background-light)] border-2 border-[var(--miraitu-primary-green)]/20 rounded-xl font-bold text-[#0f1a11] hover:bg-[var(--miraitu-primary-green)]/5 hover:border-[var(--miraitu-primary-green)]/40 transition-all"
                                     >
-                                        <span className="material-symbols-outlined text-[var(--miraitu-primary-green)]">mail</span>
-                                        <span className="max-w-40 text-center sm:max-w-none">{t('login.continueEmail')}</span>
+                                        <span className="material-symbols-outlined text-[var(--miraitu-primary-green)] shrink-0">mail</span>
+                                        <span className="text-center leading-snug">{t('login.continueEmail')}</span>
                                     </button>
 
                                     {/* Guest login removed */}
@@ -624,14 +624,14 @@ export default function UserLoginPage() {
                                     <button
                                         type="submit"
                                         disabled={isSigningIn}
-                                        className="skeuo-button w-full h-14 flex items-center justify-center gap-3 bg-[var(--miraitu-primary-green)] text-white rounded-xl font-bold uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[var(--miraitu-primary-green)]/30"
+                                        className="skeuo-button w-full min-h-14 py-3 flex items-center justify-center gap-3 bg-[var(--miraitu-primary-green)] text-white rounded-xl font-bold uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[var(--miraitu-primary-green)]/30"
                                     >
                                         {isSigningIn ? (
                                             <span className="material-symbols-outlined animate-spin">progress_activity</span>
                                         ) : (
                                             <>
-                                                {phoneState === 'input' ? t('login.getOtp') : t('login.verifyLogin')}
-                                                <span className="material-symbols-outlined">arrow_forward</span>
+                                                <span className="text-center leading-snug">{phoneState === 'input' ? t('login.getOtp') : t('login.verifyLogin')}</span>
+                                                <span className="material-symbols-outlined shrink-0">arrow_forward</span>
                                             </>
                                         )}
                                     </button>
@@ -694,14 +694,14 @@ export default function UserLoginPage() {
                                     <button
                                         type="submit"
                                         disabled={isSigningIn || !loginEmail.trim() || !loginPassword}
-                                        className="skeuo-button w-full h-14 flex items-center justify-center gap-3 bg-[var(--miraitu-primary-green)] text-white rounded-xl font-bold uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[var(--miraitu-primary-green)]/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="skeuo-button w-full min-h-14 py-3 flex items-center justify-center gap-3 bg-[var(--miraitu-primary-green)] text-white rounded-xl font-bold uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[var(--miraitu-primary-green)]/30 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {isSigningIn ? (
                                             <span className="material-symbols-outlined animate-spin">progress_activity</span>
                                         ) : (
                                             <>
-                                                {t('login.logIn')}
-                                                <span className="material-symbols-outlined">arrow_forward</span>
+                                                <span className="text-center leading-snug">{t('login.logIn')}</span>
+                                                <span className="material-symbols-outlined shrink-0">arrow_forward</span>
                                             </>
                                         )}
                                     </button>
