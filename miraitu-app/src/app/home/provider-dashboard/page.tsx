@@ -36,6 +36,8 @@ import type {
 } from '@/app/actions/provider';
 import type { UserProfile } from '@/context/AuthContext';
 import { getCategoryConfig } from '@/lib/provider-config';
+import { useViewMode } from '@/hooks/useViewMode';
+import { useProviderTab } from '@/hooks/useProviderTab';
 
 type TabId = 'overview' | 'analytics' | 'bookings' | 'contacts' | 'services' | 'earnings' | 'notifications' | 'profile';
 
@@ -61,8 +63,19 @@ const bookingFilters = [
 export default function ProviderDashboardPage() {
     const { user, loading: authLoading, fetchProfile } = useAuth();
     const router = useRouter();
+    const [, setViewMode] = useViewMode();
+    // Active tab is shared with the bottom nav via a small store so the nav can
+    // switch tabs reliably (Next <Link> hash navigation doesn't fire hashchange).
+    const [activeTabRaw, setActiveTabRaw] = useProviderTab();
+    const activeTab = activeTabRaw as TabId;
+    const setActiveTab = (t: TabId) => setActiveTabRaw(t);
     const [profile, setProfile] = useState<UserProfile | null>(null);
-    const [activeTab, setActiveTab] = useState<TabId>('overview');
+
+    // Switch to the regular farmer/consumer experience
+    const switchToFarmerView = () => {
+        setViewMode('farmer');
+        router.push('/home');
+    };
     const [bookings, setBookings] = useState<ProviderBooking[]>([]);
     const [earnings, setEarnings] = useState<ProviderEarnings | null>(null);
     const [analytics, setAnalytics] = useState<ProviderAnalytics | null>(null);
@@ -110,9 +123,9 @@ export default function ProviderDashboardPage() {
         if (!authLoading && !user) router.push('/user-login');
     }, [authLoading, user, router]);
 
-    // Redirect if not a service provider
+    // Redirect users who don't use the provider workspace (providers & dealers do)
     useEffect(() => {
-        if (!authLoading && user && profile && profile.role !== 'service_provider') {
+        if (!authLoading && user && profile && !['service_provider', 'dealer'].includes(profile.role)) {
             router.push('/home/dashboard');
         }
     }, [authLoading, user, profile, router]);
@@ -156,12 +169,23 @@ export default function ProviderDashboardPage() {
             <Header />
             <main className="py-6 md:py-8">
                 <div className="mx-auto max-w-[1100px] px-4 md:px-6">
-                    {/* Breadcrumb */}
-                    <nav className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                        <Link href="/home" className="hover:text-primary transition-colors">Home</Link>
-                        <span>&gt;</span>
-                        <span className="text-primary font-semibold">Provider Dashboard</span>
-                    </nav>
+                    {/* Breadcrumb + view switch */}
+                    <div className="flex items-center justify-between gap-2 mb-4">
+                        <nav className="flex items-center gap-2 text-sm text-gray-500">
+                            <Link href="/home" className="hover:text-primary transition-colors">Home</Link>
+                            <span>&gt;</span>
+                            <span className="text-primary font-semibold">Provider Dashboard</span>
+                        </nav>
+                        <button
+                            type="button"
+                            onClick={switchToFarmerView}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-green-300 dark:border-green-800 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-xs font-bold hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors whitespace-nowrap"
+                            title="Switch to the regular farmer / consumer view"
+                        >
+                            <span className="material-symbols-outlined text-sm">swap_horiz</span>
+                            Switch to Farmer
+                        </button>
+                    </div>
 
                     {/* Header */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">

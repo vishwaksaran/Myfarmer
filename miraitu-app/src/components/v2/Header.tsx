@@ -8,7 +8,21 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { LangCode } from '@/i18n/translations';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { useViewMode } from '@/hooks/useViewMode';
+import { useProviderTab } from '@/hooks/useProviderTab';
 import HeaderAuthSection from './HeaderAuthSection';
+
+// Provider workspace menu — shown in the hamburger for providers/dealers in provider view
+const PROVIDER_ROLES = ['service_provider', 'dealer'];
+const providerMenuItems: { label: string; icon: string; tab: string }[] = [
+    { label: 'Overview', icon: 'dashboard', tab: 'overview' },
+    { label: 'Analytics', icon: 'insights', tab: 'analytics' },
+    { label: 'Bookings', icon: 'list_alt', tab: 'bookings' },
+    { label: 'Orders / Customers', icon: 'receipt_long', tab: 'contacts' },
+    { label: 'Services & Pricing', icon: 'sell', tab: 'services' },
+    { label: 'Earnings', icon: 'account_balance_wallet', tab: 'earnings' },
+    { label: 'Notifications', icon: 'notifications', tab: 'notifications' },
+];
 
 
 // Searchable items across the entire app
@@ -80,7 +94,26 @@ export default function Header() {
     const router = useRouter();
     const { lang, setLang, t } = useLanguage();
     const { totalItems } = useCart();
-    const { user, loading: authLoading } = useAuth();
+    const { user, loading: authLoading, fetchProfile, signOut } = useAuth();
+    const [viewMode, setViewMode] = useViewMode();
+    const [, setProviderTab] = useProviderTab();
+    const [userRole, setUserRole] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (user && !user.isGuest) {
+            fetchProfile().then(p => setUserRole(p?.role || null));
+        } else {
+            setUserRole(null);
+        }
+    }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const isProviderView = !!userRole && PROVIDER_ROLES.includes(userRole) && viewMode === 'provider';
+
+    const openProviderTab = (tab: string) => {
+        setProviderTab(tab);
+        setIsMobileMenuOpen(false);
+        router.push('/home/provider-dashboard');
+    };
 
     const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
 
@@ -520,56 +553,109 @@ export default function Header() {
             {/* Mobile Menu — Full-screen Overlay (covers bottom nav & WhatsApp) */}
             {isMobileMenuOpen && (
                 <div className="lg:hidden fixed inset-0 top-0 z-[60] bg-background-light dark:bg-background-dark overflow-y-auto pt-[140px] pb-8 px-4">
-                    <div className="grid grid-cols-2 gap-2">
-                        {[...primaryNavItems, ...moreNavItems].map((item) => (
-                            <Link
-                                key={item.tKey}
-                                href={item.path}
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${isActive(item.path)
-                                    ? 'text-primary bg-primary/5'
-                                    : 'text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-primary/5'
-                                    }`}
-                            >
-                                <span className={`material-symbols-outlined text-lg ${isActive(item.path) ? 'text-primary' : 'text-gray-400'}`}>{item.icon}</span>
-                                {t(item.tKey)}
-                            </Link>
-                        ))}
-                    </div>
-
-                    {/* Mobile: Login (shown only when logged out) */}
-                    {!user && !authLoading && (
-                        <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/10">
-                            <Link
-                                href="/user-login"
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className="flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-base font-bold text-white shadow-lg hover:brightness-110 active:scale-95 transition-all"
-                            >
-                                <span className="material-symbols-outlined text-xl">login</span>
-                                {t('header.login')}
-                            </Link>
-                        </div>
-                    )}
-
-                    {/* Mobile: Become a Dealer/Seller Banner */}
-                    <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/10">
-                        <Link
-                            href="/home/become-seller"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className="block rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 p-4 group hover:from-orange-600 hover:to-amber-600 transition-all"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center justify-center size-10 rounded-lg bg-white/20 backdrop-blur-sm shrink-0">
-                                    <span className="material-symbols-outlined text-white text-xl">storefront</span>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-black text-white leading-tight">{t('header.becomeDealer')}</p>
-                                    <p className="text-[11px] text-white/80 font-medium">{t('header.startSelling')}</p>
-                                </div>
-                                <span className="material-symbols-outlined text-white/80 text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    {isProviderView ? (
+                        /* ── Provider workspace menu ── */
+                        <div>
+                            <p className="px-1 mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Provider Workspace</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                {providerMenuItems.map((item) => (
+                                    <button
+                                        key={item.tab}
+                                        onClick={() => openProviderTab(item.tab)}
+                                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-primary/5 transition-colors text-left"
+                                    >
+                                        <span className="material-symbols-outlined text-lg text-gray-400">{item.icon}</span>
+                                        {item.label}
+                                    </button>
+                                ))}
                             </div>
-                        </Link>
-                    </div>
+
+                            {/* Account: profile edit / update / delete */}
+                            <p className="px-1 mt-5 mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Account</p>
+                            <button
+                                onClick={() => openProviderTab('profile')}
+                                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-primary/5 hover:bg-primary/10 transition-colors text-left"
+                            >
+                                <span className="material-symbols-outlined text-xl text-primary">manage_accounts</span>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-bold text-gray-800 dark:text-gray-100">Profile & Account</p>
+                                    <p className="text-[11px] text-gray-500">Edit details, change password, update or delete account</p>
+                                </div>
+                                <span className="material-symbols-outlined text-gray-300 text-lg">arrow_forward</span>
+                            </button>
+
+                            {/* Switch to farmer + sign out */}
+                            <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/10 space-y-2">
+                                <button
+                                    onClick={() => { setViewMode('farmer'); setIsMobileMenuOpen(false); router.push('/home'); }}
+                                    className="w-full flex items-center gap-2.5 px-3 py-3 rounded-xl border border-green-300 dark:border-green-800 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-sm font-bold hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-lg">swap_horiz</span>
+                                    Switch to Farmer view
+                                </button>
+                                <button
+                                    onClick={async () => { setIsMobileMenuOpen(false); await signOut(); router.push('/'); }}
+                                    className="w-full flex items-center gap-2.5 px-3 py-3 rounded-xl text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-lg">logout</span>
+                                    Sign out
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="grid grid-cols-2 gap-2">
+                                {[...primaryNavItems, ...moreNavItems].map((item) => (
+                                    <Link
+                                        key={item.tKey}
+                                        href={item.path}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${isActive(item.path)
+                                            ? 'text-primary bg-primary/5'
+                                            : 'text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-primary/5'
+                                            }`}
+                                    >
+                                        <span className={`material-symbols-outlined text-lg ${isActive(item.path) ? 'text-primary' : 'text-gray-400'}`}>{item.icon}</span>
+                                        {t(item.tKey)}
+                                    </Link>
+                                ))}
+                            </div>
+
+                            {/* Mobile: Login (shown only when logged out) */}
+                            {!user && !authLoading && (
+                                <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/10">
+                                    <Link
+                                        href="/user-login"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-base font-bold text-white shadow-lg hover:brightness-110 active:scale-95 transition-all"
+                                    >
+                                        <span className="material-symbols-outlined text-xl">login</span>
+                                        {t('header.login')}
+                                    </Link>
+                                </div>
+                            )}
+
+                            {/* Mobile: Become a Dealer/Seller Banner */}
+                            <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/10">
+                                <Link
+                                    href="/home/become-seller"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="block rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 p-4 group hover:from-orange-600 hover:to-amber-600 transition-all"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex items-center justify-center size-10 rounded-lg bg-white/20 backdrop-blur-sm shrink-0">
+                                            <span className="material-symbols-outlined text-white text-xl">storefront</span>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-black text-white leading-tight">{t('header.becomeDealer')}</p>
+                                            <p className="text-[11px] text-white/80 font-medium">{t('header.startSelling')}</p>
+                                        </div>
+                                        <span className="material-symbols-outlined text-white/80 text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                    </div>
+                                </Link>
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
 

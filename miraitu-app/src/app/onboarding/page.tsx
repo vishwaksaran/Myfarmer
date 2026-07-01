@@ -752,7 +752,15 @@ export default function OnboardingPage() {
             // Clear registration name from sessionStorage
             try { sessionStorage.removeItem('miraitu_reg_name'); } catch { /* ignore */ }
             isSubmittingRef.current = true; // Allow navigation past the guard
-            router.replace('/');
+
+            // Providers & dealers land in the provider workspace; everyone else on home.
+            const isProviderRole = formData.role === 'service_provider' || formData.role === 'dealer';
+            if (isProviderRole) {
+                try { localStorage.setItem('miraitu_view_mode', 'provider'); } catch { /* ignore */ }
+                router.replace('/home/provider-dashboard');
+            } else {
+                router.replace('/');
+            }
         } catch {
             setError('Something went wrong. Please try again.');
         } finally {

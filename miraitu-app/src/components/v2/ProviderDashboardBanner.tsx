@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { getCategoryConfig } from '@/lib/provider-config';
+import { useViewMode } from '@/hooks/useViewMode';
 
 /**
  * Slim entry point to the provider workspace, shown on the home page
@@ -11,6 +12,7 @@ import { getCategoryConfig } from '@/lib/provider-config';
  */
 export default function ProviderDashboardBanner() {
     const { user, fetchProfile } = useAuth();
+    const [, setViewMode] = useViewMode();
     const [role, setRole] = useState<string | null>(null);
     const [serviceTypes, setServiceTypes] = useState<string[]>([]);
 
@@ -25,7 +27,7 @@ export default function ProviderDashboardBanner() {
         }
     }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    if (role !== 'service_provider') return null;
+    if (role !== 'service_provider' && role !== 'dealer') return null;
 
     const cat = getCategoryConfig(serviceTypes);
 
@@ -33,6 +35,7 @@ export default function ProviderDashboardBanner() {
         <div className="mx-auto w-full max-w-[1200px] px-4 md:px-6 mt-4">
             <Link
                 href="/home/provider-dashboard"
+                onClick={() => setViewMode('provider')}
                 className="group flex items-center gap-4 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 to-emerald-500/5 p-4 md:p-5 hover:border-primary/40 hover:shadow-md transition-all"
             >
                 <div className="size-12 shrink-0 rounded-xl bg-primary/15 flex items-center justify-center">

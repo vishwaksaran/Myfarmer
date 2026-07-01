@@ -5,8 +5,19 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { useViewMode } from '@/hooks/useViewMode';
+import { useProviderTab } from '@/hooks/useProviderTab';
 
-const baseNavItems = [
+interface NavItem {
+    label: string;
+    tKey: string;
+    icon: string;
+    path: string;
+    isCenterAction?: boolean;
+    tab?: string;
+}
+
+const baseNavItems: NavItem[] = [
     { label: 'Home', tKey: 'bottomNav.home', icon: 'home', path: '/home' },
     { label: 'Services', tKey: 'bottomNav.services', icon: 'home_repair_service', path: '/home/services' },
     { label: 'Sell', tKey: 'bottomNav.sell', icon: 'add', path: '/home/become-seller', isCenterAction: true },
@@ -14,10 +25,24 @@ const baseNavItems = [
     { label: 'Dashboard', tKey: 'bottomNav.dashboard', icon: 'dashboard', path: '/home/dashboard' },
 ];
 
+// Provider-mode bottom nav — stays inside the provider dashboard (deep-links to
+// tabs via hash). The marketplace home is only reachable via "Switch to Farmer".
+const providerNavItems: NavItem[] = [
+    { label: 'Home', tKey: 'bottomNav.home', icon: 'home', path: '/home/provider-dashboard', tab: 'overview' },
+    { label: 'Bookings', tKey: 'Bookings', icon: 'list_alt', path: '/home/provider-dashboard', tab: 'bookings' },
+    { label: 'Orders', tKey: 'Orders', icon: 'receipt_long', path: '/home/provider-dashboard', tab: 'contacts' },
+    { label: 'Notifications', tKey: 'Notifications', icon: 'notifications', path: '/home/provider-dashboard', tab: 'notifications' },
+];
+
+// Roles that use the provider dashboard experience
+const PROVIDER_ROLES = ['service_provider', 'dealer'];
+
 export default function BottomNav() {
     const pathname = usePathname();
     const { user, fetchProfile } = useAuth();
     const { t } = useLanguage();
+    const [viewMode] = useViewMode();
+    const [providerTab, setProviderTab] = useProviderTab();
     const [userRole, setUserRole] = useState<string | null>(null);
 
     useEffect(() => {
@@ -26,17 +51,15 @@ export default function BottomNav() {
         }
     }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Build nav items — swap Dashboard path for service providers
-    const navItems = baseNavItems.map(item => {
-        if (item.label === 'Dashboard' && userRole === 'service_provider') {
-            return { ...item, path: '/home/provider-dashboard', icon: 'engineering' };
-        }
-        return item;
-    });
+    // Providers/dealers in "provider" view get the provider nav; farmer view (or
+    // any other role) keeps the regular nav exactly as before.
+    const isProviderView = !!userRole && PROVIDER_ROLES.includes(userRole) && viewMode === 'provider';
+    const navItems = isProviderView ? providerNavItems : baseNavItems;
 
-    const isActive = (path: string) => {
-        if (path === '/home') return pathname === '/home' || pathname === '/';
-        return pathname.startsWith(path);
+    const isActive = (item: NavItem) => {
+        if (item.tab) return pathname.startsWith('/home/provider-dashboard') && providerTab === item.tab;
+        if (item.path === '/home') return pathname === '/home' || pathname === '/';
+        return pathname.startsWith(item.path);
     };
 
     return (
@@ -44,7 +67,7 @@ export default function BottomNav() {
             <div className="relative mx-2 mb-1 rounded-2xl bg-white dark:bg-[#1e2a1c] border border-gray-200 dark:border-white/10 shadow-[0_-2px_12px_rgba(0,0,0,0.1)]">
                 <div className="flex items-end justify-around px-1 pt-1.5 pb-[max(0.25rem,env(safe-area-inset-bottom))]">
                     {navItems.map((item) => {
-                        const active = isActive(item.path);
+                        const active = isActive(item);
 
                         if (item.isCenterAction) {
                             return (
@@ -66,6 +89,7 @@ export default function BottomNav() {
                             <Link
                                 key={item.label}
                                 href={item.path}
+                                onClick={() => { if (item.tab) setProviderTab(item.tab); }}
                                 className="flex flex-col items-center gap-0.5 py-0.5 px-3 group"
                             >
                                 <div className={`flex items-center justify-center size-7 rounded-lg transition-all duration-200 ${active
