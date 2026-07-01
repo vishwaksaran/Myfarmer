@@ -470,15 +470,17 @@ export default function Header() {
                                 <span className="hidden lg:inline">{allLanguages.find(lang => lang.code === selectedLang)?.name || 'English'}</span>
                             </button>
 
-                            {/* Cart Button */}
-                            <Link href="/home/shop/checkout" className="relative flex items-center justify-center size-9 sm:size-10 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-black/5 dark:border-white/10 hover:bg-primary/5 hover:text-primary transition-colors skeuo-card shrink-0">
-                                <span className="material-symbols-outlined text-xl">shopping_cart</span>
-                                {totalItems > 0 && (
-                                    <span className="absolute -top-1.5 -right-1.5 size-5 flex items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm animate-in zoom-in duration-300">
-                                        {totalItems}
-                                    </span>
-                                )}
-                            </Link>
+                            {/* Cart Button — hidden in provider view (no shopping there) */}
+                            {!isProviderView && (
+                                <Link href="/home/shop/checkout" className="relative flex items-center justify-center size-9 sm:size-10 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-black/5 dark:border-white/10 hover:bg-primary/5 hover:text-primary transition-colors skeuo-card shrink-0">
+                                    <span className="material-symbols-outlined text-xl">shopping_cart</span>
+                                    {totalItems > 0 && (
+                                        <span className="absolute -top-1.5 -right-1.5 size-5 flex items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm animate-in zoom-in duration-300">
+                                            {totalItems}
+                                        </span>
+                                    )}
+                                </Link>
+                            )}
                             {/* Auth section: dynamically loaded with ssr:false to prevent hydration mismatch */}
                             <HeaderAuthSection />
                             {/* Mobile Hamburger */}

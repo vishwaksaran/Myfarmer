@@ -212,12 +212,12 @@ export default function ProviderDashboardPage() {
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex gap-1 mb-6 overflow-x-auto pb-1 scrollbar-hide">
+                    <div className="flex flex-wrap gap-1.5 mb-6">
                         {tabs.map(tab => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
+                                className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
                                     activeTab === tab.id
                                         ? 'bg-primary text-white shadow-sm'
                                         : 'bg-white dark:bg-[#1a231a] text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-100 dark:border-gray-800'
