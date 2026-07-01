@@ -1810,6 +1810,7 @@ export const translations: Record<LangCode, Record<string, string>> = {
         'register.otpSentTo': 'OTP sent to',
         'register.verify': 'Verify',
         'register.resendOtp': 'Resend OTP',
+        'register.changeNumber': 'Change Number',
         'register.alreadyHaveAccount': 'Already have an account?',
         'register.loginInstead': 'Login Instead',
         'register.privacyGuaranteed': 'Privacy Guaranteed',

@@ -37,6 +37,11 @@ export interface UserProfile {
     availability_status: string;
     whatsapp_number: string | null;
     bio: string | null;
+    // Provider workspace fields
+    business_name: string | null;
+    working_hours: Record<string, { open: string; close: string; closed?: boolean }> | null;
+    service_area_text: string | null;
+    service_radius_km: number | null;
     // Onboarding fields
     interests: string[];
     onboarding_completed: boolean;
@@ -310,7 +315,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             const { data, error } = await supabase
                 .from('profiles')
-                .select('full_name, phone, avatar_url, farm_location, role, address, pincode, district, state, latitude, longitude, service_types, availability_status, whatsapp_number, bio, interests, onboarding_completed, farm_size, experience_years, preferred_language')
+                .select('full_name, phone, avatar_url, farm_location, role, address, pincode, district, state, latitude, longitude, service_types, availability_status, whatsapp_number, bio, business_name, working_hours, service_area_text, service_radius_km, interests, onboarding_completed, farm_size, experience_years, preferred_language')
                 .eq('id', user.id)
                 .single();
             if (error) {

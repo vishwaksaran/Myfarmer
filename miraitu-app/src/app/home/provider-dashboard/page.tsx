@@ -10,24 +10,43 @@ import MiraituLoader from '@/components/v2/MiraituLoader';
 import BookingCard from '@/components/provider/BookingCard';
 import EarningsSummary from '@/components/provider/EarningsSummary';
 import AvailabilityToggle from '@/components/provider/AvailabilityToggle';
+import AnalyticsPanel from '@/components/provider/AnalyticsPanel';
+import ContactHistory from '@/components/provider/ContactHistory';
+import NotificationsPanel from '@/components/provider/NotificationsPanel';
+import ServiceManager from '@/components/provider/ServiceManager';
+import ProfileEditor from '@/components/provider/ProfileEditor';
 import {
     fetchProviderBookings,
     fetchProviderEarnings,
+    fetchProviderAnalytics,
+    fetchProviderContacts,
+    fetchProviderNotifications,
     acceptBooking,
     rejectBooking,
     startJob,
     completeJob,
     updateProviderAvailability,
 } from '@/app/actions/provider';
-import type { ProviderBooking, ProviderEarnings } from '@/app/actions/provider';
+import type {
+    ProviderBooking,
+    ProviderEarnings,
+    ProviderAnalytics,
+    ProviderContactsResult,
+    ProviderNotification,
+} from '@/app/actions/provider';
 import type { UserProfile } from '@/context/AuthContext';
+import { getCategoryConfig } from '@/lib/provider-config';
 
-type TabId = 'overview' | 'bookings' | 'earnings' | 'profile';
+type TabId = 'overview' | 'analytics' | 'bookings' | 'contacts' | 'services' | 'earnings' | 'notifications' | 'profile';
 
 const tabs: { id: TabId; label: string; icon: string }[] = [
     { id: 'overview', label: 'Overview', icon: 'dashboard' },
+    { id: 'analytics', label: 'Analytics', icon: 'insights' },
     { id: 'bookings', label: 'Bookings', icon: 'list_alt' },
+    { id: 'contacts', label: 'Customers', icon: 'contacts' },
+    { id: 'services', label: 'Services', icon: 'sell' },
     { id: 'earnings', label: 'Earnings', icon: 'account_balance_wallet' },
+    { id: 'notifications', label: 'Alerts', icon: 'notifications' },
     { id: 'profile', label: 'Profile', icon: 'person' },
 ];
 
@@ -46,6 +65,9 @@ export default function ProviderDashboardPage() {
     const [activeTab, setActiveTab] = useState<TabId>('overview');
     const [bookings, setBookings] = useState<ProviderBooking[]>([]);
     const [earnings, setEarnings] = useState<ProviderEarnings | null>(null);
+    const [analytics, setAnalytics] = useState<ProviderAnalytics | null>(null);
+    const [contacts, setContacts] = useState<ProviderContactsResult | null>(null);
+    const [notifications, setNotifications] = useState<ProviderNotification[]>([]);
     const [bookingFilter, setBookingFilter] = useState('all');
     const [loadingData, setLoadingData] = useState(true);
     const [refreshKey, setRefreshKey] = useState(0);
@@ -56,13 +78,19 @@ export default function ProviderDashboardPage() {
         if (!user || user.isGuest) { setLoadingData(false); return; }
         setLoadingData(true);
 
-        const [bookingsRes, earningsRes] = await Promise.all([
+        const [bookingsRes, earningsRes, analyticsRes, contactsRes, notificationsRes] = await Promise.all([
             fetchProviderBookings(bookingFilter),
             fetchProviderEarnings(),
+            fetchProviderAnalytics(),
+            fetchProviderContacts(),
+            fetchProviderNotifications(),
         ]);
 
         setBookings(bookingsRes.data);
         setEarnings(earningsRes.data);
+        setAnalytics(analyticsRes.data);
+        setContacts(contactsRes.data);
+        setNotifications(notificationsRes.data);
         setLoadingData(false);
     }, [user, bookingFilter, refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -120,6 +148,9 @@ export default function ProviderDashboardPage() {
     const activeBookings = bookings.filter(b => ['accepted', 'in_progress'].includes(b.status));
     const completedBookings = bookings.filter(b => b.status === 'completed');
 
+    // Category-aware terminology (falls back to a consistent default)
+    const cat = getCategoryConfig(profile?.service_types);
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-[#0d110d]">
             <Header />
@@ -170,6 +201,11 @@ export default function ProviderDashboardPage() {
                             >
                                 <span className="material-symbols-outlined text-base">{tab.icon}</span>
                                 {tab.label}
+                                {tab.id === 'notifications' && notifications.length > 0 && (
+                                    <span className={`min-w-4 h-4 px-1 rounded-full text-[9px] font-black flex items-center justify-center ${activeTab === tab.id ? 'bg-white/25 text-white' : 'bg-red-500 text-white'}`}>
+                                        {notifications.length}
+                                    </span>
+                                )}
                             </button>
                         ))}
                     </div>
@@ -190,14 +226,14 @@ export default function ProviderDashboardPage() {
                                                 <span className="material-symbols-outlined text-blue-600 text-lg">notifications_active</span>
                                             </div>
                                             <p className="text-2xl font-black text-gray-900 dark:text-white">{newBookings.length}</p>
-                                            <p className="text-xs font-bold text-gray-500">New Requests</p>
+                                            <p className="text-xs font-bold text-gray-500">{cat.newLabel}</p>
                                         </div>
                                         <div className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 p-4 text-center">
                                             <div className="size-10 rounded-xl bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center mx-auto mb-2">
                                                 <span className="material-symbols-outlined text-amber-600 text-lg">pending_actions</span>
                                             </div>
                                             <p className="text-2xl font-black text-gray-900 dark:text-white">{activeBookings.length}</p>
-                                            <p className="text-xs font-bold text-gray-500">Active Jobs</p>
+                                            <p className="text-xs font-bold text-gray-500">{cat.activeLabel}</p>
                                         </div>
                                         <div className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 p-4 text-center">
                                             <div className="size-10 rounded-xl bg-green-100 dark:bg-green-900/20 flex items-center justify-center mx-auto mb-2">
@@ -341,84 +377,45 @@ export default function ProviderDashboardPage() {
                                 )
                             )}
 
+                            {/* ─── Analytics Tab ─── */}
+                            {activeTab === 'analytics' && (
+                                analytics ? (
+                                    <AnalyticsPanel analytics={analytics} config={cat} />
+                                ) : (
+                                    <div className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 p-12 text-center">
+                                        <span className="material-symbols-outlined text-4xl text-gray-300 mb-2">insights</span>
+                                        <p className="text-sm font-bold text-gray-500">No analytics yet</p>
+                                    </div>
+                                )
+                            )}
+
+                            {/* ─── Customers / Contact History Tab ─── */}
+                            {activeTab === 'contacts' && contacts && (
+                                <ContactHistory data={contacts} config={cat} />
+                            )}
+
+                            {/* ─── Services Tab ─── */}
+                            {activeTab === 'services' && (
+                                <ServiceManager
+                                    serviceTypes={profile?.service_types || []}
+                                    onCategoriesChange={() => fetchProfile().then(p => setProfile(p))}
+                                />
+                            )}
+
+                            {/* ─── Notifications Tab ─── */}
+                            {activeTab === 'notifications' && (
+                                <NotificationsPanel notifications={notifications} />
+                            )}
+
                             {/* ─── Profile Tab ─── */}
                             {activeTab === 'profile' && (
-                                <div className="space-y-4">
-                                    <div className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
-                                        <div className="flex items-center gap-4 mb-6">
-                                            <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-                                                <span className="material-symbols-outlined text-primary text-3xl">engineering</span>
-                                            </div>
-                                            <div>
-                                                <h2 className="text-xl font-black text-gray-900 dark:text-white">
-                                                    {profile?.full_name || user.displayName || 'Provider'}
-                                                </h2>
-                                                <p className="text-sm text-gray-500">{user.email || user.phone}</p>
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 text-xs font-bold mt-1">
-                                                    <span className="material-symbols-outlined text-xs">verified</span>
-                                                    Service Provider
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-4">
-                                            {profile?.address && (
-                                                <div className="flex items-start gap-3">
-                                                    <span className="material-symbols-outlined text-gray-400 text-lg mt-0.5">location_on</span>
-                                                    <div>
-                                                        <p className="text-xs font-bold text-gray-400 uppercase">Address</p>
-                                                        <p className="text-sm text-gray-700 dark:text-gray-300">{profile.address}</p>
-                                                        {(profile.district || profile.state) && (
-                                                            <p className="text-xs text-gray-500">{[profile.district, profile.state].filter(Boolean).join(', ')}</p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {profile?.whatsapp_number && (
-                                                <div className="flex items-start gap-3">
-                                                    <span className="material-symbols-outlined text-gray-400 text-lg mt-0.5">chat</span>
-                                                    <div>
-                                                        <p className="text-xs font-bold text-gray-400 uppercase">WhatsApp</p>
-                                                        <p className="text-sm text-gray-700 dark:text-gray-300">{profile.whatsapp_number}</p>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {profile?.service_types && profile.service_types.length > 0 && (
-                                                <div className="flex items-start gap-3">
-                                                    <span className="material-symbols-outlined text-gray-400 text-lg mt-0.5">category</span>
-                                                    <div>
-                                                        <p className="text-xs font-bold text-gray-400 uppercase">Service Categories</p>
-                                                        <div className="flex flex-wrap gap-1.5 mt-1">
-                                                            {profile.service_types.map(st => (
-                                                                <span key={st} className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-xs font-bold capitalize">
-                                                                    {st.replace(/-/g, ' ')}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {profile?.bio && (
-                                                <div className="flex items-start gap-3">
-                                                    <span className="material-symbols-outlined text-gray-400 text-lg mt-0.5">description</span>
-                                                    <div>
-                                                        <p className="text-xs font-bold text-gray-400 uppercase">Bio</p>
-                                                        <p className="text-sm text-gray-700 dark:text-gray-300">{profile.bio}</p>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
+                                profile ? (
+                                    <ProfileEditor profile={profile} onSaved={() => fetchProfile().then(p => setProfile(p))} />
+                                ) : (
+                                    <div className="flex justify-center py-20">
+                                        <MiraituLoader fullScreen={false} />
                                     </div>
-
-                                    <Link href="/home/profile"
-                                        className="flex items-center justify-center gap-2 py-3.5 bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 text-primary font-bold text-sm hover:bg-primary/5 transition-colors">
-                                        <span className="material-symbols-outlined text-base">edit</span>
-                                        Edit Profile
-                                    </Link>
-                                </div>
+                                )
                             )}
                         </>
                     )}

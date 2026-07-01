@@ -64,6 +64,13 @@ export default function UserRegisterPage() {
         }
     };
 
+    // Go back to editing the phone number after an OTP has been sent
+    const handleChangeNumber = () => {
+        setOtpSent(false);
+        setOtpCode('');
+        setOtpError(null);
+    };
+
     const handleVerifyOtp = async () => {
         if (otpCode.length < 4) {
             setOtpError(t('register.errorOtpRequired'));
@@ -228,10 +235,12 @@ export default function UserRegisterPage() {
                                                     setOtpCode('');
                                                 }
                                             }}
-                                            disabled={phoneVerified}
+                                            disabled={phoneVerified || otpSent}
                                             className={`skeuo-input w-full pl-12 pr-4 py-4 rounded-xl border bg-[#fcfdfc] outline-none ${phoneVerified
                                                     ? 'border-[var(--miraitu-primary-green)] bg-green-50/50 text-gray-600'
-                                                    : 'border-gray-200 focus:border-[var(--miraitu-primary-green)]'
+                                                    : otpSent
+                                                        ? 'border-gray-200 bg-gray-50 text-gray-600'
+                                                        : 'border-gray-200 focus:border-[var(--miraitu-primary-green)]'
                                                 }`}
                                             placeholder="+91 XXXXX XXXXX"
                                             type="tel"
@@ -304,14 +313,26 @@ export default function UserRegisterPage() {
                                                 )}
                                             </button>
                                         </div>
-                                        <button
-                                            type="button"
-                                            onClick={handleSendOtp}
-                                            disabled={otpLoading}
-                                            className="text-xs font-bold text-[var(--miraitu-primary-green)] hover:underline"
-                                        >
-                                            {t('register.resendOtp')}
-                                        </button>
+                                        <div className="flex items-center gap-4">
+                                            <button
+                                                type="button"
+                                                onClick={handleChangeNumber}
+                                                disabled={otpLoading}
+                                                className="text-xs font-bold text-gray-500 hover:text-[var(--miraitu-primary-green)] hover:underline inline-flex items-center gap-1 disabled:opacity-50"
+                                            >
+                                                <span className="material-symbols-outlined text-sm">edit</span>
+                                                {t('register.changeNumber')}
+                                            </button>
+                                            <span className="w-px h-3 bg-gray-300" />
+                                            <button
+                                                type="button"
+                                                onClick={handleSendOtp}
+                                                disabled={otpLoading}
+                                                className="text-xs font-bold text-[var(--miraitu-primary-green)] hover:underline disabled:opacity-50"
+                                            >
+                                                {t('register.resendOtp')}
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
