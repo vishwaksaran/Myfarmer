@@ -2,6 +2,7 @@ import dynamic from 'next/dynamic';
 import Header from '@/components/v2/Header';
 import HeroSection from '@/components/v2/HeroSection';
 import QuickServices from '@/components/v2/QuickServices';
+import ProviderDashboardBanner from '@/components/v2/ProviderDashboardBanner';
 import { CartProvider } from '@/context/CartContext';
 
 // Below-the-fold sections loaded lazily — reduces initial compile & JS bundle
@@ -40,6 +41,7 @@ export default function HomePage() {
       <div className="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark text-[#121811] dark:text-[#f9fbf9] transition-colors duration-300">
         <Header />
         <main className="flex-1 w-full flex flex-col overflow-x-hidden">
+          <ProviderDashboardBanner />
           <HeroSection />
           <QuickServices />
           <FinanceBanner />
