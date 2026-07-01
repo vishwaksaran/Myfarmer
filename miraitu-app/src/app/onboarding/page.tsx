@@ -138,6 +138,13 @@ const INTERESTS_BY_ROLE: Record<string, InterestOption[]> = {
         { id: 'cctv_install', label: 'CCTV Installation', icon: 'videocam', color: 'text-gray-600', bg: 'bg-gray-50' },
         { id: 'consultation', label: 'Farm Consultation', icon: 'support_agent', color: 'text-teal-600', bg: 'bg-teal-50' },
         { id: 'labor', label: 'Labor Supply', icon: 'group', color: 'text-rose-600', bg: 'bg-rose-50' },
+        { id: 'driver_operators', label: 'Driver / Operators', icon: 'sports_motorsports', color: 'text-slate-600', bg: 'bg-slate-50' },
+        { id: 'electrician', label: 'Electrician', icon: 'electrical_services', color: 'text-yellow-600', bg: 'bg-yellow-50' },
+        { id: 'plumber', label: 'Plumber', icon: 'plumbing', color: 'text-sky-600', bg: 'bg-sky-50' },
+        { id: 'mechanic', label: 'Mechanic', icon: 'build', color: 'text-zinc-600', bg: 'bg-zinc-50' },
+        { id: 'veterinary_care', label: 'Veterinary Care', icon: 'vaccines', color: 'text-pink-600', bg: 'bg-pink-50' },
+        { id: 'milk_vendor', label: 'Milk Vendor', icon: 'local_drink', color: 'text-blue-600', bg: 'bg-blue-50' },
+        { id: 'rent_machineries', label: 'Rent Machineries', icon: 'precision_manufacturing', color: 'text-lime-600', bg: 'bg-lime-50' },
     ],
     livestock_farmer: [
         { id: 'cattle', label: 'Cattle Rearing', icon: 'pets', color: 'text-amber-600', bg: 'bg-amber-50' },
