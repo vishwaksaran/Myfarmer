@@ -107,7 +107,8 @@ export default function Header() {
         }
     }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const isProviderView = !!userRole && PROVIDER_ROLES.includes(userRole) && viewMode === 'provider';
+    // Provider header chrome (bell, switch-to-farmer, no hamburger) only on the dashboard
+    const isProviderView = pathname.startsWith('/home/provider-dashboard') && !!userRole && PROVIDER_ROLES.includes(userRole) && viewMode === 'provider';
 
     const openProviderTab = (tab: string) => {
         setProviderTab(tab);

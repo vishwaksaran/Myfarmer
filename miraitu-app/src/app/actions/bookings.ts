@@ -42,7 +42,11 @@ export async function submitBooking(data: BookingFormData): Promise<BookingResul
 
         console.log('[submitBooking] User:', user?.id || 'GUEST', 'Module:', data.module, 'Category:', data.category);
 
-        const { data: insertedBooking, error } = await supabase
+        // Insert via the service-role admin client. This is a server action with
+        // validated input, and bookings can be submitted by guests — using the
+        // admin client avoids brittle RLS-insert-policy dependencies.
+        const admin = createSupabaseAdminClient();
+        const { data: insertedBooking, error } = await admin
             .from('service_bookings')
             .insert({
                 user_id: user?.id || null,

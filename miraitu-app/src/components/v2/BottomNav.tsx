@@ -62,9 +62,10 @@ export default function BottomNav() {
         }
     }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Providers/dealers in "provider" view get the provider nav; farmer view (or
-    // any other role) keeps the regular nav exactly as before.
-    const isProviderView = !!userRole && PROVIDER_ROLES.includes(userRole) && viewMode === 'provider';
+    // Provider chrome only applies WHILE on the provider dashboard. Everywhere
+    // else (marketplace home, login, product pages) the regular nav is shown.
+    const onProviderDashboard = pathname.startsWith('/home/provider-dashboard');
+    const isProviderView = onProviderDashboard && !!userRole && PROVIDER_ROLES.includes(userRole) && viewMode === 'provider';
     const navItems = isProviderView ? providerNavItems : baseNavItems;
 
     const isActive = (item: NavItem) => {

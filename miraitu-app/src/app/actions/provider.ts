@@ -1,6 +1,7 @@
 'use server';
 
 import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { createSupabaseAdminClient } from '@/lib/supabase-admin';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -96,7 +97,8 @@ export interface ProviderNotification {
 
 export async function autoAssignProvider(bookingId: string): Promise<ActionResult> {
     try {
-        const supabase = await createSupabaseServerClient();
+        // System operation (find nearest provider + assign) — needs to bypass RLS
+        const supabase = createSupabaseAdminClient();
 
         // Fetch the booking
         const { data: booking, error: fetchErr } = await supabase

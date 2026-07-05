@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useShopWishlist } from '@/lib/use-shop-wishlist';
@@ -21,6 +21,7 @@ export default function HeaderAuthSection() {
     const { t } = useLanguage();
     const { wishlistCount } = useShopWishlist();
     const router = useRouter();
+    const pathname = usePathname();
     const [viewMode, setViewMode] = useViewMode();
     const [, setProviderTab] = useProviderTab();
     const [userRole, setUserRole] = useState<string | null>(null);
@@ -41,7 +42,7 @@ export default function HeaderAuthSection() {
         }
     }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const isProviderView = !!userRole && PROVIDER_ROLES.includes(userRole) && viewMode === 'provider';
+    const isProviderView = pathname.startsWith('/home/provider-dashboard') && !!userRole && PROVIDER_ROLES.includes(userRole) && viewMode === 'provider';
     const openProviderTab = (tab: string) => {
         setProviderTab(tab);
         setIsProfileOpen(false);
