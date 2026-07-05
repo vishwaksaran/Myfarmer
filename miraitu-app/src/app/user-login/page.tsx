@@ -14,7 +14,7 @@ import { normalizeIndianPhone } from '@/lib/phone';
  * UserLoginPage - Login page with Phone OTP and Email Auth
  */
 export default function UserLoginPage() {
-    const { user, loading, signInWithPhone } = useAuth();
+    const { user, loading, signInWithPhone, fetchProfile } = useAuth();
     const { lang, setLang, t } = useLanguage();
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
@@ -62,6 +62,20 @@ export default function UserLoginPage() {
         router.replace(destination);
     }, [router]);
 
+    // Decide where to land after login based on role + onboarding status.
+    const resolveDestination = useCallback((role: string | null | undefined, onboarded: boolean): string => {
+        if (!onboarded) return '/onboarding';
+        if (redirectPath) return redirectPath;
+        if (role === 'service_provider' || role === 'dealer') {
+            try {
+                localStorage.setItem('miraitu_view_mode', 'provider');
+                localStorage.setItem('miraitu_provider_tab', 'home'); // always land on Home
+            } catch { /* ignore */ }
+            return '/home/provider-dashboard';
+        }
+        return '/';
+    }, [redirectPath]);
+
     const normalizeEmail = (value: string) => value.trim().toLowerCase();
 
     const getEmailSuggestion = (email: string): string | null => {
@@ -92,12 +106,13 @@ export default function UserLoginPage() {
         { name: 'മലയാളം', sub: 'ML', code: 'ml' },
     ];
 
-    // Redirect to home if already logged in
+    // Redirect if already logged in (role-aware: providers/dealers → dashboard)
     useEffect(() => {
         if (user && !loading && !isSigningIn && !successMessage) {
-            navigateAfterLogin(redirectPath || '/');
+            if (redirectPath) { navigateAfterLogin(redirectPath); return; }
+            fetchProfile().then(p => navigateAfterLogin(resolveDestination(p?.role, true)));
         }
-    }, [user, loading, isSigningIn, successMessage, redirectPath, navigateAfterLogin]);
+    }, [user, loading, isSigningIn, successMessage, redirectPath, navigateAfterLogin, resolveDestination, fetchProfile]);
 
     const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -150,19 +165,24 @@ export default function UserLoginPage() {
                 setOtp('');
             } else {
                 // Set Supabase session
+                let role: string | null = null;
                 if (data.session) {
                     const { default: supabase } = await import('@/lib/supabase');
                     await supabase.auth.setSession({
                         access_token: data.session.access_token,
                         refresh_token: data.session.refresh_token,
                     });
+                    try {
+                        const { data: prof } = await supabase.from('profiles').select('role').eq('id', data.user_id).single();
+                        role = prof?.role ?? null;
+                    } catch { /* ignore */ }
                 }
 
                 setSuccessMessage(`✅ ${t('login.successLogin')}`);
 
                 // Use server-side onboarding check (not AuthContext which may have stale user)
                 const onboarded = data.onboarding_completed === true;
-                const destination = onboarded ? (redirectPath || '/') : '/onboarding';
+                const destination = resolveDestination(role, onboarded);
                 setTimeout(() => navigateAfterLogin(destination), 1200);
             }
         } catch {
@@ -248,15 +268,15 @@ export default function UserLoginPage() {
             if (data.session) {
                 setSuccessMessage(`✅ ${t('login.successLogin')}`);
 
-                // Check onboarding status
+                // Check onboarding status + role
                 const { data: profile } = await supabase
                     .from('profiles')
-                    .select('onboarding_completed')
+                    .select('onboarding_completed, role')
                     .eq('id', data.user.id)
                     .single();
 
                 const onboarded = profile?.onboarding_completed === true;
-                const destination = onboarded ? (redirectPath || '/') : '/onboarding';
+                const destination = resolveDestination(profile?.role, onboarded);
                 setTimeout(() => navigateAfterLogin(destination), 1200);
             }
         } catch {

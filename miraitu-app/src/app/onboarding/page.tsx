@@ -756,7 +756,10 @@ export default function OnboardingPage() {
             // Providers & dealers land in the provider workspace; everyone else on home.
             const isProviderRole = formData.role === 'service_provider' || formData.role === 'dealer';
             if (isProviderRole) {
-                try { localStorage.setItem('miraitu_view_mode', 'provider'); } catch { /* ignore */ }
+                try {
+                    localStorage.setItem('miraitu_view_mode', 'provider');
+                    localStorage.setItem('miraitu_provider_tab', 'home'); // land on Home
+                } catch { /* ignore */ }
                 router.replace('/home/provider-dashboard');
             } else {
                 router.replace('/');
