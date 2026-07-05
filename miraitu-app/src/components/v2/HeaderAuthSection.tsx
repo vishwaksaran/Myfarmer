@@ -2,9 +2,14 @@
 
 import { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useShopWishlist } from '@/lib/use-shop-wishlist';
+import { useViewMode } from '@/hooks/useViewMode';
+import { useProviderTab } from '@/hooks/useProviderTab';
+
+const PROVIDER_ROLES = ['service_provider', 'dealer'];
 
 /**
  * Self-contained auth section for the Header.
@@ -12,9 +17,13 @@ import { useShopWishlist } from '@/lib/use-shop-wishlist';
  * on the very first pass (skeleton), then switches to real UI after mount.
  */
 export default function HeaderAuthSection() {
-    const { user, loading: authLoading, signOut } = useAuth();
+    const { user, loading: authLoading, signOut, fetchProfile } = useAuth();
     const { t } = useLanguage();
     const { wishlistCount } = useShopWishlist();
+    const router = useRouter();
+    const [viewMode, setViewMode] = useViewMode();
+    const [, setProviderTab] = useProviderTab();
+    const [userRole, setUserRole] = useState<string | null>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const profileMenuRef = useRef<HTMLDivElement>(null);
 
@@ -23,6 +32,21 @@ export default function HeaderAuthSection() {
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    useEffect(() => {
+        if (user && !user.isGuest) {
+            fetchProfile().then(p => setUserRole(p?.role || null));
+        } else {
+            setUserRole(null);
+        }
+    }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const isProviderView = !!userRole && PROVIDER_ROLES.includes(userRole) && viewMode === 'provider';
+    const openProviderTab = (tab: string) => {
+        setProviderTab(tab);
+        setIsProfileOpen(false);
+        router.push('/home/provider-dashboard');
+    };
 
     // Server render + first client render: both return the same skeleton
     if (!mounted || authLoading) {
@@ -92,53 +116,89 @@ export default function HeaderAuthSection() {
                                 </div>
                             </div>
                             {/* Menu Items */}
-                            <div className="p-2">
-                                <Link
-                                    href="/home/profile"
-                                    onClick={() => setIsProfileOpen(false)}
-                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
-                                >
-                                    <span className="material-symbols-outlined text-lg text-primary">account_circle</span>
-                                    My Profile
-                                </Link>
-                                <Link
-                                    href="/home/orders"
-                                    onClick={() => setIsProfileOpen(false)}
-                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
-                                >
-                                    <span className="material-symbols-outlined text-lg text-primary">shopping_bag</span>
-                                    My Orders
-                                </Link>
-                                <Link
-                                    href="/home/shop/wishlist"
-                                    onClick={() => setIsProfileOpen(false)}
-                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
-                                >
-                                    <span className="material-symbols-outlined text-lg text-primary" style={{ fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24" }}>favorite</span>
-                                    <span className="flex-1">Wishlist</span>
-                                    {wishlistCount > 0 && (
-                                        <span className="inline-flex min-w-5 h-5 px-1.5 items-center justify-center rounded-full bg-pink-500 text-white text-[10px] font-black">
-                                            {wishlistCount}
-                                        </span>
-                                    )}
-                                </Link>
-                                <Link
-                                    href="/home/dashboard"
-                                    onClick={() => setIsProfileOpen(false)}
-                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
-                                >
-                                    <span className="material-symbols-outlined text-lg text-primary">dashboard</span>
-                                    Dashboard
-                                </Link>
-                                <Link
-                                    href="/home/settings"
-                                    onClick={() => setIsProfileOpen(false)}
-                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
-                                >
-                                    <span className="material-symbols-outlined text-lg text-primary">settings</span>
-                                    Settings
-                                </Link>
-                            </div>
+                            {isProviderView ? (
+                                <div className="p-2">
+                                    <button onClick={() => openProviderTab('home')} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors text-left">
+                                        <span className="material-symbols-outlined text-lg text-primary">dashboard</span>
+                                        Dashboard
+                                    </button>
+                                    <button onClick={() => openProviderTab('bookings')} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors text-left">
+                                        <span className="material-symbols-outlined text-lg text-primary">calendar_month</span>
+                                        My Bookings
+                                    </button>
+                                    <button onClick={() => openProviderTab('wallet')} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors text-left">
+                                        <span className="material-symbols-outlined text-lg text-primary">account_balance_wallet</span>
+                                        Wallet
+                                    </button>
+                                    <button onClick={() => openProviderTab('reviews')} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors text-left">
+                                        <span className="material-symbols-outlined text-lg text-primary">reviews</span>
+                                        My Reviews
+                                    </button>
+                                    <button onClick={() => openProviderTab('locations')} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors text-left">
+                                        <span className="material-symbols-outlined text-lg text-primary">location_on</span>
+                                        Manage Locations
+                                    </button>
+                                    <button onClick={() => openProviderTab('profile-settings')} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors text-left">
+                                        <span className="material-symbols-outlined text-lg text-primary">manage_accounts</span>
+                                        Profile Settings
+                                    </button>
+                                    <button
+                                        onClick={() => { setViewMode('farmer'); setIsProfileOpen(false); router.push('/home'); }}
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors text-left mt-1"
+                                    >
+                                        <span className="material-symbols-outlined text-lg">swap_horiz</span>
+                                        Switch to Farmer view
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="p-2">
+                                    <Link
+                                        href="/home/profile"
+                                        onClick={() => setIsProfileOpen(false)}
+                                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-lg text-primary">account_circle</span>
+                                        My Profile
+                                    </Link>
+                                    <Link
+                                        href="/home/orders"
+                                        onClick={() => setIsProfileOpen(false)}
+                                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-lg text-primary">shopping_bag</span>
+                                        My Orders
+                                    </Link>
+                                    <Link
+                                        href="/home/shop/wishlist"
+                                        onClick={() => setIsProfileOpen(false)}
+                                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-lg text-primary" style={{ fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24" }}>favorite</span>
+                                        <span className="flex-1">Wishlist</span>
+                                        {wishlistCount > 0 && (
+                                            <span className="inline-flex min-w-5 h-5 px-1.5 items-center justify-center rounded-full bg-pink-500 text-white text-[10px] font-black">
+                                                {wishlistCount}
+                                            </span>
+                                        )}
+                                    </Link>
+                                    <Link
+                                        href="/home/dashboard"
+                                        onClick={() => setIsProfileOpen(false)}
+                                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-lg text-primary">dashboard</span>
+                                        Dashboard
+                                    </Link>
+                                    <Link
+                                        href="/home/settings"
+                                        onClick={() => setIsProfileOpen(false)}
+                                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-lg text-primary">settings</span>
+                                        Settings
+                                    </Link>
+                                </div>
+                            )}
                             {/* Logout */}
                             <div className="p-2 border-t border-black/5 dark:border-white/10">
                                 <button

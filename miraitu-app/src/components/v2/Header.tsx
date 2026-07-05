@@ -470,6 +470,17 @@ export default function Header() {
                                 <span className="hidden lg:inline">{allLanguages.find(lang => lang.code === selectedLang)?.name || 'English'}</span>
                             </button>
 
+                            {/* Notification bell — provider view only, opens Notifications */}
+                            {isProviderView && (
+                                <button
+                                    onClick={() => { setProviderTab('notifications'); router.push('/home/provider-dashboard'); }}
+                                    className="relative flex items-center justify-center size-9 sm:size-10 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-black/5 dark:border-white/10 hover:bg-primary/5 hover:text-primary transition-colors skeuo-card shrink-0"
+                                    aria-label="Notifications"
+                                >
+                                    <span className="material-symbols-outlined text-xl">notifications</span>
+                                </button>
+                            )}
+
                             {/* Cart Button — hidden in provider view (no shopping there) */}
                             {!isProviderView && (
                                 <Link href="/home/shop/checkout" className="relative flex items-center justify-center size-9 sm:size-10 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-black/5 dark:border-white/10 hover:bg-primary/5 hover:text-primary transition-colors skeuo-card shrink-0">
@@ -481,16 +492,30 @@ export default function Header() {
                                     )}
                                 </Link>
                             )}
-                            {/* Auth section: dynamically loaded with ssr:false to prevent hydration mismatch */}
-                            <HeaderAuthSection />
-                            {/* Mobile Hamburger */}
-                            <button
-                                onClick={() => { if (!isMobileMenuOpen) setIsHeaderVisible(true); setIsMobileMenuOpen(!isMobileMenuOpen); }}
-                                className="lg:hidden flex items-center justify-center size-10 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors shrink-0"
-                                aria-label="Toggle menu"
-                            >
-                                <span className="material-symbols-outlined text-2xl">{isMobileMenuOpen ? 'close' : 'menu'}</span>
-                            </button>
+                            {/* Provider view: replace avatar with a Switch-to-Farmer button */}
+                            {isProviderView ? (
+                                <button
+                                    onClick={() => { setViewMode('farmer'); router.push('/home'); }}
+                                    className="flex items-center gap-1.5 rounded-xl border border-green-300 dark:border-green-800 bg-green-50 dark:bg-green-900/20 px-3 py-2 text-xs font-bold text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors shrink-0"
+                                    title="Switch to the regular farmer / consumer view"
+                                >
+                                    <span className="material-symbols-outlined text-base">swap_horiz</span>
+                                    <span className="hidden sm:inline">Farmer</span>
+                                </button>
+                            ) : (
+                                <>
+                                    {/* Auth section: dynamically loaded with ssr:false to prevent hydration mismatch */}
+                                    <HeaderAuthSection />
+                                    {/* Mobile Hamburger */}
+                                    <button
+                                        onClick={() => { if (!isMobileMenuOpen) setIsHeaderVisible(true); setIsMobileMenuOpen(!isMobileMenuOpen); }}
+                                        className="lg:hidden flex items-center justify-center size-10 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-primary/5 transition-colors shrink-0"
+                                        aria-label="Toggle menu"
+                                    >
+                                        <span className="material-symbols-outlined text-2xl">{isMobileMenuOpen ? 'close' : 'menu'}</span>
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
 

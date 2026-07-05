@@ -1,6 +1,7 @@
 'use client';
 
 import type { ProviderNotification } from '@/app/actions/provider';
+import { useProviderT } from '@/i18n/providerTranslations';
 
 interface NotificationsPanelProps {
     notifications: ProviderNotification[];
@@ -25,12 +26,13 @@ function timeAgo(iso: string): string {
 }
 
 export default function NotificationsPanel({ notifications }: NotificationsPanelProps) {
+    const pt = useProviderT();
     if (notifications.length === 0) {
         return (
             <div className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 p-12 text-center">
                 <span className="material-symbols-outlined text-4xl text-gray-300 mb-2">notifications_off</span>
-                <p className="text-sm font-bold text-gray-500">No notifications yet</p>
-                <p className="text-xs text-gray-400 mt-1">Requests, job updates and payments will show up here</p>
+                <p className="text-sm font-bold text-gray-500">{pt('noNotifications')}</p>
+                <p className="text-xs text-gray-400 mt-1">{pt('newJobRequestsHint')}</p>
             </div>
         );
     }

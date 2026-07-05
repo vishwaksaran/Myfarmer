@@ -8,11 +8,11 @@ export default function FeaturedVideosSection() {
     const { t } = useLanguage();
 
     const videos = [
-        { id: 'v1', title: 'Shiva Kumar \u2013 Verified Seller', role: t('videos.seller'), thumbnail: 'https://images.unsplash.com/photo-1595246140625-573b715d11dc?w=400&h=300&fit=crop', youtubeId: 'EZXkM7UXoDI', views: '1.2K views', duration: '3:45' },
-        { id: 'v2', title: 'Ramesh \u2013 Tractor Dealer', role: t('videos.dealer'), thumbnail: 'https://images.unsplash.com/photo-1530507629858-e4977d01e975?w=400&h=300&fit=crop', youtubeId: 'EZXkM7UXoDI', views: '3.4K views', duration: '4:12' },
-        { id: 'v3', title: 'Lakshmi \u2013 Organic Farmer', role: t('videos.farmer'), thumbnail: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400&h=300&fit=crop', youtubeId: 'EZXkM7UXoDI', views: '5.1K views', duration: '5:30' },
-        { id: 'v4', title: 'Venkat \u2013 Drone Service', role: t('videos.serviceProvider'), thumbnail: 'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=400&h=300&fit=crop', youtubeId: 'EZXkM7UXoDI', views: '890 views', duration: '2:58' },
-    ];
+        { id: 'v1', name: 'Shiva Kumar', role: t('videos.seller'), thumbnail: 'https://images.unsplash.com/photo-1595246140625-573b715d11dc?w=400&h=300&fit=crop', youtubeId: 'EZXkM7UXoDI', viewsCount: '1.2K', duration: '3:45' },
+        { id: 'v2', name: 'Ramesh', role: t('videos.dealer'), thumbnail: 'https://images.unsplash.com/photo-1530507629858-e4977d01e975?w=400&h=300&fit=crop', youtubeId: 'EZXkM7UXoDI', viewsCount: '3.4K', duration: '4:12' },
+        { id: 'v3', name: 'Lakshmi', role: t('videos.farmer'), thumbnail: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400&h=300&fit=crop', youtubeId: 'EZXkM7UXoDI', viewsCount: '5.1K', duration: '5:30' },
+        { id: 'v4', name: 'Venkat', role: t('videos.serviceProvider'), thumbnail: 'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=400&h=300&fit=crop', youtubeId: 'EZXkM7UXoDI', viewsCount: '890', duration: '2:58' },
+    ].map(v => ({ ...v, title: `${v.name} \u2013 ${v.role}`, views: `${v.viewsCount} ${t('videos.views')}` }));
 
     return (
         <section className="py-12 md:py-16 bg-white dark:bg-[#121811] relative overflow-hidden">

@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useViewMode } from '@/hooks/useViewMode';
 import { useProviderTab } from '@/hooks/useProviderTab';
+import { useProviderT } from '@/i18n/providerTranslations';
 
 interface NavItem {
     label: string;
@@ -25,14 +26,23 @@ const baseNavItems: NavItem[] = [
     { label: 'Dashboard', tKey: 'bottomNav.dashboard', icon: 'dashboard', path: '/home/dashboard' },
 ];
 
-// Provider-mode bottom nav — stays inside the provider dashboard (deep-links to
-// tabs via hash). The marketplace home is only reachable via "Switch to Farmer".
+// Provider-mode bottom nav — stays inside the provider dashboard (screens are
+// switched via the useProviderTab store). Marketplace home is only reachable
+// via "Switch to Farmer".
 const providerNavItems: NavItem[] = [
-    { label: 'Home', tKey: 'bottomNav.home', icon: 'home', path: '/home/provider-dashboard', tab: 'overview' },
-    { label: 'Bookings', tKey: 'Bookings', icon: 'list_alt', path: '/home/provider-dashboard', tab: 'bookings' },
-    { label: 'Orders', tKey: 'Orders', icon: 'receipt_long', path: '/home/provider-dashboard', tab: 'contacts' },
-    { label: 'Notifications', tKey: 'Notifications', icon: 'notifications', path: '/home/provider-dashboard', tab: 'notifications' },
+    { label: 'Home', tKey: 'home', icon: 'home', path: '/home/provider-dashboard', tab: 'home' },
+    { label: 'Booking', tKey: 'booking', icon: 'calendar_month', path: '/home/provider-dashboard', tab: 'bookings' },
+    { label: 'Wallet', tKey: 'wallet', icon: 'account_balance_wallet', path: '/home/provider-dashboard', tab: 'wallet' },
+    { label: 'Profile', tKey: 'profile', icon: 'person', path: '/home/provider-dashboard', tab: 'profile' },
 ];
+
+// Sub-screens that should highlight a given bottom-nav item as active
+const PROVIDER_TAB_GROUPS: Record<string, string[]> = {
+    home: ['home', 'notifications'],
+    bookings: ['bookings'],
+    wallet: ['wallet'],
+    profile: ['profile', 'profile-settings', 'reviews', 'locations', 'services', 'analytics'],
+};
 
 // Roles that use the provider dashboard experience
 const PROVIDER_ROLES = ['service_provider', 'dealer'];
@@ -43,6 +53,7 @@ export default function BottomNav() {
     const { t } = useLanguage();
     const [viewMode] = useViewMode();
     const [providerTab, setProviderTab] = useProviderTab();
+    const pt = useProviderT();
     const [userRole, setUserRole] = useState<string | null>(null);
 
     useEffect(() => {
@@ -57,7 +68,11 @@ export default function BottomNav() {
     const navItems = isProviderView ? providerNavItems : baseNavItems;
 
     const isActive = (item: NavItem) => {
-        if (item.tab) return pathname.startsWith('/home/provider-dashboard') && providerTab === item.tab;
+        if (item.tab) {
+            if (!pathname.startsWith('/home/provider-dashboard')) return false;
+            const group = PROVIDER_TAB_GROUPS[item.tab] || [item.tab];
+            return group.includes(providerTab);
+        }
         if (item.path === '/home') return pathname === '/home' || pathname === '/';
         return pathname.startsWith(item.path);
     };
@@ -110,7 +125,7 @@ export default function BottomNav() {
                                     ? 'text-[#2c5926] dark:text-[#6abf62] font-bold'
                                     : 'text-gray-600 dark:text-gray-400 font-semibold'
                                     }`}>
-                                    {t(item.tKey)}
+                                    {isProviderView ? pt(item.tKey) : t(item.tKey)}
                                 </span>
                             </Link>
                         );

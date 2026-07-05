@@ -16,12 +16,12 @@ const KEY = 'miraitu_provider_tab';
 const EVENT = 'miraitu-provider-tab-change';
 
 function getSnapshot(): string {
-    if (typeof window === 'undefined') return 'overview';
-    return localStorage.getItem(KEY) || 'overview';
+    if (typeof window === 'undefined') return 'home';
+    return localStorage.getItem(KEY) || 'home';
 }
 
 function getServerSnapshot(): string {
-    return 'overview';
+    return 'home';
 }
 
 function subscribe(callback: () => void): () => void {
