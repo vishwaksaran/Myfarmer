@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { normalizeIndianPhone } from '@/lib/phone';
+import { usePrefillLocation } from '@/context/LocationContext';
 
 const serviceData: Record<string, any> = {
     'harvester': {
@@ -130,8 +131,11 @@ export default function GenericServicePage() {
         phone: '',
         location: '',
         date: '',
+        time: '',
     });
     const { submit, submitting } = useBookingSubmit();
+
+    usePrefillLocation(formData.location, (loc) => setFormData(prev => ({ ...prev, location: loc })));
 
     useEffect(() => {
         const onScroll = () => {
@@ -159,6 +163,7 @@ export default function GenericServicePage() {
             phone: formData.phone,
             location: formData.location,
             preferred_date: formData.date || undefined,
+            preferred_time: formData.time || undefined,
         });
         if (result.success) setShowSuccessModal(true);
         else {
@@ -316,9 +321,24 @@ export default function GenericServicePage() {
                                         <input
                                             type="date"
                                             value={formData.date}
+                                            min={new Date().toISOString().split('T')[0]}
                                             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                                             className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-primary outline-none"
                                         />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Preferred Time</label>
+                                        <select
+                                            value={formData.time}
+                                            onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                                            className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-primary outline-none appearance-none"
+                                        >
+                                            <option value="">Select a time slot</option>
+                                            <option value="Morning (8 AM – 11 AM)">Morning (8 AM – 11 AM)</option>
+                                            <option value="Late Morning (11 AM – 2 PM)">Late Morning (11 AM – 2 PM)</option>
+                                            <option value="Afternoon (2 PM – 5 PM)">Afternoon (2 PM – 5 PM)</option>
+                                            <option value="Evening (5 PM – 8 PM)">Evening (5 PM – 8 PM)</option>
+                                        </select>
                                     </div>
 
                                     <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
@@ -351,7 +371,7 @@ export default function GenericServicePage() {
                         <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
                             <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will contact you soon to connect with verified providers</p>
                         </div>
-                        <button onClick={() => { setShowSuccessModal(false); setFormData({ name: '', phone: '', location: '', date: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">Done</button>
+                        <button onClick={() => { setShowSuccessModal(false); setFormData({ name: '', phone: '', location: '', date: '', time: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">Done</button>
                     </div>
                     <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>
                 </div>

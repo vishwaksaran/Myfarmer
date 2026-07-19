@@ -12,6 +12,7 @@ export interface BookingFormData {
     phone: string;
     location: string;
     preferred_date?: string;
+    preferred_time?: string;
     extra_data?: Record<string, unknown>; // any module-specific fields
     user_latitude?: number;
     user_longitude?: number;
@@ -56,6 +57,7 @@ export async function submitBooking(data: BookingFormData): Promise<BookingResul
                 phone: digits,
                 location: data.location.trim(),
                 preferred_date: data.preferred_date || null,
+                preferred_time: data.preferred_time || null,
                 extra_data: data.extra_data || {},
                 status: 'pending',
                 user_latitude: data.user_latitude || null,
@@ -99,6 +101,7 @@ export interface BookingRecord {
     phone: string;
     location: string;
     preferred_date: string | null;
+    preferred_time: string | null;
     extra_data: Record<string, unknown>;
     status: string;
     admin_notes: string | null;

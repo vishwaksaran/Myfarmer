@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
+import { ServiceBookingCartProvider } from '@/context/ServiceBookingCart';
 import '../globals-v2.css';
 
 export const metadata: Metadata = {
@@ -50,7 +51,9 @@ export default function ServicesLayout({
             />
             <Header />
             <main className="py-8">
-                {children}
+                <ServiceBookingCartProvider>
+                    {children}
+                </ServiceBookingCartProvider>
             </main>
             <Footer />
         </div>

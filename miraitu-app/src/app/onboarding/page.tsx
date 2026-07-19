@@ -431,8 +431,9 @@ export default function OnboardingPage() {
 
     const stateMatches = useMemo(() => {
         const query = formData.state.trim().toLowerCase();
-        if (!query) return INDIAN_STATES.slice(0, 10);
-        return INDIAN_STATES.filter(item => item.toLowerCase().includes(query)).slice(0, 10);
+        // Only 36 states/UTs total — show them all (dropdown scrolls) rather than capping the list.
+        if (!query) return INDIAN_STATES;
+        return INDIAN_STATES.filter(item => item.toLowerCase().includes(query));
     }, [formData.state]);
 
     // Pre-fill name and phone from auth if available

@@ -3,10 +3,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import { normalizeIndianPhone } from '@/lib/phone';
+import { usePrefillLocation } from '@/context/LocationContext';
 
 export default function BorewellServicesPage() {
     const [headerVisible, setHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
+    const consultationFormRef = useRef<HTMLDivElement>(null);
+
+    const scrollToConsultation = () => {
+        consultationFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
 
     useEffect(() => {
         const onScroll = () => {
@@ -26,11 +32,14 @@ export default function BorewellServicesPage() {
         name: '',
         phone: '',
         preferredDate: '',
+        preferredTime: '',
     });
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const { submit, submitting } = useBookingSubmit();
+
+    usePrefillLocation(formData.location, (loc) => setFormData(prev => ({ ...prev, location: loc })));
 
     const handleBookConsultation = async () => {
         const errs: Record<string, string> = {};
@@ -49,6 +58,7 @@ export default function BorewellServicesPage() {
             phone: formData.phone,
             location: formData.location,
             preferred_date: formData.preferredDate || undefined,
+            preferred_time: formData.preferredTime || undefined,
             extra_data: {
                 depth: formData.depth,
                 diameter: formData.diameter,
@@ -131,7 +141,7 @@ export default function BorewellServicesPage() {
                                                 </div>
                                             ))}
                                         </div>
-                                        <button className="glossy-button w-full rounded-lg md:rounded-xl py-2 md:py-3 text-xs md:text-base text-white font-bold">
+                                        <button onClick={scrollToConsultation} className="glossy-button w-full rounded-lg md:rounded-xl py-2 md:py-3 text-xs md:text-base text-white font-bold">
                                             Request Quote
                                         </button>
                                     </div>
@@ -145,7 +155,7 @@ export default function BorewellServicesPage() {
             {/* Booking Form */}
             <section className="px-4 md:px-6 py-8 md:py-12 bg-primary/5">
                 <div className="mx-auto max-w-[1280px]">
-                    <div className="max-w-2xl">
+                    <div className="max-w-2xl" ref={consultationFormRef}>
                         {/* Expert Consultation Form */}
                         <div className="skeuo-card rounded-2xl md:rounded-3xl p-4 md:p-8 border-2 md:border-4 border-white">
                             <h3 className="text-xl md:text-2xl font-black text-primary-dark mb-1.5 md:mb-2">Book Expert Consultation</h3>
@@ -190,9 +200,24 @@ export default function BorewellServicesPage() {
                                     <input
                                         type="date"
                                         value={formData.preferredDate}
+                                        min={new Date().toISOString().split('T')[0]}
                                         onChange={(e) => setFormData({ ...formData, preferredDate: e.target.value })}
                                         className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none"
                                     />
+                                </div>
+                                <div>
+                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700">Preferred Time</label>
+                                    <select
+                                        value={formData.preferredTime}
+                                        onChange={(e) => setFormData({ ...formData, preferredTime: e.target.value })}
+                                        className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none"
+                                    >
+                                        <option value="">Select a time slot</option>
+                                        <option value="Morning (8 AM – 11 AM)">Morning (8 AM – 11 AM)</option>
+                                        <option value="Late Morning (11 AM – 2 PM)">Late Morning (11 AM – 2 PM)</option>
+                                        <option value="Afternoon (2 PM – 5 PM)">Afternoon (2 PM – 5 PM)</option>
+                                        <option value="Evening (5 PM – 8 PM)">Evening (5 PM – 8 PM)</option>
+                                    </select>
                                 </div>
                                 <button
                                     onClick={handleBookConsultation}
@@ -223,7 +248,7 @@ export default function BorewellServicesPage() {
                         <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
                             <p className="text-sm font-bold text-green-700 dark:text-green-400 text-center">📞 Our team will contact you soon to schedule your visit</p>
                         </div>
-                        <button onClick={() => { setShowSuccessModal(false); setFormData({ depth: '', diameter: '', location: '', soilType: 'clay', name: '', phone: '', preferredDate: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">Done</button>
+                        <button onClick={() => { setShowSuccessModal(false); setFormData({ depth: '', diameter: '', location: '', soilType: 'clay', name: '', phone: '', preferredDate: '', preferredTime: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">Done</button>
                     </div>
                     <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>
                 </div>

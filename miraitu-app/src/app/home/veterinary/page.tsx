@@ -106,17 +106,17 @@ export default function VeterinaryPage() {
                     {/* Services Grid */}
                     <div className="mb-10">
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('vetPage.ourServices')}</h2>
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                             {services.map((service) => (
                                 <div
                                     key={service.name}
-                                    className="group p-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all hover:-translate-y-1"
+                                    className="group p-4 md:p-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all hover:-translate-y-1"
                                 >
-                                    <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <span className="material-symbols-outlined text-white text-3xl">{service.icon}</span>
+                                    <div className="w-12 h-12 md:w-16 md:h-16 bg-primary rounded-xl md:rounded-2xl flex items-center justify-center mb-3 md:mb-4 group-hover:scale-110 transition-transform">
+                                        <span className="material-symbols-outlined text-white text-2xl md:text-3xl">{service.icon}</span>
                                     </div>
-                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{service.name}</h3>
-                                    <p className="text-sm text-gray-500 mb-4">{service.description}</p>
+                                    <h3 className="text-base md:text-xl font-bold text-gray-900 dark:text-white mb-1.5 md:mb-2 leading-tight">{service.name}</h3>
+                                    <p className="text-xs md:text-sm text-gray-500 mb-3 md:mb-4">{service.description}</p>
                                     <a
                                         href="https://wa.me/919876543210?text=Hi%2C%20I%20need%20veterinary%20service%20for%20my%20livestock"
                                         target="_blank"

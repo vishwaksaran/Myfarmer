@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { normalizeIndianPhone } from '@/lib/phone';
+import { usePrefillLocation } from '@/context/LocationContext';
 
 // ─── Storage types catalogue ───────────────────────────────────────────────
 const storageServices = [
@@ -56,8 +57,11 @@ function BookingModal({
         crop_type: '',
         quantity: '',
         duration: '',
+        preferred_date: '',
+        preferred_time: '',
         notes: '',
     });
+    usePrefillLocation(form.location, (loc) => setForm(prev => ({ ...prev, location: loc })));
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
@@ -103,6 +107,8 @@ function BookingModal({
             full_name: form.full_name,
             phone: form.phone,
             location: form.location,
+            preferred_date: form.preferred_date || undefined,
+            preferred_time: form.preferred_time || undefined,
             extra_data: {
                 storage_type: storageType.key,
                 storage_title: storageType.title,
@@ -287,6 +293,44 @@ function BookingModal({
                                 placeholder="e.g. 3"
                                 className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm"
                             />
+                        </div>
+                    </div>
+
+                    {/* Preferred date + time */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                                <span className="flex items-center gap-1.5">
+                                    <span className="material-symbols-outlined text-base text-gray-400">calendar_month</span>
+                                    Preferred Date
+                                </span>
+                            </label>
+                            <input
+                                type="date"
+                                value={form.preferred_date}
+                                min={new Date().toISOString().split('T')[0]}
+                                onChange={e => setForm({ ...form, preferred_date: e.target.value })}
+                                className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                                <span className="flex items-center gap-1.5">
+                                    <span className="material-symbols-outlined text-base text-gray-400">schedule</span>
+                                    Preferred Time
+                                </span>
+                            </label>
+                            <select
+                                value={form.preferred_time}
+                                onChange={e => setForm({ ...form, preferred_time: e.target.value })}
+                                className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm appearance-none"
+                            >
+                                <option value="">Select slot</option>
+                                <option value="Morning (8 AM – 11 AM)">Morning (8–11 AM)</option>
+                                <option value="Late Morning (11 AM – 2 PM)">Late Morning (11–2)</option>
+                                <option value="Afternoon (2 PM – 5 PM)">Afternoon (2–5 PM)</option>
+                                <option value="Evening (5 PM – 8 PM)">Evening (5–8 PM)</option>
+                            </select>
                         </div>
                     </div>
 

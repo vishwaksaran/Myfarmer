@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
+import { usePrefillLocation } from '@/context/LocationContext';
 
 // ─── Machinery catalogue ─────────────────────────────────────────────────────
 
@@ -90,6 +91,7 @@ interface ModalFormData {
     location: string;
     machinery_type: string;
     preferred_date: string;
+    preferred_time: string;
     duration_value: string;
     duration_type: string;
     extra_notes: string;
@@ -112,10 +114,13 @@ function BookingModal({
         location: '',
         machinery_type: machine.key,
         preferred_date: '',
+        preferred_time: '',
         duration_value: '',
         duration_type: 'hours',
         extra_notes: '',
     });
+
+    usePrefillLocation(form.location, (loc) => setForm(prev => ({ ...prev, location: loc })));
 
     // Trap focus inside modal
     const firstFocusRef = useRef<HTMLInputElement>(null);
@@ -155,6 +160,7 @@ function BookingModal({
             phone: form.phone,
             location: form.location,
             preferred_date: form.preferred_date,
+            preferred_time: form.preferred_time || undefined,
             extra_data: {
                 machinery_type: form.machinery_type,
                 duration_value: form.duration_value,
@@ -329,6 +335,27 @@ function BookingModal({
                             className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${errors.preferred_date ? 'border-red-400' : 'border-transparent focus:border-green-500'} outline-none transition-colors dark:text-white text-sm`}
                         />
                         {errors.preferred_date && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-sm">error</span>{errors.preferred_date}</p>}
+                    </div>
+
+                    {/* Preferred time */}
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                            <span className="flex items-center gap-1.5">
+                                <span className="material-symbols-outlined text-base text-gray-400">schedule</span>
+                                Preferred Time
+                            </span>
+                        </label>
+                        <select
+                            value={form.preferred_time}
+                            onChange={e => setForm({ ...form, preferred_time: e.target.value })}
+                            className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm appearance-none"
+                        >
+                            <option value="">Select a time slot</option>
+                            <option value="Morning (8 AM – 11 AM)">Morning (8 AM – 11 AM)</option>
+                            <option value="Late Morning (11 AM – 2 PM)">Late Morning (11 AM – 2 PM)</option>
+                            <option value="Afternoon (2 PM – 5 PM)">Afternoon (2 PM – 5 PM)</option>
+                            <option value="Evening (5 PM – 8 PM)">Evening (5 PM – 8 PM)</option>
+                        </select>
                     </div>
 
                     {/* Duration */}

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
+import { usePrefillLocation } from '@/context/LocationContext';
 
 export default function CCTVSurveillancePage() {
     const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
@@ -14,7 +15,9 @@ export default function CCTVSurveillancePage() {
         phone: '',
         location: '',
         installDate: '',
+        installTime: '',
     });
+    usePrefillLocation(formData.location, (loc) => setFormData(prev => ({ ...prev, location: loc })));
     const lastScrollY = useRef(0);
 
     useEffect(() => {
@@ -109,12 +112,13 @@ export default function CCTVSurveillancePage() {
                 phone: formData.phone,
                 location: formData.location,
                 preferred_date: formData.installDate || undefined,
+                preferred_time: formData.installTime || undefined,
                 extra_data: { selected_package: selectedPackage },
             });
             if (result.success) {
                 setShowSuccessModal(true);
                 setTimeout(() => {
-                    setFormData({ name: '', phone: '', location: '', installDate: '' });
+                    setFormData({ name: '', phone: '', location: '', installDate: '', installTime: '' });
                     setSelectedPackage(null);
                     setShowSuccessModal(false);
                 }, 3000);
@@ -275,14 +279,31 @@ export default function CCTVSurveillancePage() {
                                         placeholder="Village, District, State"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-bold mb-2 text-gray-700">Preferred Installation Date</label>
-                                    <input
-                                        type="date"
-                                        value={formData.installDate}
-                                        onChange={(e) => setFormData({ ...formData, installDate: e.target.value })}
-                                        className="w-full skeuo-inset rounded-xl px-4 py-3 font-bold focus:ring-0 border-none appearance-none"
-                                    />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-bold mb-2 text-gray-700">Preferred Installation Date</label>
+                                        <input
+                                            type="date"
+                                            value={formData.installDate}
+                                            min={new Date().toISOString().split('T')[0]}
+                                            onChange={(e) => setFormData({ ...formData, installDate: e.target.value })}
+                                            className="w-full skeuo-inset rounded-xl px-4 py-3 font-bold focus:ring-0 border-none appearance-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold mb-2 text-gray-700">Preferred Time</label>
+                                        <select
+                                            value={formData.installTime}
+                                            onChange={(e) => setFormData({ ...formData, installTime: e.target.value })}
+                                            className="w-full skeuo-inset rounded-xl px-4 py-3 font-bold focus:ring-0 border-none appearance-none"
+                                        >
+                                            <option value="">Select a time slot</option>
+                                            <option value="Morning (8 AM – 11 AM)">Morning (8 AM – 11 AM)</option>
+                                            <option value="Late Morning (11 AM – 2 PM)">Late Morning (11 AM – 2 PM)</option>
+                                            <option value="Afternoon (2 PM – 5 PM)">Afternoon (2 PM – 5 PM)</option>
+                                            <option value="Evening (5 PM – 8 PM)">Evening (5 PM – 8 PM)</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-4">
                                     <p className="text-sm font-bold text-orange-800 mb-1">Selected Package:</p>

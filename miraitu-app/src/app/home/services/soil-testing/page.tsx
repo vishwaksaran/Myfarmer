@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { normalizeIndianPhone } from '@/lib/phone';
+import { usePrefillLocation } from '@/context/LocationContext';
 
 export default function SoilTestingPage() {
     const [headerVisible, setHeaderVisible] = useState(true);
@@ -31,7 +32,11 @@ export default function SoilTestingPage() {
         soil_type: 'clay',
         service_type: 'basic',
         area_size: '',
+        preferred_date: '',
+        preferred_time: '',
     });
+
+    usePrefillLocation(formData.location, (loc) => setFormData(prev => ({ ...prev, location: loc })));
 
     const calculateCost = () => {
         const area = parseFloat(formData.area_size) || 0;
@@ -67,6 +72,8 @@ export default function SoilTestingPage() {
             full_name: formData.full_name,
             phone: formData.phone,
             location: formData.location,
+            preferred_date: formData.preferred_date || undefined,
+            preferred_time: formData.preferred_time || undefined,
             extra_data: {
                 soil_type: formData.soil_type,
                 service_type: formData.service_type,
@@ -292,6 +299,32 @@ export default function SoilTestingPage() {
                                     />
                                     {formErrors.location && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.location}</p>}
                                 </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                                    <div>
+                                        <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Preferred Start Date</label>
+                                        <input
+                                            type="date"
+                                            value={formData.preferred_date}
+                                            min={new Date().toISOString().split('T')[0]}
+                                            onChange={(e) => setFormData({ ...formData, preferred_date: e.target.value })}
+                                            className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm md:text-base"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Preferred Time</label>
+                                        <select
+                                            value={formData.preferred_time}
+                                            onChange={(e) => setFormData({ ...formData, preferred_time: e.target.value })}
+                                            className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm md:text-base appearance-none"
+                                        >
+                                            <option value="">Select a time slot</option>
+                                            <option value="Morning (8 AM – 11 AM)">Morning (8 AM – 11 AM)</option>
+                                            <option value="Late Morning (11 AM – 2 PM)">Late Morning (11 AM – 2 PM)</option>
+                                            <option value="Afternoon (2 PM – 5 PM)">Afternoon (2 PM – 5 PM)</option>
+                                            <option value="Evening (5 PM – 8 PM)">Evening (5 PM – 8 PM)</option>
+                                        </select>
+                                    </div>
+                                </div>
                                 <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
                                 <button
                                     onClick={handleScheduleVisit}
@@ -333,7 +366,7 @@ export default function SoilTestingPage() {
                         <button
                             onClick={() => {
                                 setShowSuccessModal(false);
-                                setFormData({ full_name: '', phone: '', location: '', soil_type: 'clay', service_type: formData.service_type, area_size: '' });
+                                setFormData({ full_name: '', phone: '', location: '', soil_type: 'clay', service_type: formData.service_type, area_size: '', preferred_date: '', preferred_time: '' });
                             }}
                             className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors"
                         >

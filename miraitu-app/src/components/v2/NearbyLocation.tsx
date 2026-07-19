@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { useAppLocation } from '@/context/LocationContext';
 
 interface NearbyLocationProps {
     onLocationChange?: (location: { lat: number; lng: number; address: string }) => void;
@@ -9,10 +10,8 @@ interface NearbyLocationProps {
 
 export default function NearbyLocation({ onLocationChange }: NearbyLocationProps) {
     const { t } = useLanguage();
-    const [location, setLocation] = useState<string>('');
-    const [locationKey, setLocationKey] = useState<string>('nearby.detectingLocation');
-    const [isLoading, setIsLoading] = useState(true);
-    const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
+    // Global, shared location — set once on app load, reused on every page.
+    const { location: appLocation, loading: appLoading, requestLocation } = useAppLocation();
     const [showDropdown, setShowDropdown] = useState(false);
 
     const nearbyAreas = [
@@ -26,52 +25,17 @@ export default function NearbyLocation({ onLocationChange }: NearbyLocationProps
 
     const [selectedRange, setSelectedRange] = useState(nearbyAreas[2]); // Default 10km
 
+    // Notify consumers whenever the shared location changes.
     useEffect(() => {
-        detectLocation();
-    }, []);
-
-    const detectLocation = () => {
-        setIsLoading(true);
-        setLocationKey('nearby.detectingLocation');
-        setLocation('');
-        if ('geolocation' in navigator) {
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    const { latitude, longitude } = position.coords;
-                    setCoordinates({ lat: latitude, lng: longitude });
-
-                    try {
-                        const response = await fetch(
-                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`
-                        );
-                        const data = await response.json();
-                        const city = data.address?.city || data.address?.town || data.address?.village || data.address?.county || 'Unknown';
-                        const state = data.address?.state || '';
-                        const address = state ? `${city}, ${state}` : city;
-                        setLocation(address);
-                        setLocationKey('');
-                        onLocationChange?.({ lat: latitude, lng: longitude, address });
-                    } catch {
-                        setLocationKey('nearby.locationDetected');
-                        setLocation('');
-                        onLocationChange?.({ lat: latitude, lng: longitude, address: 'Location detected' });
-                    }
-                    setIsLoading(false);
-                },
-                (error) => {
-                    console.warn('Geolocation unavailable:', error?.message || error);
-                    setLocationKey('nearby.enableAccess');
-                    setLocation('');
-                    setIsLoading(false);
-                },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
-            );
-        } else {
-            setLocationKey('nearby.notSupported');
-            setLocation('');
-            setIsLoading(false);
+        if (appLocation) {
+            onLocationChange?.({ lat: appLocation.lat, lng: appLocation.lng, address: appLocation.address });
         }
-    };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [appLocation]);
+
+    const detectLocation = () => { void requestLocation(); };
+
+    const isLoading = appLoading;
 
     const handleRangeSelect = (area: typeof nearbyAreas[0]) => {
         setSelectedRange(area);
@@ -81,7 +45,7 @@ export default function NearbyLocation({ onLocationChange }: NearbyLocationProps
         }
     };
 
-    const displayLocation = location || t(locationKey);
+    const displayLocation = appLocation?.address || t('nearby.enableAccess');
 
     return (
         <div className="relative min-w-0" data-no-auth>

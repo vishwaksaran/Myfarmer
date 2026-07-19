@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { topCategories } from '@/lib/top-categories';
 
 const services = [
     {
@@ -52,12 +53,12 @@ const services = [
         color: 'bg-primary',
     },
     {
-        name: 'Harvester',
-        icon: 'grass',
-        image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=400&fit=crop',
-        href: '/home/services/harvester',
-        description: 'Book harvester services for all crop types',
-        available: '45+ providers',
+        name: 'Veterinary Care',
+        icon: 'pets',
+        image: 'https://images.unsplash.com/photo-1444212477490-ca407925329e?w=400&h=400&fit=crop',
+        href: '/home/veterinary',
+        description: 'Veterinary doctors & animal healthcare',
+        available: '90+ doctors',
         color: 'bg-primary',
     },
     {
@@ -230,6 +231,16 @@ export default function ServicesPage() {
         }
     };
 
+    // "Our Services" = the Top Categories first, then the remaining services.
+    // Drop services that duplicate a top category (by concept) to avoid repeats.
+    const topCategoryLabels = new Set(['Soil Testing', 'Drone Spray']);
+    const ourServices = [
+        ...topCategories.map((c) => ({ label: c.label, image: c.image, icon: c.icon, link: c.link })),
+        ...services
+            .filter((s) => !topCategoryLabels.has(s.name))
+            .map((s) => ({ label: s.name, image: s.image, icon: s.icon, link: s.href })),
+    ];
+
     return (
         <div className="px-3 md:px-6">
             <div className="mx-auto max-w-[1280px]">
@@ -262,34 +273,25 @@ export default function ServicesPage() {
                     ))}
                 </div>
 
-                {/* Services Grid */}
+                {/* Our Services — Top Categories style, includes the top categories first */}
                 <div className="mb-10">
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4 md:mb-6">{t('servicesPage.ourServices')}</h2>
-                    <div className="grid grid-cols-2 gap-3 md:gap-6">
-                        {services.map((service) => (
-                            <Link
-                                key={service.name}
-                                href={service.href}
-                                className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6 p-3 md:p-6 rounded-lg md:rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all group"
-                            >
-                                <div className={`relative w-16 md:w-20 h-16 md:h-20 ${service.color} rounded-xl md:rounded-2xl overflow-hidden flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
-                                    {/* Material icon fallback (shown if the image fails to load) */}
-                                    <span className="material-symbols-outlined text-white text-2xl md:text-4xl">{service.icon}</span>
-                                    {/* Real photo depicting the service */}
+                    <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-5">
+                        {ourServices.map((service) => (
+                            <Link key={service.label} href={service.link} className="group flex flex-col">
+                                <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-green-500 shadow-sm">
+                                    <span className="material-symbols-outlined absolute inset-0 flex items-center justify-center text-white text-4xl">{service.icon}</span>
                                     <img
                                         src={service.image}
-                                        alt={service.name}
+                                        alt={service.label}
                                         loading="lazy"
                                         onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                        className="absolute inset-0 w-full h-full object-cover"
+                                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                     />
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="text-sm md:text-xl font-bold text-gray-900 dark:text-white mb-1 line-clamp-2">{service.name}</h3>
-                                    <p className="text-xs md:text-sm text-gray-500 mb-2 line-clamp-2">{service.description}</p>
-                                    <p className="text-xs md:text-base text-primary font-semibold">{service.available}</p>
-                                </div>
-                                <span className="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors text-xl md:text-2xl flex-shrink-0">arrow_forward</span>
+                                <p className="mt-2 text-center text-xs md:text-sm font-semibold text-gray-900 dark:text-white leading-tight group-hover:text-primary transition-colors">
+                                    {service.label}
+                                </p>
                             </Link>
                         ))}
                     </div>

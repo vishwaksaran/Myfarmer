@@ -199,20 +199,20 @@ export default function ToolboxPage() {
                         </div>
                     </div>
 
-                    {/* Tools Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+                    {/* Tools Grid — 2x2 on mobile, 4-up on desktop */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-8 mb-16">
                         {tools.map((tool) => (
                             <Link
                                 key={tool.id}
                                 href={tool.path}
-                                className="skeuo-card group rounded-[2.5rem] p-8 flex flex-col items-center text-center transition-all hover:-translate-y-2 border border-white/40 dark:border-gray-700/40"
+                                className="skeuo-card group rounded-3xl md:rounded-[2.5rem] p-4 md:p-8 flex flex-col items-center text-center transition-all hover:-translate-y-2 border border-white/40 dark:border-gray-700/40"
                             >
-                                <div className={`mb-6 h-24 w-24 rounded-full ${tool.bgColor} flex items-center justify-center ${tool.textColor} group-hover:scale-110 transition-transform`}>
-                                    <span className="material-symbols-outlined text-5xl">{tool.icon}</span>
+                                <div className={`mb-4 md:mb-6 h-16 w-16 md:h-24 md:w-24 rounded-full ${tool.bgColor} flex items-center justify-center ${tool.textColor} group-hover:scale-110 transition-transform`}>
+                                    <span className="material-symbols-outlined text-3xl md:text-5xl">{tool.icon}</span>
                                 </div>
-                                <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">{t(tool.tName)}</h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{t(tool.tDesc)}</p>
-                                <div className={`mt-auto w-full py-3 ${tool.buttonBg} rounded-xl font-bold ${tool.textColor} ${tool.hoverBg} group-hover:text-white transition-colors`}>
+                                <h3 className="text-base md:text-xl font-bold mb-2 md:mb-3 text-gray-900 dark:text-white leading-tight">{t(tool.tName)}</h3>
+                                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mb-4 md:mb-6">{t(tool.tDesc)}</p>
+                                <div className={`mt-auto w-full py-2.5 md:py-3 ${tool.buttonBg} rounded-xl font-bold text-sm md:text-base ${tool.textColor} ${tool.hoverBg} group-hover:text-white transition-colors`}>
                                     {t(tool.tButton)}
                                 </div>
                             </Link>

@@ -3,6 +3,8 @@ import { Plus_Jakarta_Sans, Noto_Sans } from "next/font/google";
 import { AuthProvider } from "@/context/AuthContext";
 import { LoginPromptProvider } from "@/context/LoginPromptContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
+import { LocationProvider } from "@/context/LocationContext";
+import LocationGate from "@/components/v2/LocationGate";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import SplashScreen from "@/components/SplashScreen";
 import "./globals.css";
@@ -321,8 +323,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <AuthProvider>
           <LoginPromptProvider>
             <LanguageProvider>
-              {children}
-              <ServiceWorkerRegistration />
+              <LocationProvider>
+                {children}
+                <LocationGate />
+                <ServiceWorkerRegistration />
+              </LocationProvider>
             </LanguageProvider>
           </LoginPromptProvider>
         </AuthProvider>

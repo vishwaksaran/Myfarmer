@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { normalizeIndianPhone } from '@/lib/phone';
+import { usePrefillLocation } from '@/context/LocationContext';
 
 export default function FencingInfrastructurePage() {
     const [headerVisible, setHeaderVisible] = useState(true);
@@ -17,8 +18,12 @@ export default function FencingInfrastructurePage() {
         location: '',
         fencing_length: '',
         preferred_timeline: 'Within 1 week',
+        preferred_date: '',
+        preferred_time: '',
     });
     const { submit, submitting } = useBookingSubmit();
+
+    usePrefillLocation(formData.location, (loc) => setFormData(prev => ({ ...prev, location: loc })));
 
     useEffect(() => {
         const onScroll = () => {
@@ -45,6 +50,8 @@ export default function FencingInfrastructurePage() {
             full_name: formData.full_name,
             phone: formData.phone,
             location: formData.location,
+            preferred_date: formData.preferred_date || undefined,
+            preferred_time: formData.preferred_time || undefined,
             extra_data: {
                 fencing_length: formData.fencing_length,
                 preferred_timeline: formData.preferred_timeline,
@@ -326,6 +333,32 @@ export default function FencingInfrastructurePage() {
                                         </select>
                                     </div>
                                 </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                                    <div>
+                                        <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700">Preferred Start Date</label>
+                                        <input
+                                            type="date"
+                                            value={formData.preferred_date}
+                                            min={new Date().toISOString().split('T')[0]}
+                                            onChange={(e) => setFormData({ ...formData, preferred_date: e.target.value })}
+                                            className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700">Preferred Time</label>
+                                        <select
+                                            value={formData.preferred_time}
+                                            onChange={(e) => setFormData({ ...formData, preferred_time: e.target.value })}
+                                            className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none"
+                                        >
+                                            <option value="">Select a time slot</option>
+                                            <option value="Morning (8 AM – 11 AM)">Morning (8 AM – 11 AM)</option>
+                                            <option value="Late Morning (11 AM – 2 PM)">Late Morning (11 AM – 2 PM)</option>
+                                            <option value="Afternoon (2 PM – 5 PM)">Afternoon (2 PM – 5 PM)</option>
+                                            <option value="Evening (5 PM – 8 PM)">Evening (5 PM – 8 PM)</option>
+                                        </select>
+                                    </div>
+                                </div>
                                 <div className="bg-amber-50 border-2 border-amber-200 rounded-lg md:rounded-xl p-3 md:p-4">
                                     <p className="text-xs md:text-sm font-bold text-amber-800 mb-0.5 md:mb-1">Selected Fencing Type:</p>
                                     <p className="text-base md:text-lg font-black text-amber-600">
@@ -360,7 +393,7 @@ export default function FencingInfrastructurePage() {
                         <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
                             <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will contact you soon to finalize your fencing installation</p>
                         </div>
-                        <button onClick={() => { setShowSuccessModal(false); setFormData({ full_name: '', phone: '', location: '', fencing_length: '', preferred_timeline: 'Within 1 week' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">Done</button>
+                        <button onClick={() => { setShowSuccessModal(false); setFormData({ full_name: '', phone: '', location: '', fencing_length: '', preferred_timeline: 'Within 1 week', preferred_date: '', preferred_time: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">Done</button>
                     </div>
                     <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>
                 </div>
