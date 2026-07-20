@@ -65,7 +65,7 @@ export default function ServiceCatalog({ category }: { category: string }) {
                 {/* Category chips */}
                 <div className="mb-6">
                     <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-3">All Categories</h2>
-                    <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 no-scrollbar">
+                    <div className="flex gap-4 overflow-x-auto md:overflow-x-visible md:flex-wrap pt-2 pb-2 -mx-1 px-1 no-scrollbar">
                         {serviceCategoryList.map((c) => {
                             const active = c.slug === category;
                             return (

@@ -19,7 +19,7 @@ const services = [
     {
         name: 'Rent Machinery',
         icon: 'agriculture',
-        image: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400&h=400&fit=crop',
+        image: '/images/Rentmachiner.png',
         href: '/home/services/rent-machinery',
         description: 'Rent tractors, harvesters, and other farm equipment',
         available: '200+ machines',
@@ -28,7 +28,7 @@ const services = [
     {
         name: 'Borewell Services',
         icon: 'water_drop',
-        image: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&h=400&fit=crop',
+        image: '/images/Borewell.png',
         href: '/home/borewell',
         description: 'Drilling, repair, and maintenance of borewells',
         available: '50+ providers',
@@ -37,7 +37,7 @@ const services = [
     {
         name: 'CCTV Installation',
         icon: 'videocam',
-        image: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=400&h=400&fit=crop',
+        image: '/images/CCTV.png',
         href: '/home/cctv',
         description: 'Security camera setup for farm monitoring',
         available: '40+ providers',
@@ -46,7 +46,7 @@ const services = [
     {
         name: 'Fencing Services',
         icon: 'fence',
-        image: 'https://images.unsplash.com/photo-1516214104703-d870798883c5?w=400&h=400&fit=crop',
+        image: '/images/Fencing.png',
         href: '/home/fencing',
         description: 'Protect your land with quality fencing solutions',
         available: '60+ providers',
@@ -127,7 +127,7 @@ const services = [
     {
         name: 'Milk Vendors',
         icon: 'water_drop',
-        image: 'https://images.unsplash.com/photo-1769265558223-212ef1d9c6c2?w=400&h=400&fit=crop',
+        image: '/images/Milkvendor.png',
         href: '/home/services/milk-vendors',
         description: 'Fresh dairy supply near you',
         available: '80+ vendors',

@@ -59,7 +59,7 @@ export const serviceCatalog: Record<string, ServiceCategory> = {
         slug: 'drivers-operators',
         title: 'Drivers / Operators',
         icon: 'engineering',
-        image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=200&h=200&fit=crop',
+        image: '/images/DriversOperators.png',
         blurb: 'Hire experienced machine operators and drivers on demand.',
         maxQuantity: 5,
         questions: [
@@ -77,7 +77,7 @@ export const serviceCatalog: Record<string, ServiceCategory> = {
         slug: 'drone-spray',
         title: 'Drone Spray',
         icon: 'flight',
-        image: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=200&h=200&fit=crop',
+        image: '/images/Dronespray.png',
         blurb: 'Precision aerial spraying for pesticides and liquid fertilizers.',
         maxQuantity: 50,
         questions: [
@@ -94,7 +94,7 @@ export const serviceCatalog: Record<string, ServiceCategory> = {
         slug: 'manual-labour',
         title: 'Manual Labour',
         icon: 'groups',
-        image: 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=200&h=200&fit=crop',
+        image: '/images/Labour.png',
         blurb: 'Reliable workers for general tasks and skilled farm operations.',
         maxQuantity: 50,
         questions: [
@@ -115,7 +115,7 @@ export const serviceCatalog: Record<string, ServiceCategory> = {
         slug: 'soil-testing',
         title: 'Soil Testing & Analysis',
         icon: 'science',
-        image: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=200&h=200&fit=crop',
+        image: '/images/SoilTtesting.png',
         blurb: 'Accurate soil health reports and fertilizer recommendations.',
         maxQuantity: 20,
         questions: [
@@ -133,7 +133,7 @@ export const serviceCatalog: Record<string, ServiceCategory> = {
         slug: 'transplanting',
         title: 'Transplanting',
         icon: 'grass',
-        image: 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=200&h=200&fit=crop',
+        image: '/images/Transplanting.png',
         blurb: 'Paddy and vegetable transplanting by crew or machine.',
         maxQuantity: 50,
         questions: [
