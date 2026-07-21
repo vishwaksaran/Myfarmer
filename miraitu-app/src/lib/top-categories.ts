@@ -13,13 +13,13 @@ export const topCategories: TopCategory[] = [
     {
         label: 'Drivers / Operators',
         icon: 'engineering',
-        image: '/images/DriversOperators.png',
+        image: '/images/services/categories/DriversOperators.png',
         link: '/home/services/book/drivers-operators',
     },
     {
         label: 'Drone Spray',
         icon: 'flight',
-        image: '/images/Dronespray.png',
+        image: '/images/services/categories/Dronespray.png',
         link: '/home/services/book/drone-spray',
     },
     {
@@ -31,19 +31,19 @@ export const topCategories: TopCategory[] = [
     {
         label: 'Manual Labour',
         icon: 'groups',
-        image: '/images/Labour.png',
+        image: '/images/services/categories/Labour.png',
         link: '/home/services/book/manual-labour',
     },
     {
         label: 'Soil Testing & Analysis',
         icon: 'science',
-        image: '/images/SoilTtesting.png',
+        image: '/images/services/categories/SoilTtesting.png',
         link: '/home/services/book/soil-testing',
     },
     {
         label: 'Transplanting',
         icon: 'grass',
-        image: '/images/Transplanting.png',
+        image: '/images/services/categories/Transplanting.png',
         link: '/home/services/book/transplanting',
     },
 ];

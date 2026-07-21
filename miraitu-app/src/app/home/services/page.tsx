@@ -19,7 +19,7 @@ const services = [
     {
         name: 'Rent Machinery',
         icon: 'agriculture',
-        image: '/images/Rentmachiner.png',
+        image: '/images/services/other/Rentmachiner.png',
         href: '/home/services/rent-machinery',
         description: 'Rent tractors, harvesters, and other farm equipment',
         available: '200+ machines',
@@ -28,7 +28,7 @@ const services = [
     {
         name: 'Borewell Services',
         icon: 'water_drop',
-        image: '/images/Borewell.png',
+        image: '/images/services/other/Borewell.png',
         href: '/home/borewell',
         description: 'Drilling, repair, and maintenance of borewells',
         available: '50+ providers',
@@ -37,7 +37,7 @@ const services = [
     {
         name: 'CCTV Installation',
         icon: 'videocam',
-        image: '/images/CCTV.png',
+        image: '/images/services/other/CCTV.png',
         href: '/home/cctv',
         description: 'Security camera setup for farm monitoring',
         available: '40+ providers',
@@ -46,7 +46,7 @@ const services = [
     {
         name: 'Fencing Services',
         icon: 'fence',
-        image: '/images/Fencing.png',
+        image: '/images/services/other/Fencing.png',
         href: '/home/fencing',
         description: 'Protect your land with quality fencing solutions',
         available: '60+ providers',
@@ -127,7 +127,7 @@ const services = [
     {
         name: 'Milk Vendors',
         icon: 'water_drop',
-        image: '/images/Milkvendor.png',
+        image: '/images/services/other/Milkvendor.png',
         href: '/home/services/milk-vendors',
         description: 'Fresh dairy supply near you',
         available: '80+ vendors',

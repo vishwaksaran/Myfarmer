@@ -90,7 +90,8 @@ export default function ServiceCatalog({ category }: { category: string }) {
                             <div key={item.id} className="bg-white dark:bg-[#1a231a] rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col">
                                 <button onClick={() => setSelected(item)} className="relative h-48 w-full overflow-hidden text-left bg-gray-100 dark:bg-gray-800">
                                     <span className="material-symbols-outlined absolute inset-0 flex items-center justify-center text-gray-300 text-5xl">{config.icon}</span>
-                                    <img src={item.image} alt={item.name} onError={(e) => { e.currentTarget.style.display = 'none'; }} className="relative w-full h-full object-cover" />
+                                    {/* crop biased upward so people / operators stay in frame */}
+                                    <img src={item.image} alt={item.name} onError={(e) => { e.currentTarget.style.display = 'none'; }} className="relative w-full h-full object-cover object-[center_30%]" />
                                     {item.tags && item.tags.length > 0 && (
                                         <div className="absolute bottom-2 left-2 flex gap-1">
                                             {item.tags.slice(0, 2).map(t => (
@@ -214,7 +215,7 @@ function ItemDetailSheet({
             >
                 <div className="relative h-48 bg-gray-100 dark:bg-gray-800">
                     <span className="material-symbols-outlined absolute inset-0 flex items-center justify-center text-gray-300 text-5xl">{icon}</span>
-                    <img src={item.image} alt={item.name} onError={(e) => { e.currentTarget.style.display = 'none'; }} className="relative w-full h-full object-cover sm:rounded-t-3xl" />
+                    <img src={item.image} alt={item.name} onError={(e) => { e.currentTarget.style.display = 'none'; }} className="relative w-full h-full object-cover object-[center_30%] sm:rounded-t-3xl" />
                     <button onClick={onClose} className="absolute top-3 left-3 w-9 h-9 rounded-full bg-white/90 flex items-center justify-center shadow">
                         <span className="material-symbols-outlined text-gray-700">close</span>
                     </button>
