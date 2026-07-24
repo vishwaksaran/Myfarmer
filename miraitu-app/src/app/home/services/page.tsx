@@ -235,10 +235,10 @@ export default function ServicesPage() {
     // Drop services that duplicate a top category (by concept) to avoid repeats.
     const topCategoryLabels = new Set(['Soil Testing', 'Drone Spray']);
     const ourServices = [
-        ...topCategories.map((c) => ({ label: c.label, image: c.image, icon: c.icon, link: c.link })),
+        ...topCategories.map((c) => ({ label: c.label, tKey: c.tKey, image: c.image, icon: c.icon, link: c.link })),
         ...services
             .filter((s) => !topCategoryLabels.has(s.name))
-            .map((s) => ({ label: s.name, image: s.image, icon: s.icon, link: s.href })),
+            .map((s) => ({ label: s.name, tKey: undefined as string | undefined, image: s.image, icon: s.icon, link: s.href })),
     ];
 
     return (
@@ -283,14 +283,14 @@ export default function ServicesPage() {
                                     <span className="material-symbols-outlined absolute inset-0 flex items-center justify-center text-white text-4xl">{service.icon}</span>
                                     <img
                                         src={service.image}
-                                        alt={service.label}
+                                        alt={service.tKey ? t(service.tKey) : service.label}
                                         loading="lazy"
                                         onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                         className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                     />
                                 </div>
                                 <p className="mt-2 text-center text-xs md:text-sm font-semibold text-gray-900 dark:text-white leading-tight group-hover:text-primary transition-colors">
-                                    {service.label}
+                                    {service.tKey ? t(service.tKey) : service.label}
                                 </p>
                             </Link>
                         ))}

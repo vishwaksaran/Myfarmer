@@ -65,10 +65,10 @@ export default function AgriCalculators() {
                 {/* Header */}
                 <div className="mb-5 flex items-center justify-between">
                     <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[#121811] dark:text-white">
-                        Agri Calculators
+                        {t('homeV2.agriCalculators')}
                     </h2>
                     <Link href="/home/toolbox" className="text-sm md:text-base font-bold text-primary hover:underline">
-                        View all
+                        {t('homeV2.viewAll')}
                     </Link>
                 </div>
 

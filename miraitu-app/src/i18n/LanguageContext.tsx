@@ -5,6 +5,10 @@ import { translations, LangCode } from './translations';
 
 // Import pre-generated complete translations for instant availability
 import generatedTranslations from '../../generated-translations-complete.json';
+// Home-page V2 section labels (Top Categories, Buy & Sell, Agri Calculators)
+import { homeSectionTranslations } from './homeSectionTranslations';
+// Service-booking cart / checkout screen chrome
+import { cartTranslations } from './cartTranslations';
 
 interface LanguageContextType {
     lang: LangCode;
@@ -29,6 +33,14 @@ for (const lang of LANGS_WITH_PREGENERATED) {
     mergedTranslations[lang] = {
         ...(translations[lang] || {}),
         ...(generatedTranslations[lang as keyof typeof generatedTranslations] || {}),
+    };
+}
+// Layer home-page V2 section labels and cart chrome on top for every language.
+for (const lang of VALID_LANGS) {
+    mergedTranslations[lang] = {
+        ...(mergedTranslations[lang] || {}),
+        ...(homeSectionTranslations[lang] || {}),
+        ...(cartTranslations[lang] || {}),
     };
 }
 

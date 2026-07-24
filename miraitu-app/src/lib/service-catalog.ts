@@ -44,6 +44,8 @@ export interface ServiceItem {
 export interface ServiceCategory {
     slug: string;
     title: string;
+    /** i18n key for the title — resolve with t(titleKey) in components. */
+    titleKey: string;
     icon: string;
     /** Category thumbnail used in the "All Categories" chip row. */
     image: string;
@@ -58,6 +60,7 @@ export const serviceCatalog: Record<string, ServiceCategory> = {
     'drivers-operators': {
         slug: 'drivers-operators',
         title: 'Drivers / Operators',
+        titleKey: 'cat.driversOperators',
         icon: 'engineering',
         image: '/images/services/categories/DriversOperators.png',
         blurb: 'Hire experienced machine operators and drivers on demand.',
@@ -76,6 +79,7 @@ export const serviceCatalog: Record<string, ServiceCategory> = {
     'drone-spray': {
         slug: 'drone-spray',
         title: 'Drone Spray',
+        titleKey: 'cat.droneSpray',
         icon: 'flight',
         image: '/images/services/categories/Dronespray.png',
         blurb: 'Precision aerial spraying for pesticides and liquid fertilizers.',
@@ -93,6 +97,7 @@ export const serviceCatalog: Record<string, ServiceCategory> = {
     'manual-labour': {
         slug: 'manual-labour',
         title: 'Manual Labour',
+        titleKey: 'cat.manualLabour',
         icon: 'groups',
         image: '/images/services/categories/Labour.png',
         blurb: 'Reliable workers for general tasks and skilled farm operations.',
@@ -114,6 +119,7 @@ export const serviceCatalog: Record<string, ServiceCategory> = {
     'soil-testing': {
         slug: 'soil-testing',
         title: 'Soil Testing & Analysis',
+        titleKey: 'cat.soilTesting',
         icon: 'science',
         image: '/images/services/categories/SoilTtesting.png',
         blurb: 'Accurate soil health reports and fertilizer recommendations.',
@@ -132,6 +138,7 @@ export const serviceCatalog: Record<string, ServiceCategory> = {
     transplanting: {
         slug: 'transplanting',
         title: 'Transplanting',
+        titleKey: 'cat.transplanting',
         icon: 'grass',
         image: '/images/services/categories/Transplanting.png',
         blurb: 'Paddy and vegetable transplanting by crew or machine.',
@@ -149,6 +156,7 @@ export const serviceCatalog: Record<string, ServiceCategory> = {
     'machinery-tools': {
         slug: 'machinery-tools',
         title: 'Machinery & Tools',
+        titleKey: 'cat.machineryTools',
         icon: 'agriculture',
         image: 'https://images.unsplash.com/photo-1530267981375-f0de937f5f13?w=200&h=200&fit=crop',
         blurb: 'Rent farm machines and tools with or without an operator.',

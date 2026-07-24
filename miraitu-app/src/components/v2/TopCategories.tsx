@@ -2,21 +2,24 @@
 
 import Link from 'next/link';
 import { topCategories as categories } from '@/lib/top-categories';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export default function TopCategories() {
+    const { t } = useLanguage();
+
     return (
         <section className="px-4 md:px-6 pt-8 pb-4">
             <div className="mx-auto max-w-[1400px]">
                 {/* Section header */}
                 <div className="mb-5 flex items-center justify-between">
                     <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[#121811] dark:text-white">
-                        Top Categories
+                        {t('homeV2.topCategories')}
                     </h2>
                     <Link
                         href="/home/services"
                         className="text-sm md:text-base font-bold text-primary hover:underline"
                     >
-                        View all
+                        {t('homeV2.viewAll')}
                     </Link>
                 </div>
 
@@ -31,14 +34,14 @@ export default function TopCategories() {
                                 </span>
                                 <img
                                     src={cat.image}
-                                    alt={cat.label}
+                                    alt={t(cat.tKey)}
                                     loading="lazy"
                                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                 />
                             </div>
                             <p className="mt-2 text-center text-xs md:text-sm font-semibold text-[#121811] dark:text-white leading-tight group-hover:text-primary transition-colors">
-                                {cat.label}
+                                {t(cat.tKey)}
                             </p>
                         </Link>
                     ))}

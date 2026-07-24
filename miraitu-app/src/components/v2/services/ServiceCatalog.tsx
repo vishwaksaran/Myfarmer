@@ -11,6 +11,8 @@ import {
     type ServiceQuestion,
 } from '@/lib/service-catalog';
 import { useServiceCart } from '@/context/ServiceBookingCart';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translateCatalog } from '@/i18n/serviceCatalogContent';
 
 const inr = (n: number) => '₹' + n.toLocaleString('en-IN');
 
@@ -18,6 +20,9 @@ export default function ServiceCatalog({ category }: { category: string }) {
     const config = getServiceCategory(category);
     const { addLine, totalItems, subtotal } = useServiceCart();
     const router = useRouter();
+    const { t, lang } = useLanguage();
+    // Translate catalog content (item names, descriptions, tags) by source text.
+    const tc = (s?: string) => translateCatalog(lang, s);
 
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<ServiceItem | null>(null);
@@ -26,14 +31,18 @@ export default function ServiceCatalog({ category }: { category: string }) {
         if (!config) return [];
         const q = search.trim().toLowerCase();
         if (!q) return config.items;
-        return config.items.filter(i => i.name.toLowerCase().includes(q));
-    }, [config, search]);
+        // Match against both the English name and its translation so search
+        // works whichever language the catalog is displayed in.
+        return config.items.filter(i =>
+            i.name.toLowerCase().includes(q) || tc(i.name).toLowerCase().includes(q)
+        );
+    }, [config, search, lang]);
 
     if (!config) {
         return (
             <div className="px-4 md:px-6 py-12 text-center">
-                <p className="text-gray-500">This category is not available yet.</p>
-                <Link href="/home/services" className="text-primary font-semibold">Back to Services</Link>
+                <p className="text-gray-500">{t('catalog.notAvailable')}</p>
+                <Link href="/home/services" className="text-primary font-semibold">{t('catalog.backToServices')}</Link>
             </div>
         );
     }
@@ -46,7 +55,7 @@ export default function ServiceCatalog({ category }: { category: string }) {
                     <Link href="/home/services" className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
                         <span className="material-symbols-outlined text-gray-600 dark:text-gray-300">arrow_back</span>
                     </Link>
-                    <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white flex-1 text-center">{config.title}</h1>
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white flex-1 text-center">{t(config.titleKey)}</h1>
                     {/* Spacer keeps the title centered; cart lives in the app header + floating bar */}
                     <div className="w-9 shrink-0" aria-hidden="true" />
                 </div>
@@ -57,14 +66,14 @@ export default function ServiceCatalog({ category }: { category: string }) {
                     <input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search services"
+                        placeholder={t('catalog.searchServices')}
                         className="w-full pl-12 pr-4 py-3 rounded-2xl bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-primary outline-none text-sm"
                     />
                 </div>
 
                 {/* Category chips */}
                 <div className="mb-6">
-                    <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-3">All Categories</h2>
+                    <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-3">{t('catalog.allCategories')}</h2>
                     <div className="flex gap-4 overflow-x-auto md:overflow-x-visible md:flex-wrap pt-2 pb-2 -mx-1 px-1 no-scrollbar">
                         {serviceCategoryList.map((c) => {
                             const active = c.slug === category;
@@ -72,9 +81,9 @@ export default function ServiceCatalog({ category }: { category: string }) {
                                 <Link key={c.slug} href={`/home/services/book/${c.slug}`} className="flex flex-col items-center gap-1.5 shrink-0 w-20">
                                     <div className={`relative w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-green-500 ${active ? 'ring-2 ring-primary ring-offset-2 dark:ring-offset-[#161d15]' : ''}`}>
                                         <span className="material-symbols-outlined absolute inset-0 flex items-center justify-center text-white text-2xl">{c.icon}</span>
-                                        <img src={c.image} alt={c.title} loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="relative w-full h-full object-cover" />
+                                        <img src={c.image} alt={t(c.titleKey)} loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="relative w-full h-full object-cover" />
                                     </div>
-                                    <span className={`text-[11px] text-center leading-tight font-medium ${active ? 'text-primary' : 'text-gray-600 dark:text-gray-300'}`}>{c.title}</span>
+                                    <span className={`text-[11px] text-center leading-tight font-medium ${active ? 'text-primary' : 'text-gray-600 dark:text-gray-300'}`}>{t(c.titleKey)}</span>
                                 </Link>
                             );
                         })}
@@ -83,7 +92,7 @@ export default function ServiceCatalog({ category }: { category: string }) {
 
                 {/* Item cards */}
                 {items.length === 0 ? (
-                    <p className="text-center text-gray-500 py-12">No services match your search.</p>
+                    <p className="text-center text-gray-500 py-12">{t('catalog.noMatch')}</p>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {items.map((item) => (
@@ -91,11 +100,11 @@ export default function ServiceCatalog({ category }: { category: string }) {
                                 <button onClick={() => setSelected(item)} className="relative h-48 w-full overflow-hidden text-left bg-gray-100 dark:bg-gray-800">
                                     <span className="material-symbols-outlined absolute inset-0 flex items-center justify-center text-gray-300 text-5xl">{config.icon}</span>
                                     {/* crop biased upward so people / operators stay in frame */}
-                                    <img src={item.image} alt={item.name} onError={(e) => { e.currentTarget.style.display = 'none'; }} className="relative w-full h-full object-cover object-[center_30%]" />
+                                    <img src={item.image} alt={tc(item.name)} onError={(e) => { e.currentTarget.style.display = 'none'; }} className="relative w-full h-full object-cover object-[center_30%]" />
                                     {item.tags && item.tags.length > 0 && (
                                         <div className="absolute bottom-2 left-2 flex gap-1">
-                                            {item.tags.slice(0, 2).map(t => (
-                                                <span key={t} className="text-[10px] font-semibold bg-black/50 backdrop-blur-sm text-white px-2 py-0.5 rounded-full">{t}</span>
+                                            {item.tags.slice(0, 2).map(tag => (
+                                                <span key={tag} className="text-[10px] font-semibold bg-black/50 backdrop-blur-sm text-white px-2 py-0.5 rounded-full">{tc(tag)}</span>
                                             ))}
                                         </div>
                                     )}
@@ -103,15 +112,15 @@ export default function ServiceCatalog({ category }: { category: string }) {
                                 <div className="p-4 flex flex-col flex-1">
                                     <div className="flex items-start justify-between gap-2">
                                         <button onClick={() => setSelected(item)} className="text-left">
-                                            <h3 className="font-bold text-gray-900 dark:text-white text-base leading-snug">{item.name}</h3>
+                                            <h3 className="font-bold text-gray-900 dark:text-white text-base leading-snug">{tc(item.name)}</h3>
                                         </button>
-                                        <p className="text-lg font-black text-primary whitespace-nowrap">{inr(item.price)}<span className="text-xs font-medium text-gray-400">{serviceUnitLabel[item.unit]}</span></p>
+                                        <p className="text-lg font-black text-primary whitespace-nowrap">{inr(item.price)}<span className="text-xs font-medium text-gray-400">{tc(serviceUnitLabel[item.unit])}</span></p>
                                     </div>
-                                    {item.description && <p className="text-xs text-gray-500 mt-1 line-clamp-2 flex-1">{item.description}</p>}
+                                    {item.description && <p className="text-xs text-gray-500 mt-1 line-clamp-2 flex-1">{tc(item.description)}</p>}
                                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-dashed border-gray-100 dark:border-gray-800">
-                                        <span className="text-xs text-gray-400">• {config.title}</span>
+                                        <span className="text-xs text-gray-400">• {t(config.titleKey)}</span>
                                         <button onClick={() => setSelected(item)} className="px-4 py-2 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 active:scale-95 transition-all">
-                                            + Add
+                                            + {t('catalog.add')}
                                         </button>
                                     </div>
                                 </div>
@@ -143,7 +152,7 @@ export default function ServiceCatalog({ category }: { category: string }) {
                     >
                         <span className="flex items-center gap-2 font-bold">
                             <span className="material-symbols-outlined">shopping_cart</span>
-                            {totalItems} item{totalItems > 1 ? 's' : ''}
+                            {totalItems} {t('catalog.itemsWord')}
                         </span>
                         <span className="flex items-center gap-2 font-bold">
                             {inr(subtotal)}
@@ -168,6 +177,8 @@ function ItemDetailSheet({
     onClose: () => void;
     onAdd: (line: { category: string; itemId: string; name: string; price: number; unit: ServiceItem['unit']; image: string; quantity: number; answers: Record<string, string> }) => void;
 }) {
+    const { t, lang } = useLanguage();
+    const tc = (s?: string) => translateCatalog(lang, s);
     // Raw text so the user can clear/backspace and type freely.
     const [qtyInput, setQtyInput] = useState('1');
     const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -191,7 +202,7 @@ function ItemDetailSheet({
         if (exceedsMax) return;
         const errs: Record<string, string> = {};
         for (const q of questions) {
-            if (q.required && !answers[q.id]?.trim()) errs[q.id] = 'Required';
+            if (q.required && !answers[q.id]?.trim()) errs[q.id] = t('catalog.required');
         }
         if (Object.keys(errs).length) { setErrors(errs); return; }
         onAdd({
@@ -215,22 +226,22 @@ function ItemDetailSheet({
             >
                 <div className="relative h-48 bg-gray-100 dark:bg-gray-800">
                     <span className="material-symbols-outlined absolute inset-0 flex items-center justify-center text-gray-300 text-5xl">{icon}</span>
-                    <img src={item.image} alt={item.name} onError={(e) => { e.currentTarget.style.display = 'none'; }} className="relative w-full h-full object-cover object-[center_30%] sm:rounded-t-3xl" />
+                    <img src={item.image} alt={tc(item.name)} onError={(e) => { e.currentTarget.style.display = 'none'; }} className="relative w-full h-full object-cover object-[center_30%] sm:rounded-t-3xl" />
                     <button onClick={onClose} className="absolute top-3 left-3 w-9 h-9 rounded-full bg-white/90 flex items-center justify-center shadow">
                         <span className="material-symbols-outlined text-gray-700">close</span>
                     </button>
                 </div>
                 <div className="p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">{item.name}</h2>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">{tc(item.name)}</h2>
 
                     <div className="mt-3 flex items-center justify-between bg-primary/10 rounded-2xl px-4 py-3">
-                        <span className="text-primary font-medium">Amount</span>
-                        <span className="text-xl font-black text-primary">{inr(item.price)}<span className="text-xs font-medium text-gray-400">{serviceUnitLabel[item.unit]}</span></span>
+                        <span className="text-primary font-medium">{t('catalog.amount')}</span>
+                        <span className="text-xl font-black text-primary">{inr(item.price)}<span className="text-xs font-medium text-gray-400">{tc(serviceUnitLabel[item.unit])}</span></span>
                     </div>
 
                     {/* Quantity */}
                     <div className="mt-5">
-                        <p className="font-bold text-gray-900 dark:text-white mb-2">Quantity</p>
+                        <p className="font-bold text-gray-900 dark:text-white mb-2">{t('catalog.quantity')}</p>
                         <div className="flex items-center gap-3">
                             <button
                                 type="button"
@@ -267,9 +278,9 @@ function ItemDetailSheet({
                             </button>
                         </div>
                         {exceedsMax ? (
-                            <p className="text-xs text-red-500 font-semibold mt-2">Maximum quantity is {maxQuantity}. Please reduce the quantity.</p>
+                            <p className="text-xs text-red-500 font-semibold mt-2">{t('catalog.maxQuantityIs')} {maxQuantity}. {t('catalog.reduceQuantity')}</p>
                         ) : (
-                            <p className="text-xs text-gray-400 mt-2">Maximum quantity: {maxQuantity}</p>
+                            <p className="text-xs text-gray-400 mt-2">{t('catalog.maximumQuantity')}: {maxQuantity}</p>
                         )}
                     </div>
 
@@ -279,7 +290,7 @@ function ItemDetailSheet({
                             {questions.map((q) => (
                                 <div key={q.id}>
                                     <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1.5">
-                                        {q.label}{q.required && <span className="text-red-500"> *</span>}
+                                        {tc(q.label)}{q.required && <span className="text-red-500"> *</span>}
                                     </label>
                                     {q.type === 'select' ? (
                                         <div className="flex flex-wrap gap-2">
@@ -289,7 +300,7 @@ function ItemDetailSheet({
                                                     onClick={() => setAnswer(q.id, opt)}
                                                     className={`px-3.5 py-2 rounded-xl text-sm font-medium border-2 transition-all ${answers[q.id] === opt ? 'border-primary bg-primary/10 text-primary' : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'}`}
                                                 >
-                                                    {opt}
+                                                    {tc(opt)}
                                                 </button>
                                             ))}
                                         </div>
@@ -298,7 +309,7 @@ function ItemDetailSheet({
                                             type={q.type === 'number' ? 'number' : 'text'}
                                             value={answers[q.id] ?? ''}
                                             onChange={(e) => setAnswer(q.id, e.target.value)}
-                                            placeholder={q.placeholder}
+                                            placeholder={tc(q.placeholder)}
                                             className={`w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 ${errors[q.id] ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none text-sm`}
                                         />
                                     )}
@@ -313,7 +324,7 @@ function ItemDetailSheet({
                         disabled={exceedsMax}
                         className="w-full mt-6 py-3.5 rounded-2xl bg-primary text-white font-bold text-base hover:bg-primary/90 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {exceedsMax ? `Max quantity is ${maxQuantity}` : `Add to cart · ${inr(item.price * quantity)}`}
+                        {exceedsMax ? `${t('catalog.maxIsShort')} ${maxQuantity}` : `${t('catalog.addToCart')} · ${inr(item.price * quantity)}`}
                     </button>
                 </div>
             </div>
