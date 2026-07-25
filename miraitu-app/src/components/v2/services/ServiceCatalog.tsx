@@ -13,6 +13,8 @@ import {
 import { useServiceCart } from '@/context/ServiceBookingCart';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { translateCatalog } from '@/i18n/serviceCatalogContent';
+import { translatePage } from '@/i18n/pageContent';
+import { serviceDirectory, type ServiceDirectoryEntry } from '@/lib/service-directory';
 
 const inr = (n: number) => '₹' + n.toLocaleString('en-IN');
 
@@ -23,8 +25,11 @@ export default function ServiceCatalog({ category }: { category: string }) {
     const { t, lang } = useLanguage();
     // Translate catalog content (item names, descriptions, tags) by source text.
     const tc = (s?: string) => translateCatalog(lang, s);
+    // Translate a directory entry's display name (dot-key or source string).
+    const dirName = (e: ServiceDirectoryEntry) => (e.tKey ? t(e.tKey) : translatePage(lang, e.name));
 
     const [search, setSearch] = useState('');
+    const [searchFocused, setSearchFocused] = useState(false);
     const [selected, setSelected] = useState<ServiceItem | null>(null);
 
     const items = useMemo(() => {
@@ -37,6 +42,15 @@ export default function ServiceCatalog({ category }: { category: string }) {
             i.name.toLowerCase().includes(q) || tc(i.name).toLowerCase().includes(q)
         );
     }, [config, search, lang]);
+
+    // Global search: matching services across the whole app for the dropdown.
+    const suggestions = useMemo(() => {
+        const q = search.trim().toLowerCase();
+        if (!q) return [];
+        return serviceDirectory
+            .filter(e => e.name.toLowerCase().includes(q) || dirName(e).toLowerCase().includes(q))
+            .slice(0, 8);
+    }, [search, lang]);
 
     if (!config) {
         return (
@@ -60,15 +74,46 @@ export default function ServiceCatalog({ category }: { category: string }) {
                     <div className="w-9 shrink-0" aria-hidden="true" />
                 </div>
 
-                {/* Search */}
-                <div className="relative mb-5">
+                {/* Search — with a global "jump to any service" dropdown */}
+                <div className="relative mb-5 z-30">
                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
                     <input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
+                        onFocus={() => setSearchFocused(true)}
+                        onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
                         placeholder={t('catalog.searchServices')}
-                        className="w-full pl-12 pr-4 py-3 rounded-2xl bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-primary outline-none text-sm"
+                        className="w-full pl-12 pr-10 py-3 rounded-2xl bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-primary outline-none text-sm"
                     />
+                    {search && (
+                        <button
+                            onClick={() => setSearch('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            aria-label="Clear search"
+                        >
+                            <span className="material-symbols-outlined text-lg">close</span>
+                        </button>
+                    )}
+
+                    {/* Suggestions dropdown — cross-service quick jump */}
+                    {searchFocused && search.trim() && suggestions.length > 0 && (
+                        <div className="absolute left-0 right-0 top-full mt-2 rounded-2xl bg-white dark:bg-[#1a231a] border border-gray-100 dark:border-gray-800 shadow-xl overflow-hidden max-h-80 overflow-y-auto">
+                            {suggestions.map((e) => (
+                                <Link
+                                    key={e.href}
+                                    href={e.href}
+                                    onClick={() => { setSearch(''); setSearchFocused(false); }}
+                                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-b border-gray-50 dark:border-gray-800/60 last:border-b-0"
+                                >
+                                    <span className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                                        <span className="material-symbols-outlined text-primary text-lg">{e.icon}</span>
+                                    </span>
+                                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{dirName(e)}</span>
+                                    <span className="material-symbols-outlined text-gray-300 dark:text-gray-600 ml-auto text-lg">chevron_right</span>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* Category chips */}

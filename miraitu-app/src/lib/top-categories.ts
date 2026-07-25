@@ -16,7 +16,7 @@ export const topCategories: TopCategory[] = [
         label: 'Drivers / Operators',
         tKey: 'cat.driversOperators',
         icon: 'engineering',
-        image: '/images/services/categories/DriversOperators.png',
+        image: '/images/services/categories/Driveroperator.png',
         link: '/home/services/book/drivers-operators',
     },
     {

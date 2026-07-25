@@ -74,7 +74,7 @@ const services = [
     {
         name: 'Farm Labours',
         icon: 'group',
-        image: 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&h=400&fit=crop',
+        image: '/images/services/other/FarmLabour.png',
         href: '/home/services/farm-labours',
         description: 'Hire skilled farm workers for various tasks',
         available: '120+ workers',
@@ -83,7 +83,7 @@ const services = [
     {
         name: 'Transportation',
         icon: 'local_shipping',
-        image: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=400&h=400&fit=crop',
+        image: '/images/services/other/Transportation.png',
         href: '/home/services/transportation',
         description: 'Move your produce safely to markets',
         available: '80+ vehicles',
@@ -92,7 +92,7 @@ const services = [
     {
         name: 'Storage and Godown',
         icon: 'warehouse',
-        image: 'https://images.unsplash.com/photo-1553413077-190dd305871c?w=400&h=400&fit=crop',
+        image: '/images/services/other/StorageGodown.png',
         href: '/home/services/storage-godown',
         description: 'Secure storage & godown facilities for produce',
         available: '20+ facilities',
@@ -101,7 +101,7 @@ const services = [
     {
         name: 'Plumber',
         icon: 'plumbing',
-        image: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=400&h=400&fit=crop',
+        image: '/images/services/other/Plumber.png',
         href: '/home/services/plumber',
         description: 'Irrigation & pipeline services',
         available: '40+ available',
@@ -110,7 +110,7 @@ const services = [
     {
         name: 'Electrician',
         icon: 'electrical_services',
-        image: 'https://images.unsplash.com/photo-1565608438257-fac3c27beb36?w=400&h=400&fit=crop',
+        image: '/images/services/other/Electrician.png',
         href: '/home/services/electrician',
         description: 'Motor & wiring solutions',
         available: '35+ available',
@@ -119,7 +119,7 @@ const services = [
     {
         name: 'Mechanic',
         icon: 'build_circle',
-        image: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=400&fit=crop',
+        image: '/images/services/other/Mechanic.png',
         href: '/home/services/mechanic',
         description: 'Tractor & machinery repair',
         available: '60+ mechanics',

@@ -62,7 +62,7 @@ export const serviceCatalog: Record<string, ServiceCategory> = {
         title: 'Drivers / Operators',
         titleKey: 'cat.driversOperators',
         icon: 'engineering',
-        image: '/images/services/categories/DriversOperators.png',
+        image: '/images/services/categories/Driveroperator.png',
         blurb: 'Hire experienced machine operators and drivers on demand.',
         maxQuantity: 5,
         questions: [
