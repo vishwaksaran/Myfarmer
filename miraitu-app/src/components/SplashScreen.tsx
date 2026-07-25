@@ -107,17 +107,21 @@ export default function SplashScreen() {
         }
 
         .ms-glow {
-          position: absolute; top: -28px; width: 260px; height: 260px;
+          position: absolute; top: -45px; left: 50%;
+          width: min(78vw, 300px); height: min(78vw, 300px);
           border-radius: 50%;
           background: radial-gradient(circle, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 68%);
           animation: msGlow 2.6s ease-in-out infinite;
         }
 
         .ms-logo-card {
-          position: relative; width: 132px; height: 132px; border-radius: 34px;
+          /* Sized to roughly match Chrome's native PWA splash icon so the
+             hand-off from native → branded splash has no size jump. */
+          position: relative; width: min(56vw, 210px); height: min(56vw, 210px);
+          border-radius: 24%;
           background: #ffffff; display: flex; align-items: center; justify-content: center;
           box-shadow: 0 18px 40px rgba(0,0,0,0.25), 0 4px 10px rgba(0,0,0,0.15);
-          margin-bottom: 26px; overflow: hidden;
+          margin-bottom: 30px; overflow: hidden;
           animation: msPopIn 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s backwards,
                      msBob 3.4s ease-in-out 0.9s infinite;
         }
@@ -176,8 +180,8 @@ export default function SplashScreen() {
           to { opacity: 0; visibility: hidden; }
         }
         @keyframes msGlow {
-          0%, 100% { transform: scale(0.9); opacity: 0.55; }
-          50% { transform: scale(1.15); opacity: 0.95; }
+          0%, 100% { transform: translateX(-50%) scale(0.9); opacity: 0.55; }
+          50% { transform: translateX(-50%) scale(1.15); opacity: 0.95; }
         }
         @keyframes msPopIn {
           from { transform: scale(0.6); opacity: 0; }
