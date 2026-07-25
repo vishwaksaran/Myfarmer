@@ -56,7 +56,7 @@ const services = [
     {
         name: 'Veterinary Care',
         icon: 'pets',
-        image: 'https://images.unsplash.com/photo-1444212477490-ca407925329e?w=400&h=400&fit=crop',
+        image: '/images/services/other/VeterinaryCare.png',
         href: '/home/veterinary',
         description: 'Veterinary doctors & animal healthcare',
         available: '90+ doctors',
