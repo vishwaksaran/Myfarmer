@@ -5,19 +5,25 @@ import { useEffect, useState } from 'react';
 const NAME = 'MIRAITU';
 
 export default function SplashScreen() {
-  const [showSplash, setShowSplash] = useState(false);
+  // Start visible so the splash is painted on the FIRST frame (covering the
+  // home page) instead of popping in after hydration. It's CSS-gated to the
+  // `pwa-standalone` class (set by the head script before paint), so regular
+  // website visitors never see it; here we just clean it up / run the timer.
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    // Show in installed-PWA (standalone) mode, or when previewing with ?splash
     const isStandalone =
       window.matchMedia('(display-mode: standalone)').matches ||
       // iOS Safari standalone flag
       (window.navigator as unknown as { standalone?: boolean }).standalone === true;
     const isPreview = window.location.search.includes('splash');
 
-    if (!isStandalone && !isPreview) return;
+    if (!isStandalone && !isPreview) {
+      // Regular browser: remove from the DOM (CSS already kept it hidden).
+      setShowSplash(false);
+      return;
+    }
 
-    setShowSplash(true);
     const timer = setTimeout(() => setShowSplash(false), 4600);
     return () => clearTimeout(timer);
   }, []);
@@ -63,6 +69,11 @@ export default function SplashScreen() {
       <p className="ms-version">Version 1.0</p>
 
       <style>{`
+        /* Only the installed PWA (or ?splash preview) gets the class, so this
+           splash is hidden from the very first frame for website visitors —
+           no flash — even though it renders into the initial HTML. */
+        html:not(.pwa-standalone) .miraitu-splash { display: none !important; }
+
         .miraitu-splash {
           position: fixed; inset: 0; width: 100%; height: 100%;
           z-index: 999999; overflow: hidden;

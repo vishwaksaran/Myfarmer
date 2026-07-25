@@ -314,6 +314,14 @@ export default function RootLayout({ children }: RootLayoutProps) {
           }}
         />
 
+        {/* Runs before first paint: flags installed-PWA (standalone) mode so the
+            branded splash can cover the page from the very first frame — before
+            the home page shows — instead of popping in after hydration. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true||location.search.indexOf('splash')>-1;if(s)document.documentElement.classList.add('pwa-standalone');}catch(e){}})();`,
+          }}
+        />
       </head>
       <body
         className={`${plusJakartaSans.variable} ${notoSans.variable} font-display antialiased`}
