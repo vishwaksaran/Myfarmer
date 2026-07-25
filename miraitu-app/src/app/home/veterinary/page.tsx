@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 const services = [
     {
@@ -45,7 +46,8 @@ const stats = [
 ];
 
 export default function VeterinaryPage() {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     return (
         <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-[#121811] dark:text-[#f9fbf9] transition-colors duration-300">
             <div className="px-6 py-8">
@@ -74,7 +76,7 @@ export default function VeterinaryPage() {
                                     <span className="material-symbols-outlined text-primary">{stat.icon}</span>
                                     <span className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</span>
                                 </div>
-                                <p className="text-sm text-gray-500">{stat.label}</p>
+                                <p className="text-sm text-gray-500">{tp(stat.label)}</p>
                             </div>
                         ))}
                     </div>
@@ -90,7 +92,7 @@ export default function VeterinaryPage() {
                                 </div>
                                 <div>
                                     <h2 className="text-3xl font-black mb-2 tracking-tight">{t('vetPage.semenTitle')}</h2>
-                                    <p className="text-green-100 font-medium text-lg">Access elite genetics for superior milk yield and disease resistance.</p>
+                                    <p className="text-green-100 font-medium text-lg">{tp('Access elite genetics for superior milk yield and disease resistance.')}</p>
                                 </div>
                             </div>
                             <Link
@@ -115,8 +117,8 @@ export default function VeterinaryPage() {
                                     <div className="w-12 h-12 md:w-16 md:h-16 bg-primary rounded-xl md:rounded-2xl flex items-center justify-center mb-3 md:mb-4 group-hover:scale-110 transition-transform">
                                         <span className="material-symbols-outlined text-white text-2xl md:text-3xl">{service.icon}</span>
                                     </div>
-                                    <h3 className="text-base md:text-xl font-bold text-gray-900 dark:text-white mb-1.5 md:mb-2 leading-tight">{service.name}</h3>
-                                    <p className="text-xs md:text-sm text-gray-500 mb-3 md:mb-4">{service.description}</p>
+                                    <h3 className="text-base md:text-xl font-bold text-gray-900 dark:text-white mb-1.5 md:mb-2 leading-tight">{tp(service.name)}</h3>
+                                    <p className="text-xs md:text-sm text-gray-500 mb-3 md:mb-4">{tp(service.description)}</p>
                                     <a
                                         href="https://wa.me/919876543210?text=Hi%2C%20I%20need%20veterinary%20service%20for%20my%20livestock"
                                         target="_blank"
@@ -140,11 +142,11 @@ export default function VeterinaryPage() {
                                 </div>
                                 <div>
                                     <h2 className="text-2xl font-bold text-red-700 dark:text-red-400 mb-1">{t('vetPage.emergency')}</h2>
-                                    <p className="text-red-600 dark:text-red-300">24/7 emergency veterinary care available for critical cases</p>
+                                    <p className="text-red-600 dark:text-red-300">{tp('24/7 emergency veterinary care available for critical cases')}</p>
                                 </div>
                             </div>
                             <button className="shrink-0 px-8 py-4 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-colors shadow-lg">
-                                Call Emergency →
+                                {tp('Call Emergency →')}
                             </button>
                         </div>
                     </div>
@@ -153,8 +155,8 @@ export default function VeterinaryPage() {
                     <div className="bg-gradient-to-r from-primary to-emerald-500 rounded-3xl p-8 text-white">
                         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                             <div>
-                                <h2 className="text-2xl font-bold mb-2">Are You a Veterinarian?</h2>
-                                <p className="text-white/90">Join our network and connect with farmers who need your expertise.</p>
+                                <h2 className="text-2xl font-bold mb-2">{tp('Are You a Veterinarian?')}</h2>
+                                <p className="text-white/90">{tp('Join our network and connect with farmers who need your expertise.')}</p>
                             </div>
                             <Link
                                 href="/home/become-seller"

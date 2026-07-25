@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 const landServices = [
     {
@@ -38,7 +39,8 @@ const landServices = [
 ];
 
 export default function LandPage() {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     return (
         <div className="px-6 py-8">
             <div className="mx-auto max-w-[1280px]">
@@ -51,10 +53,7 @@ export default function LandPage() {
                         <NearbyLocation />
                     </div>
                     <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-4 tracking-tight">
-                        Find the Perfect <span className="text-primary relative inline-block">
-                            Land
-                            <span className="absolute bottom-1 left-0 w-full h-3 bg-primary/20 -z-10 rounded-full"></span>
-                        </span> for Your Farming
+                        {tp('Find the Perfect Land for Your Farming')}
                     </h1>
                     <p className="text-lg text-gray-500 max-w-2xl font-medium leading-relaxed">
                         {t('landPage.subtitle')}
@@ -77,7 +76,7 @@ export default function LandPage() {
                                 </div>
                                 {service.badge && (
                                     <span className={`px-3 py-1 rounded-full text-white text-xs font-bold uppercase tracking-wider shadow-md ${service.badgeColor}`}>
-                                        {service.badge}
+                                        {tp(service.badge)}
                                     </span>
                                 )}
                             </div>
@@ -86,11 +85,11 @@ export default function LandPage() {
                                 {t(service.nameKey)}
                             </h3>
                             <p className="text-gray-600 dark:text-gray-300 font-medium leading-relaxed mb-6">
-                                {service.description}
+                                {tp(service.description)}
                             </p>
 
                             <div className="flex items-center text-primary font-bold tracking-wide text-sm uppercase group-hover:gap-2 transition-all">
-                                Explore Options
+                                {tp('Explore Options')}
                                 <span className="material-symbols-outlined text-lg ml-1">arrow_forward</span>
                             </div>
                         </Link>
@@ -99,7 +98,7 @@ export default function LandPage() {
 
                 {/* Why Choose Section */}
                 <div className="bg-white dark:bg-[#121811] rounded-[2.5rem] p-10 border border-gray-100 dark:border-gray-800 shadow-xl shadow-gray-200/50 dark:shadow-none">
-                    <h2 className="text-2xl font-black text-center mb-10 text-gray-900 dark:text-white">Why Choose Our Land Marketplace?</h2>
+                    <h2 className="text-2xl font-black text-center mb-10 text-gray-900 dark:text-white">{tp('Why Choose Our Land Marketplace?')}</h2>
                     <div className="grid md:grid-cols-4 gap-8">
                         {[
                             { title: 'Verified Listings', icon: 'verified', desc: 'Every land listing is manually verified for ownership authenticity' },
@@ -111,8 +110,8 @@ export default function LandPage() {
                                 <div className="w-16 h-16 bg-gray-50 dark:bg-white/5 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary/10 transition-colors duration-300">
                                     <span className="material-symbols-outlined text-4xl text-gray-400 group-hover:text-primary transition-colors duration-300">{item.icon}</span>
                                 </div>
-                                <h3 className="font-bold text-lg mb-2 text-gray-900 dark:text-white">{item.title}</h3>
-                                <p className="text-sm text-gray-500 font-medium leading-relaxed">{item.desc}</p>
+                                <h3 className="font-bold text-lg mb-2 text-gray-900 dark:text-white">{tp(item.title)}</h3>
+                                <p className="text-sm text-gray-500 font-medium leading-relaxed">{tp(item.desc)}</p>
                             </div>
                         ))}
                     </div>

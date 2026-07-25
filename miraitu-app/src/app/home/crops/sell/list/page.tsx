@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { uploadListingImages, createListing } from '@/lib/supabase-db';
 import supabase from '@/lib/supabase';
@@ -18,6 +20,8 @@ const cropCategories = [
 ];
 
 export default function SellCropsListPage() {
+    const { lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const [step, setStep] = useState(1);
     const [selectedCategory, setSelectedCategory] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -118,13 +122,13 @@ export default function SellCropsListPage() {
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-sm font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all text-gray-700 dark:text-gray-200"
                     >
                         <span className="material-symbols-outlined text-lg">arrow_back</span>
-                        Back to Crops
+                        {tp('Back to Crops')}
                     </Link>
                 </div>
                 {/* Page Header */}
                 <div className="mb-6 md:mb-8 text-center">
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">List Your Produce</h1>
-                    <p className="text-sm md:text-base text-gray-500">Sell directly to buyers. Get the best price for your harvest.</p>
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">{tp('List Your Produce')}</h1>
+                    <p className="text-sm md:text-base text-gray-500">{tp('Sell directly to buyers. Get the best price for your harvest.')}</p>
                 </div>
 
                 {/* Progress Steps */}
@@ -139,7 +143,7 @@ export default function SellCropsListPage() {
                                 )}
                             </div>
                             <span className={`text-[10px] md:text-sm font-medium whitespace-nowrap ${step === idx + 1 ? 'text-primary' : 'text-gray-500'}`}>
-                                {stepName}
+                                {tp(stepName)}
                             </span>
                             {idx < 2 && <div className="w-4 md:w-12 h-0.5 bg-gray-200 dark:bg-gray-700 shrink-0" />}
                         </div>
@@ -151,7 +155,7 @@ export default function SellCropsListPage() {
                     {/* Step 1: Category Selection */}
                     {step === 1 && (
                         <>
-                            <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-4 md:mb-6">What are you selling?</h2>
+                            <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-4 md:mb-6">{tp('What are you selling?')}</h2>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
                                 {cropCategories.map((cat) => (
                                     <button
@@ -166,9 +170,9 @@ export default function SellCropsListPage() {
                                             {cat.icon}
                                         </span>
                                         <h3 className={`font-bold text-sm md:text-base ${selectedCategory === cat.id ? 'text-primary' : 'text-gray-900 dark:text-white'}`}>
-                                            {cat.name}
+                                            {tp(cat.name)}
                                         </h3>
-                                        <p className="text-[11px] md:text-xs text-gray-500 mt-0.5 md:mt-1 leading-snug">{cat.examples}</p>
+                                        <p className="text-[11px] md:text-xs text-gray-500 mt-0.5 md:mt-1 leading-snug">{tp(cat.examples)}</p>
                                     </button>
                                 ))}
                             </div>

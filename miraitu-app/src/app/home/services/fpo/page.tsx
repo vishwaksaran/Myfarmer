@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 import Image from 'next/image';
 import Link from 'next/link';
 import { normalizeIndianPhone } from '@/lib/phone';
@@ -20,7 +21,8 @@ const BENEFITS = [
 ];
 
 export default function FPOPage() {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const formRef = useRef<HTMLDivElement>(null);
 
     // Form state (moved from FPOBanner modal)
@@ -96,11 +98,11 @@ export default function FPOPage() {
                         </div>
 
                         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black text-gray-900 dark:text-white leading-tight mb-4 sm:mb-6">
-                            Empowering Farmers through <span className="text-green-700 dark:text-green-400">FPO</span>
+                            {tp('Empowering Farmers through FPO')}
                         </h1>
 
                         <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed mb-6 sm:mb-8 md:mb-10 max-w-lg">
-                            Joining a Farmer Producer Organization (FPO) bridges the gap between the field and the market, ensuring collective strength and sustainable prosperity.
+                            {tp('Joining a Farmer Producer Organization (FPO) bridges the gap between the field and the market, ensuring collective strength and sustainable prosperity.')}
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
@@ -139,20 +141,20 @@ export default function FPOPage() {
                             />
                             {/* Overlay quote */}
                             <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-lg max-w-[200px] sm:max-w-[220px]">
-                                <p className="font-bold text-green-700 dark:text-green-400 italic text-sm sm:text-base leading-snug">&ldquo;Together we grow, together we thrive.&rdquo;</p>
+                                <p className="font-bold text-green-700 dark:text-green-400 italic text-sm sm:text-base leading-snug">&ldquo;{tp('Together we grow, together we thrive.')}&rdquo;</p>
                             </div>
                         </div>
                     </div>
 
                     {/* Text content */}
                     <div className="order-1 md:order-2">
-                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4 sm:mb-6">What is an FPO?</h2>
+                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4 sm:mb-6">{tp('What is an FPO?')}</h2>
                         <div className="space-y-4 sm:space-y-5 text-gray-600 dark:text-gray-400 text-sm sm:text-base leading-relaxed">
                             <p>
-                                A <span className="text-green-700 dark:text-green-400 font-semibold">Farmer Producer Organization (FPO)</span> is a collective of primary producers, namely farmers, who come together to improve their bargaining power and access to resources.
+                                {tp('A Farmer Producer Organization (FPO) is a collective of primary producers, namely farmers, who come together to improve their bargaining power and access to resources.')}
                             </p>
                             <p>
-                                By pooling resources, members benefit from economies of scale in sourcing inputs, accessing modern technology, and marketing their produce directly to bulk buyers, bypassing exploitative intermediaries.
+                                {tp('By pooling resources, members benefit from economies of scale in sourcing inputs, accessing modern technology, and marketing their produce directly to bulk buyers, bypassing exploitative intermediaries.')}
                             </p>
                             <ul className="space-y-3 sm:space-y-4 pt-2">
                                 {BENEFITS.map((b) => (
@@ -170,9 +172,9 @@ export default function FPOPage() {
             {/* Step-by-Step Process */}
             <section className="py-12 sm:py-16 md:py-24 lg:py-28 px-4 sm:px-6 md:px-12 bg-[#f8f9f7] dark:bg-[#161d15]">
                 <div className="max-w-6xl mx-auto text-center mb-10 sm:mb-16">
-                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-3 sm:mb-4">Step-by-Step Document Processing</h2>
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-3 sm:mb-4">{tp('Step-by-Step Document Processing')}</h2>
                     <p className="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto text-sm sm:text-base px-2">
-                        Our transparent digital workflow ensures every farmer receives their rightful benefits without administrative hurdles.
+                        {tp('Our transparent digital workflow ensures every farmer receives their rightful benefits without administrative hurdles.')}
                     </p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
@@ -338,9 +340,9 @@ export default function FPOPage() {
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,white,transparent)]"></div>
                     </div>
                     <div className="relative z-10 py-10 sm:py-14 px-5 sm:px-8 text-center flex flex-col items-center">
-                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-3 sm:mb-4">Ready to scale your harvest?</h2>
+                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-3 sm:mb-4">{tp('Ready to scale your harvest?')}</h2>
                         <p className="text-green-100/80 text-sm sm:text-base md:text-lg mb-6 sm:mb-8 max-w-xl px-2">
-                            Join 50,000+ farmers across the region who are already experiencing the power of collective growth.
+                            {tp('Join 50,000+ farmers across the region who are already experiencing the power of collective growth.')}
                         </p>
                         <button
                             onClick={scrollToForm}

@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 const cropCategories = [
     {
@@ -250,6 +252,8 @@ const defaultSellers = [
 ];
 
 export default function BuyCropsPage() {
+    const { lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const [search, setSearch] = useState('');
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
     const [selectedCrops, setSelectedCrops] = useState<string[]>([]);
@@ -341,14 +345,14 @@ export default function BuyCropsPage() {
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white/90 text-sm font-bold hover:bg-white/20 transition-all mb-6 backdrop-blur-sm"
                     >
                         <span className="material-symbols-outlined text-sm">arrow_back</span>
-                        Back to Crops
+                        {tp('Back to Crops')}
                     </Link>
 
                     <h1 className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight">
-                        Buy <span className="text-lime-300">Crops</span>
+                        {tp('Buy Crops')}
                     </h1>
                     <p className="text-white/70 text-lg md:text-xl font-medium max-w-2xl mb-8">
-                        Browse {totalCrops}+ varieties across {cropCategories.length} categories. Best prices, verified sellers.
+                        {tp('Browse {n}+ varieties across {c} categories. Best prices, verified sellers.').replace('{n}', String(totalCrops)).replace('{c}', String(cropCategories.length))}
                     </p>
 
                     {/* Search Bar */}
@@ -356,7 +360,7 @@ export default function BuyCropsPage() {
                         <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/50 text-xl">search</span>
                         <input
                             type="text"
-                            placeholder="Search for crops... e.g. Rice, Mango, Turmeric"
+                            placeholder={tp('Search for crops... e.g. Rice, Mango, Turmeric')}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/10 border border-white/20 text-white placeholder:text-white/40 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-lime-400/50 focus:bg-white/15 transition-all backdrop-blur-sm"
@@ -389,7 +393,7 @@ export default function BuyCropsPage() {
                             </div>
                             <div>
                                 <p className="text-lg font-black text-gray-900 dark:text-white">{stat.value}</p>
-                                <p className="text-xs font-semibold text-gray-400">{stat.label}</p>
+                                <p className="text-xs font-semibold text-gray-400">{tp(stat.label)}</p>
                             </div>
                         </div>
                     ))}
@@ -624,8 +628,8 @@ export default function BuyCropsPage() {
                                                 {cat.emoji}
                                             </div>
                                             <div>
-                                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{cat.name}</h3>
-                                                <p className="text-xs font-semibold text-gray-400">{cat.items.length} items</p>
+                                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{tp(cat.name)}</h3>
+                                                <p className="text-xs font-semibold text-gray-400">{cat.items.length} {tp('items')}</p>
                                             </div>
                                         </div>
                                         <span className={`material-symbols-outlined text-gray-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
@@ -682,15 +686,15 @@ export default function BuyCropsPage() {
                             <span className="material-symbols-outlined text-white text-3xl">verified</span>
                         </div>
                         <div>
-                            <h3 className="text-xl font-black text-white mb-1">100% Verified Sellers</h3>
-                            <p className="text-white/70 font-medium text-sm">All listings are from verified farmers. Look for the verified badge for extra trust.</p>
+                            <h3 className="text-xl font-black text-white mb-1">{tp('100% Verified Sellers')}</h3>
+                            <p className="text-white/70 font-medium text-sm">{tp('All listings are from verified farmers. Look for the verified badge for extra trust.')}</p>
                         </div>
                     </div>
                     <Link
                         href="/home/crops/sell"
                         className="shrink-0 px-6 py-3 rounded-xl bg-white text-green-700 font-bold text-sm hover:bg-green-50 transition-colors shadow-lg"
                     >
-                        Start Selling Crops →
+                        {tp('Start Selling Crops →')}
                     </Link>
                 </div>
             </div>

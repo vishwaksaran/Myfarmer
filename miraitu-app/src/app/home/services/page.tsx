@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 import { topCategories } from '@/lib/top-categories';
 
 const services = [
@@ -209,7 +210,8 @@ const stats = [
 ];
 
 export default function ServicesPage() {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const [selectedState, setSelectedState] = useState('');
     const [enrolmentState, setEnrolmentState] = useState('');
     const [schemeState, setSchemeState] = useState('');
@@ -268,7 +270,7 @@ export default function ServicesPage() {
                                 <span className="material-symbols-outlined text-primary">{stat.icon}</span>
                                 <span className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</span>
                             </div>
-                            <p className="text-sm text-gray-500">{stat.label}</p>
+                            <p className="text-sm text-gray-500">{tp(stat.label)}</p>
                         </div>
                     ))}
                 </div>
@@ -290,7 +292,7 @@ export default function ServicesPage() {
                                     />
                                 </div>
                                 <p className="mt-2 text-center text-xs md:text-sm font-semibold text-gray-900 dark:text-white leading-tight group-hover:text-primary transition-colors">
-                                    {service.tKey ? t(service.tKey) : service.label}
+                                    {service.tKey ? t(service.tKey) : tp(service.label)}
                                 </p>
                             </Link>
                         ))}
@@ -303,23 +305,23 @@ export default function ServicesPage() {
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                         <div className="p-4 md:p-6 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
                             <div className="w-10 md:w-12 h-10 md:h-12 bg-primary rounded-lg md:rounded-xl flex items-center justify-center text-white font-bold text-lg md:text-xl mb-3 md:mb-4">1</div>
-                            <h3 className="font-bold text-sm md:text-base text-gray-900 dark:text-white mb-2">Choose a Service</h3>
+                            <h3 className="font-bold text-sm md:text-base text-gray-900 dark:text-white mb-2">{tp('Choose a Service')}</h3>
                             <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
-                                Select the type of service you need for your farm.
+                                {tp('Select the type of service you need for your farm.')}
                             </p>
                         </div>
                         <div className="p-4 md:p-6 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
                             <div className="w-10 md:w-12 h-10 md:h-12 bg-primary rounded-lg md:rounded-xl flex items-center justify-center text-white font-bold text-lg md:text-xl mb-3 md:mb-4">2</div>
-                            <h3 className="font-bold text-sm md:text-base text-gray-900 dark:text-white mb-2">Book & Schedule</h3>
+                            <h3 className="font-bold text-sm md:text-base text-gray-900 dark:text-white mb-2">{tp('Book & Schedule')}</h3>
                             <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
-                                Select a provider and book for your preferred date and time.
+                                {tp('Select a provider and book for your preferred date and time.')}
                             </p>
                         </div>
                         <div className="p-4 md:p-6 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 col-span-2 md:col-span-1">
                             <div className="w-10 md:w-12 h-10 md:h-12 bg-primary rounded-lg md:rounded-xl flex items-center justify-center text-white font-bold text-lg md:text-xl mb-3 md:mb-4">3</div>
-                            <h3 className="font-bold text-sm md:text-base text-gray-900 dark:text-white mb-2">Get It Done</h3>
+                            <h3 className="font-bold text-sm md:text-base text-gray-900 dark:text-white mb-2">{tp('Get It Done')}</h3>
                             <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
-                                The provider arrives at your farm and completes the service.
+                                {tp('The provider arrives at your farm and completes the service.')}
                             </p>
                         </div>
                     </div>
@@ -337,8 +339,8 @@ export default function ServicesPage() {
                                 <span className="material-symbols-outlined text-white text-2xl md:text-3xl">badge</span>
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h2 className="text-lg md:text-2xl font-bold mb-1">Farmer Registration Card</h2>
-                                <p className="text-xs md:text-sm text-white/90 line-clamp-2">Apply for your Unique Farmer ID and access government schemes.</p>
+                                <h2 className="text-lg md:text-2xl font-bold mb-1">{tp('Farmer Registration Card')}</h2>
+                                <p className="text-xs md:text-sm text-white/90 line-clamp-2">{tp('Apply for your Unique Farmer ID and access government schemes.')}</p>
                             </div>
                         </div>
                         <div className="flex flex-col gap-3">
@@ -348,7 +350,7 @@ export default function ServicesPage() {
                                     onChange={(e) => setSelectedState(e.target.value)}
                                     className="w-full appearance-none bg-white text-gray-900 font-semibold py-2 md:py-3 px-3 md:px-4 pr-8 rounded-lg md:rounded-xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer"
                                 >
-                                    <option value="">Select State</option>
+                                    <option value="">{tp('Select State')}</option>
                                     {Object.keys(stateKisanPortals).map((state) => (
                                         <option key={state} value={state}>{state}</option>
                                     ))}
@@ -362,7 +364,7 @@ export default function ServicesPage() {
                                 disabled={!selectedState}
                                 className="px-4 py-2 md:py-3 bg-white/20 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg md:rounded-xl font-bold text-xs md:text-sm transition-colors shadow-lg"
                             >
-                                Go to Portal →
+                                {tp('Go to Portal →')}
                             </button>
                         </div>
                     </div>
@@ -374,8 +376,8 @@ export default function ServicesPage() {
                                 <span className="material-symbols-outlined text-white text-2xl md:text-3xl">policy</span>
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h2 className="text-lg md:text-2xl font-bold mb-1">My Government Scheme</h2>
-                                <p className="text-xs md:text-sm text-white/90 line-clamp-2">Find and apply for government schemes in your state.</p>
+                                <h2 className="text-lg md:text-2xl font-bold mb-1">{tp('My Government Scheme')}</h2>
+                                <p className="text-xs md:text-sm text-white/90 line-clamp-2">{tp('Find and apply for government schemes in your state.')}</p>
                             </div>
                         </div>
                         <div className="flex flex-col gap-3">
@@ -385,7 +387,7 @@ export default function ServicesPage() {
                                     onChange={(e) => setSchemeState(e.target.value)}
                                     className="w-full appearance-none bg-white text-gray-900 font-semibold py-2 md:py-3 px-3 md:px-4 pr-8 rounded-lg md:rounded-xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer"
                                 >
-                                    <option value="">Select State</option>
+                                    <option value="">{tp('Select State')}</option>
                                     {Object.keys(stateSchemePortals).map((state) => (
                                         <option key={state} value={state}>{state}</option>
                                     ))}
@@ -399,7 +401,7 @@ export default function ServicesPage() {
                                 disabled={!schemeState}
                                 className="px-4 py-2 md:py-3 bg-white/20 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg md:rounded-xl font-bold text-xs md:text-sm transition-colors shadow-lg"
                             >
-                                Go to Portal →
+                                {tp('Go to Portal →')}
                             </button>
                         </div>
                     </div>
@@ -411,8 +413,8 @@ export default function ServicesPage() {
                                 <span className="material-symbols-outlined text-white text-2xl md:text-3xl">credit_card</span>
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h2 className="text-lg md:text-2xl font-bold mb-1">Kisan Credit Card</h2>
-                                <p className="text-xs md:text-sm text-white/90 line-clamp-2">Get affordable credit for your farming needs.</p>
+                                <h2 className="text-lg md:text-2xl font-bold mb-1">{tp('Kisan Credit Card')}</h2>
+                                <p className="text-xs md:text-sm text-white/90 line-clamp-2">{tp('Get affordable credit for your farming needs.')}</p>
                             </div>
                         </div>
                         <Link
@@ -420,7 +422,7 @@ export default function ServicesPage() {
                             target="_blank"
                             className="block w-full text-center px-4 py-2 md:py-3 bg-white/20 hover:bg-white/30 text-white rounded-lg md:rounded-xl font-bold text-xs md:text-sm transition-colors shadow-lg"
                         >
-                            Check Eligibility →
+                            {tp('Check Eligibility →')}
                         </Link>
                     </div>
 
@@ -431,15 +433,15 @@ export default function ServicesPage() {
                                 <span className="material-symbols-outlined text-white text-2xl md:text-3xl">storefront</span>
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h2 className="text-lg md:text-2xl font-bold mb-1">Become a Dealer/Seller</h2>
-                                <p className="text-xs md:text-sm text-white/90 line-clamp-2">Join our platform as a dealer or seller to expand your business reach across India.</p>
+                                <h2 className="text-lg md:text-2xl font-bold mb-1">{tp('Become a Dealer/Seller')}</h2>
+                                <p className="text-xs md:text-sm text-white/90 line-clamp-2">{tp('Join our platform as a dealer or seller to expand your business reach across India.')}</p>
                             </div>
                         </div>
                         <Link
                             href="/home/become-seller"
                             className="block w-full text-center px-4 py-2 md:py-3 bg-white text-primary rounded-lg md:rounded-xl font-bold text-xs md:text-sm hover:bg-green-50 transition-colors shadow-lg"
                         >
-                            Learn More →
+                            {tp('Learn More →')}
                         </Link>
                     </div>
                 </div>

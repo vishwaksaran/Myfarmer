@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import LoginModal from '@/components/auth/LoginModal';
@@ -29,7 +30,8 @@ const getTrendingScore = (post: Post) => {
 };
 
 export default function CommunityPage() {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const { user } = useAuth();
     const router = useRouter();
     const [showLoginModal, setShowLoginModal] = useState(false);
@@ -424,7 +426,7 @@ export default function CommunityPage() {
                             ].map((f) => (
                                 <div key={f.text} className="flex items-center gap-2 p-2.5 rounded-xl bg-white dark:bg-[#1a231a] border border-gray-100 dark:border-gray-800">
                                     <span className="material-symbols-outlined text-[#22c33d] text-lg">{f.icon}</span>
-                                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{f.text}</span>
+                                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{tp(f.text)}</span>
                                 </div>
                             ))}
                         </div>
@@ -446,7 +448,7 @@ export default function CommunityPage() {
                         </div>
 
                         <p className="text-xs text-gray-400 mt-6">
-                            Free to join &bull; No spam &bull; Built for Indian farmers
+                            {tp('Free to join • No spam • Built for Indian farmers')}
                         </p>
                     </div>
                 </main>

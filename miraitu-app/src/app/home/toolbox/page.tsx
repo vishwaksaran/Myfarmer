@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 import type { WeatherPayload } from '@/lib/weather-types';
 import {
     buildWeatherApiQuery,
@@ -21,7 +22,8 @@ import {
 } from '@/lib/weather-location';
 
 export default function ToolboxPage() {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const [locationConsent, setLocationConsent] = useState<WeatherLocationConsent | null>(null);
     const [weatherData, setWeatherData] = useState<WeatherPayload | null>(null);
 
@@ -176,8 +178,8 @@ export default function ToolboxPage() {
                                     </div>
                                     <div>
                                         <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('toolboxPage.localWeather')}</p>
-                                        <p className="text-lg font-bold text-gray-900 dark:text-white">Choose weather location mode</p>
-                                        <p className="text-xs text-gray-500 mt-0.5">Tap to enable current or manual location</p>
+                                        <p className="text-lg font-bold text-gray-900 dark:text-white">{tp('Choose weather location mode')}</p>
+                                        <p className="text-xs text-gray-500 mt-0.5">{tp('Tap to enable current or manual location')}</p>
                                     </div>
                                 </Link>
                             ) : (
@@ -271,7 +273,7 @@ export default function ToolboxPage() {
                                         <p className="text-xs font-bold text-gray-500 uppercase mb-2">{t('toolboxPage.confidence')}</p>
                                         <div className="flex items-end gap-2">
                                             <span className="text-3xl font-black text-primary">94.2%</span>
-                                            <span className="text-sm font-bold text-green-600 mb-1">+2.4% vs last season</span>
+                                            <span className="text-sm font-bold text-green-600 mb-1">+2.4% {tp('vs last season')}</span>
                                         </div>
                                     </div>
                                 </div>

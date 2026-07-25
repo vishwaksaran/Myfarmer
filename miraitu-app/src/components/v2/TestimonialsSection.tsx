@@ -1,6 +1,7 @@
 'use client';
 
 import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 import { useRef, useState, useEffect } from 'react';
 
 const testimonials = [
@@ -31,7 +32,8 @@ const testimonials = [
 ];
 
 export default function TestimonialsSection() {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const scrollRef = useRef<HTMLDivElement>(null);
     const [activeIndex, setActiveIndex] = useState(0);
 
@@ -60,14 +62,14 @@ export default function TestimonialsSection() {
 
             {/* Quote */}
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-xs md:text-sm mb-4 md:mb-6 flex-grow">
-                &ldquo;{testimonial.text}&rdquo;
+                &ldquo;{tp(testimonial.text)}&rdquo;
             </p>
 
             {/* Stat badge */}
             <div className="mb-4 md:mb-5">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 md:py-1.5 text-[10px] md:text-xs font-black text-primary">
                     <span className="material-symbols-outlined text-[10px] md:text-xs">trending_up</span>
-                    {testimonial.stat}
+                    {tp(testimonial.stat)}
                 </span>
             </div>
 
@@ -82,7 +84,7 @@ export default function TestimonialsSection() {
                 </div>
                 <div>
                     <h4 className="font-bold text-xs md:text-sm">{testimonial.name}</h4>
-                    <p className="text-[10px] md:text-xs text-gray-500">{testimonial.role}</p>
+                    <p className="text-[10px] md:text-xs text-gray-500">{tp(testimonial.role)}</p>
                 </div>
             </div>
         </div>
