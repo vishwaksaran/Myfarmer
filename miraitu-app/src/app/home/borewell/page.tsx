@@ -4,8 +4,12 @@ import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import { normalizeIndianPhone } from '@/lib/phone';
 import { usePrefillLocation } from '@/context/LocationContext';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 export default function BorewellServicesPage() {
+    const { lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const [headerVisible, setHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
     const consultationFormRef = useRef<HTMLDivElement>(null);
@@ -43,12 +47,12 @@ export default function BorewellServicesPage() {
 
     const handleBookConsultation = async () => {
         const errs: Record<string, string> = {};
-        if (!formData.name.trim()) errs.name = 'Name is required';
+        if (!formData.name.trim()) errs.name = tp('Name is required');
         const digits = formData.phone.replace(/\D/g, '');
-        if (!digits) errs.phone = 'Phone number is required';
-        else if (digits.length !== 10) errs.phone = 'Enter a valid 10-digit number';
-        if (!formData.location.trim()) errs.location = 'Location is required';
-        if (!formData.preferredDate) errs.date = 'Please select a date';
+        if (!digits) errs.phone = tp('Phone number is required');
+        else if (digits.length !== 10) errs.phone = tp('Enter a valid 10-digit number');
+        if (!formData.location.trim()) errs.location = tp('Location is required');
+        if (!formData.preferredDate) errs.date = tp('Please select a date');
         if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
         setFormErrors({});
         const result = await submit({
@@ -72,16 +76,16 @@ export default function BorewellServicesPage() {
     const services = [
         {
             icon: 'water_drop',
-            title: 'Borewell Drilling',
-            description: 'Professional drilling services with advanced equipment for depths up to 1000 feet.',
-            features: ['Depth up to 1000ft', 'Modern Equipment', '24/7 Support', 'Water Quality Test'],
+            title: tp('Borewell Drilling'),
+            description: tp('Professional drilling services with advanced equipment for depths up to 1000 feet.'),
+            features: [tp('Depth up to 1000ft'), tp('Modern Equipment'), tp('24/7 Support'), tp('Water Quality Test')],
             price: '₹150/ft',
         },
         {
             icon: 'settings',
-            title: 'Submersible Pump Installation',
-            description: 'Complete pump installation with electrical setup and maintenance warranty.',
-            features: ['HP Selection Guide', 'Electrical Setup', '2-Year Warranty', 'Free Maintenance'],
+            title: tp('Submersible Pump Installation'),
+            description: tp('Complete pump installation with electrical setup and maintenance warranty.'),
+            features: [tp('HP Selection Guide'), tp('Electrical Setup'), tp('2-Year Warranty'), tp('Free Maintenance')],
             price: 'From ₹25,000',
         },
     ];
@@ -92,11 +96,11 @@ export default function BorewellServicesPage() {
             <header className="w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
                 <div className="mx-auto max-w-[1280px] px-4 md:px-6 py-3 md:py-4">
                     <nav className="flex items-center gap-1 text-xs md:text-sm">
-                        <a href="/home" className="text-gray-500 hover:text-primary transition-colors font-medium">Home</a>
+                        <a href="/home" className="text-gray-500 hover:text-primary transition-colors font-medium">{tp('Home')}</a>
                         <span className="material-symbols-outlined text-gray-400 text-xs md:text-sm">chevron_right</span>
-                        <a href="/home/services" className="text-gray-500 hover:text-primary transition-colors font-medium">Services</a>
+                        <a href="/home/services" className="text-gray-500 hover:text-primary transition-colors font-medium">{tp('Services')}</a>
                         <span className="material-symbols-outlined text-gray-400 text-xs md:text-sm">chevron_right</span>
-                        <span className="text-primary font-bold">Borewell & Water</span>
+                        <span className="text-primary font-bold">{tp('Borewell & Water')}</span>
                     </nav>
                 </div>
             </header>
@@ -108,9 +112,9 @@ export default function BorewellServicesPage() {
                         <div className="inline-flex items-center justify-center size-16 md:size-20 rounded-lg md:rounded-[2rem] bg-gradient-to-br from-blue-500 to-cyan-600 text-white mb-4 md:mb-6 shadow-2xl">
                             <span className="material-symbols-outlined text-2xl md:text-4xl">water_drop</span>
                         </div>
-                        <h1 className="text-3xl md:text-5xl font-black text-primary-dark mb-3 md:mb-4">Borewell & Water Solutions</h1>
+                        <h1 className="text-3xl md:text-5xl font-black text-primary-dark mb-3 md:mb-4">{tp('Borewell & Water Solutions')}</h1>
                         <p className="text-base md:text-xl text-gray-600 max-w-3xl mx-auto px-2">
-                            Professional borewell drilling and submersible pump installation for sustainable farm irrigation
+                            {tp('Professional borewell drilling and submersible pump installation for sustainable farm irrigation')}
                         </p>
                     </div>
                 </div>
@@ -119,7 +123,7 @@ export default function BorewellServicesPage() {
             {/* Services Grid */}
             <section className="px-3 md:px-6 py-8 md:py-12">
                 <div className="mx-auto max-w-[1280px]">
-                    <h2 className="text-xl md:text-3xl font-black mb-4 md:mb-8">Our Services</h2>
+                    <h2 className="text-xl md:text-3xl font-black mb-4 md:mb-8">{tp('Our Services')}</h2>
                     <div className="grid grid-cols-2 lg:grid-cols-2 gap-3 md:gap-6 lg:gap-8">
                         {services.map((service, index) => (
                             <div key={index} className="skeuo-card rounded-lg md:rounded-3xl p-3 md:p-8 border border-white/50">
@@ -142,7 +146,7 @@ export default function BorewellServicesPage() {
                                             ))}
                                         </div>
                                         <button onClick={scrollToConsultation} className="glossy-button w-full rounded-lg md:rounded-xl py-2 md:py-3 text-xs md:text-base text-white font-bold">
-                                            Request Quote
+                                            {tp('Request Quote')}
                                         </button>
                                     </div>
                                 </div>
@@ -158,45 +162,45 @@ export default function BorewellServicesPage() {
                     <div className="max-w-2xl" ref={consultationFormRef}>
                         {/* Expert Consultation Form */}
                         <div className="skeuo-card rounded-2xl md:rounded-3xl p-4 md:p-8 border-2 md:border-4 border-white">
-                            <h3 className="text-xl md:text-2xl font-black text-primary-dark mb-1.5 md:mb-2">Book Expert Consultation</h3>
-                            <p className="text-xs md:text-sm text-gray-500 mb-4 md:mb-6">Get personalized advice from our water experts</p>
+                            <h3 className="text-xl md:text-2xl font-black text-primary-dark mb-1.5 md:mb-2">{tp('Book Expert Consultation')}</h3>
+                            <p className="text-xs md:text-sm text-gray-500 mb-4 md:mb-6">{tp('Get personalized advice from our water experts')}</p>
                             <div className="space-y-3 md:space-y-4">
                                 <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700">Full Name</label>
+                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700">{tp('Full Name')}</label>
                                     <input
                                         type="text"
                                         value={formData.name}
                                         onChange={(e) => { setFormData({ ...formData, name: e.target.value }); setFormErrors(prev => { const { name, ...r } = prev; return r; }); }}
                                         className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.name ? 'ring-2 ring-red-400' : ''}`}
-                                        placeholder="Enter your name"
+                                        placeholder={tp('Enter your name')}
                                     />
                                     {formErrors.name && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.name}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700">Phone Number</label>
+                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700">{tp('Phone Number')}</label>
                                     <input
                                         type="tel"
                                         value={formData.phone}
                                         onChange={(e) => { setFormData({ ...formData, phone: normalizeIndianPhone(e.target.value) }); setFormErrors(prev => { const { phone, ...r } = prev; return r; }); }}
                                         className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.phone ? 'ring-2 ring-red-400' : ''}`}
-                                        placeholder="10-digit number"
+                                        placeholder={tp('10-digit number')}
                                         maxLength={14}
                                     />
                                     {formErrors.phone && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.phone}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700">Farm Location</label>
+                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700">{tp('Farm Location')}</label>
                                     <input
                                         type="text"
                                         value={formData.location}
                                         onChange={(e) => { setFormData({ ...formData, location: e.target.value }); setFormErrors(prev => { const { location, ...r } = prev; return r; }); }}
                                         className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.location ? 'ring-2 ring-red-400' : ''}`}
-                                        placeholder="Village, District"
+                                        placeholder={tp('Village, District')}
                                     />
                                     {formErrors.location && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.location}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700">Preferred Visit Date</label>
+                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700">{tp('Preferred Visit Date')}</label>
                                     <input
                                         type="date"
                                         value={formData.preferredDate}
@@ -206,17 +210,17 @@ export default function BorewellServicesPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700">Preferred Time</label>
+                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700">{tp('Preferred Time')}</label>
                                     <select
                                         value={formData.preferredTime}
                                         onChange={(e) => setFormData({ ...formData, preferredTime: e.target.value })}
                                         className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none"
                                     >
-                                        <option value="">Select a time slot</option>
-                                        <option value="Morning (8 AM – 11 AM)">Morning (8 AM – 11 AM)</option>
-                                        <option value="Late Morning (11 AM – 2 PM)">Late Morning (11 AM – 2 PM)</option>
-                                        <option value="Afternoon (2 PM – 5 PM)">Afternoon (2 PM – 5 PM)</option>
-                                        <option value="Evening (5 PM – 8 PM)">Evening (5 PM – 8 PM)</option>
+                                        <option value="">{tp('Select a time slot')}</option>
+                                        <option value="Morning (8 AM – 11 AM)">{tp('Morning (8 AM – 11 AM)')}</option>
+                                        <option value="Late Morning (11 AM – 2 PM)">{tp('Late Morning (11 AM – 2 PM)')}</option>
+                                        <option value="Afternoon (2 PM – 5 PM)">{tp('Afternoon (2 PM – 5 PM)')}</option>
+                                        <option value="Evening (5 PM – 8 PM)">{tp('Evening (5 PM – 8 PM)')}</option>
                                     </select>
                                 </div>
                                 <button
@@ -224,7 +228,7 @@ export default function BorewellServicesPage() {
                                     disabled={!formData.name || !formData.phone || !formData.location || !formData.preferredDate}
                                     className="vibrant-gradient w-full rounded-lg md:rounded-xl py-3 md:py-4 text-white font-black text-base md:text-lg shadow-2xl shadow-primary/30 active:scale-[0.98] transition-all mt-4 md:mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    BOOK CONSULTATION
+                                    {tp('BOOK CONSULTATION')}
                                 </button>
                             </div>
                         </div>
@@ -241,14 +245,14 @@ export default function BorewellServicesPage() {
                                 <span className="material-symbols-outlined text-white text-5xl">check_circle</span>
                             </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-center text-gray-900 dark:text-white mb-3">Consultation Booked!</h2>
+                        <h2 className="text-2xl md:text-3xl font-black text-center text-gray-900 dark:text-white mb-3">{tp('Consultation Booked!')}</h2>
                         <p className="text-center text-gray-600 dark:text-gray-300 mb-4 text-sm md:text-base">
-                            Your borewell consultation request has been submitted successfully.
+                            {tp('Your borewell consultation request has been submitted successfully.')}
                         </p>
                         <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
-                            <p className="text-sm font-bold text-green-700 dark:text-green-400 text-center">📞 Our team will contact you soon to schedule your visit</p>
+                            <p className="text-sm font-bold text-green-700 dark:text-green-400 text-center">{tp('📞 Our team will contact you soon to schedule your visit')}</p>
                         </div>
-                        <button onClick={() => { setShowSuccessModal(false); setFormData({ depth: '', diameter: '', location: '', soilType: 'clay', name: '', phone: '', preferredDate: '', preferredTime: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">Done</button>
+                        <button onClick={() => { setShowSuccessModal(false); setFormData({ depth: '', diameter: '', location: '', soilType: 'clay', name: '', phone: '', preferredDate: '', preferredTime: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">{tp('Done')}</button>
                     </div>
                     <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>
                 </div>

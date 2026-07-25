@@ -5,8 +5,12 @@ import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { normalizeIndianPhone } from '@/lib/phone';
 import { usePrefillLocation } from '@/context/LocationContext';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 export default function FencingInfrastructurePage() {
+    const { lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const [headerVisible, setHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -37,11 +41,11 @@ export default function FencingInfrastructurePage() {
 
     const handleRequestFencingQuote = async () => {
         const errs: Record<string, string> = {};
-        if (!formData.full_name.trim()) errs.full_name = 'Name is required';
+        if (!formData.full_name.trim()) errs.full_name = tp('Name is required');
         const digits = formData.phone.replace(/\D/g, '');
-        if (!digits) errs.phone = 'Phone number is required';
-        else if (digits.length !== 10) errs.phone = 'Enter a valid 10-digit number';
-        if (!formData.location.trim()) errs.location = 'Location is required';
+        if (!digits) errs.phone = tp('Phone number is required');
+        else if (digits.length !== 10) errs.phone = tp('Enter a valid 10-digit number');
+        if (!formData.location.trim()) errs.location = tp('Location is required');
         if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
         setFormErrors({});
         const result = await submit({
@@ -68,30 +72,30 @@ export default function FencingInfrastructurePage() {
         {
             id: 'chain-link',
             icon: 'grid_on',
-            title: 'Rough/Chain-Link Fencing',
-            description: 'Cost-effective boundary marking and perimeter security for farms.',
+            title: tp('Rough/Chain-Link Fencing'),
+            description: tp('Cost-effective boundary marking and perimeter security for farms.'),
             price: '₹45/ft',
             features: [
-                'Galvanized steel wire',
-                'Weather resistant',
-                'Easy installation',
-                'Low maintenance',
-                '10-year lifespan',
+                tp('Galvanized steel wire'),
+                tp('Weather resistant'),
+                tp('Easy installation'),
+                tp('Low maintenance'),
+                tp('10-year lifespan'),
             ],
             gradient: 'from-gray-500 to-gray-700',
         },
         {
             id: 'electric',
             icon: 'bolt',
-            title: 'Electrical/Power Fencing',
-            description: 'Advanced protection against wild animals with certified shock-safe technology.',
+            title: tp('Electrical/Power Fencing'),
+            description: tp('Advanced protection against wild animals with certified shock-safe technology.'),
             price: '₹120/ft',
             features: [
-                'Shock-Safe Certified ⚡',
-                'Solar powered option',
-                'Anti-theft alarm',
-                'Wild animal deterrent',
-                'Remote monitoring',
+                tp('Shock-Safe Certified ⚡'),
+                tp('Solar powered option'),
+                tp('Anti-theft alarm'),
+                tp('Wild animal deterrent'),
+                tp('Remote monitoring'),
             ],
             gradient: 'from-yellow-500 to-orange-600',
             popular: true,
@@ -101,24 +105,24 @@ export default function FencingInfrastructurePage() {
     const constructionMaterials = [
         {
             id: 101,
-            name: 'River Sand',
-            unit: 'Per Tonne',
+            name: tp('River Sand'),
+            unit: tp('Per Tonne'),
             price: '₹800',
             image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDqMbvZ3gGUOEW-Y9Lbs8ooK2hPpxQ7q1TvE5QAPW8YvYDO7k_Z0QqBywU37VGLGqPQX8Cj3OI9n-PGaVNbsQlscHGxh8ZRx5Ke7fXunq3FQSF8FUbXKCTPmNbJw_n7aV6K0A',
             eco: true,
         },
         {
             id: 102,
-            name: 'Hollow Blocks (6")',
-            unit: 'Per Piece',
+            name: tp('Hollow Blocks (6")'),
+            unit: tp('Per Piece'),
             price: '₹35',
             image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBYvQRJHlDLCH0L-_RRWFOwmX5CQZ-Vdz1xt4pUvZPXzJQKgTAo_6hNz8F5YPNaL2FZw7RFJxhEqPk5vKnk2cZWQ7lKMPvR5XDy3UqHTFJnL8Rw4Vm5tQzA1gHXQ7p9Kv2K0w',
             eco: true,
         },
         {
             id: 103,
-            name: 'Red Clay Bricks',
-            unit: 'Per 1000',
+            name: tp('Red Clay Bricks'),
+            unit: tp('Per 1000'),
             price: '₹6,500',
             image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCxZL8-VH2xFKP7RQvYJ5Kz9FWq4BNm1XT6yGpHcJQx8wL5z2Rv3KTnM9Pf6YDxL8Wq7Vm2Jz4Hs1Xv9TkWq5Pz8Nm7Rx4L6Y3Vq2Hs9Xz7Wm4Kq1Pz8Nm7Rx5',
             eco: false,
@@ -131,11 +135,11 @@ export default function FencingInfrastructurePage() {
             <header className="w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
                 <div className="mx-auto max-w-[1280px] px-3 md:px-6 py-3 md:py-4">
                     <nav className="flex items-center gap-1 text-xs md:text-sm">
-                        <a href="/home" className="text-gray-500 hover:text-primary transition-colors font-medium">Home</a>
+                        <a href="/home" className="text-gray-500 hover:text-primary transition-colors font-medium">{tp('Home')}</a>
                         <span className="material-symbols-outlined text-gray-400 text-xs md:text-sm">chevron_right</span>
-                        <a href="/home/services" className="text-gray-500 hover:text-primary transition-colors font-medium">Services</a>
+                        <a href="/home/services" className="text-gray-500 hover:text-primary transition-colors font-medium">{tp('Services')}</a>
                         <span className="material-symbols-outlined text-gray-400 text-xs md:text-sm">chevron_right</span>
-                        <span className="text-primary font-bold">Fencing</span>
+                        <span className="text-primary font-bold">{tp('Fencing')}</span>
                     </nav>
                 </div>
             </header>
@@ -147,9 +151,9 @@ export default function FencingInfrastructurePage() {
                         <div className="inline-flex items-center justify-center size-16 md:size-20 rounded-[2rem] bg-gradient-to-br from-amber-600 to-orange-700 text-white mb-4 md:mb-6 shadow-2xl">
                             <span className="material-symbols-outlined text-3xl md:text-4xl">construction</span>
                         </div>
-                        <h1 className="text-3xl md:text-5xl font-black text-primary-dark mb-2 md:mb-4">Fencing & Infrastructure</h1>
+                        <h1 className="text-3xl md:text-5xl font-black text-primary-dark mb-2 md:mb-4">{tp('Fencing & Infrastructure')}</h1>
                         <p className="text-base md:text-xl text-gray-600 max-w-3xl mx-auto px-2">
-                            Complete solutions for farm security, boundaries, and eco-friendly construction materials
+                            {tp('Complete solutions for farm security, boundaries, and eco-friendly construction materials')}
                         </p>
                     </div>
                 </div>
@@ -158,7 +162,7 @@ export default function FencingInfrastructurePage() {
             {/* Fencing Solutions */}
             <section className="px-3 md:px-6 py-8 md:py-12">
                 <div className="mx-auto max-w-[1280px]">
-                    <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8">Fencing Solutions</h2>
+                    <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8">{tp('Fencing Solutions')}</h2>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
                         {fencingTypes.map((fence) => (
                             <div
@@ -172,7 +176,7 @@ export default function FencingInfrastructurePage() {
                             >
                                 {fence.popular && (
                                     <div className="mb-4 -mt-4 -mx-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-center py-1.5 md:py-2 rounded-t-2xl font-black text-[10px] md:text-sm">
-                                        ⚡ SHOCK-SAFE CERTIFIED
+                                        {tp('⚡ SHOCK-SAFE CERTIFIED')}
                                     </div>
                                 )}
                                 <div className="flex flex-col md:flex-row gap-3 md:gap-6">
@@ -200,7 +204,7 @@ export default function FencingInfrastructurePage() {
                                                 : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                                                 }`}
                                         >
-                                            {selectedFencingType === fence.id ? '✓ SELECTED' : 'GET QUOTE'}
+                                            {selectedFencingType === fence.id ? tp('✓ SELECTED') : tp('GET QUOTE')}
                                         </button>
                                     </div>
                                 </div>
@@ -214,8 +218,8 @@ export default function FencingInfrastructurePage() {
             <section className="px-3 md:px-6 py-8 md:py-12 bg-primary/5">
                 <div className="mx-auto max-w-[1280px]">
                     <div className="mb-6 md:mb-10">
-                        <h2 className="text-2xl md:text-3xl font-black mb-1 md:mb-2">Eco-Friendly Construction Materials</h2>
-                        <p className="text-sm md:text-base text-gray-600">Build sustainable farmhouses and barns with certified materials</p>
+                        <h2 className="text-2xl md:text-3xl font-black mb-1 md:mb-2">{tp('Eco-Friendly Construction Materials')}</h2>
+                        <p className="text-sm md:text-base text-gray-600">{tp('Build sustainable farmhouses and barns with certified materials')}</p>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                         {constructionMaterials.map((material) => (
@@ -224,7 +228,7 @@ export default function FencingInfrastructurePage() {
                                     {material.eco && (
                                         <div className="absolute top-2 md:top-3 left-2 md:left-3 z-10 rounded-lg bg-green-600 px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold text-white shadow-lg flex items-center gap-1">
                                             <span className="material-symbols-outlined text-xs">eco</span>
-                                            ECO-FRIENDLY
+                                            {tp('ECO-FRIENDLY')}
                                         </div>
                                     )}
                                     <div className="h-full w-full bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">
@@ -243,14 +247,14 @@ export default function FencingInfrastructurePage() {
                                             className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-primary text-white px-2 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-bold hover:bg-primary-dark transition-colors"
                                         >
                                             <span className="material-symbols-outlined text-sm md:text-base">call</span>
-                                            Call for Details
+                                            {tp('Call for Details')}
                                         </a>
                                         <a
                                             href="https://wa.me/919380306475" target="_blank" rel="noopener noreferrer"
                                             className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-green-600 text-white px-2 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-bold hover:bg-green-700 transition-colors"
                                         >
                                             <span className="material-symbols-outlined text-sm md:text-base">chat</span>
-                                            Book Details
+                                            {tp('Book Details')}
                                         </a>
                                     </div>
                                 </div>
@@ -269,73 +273,73 @@ export default function FencingInfrastructurePage() {
                                 <div className="inline-flex items-center justify-center size-14 md:size-16 rounded-2xl bg-gradient-to-br from-primary to-green-600 text-white mb-3 md:mb-4">
                                     <span className="material-symbols-outlined text-2xl md:text-3xl">request_quote</span>
                                 </div>
-                                <h3 className="text-2xl md:text-3xl font-black text-primary-dark mb-1 md:mb-2">Request Fencing Quote</h3>
-                                <p className="text-sm md:text-base text-gray-600">Get a customized quotation for your farm fencing needs</p>
+                                <h3 className="text-2xl md:text-3xl font-black text-primary-dark mb-1 md:mb-2">{tp('Request Fencing Quote')}</h3>
+                                <p className="text-sm md:text-base text-gray-600">{tp('Get a customized quotation for your farm fencing needs')}</p>
                             </div>
                             <div className="space-y-3 md:space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                                     <div>
-                                        <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700">Full Name *</label>
+                                        <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700">{tp('Full Name')} *</label>
                                         <input
                                             type="text"
                                             value={formData.full_name}
                                             onChange={(e) => { setFormData({ ...formData, full_name: e.target.value }); setFormErrors(prev => { const { full_name, ...r } = prev; return r; }); }}
                                             className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.full_name ? 'ring-2 ring-red-400' : ''}`}
-                                            placeholder="Enter your name"
+                                            placeholder={tp('Enter your name')}
                                         />
                                         {formErrors.full_name && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.full_name}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700">Phone Number *</label>
+                                        <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700">{tp('Phone Number')} *</label>
                                         <input
                                             type="tel"
                                             value={formData.phone}
                                             onChange={(e) => { setFormData({ ...formData, phone: normalizeIndianPhone(e.target.value) }); setFormErrors(prev => { const { phone, ...r } = prev; return r; }); }}
                                             className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.phone ? 'ring-2 ring-red-400' : ''}`}
-                                            placeholder="10-digit number"
+                                            placeholder={tp('10-digit number')}
                                             maxLength={14}
                                         />
                                         {formErrors.phone && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.phone}</p>}
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700">Farm Location *</label>
+                                    <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700">{tp('Farm Location')} *</label>
                                     <input
                                         type="text"
                                         value={formData.location}
                                         onChange={(e) => { setFormData({ ...formData, location: e.target.value }); setFormErrors(prev => { const { location, ...r } = prev; return r; }); }}
                                         className={`w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none ${formErrors.location ? 'ring-2 ring-red-400' : ''}`}
-                                        placeholder="Village, District, State"
+                                        placeholder={tp('Village, District, State')}
                                     />
                                     {formErrors.location && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.location}</p>}
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                                     <div>
-                                        <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700">Fencing Length (feet)</label>
+                                        <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700">{tp('Fencing Length (feet)')}</label>
                                         <input
                                             type="number"
                                             value={formData.fencing_length}
                                             onChange={(e) => setFormData({ ...formData, fencing_length: e.target.value })}
                                             className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none"
-                                            placeholder="e.g., 500"
+                                            placeholder={tp('e.g., 500')}
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700">Preferred Timeline</label>
+                                        <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700">{tp('Preferred Timeline')}</label>
                                         <select
                                             value={formData.preferred_timeline}
                                             onChange={(e) => setFormData({ ...formData, preferred_timeline: e.target.value })}
                                             className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none">
-                                            <option>Within 1 week</option>
-                                            <option>Within 2 weeks</option>
-                                            <option>Within 1 month</option>
-                                            <option>Flexible</option>
+                                            <option value="Within 1 week">{tp('Within 1 week')}</option>
+                                            <option value="Within 2 weeks">{tp('Within 2 weeks')}</option>
+                                            <option value="Within 1 month">{tp('Within 1 month')}</option>
+                                            <option value="Flexible">{tp('Flexible')}</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                                     <div>
-                                        <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700">Preferred Start Date</label>
+                                        <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700">{tp('Preferred Start Date')}</label>
                                         <input
                                             type="date"
                                             value={formData.preferred_date}
@@ -345,22 +349,22 @@ export default function FencingInfrastructurePage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700">Preferred Time</label>
+                                        <label className="block text-xs md:text-sm font-bold mb-1.5 md:mb-2 text-gray-700">{tp('Preferred Time')}</label>
                                         <select
                                             value={formData.preferred_time}
                                             onChange={(e) => setFormData({ ...formData, preferred_time: e.target.value })}
                                             className="w-full skeuo-inset rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base font-bold focus:ring-0 border-none appearance-none"
                                         >
-                                            <option value="">Select a time slot</option>
-                                            <option value="Morning (8 AM – 11 AM)">Morning (8 AM – 11 AM)</option>
-                                            <option value="Late Morning (11 AM – 2 PM)">Late Morning (11 AM – 2 PM)</option>
-                                            <option value="Afternoon (2 PM – 5 PM)">Afternoon (2 PM – 5 PM)</option>
-                                            <option value="Evening (5 PM – 8 PM)">Evening (5 PM – 8 PM)</option>
+                                            <option value="">{tp('Select a time slot')}</option>
+                                            <option value="Morning (8 AM – 11 AM)">{tp('Morning (8 AM – 11 AM)')}</option>
+                                            <option value="Late Morning (11 AM – 2 PM)">{tp('Late Morning (11 AM – 2 PM)')}</option>
+                                            <option value="Afternoon (2 PM – 5 PM)">{tp('Afternoon (2 PM – 5 PM)')}</option>
+                                            <option value="Evening (5 PM – 8 PM)">{tp('Evening (5 PM – 8 PM)')}</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div className="bg-amber-50 border-2 border-amber-200 rounded-lg md:rounded-xl p-3 md:p-4">
-                                    <p className="text-xs md:text-sm font-bold text-amber-800 mb-0.5 md:mb-1">Selected Fencing Type:</p>
+                                    <p className="text-xs md:text-sm font-bold text-amber-800 mb-0.5 md:mb-1">{tp('Selected Fencing Type:')}</p>
                                     <p className="text-base md:text-lg font-black text-amber-600">
                                         {fencingTypes.find(f => f.id === selectedFencingType)?.title}
                                     </p>
@@ -371,7 +375,7 @@ export default function FencingInfrastructurePage() {
                                     disabled={!formData.full_name || !formData.phone || !formData.location || !agreedToTerms}
                                     className="vibrant-gradient w-full rounded-lg md:rounded-xl py-3 md:py-5 text-white font-black text-base md:text-xl shadow-2xl shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
                                     <span className="material-symbols-outlined text-xl md:text-2xl">send</span>
-                                    REQUEST QUOTE
+                                    {tp('REQUEST QUOTE')}
                                 </button>
                             </div>
                         </div>
@@ -388,12 +392,12 @@ export default function FencingInfrastructurePage() {
                                 <span className="material-symbols-outlined text-4xl md:text-5xl text-white">check_circle</span>
                             </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-primary-dark dark:text-white mb-2 md:mb-3">Quote Requested!</h2>
-                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4">Your fencing quote request has been submitted successfully.</p>
+                        <h2 className="text-2xl md:text-3xl font-black text-primary-dark dark:text-white mb-2 md:mb-3">{tp('Quote Requested!')}</h2>
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4">{tp('Your fencing quote request has been submitted successfully.')}</p>
                         <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
-                            <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will contact you soon to finalize your fencing installation</p>
+                            <p className="text-sm font-bold text-green-700 dark:text-green-400">{tp('📞 Our team will contact you soon to finalize your fencing installation')}</p>
                         </div>
-                        <button onClick={() => { setShowSuccessModal(false); setFormData({ full_name: '', phone: '', location: '', fencing_length: '', preferred_timeline: 'Within 1 week', preferred_date: '', preferred_time: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">Done</button>
+                        <button onClick={() => { setShowSuccessModal(false); setFormData({ full_name: '', phone: '', location: '', fencing_length: '', preferred_timeline: 'Within 1 week', preferred_date: '', preferred_time: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">{tp('Done')}</button>
                     </div>
                     <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>
                 </div>

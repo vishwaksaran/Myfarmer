@@ -260,16 +260,18 @@ export default function BuyCropsPage() {
     const [cropQuantities, setCropQuantities] = useState<Record<string, { qty: string; unit: string }>>({});
     const [showCallModal, setShowCallModal] = useState<{ name: string; phone: string } | null>(null);
 
+    const q = search.toLowerCase();
     const filteredCategories = cropCategories
         .map(cat => ({
             ...cat,
+            // Match against both the English name and its translation.
             items: cat.items.filter(item =>
-                item.toLowerCase().includes(search.toLowerCase())
+                item.toLowerCase().includes(q) || tp(item).toLowerCase().includes(q)
             )
         }))
         .filter(cat =>
             search === '' ||
-            cat.name.toLowerCase().includes(search.toLowerCase()) ||
+            cat.name.toLowerCase().includes(q) || tp(cat.name).toLowerCase().includes(q) ||
             cat.items.length > 0
         );
 
@@ -430,7 +432,7 @@ export default function BuyCropsPage() {
                                     key={crop}
                                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 text-sm font-bold border border-green-200 dark:border-green-800"
                                 >
-                                    {crop}
+                                    {tp(crop)}
                                     {cropQuantities[crop]?.qty && (
                                         <span className="text-green-500 text-xs">({cropQuantities[crop].qty} {cropQuantities[crop].unit})</span>
                                     )}
@@ -454,7 +456,7 @@ export default function BuyCropsPage() {
                                     <div key={crop} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
                                         {/* Crop label */}
                                         <div className="w-32 sm:w-40 shrink-0">
-                                            <span className="font-bold text-gray-800 dark:text-gray-200 text-sm truncate block">{crop}</span>
+                                            <span className="font-bold text-gray-800 dark:text-gray-200 text-sm truncate block">{tp(crop)}</span>
                                         </div>
                                         {/* Quantity input */}
                                         <div className="relative flex-1 min-w-0">
@@ -507,7 +509,7 @@ export default function BuyCropsPage() {
                                             {/* Crop sub-header */}
                                             <div className="flex items-center gap-2 mb-3">
                                                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                                <h5 className="text-sm font-black text-gray-800 dark:text-gray-200 uppercase tracking-wide">{crop}</h5>
+                                                <h5 className="text-sm font-black text-gray-800 dark:text-gray-200 uppercase tracking-wide">{tp(crop)}</h5>
                                                 <span className="text-xs font-semibold text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
                                                     {cropSellerList.length} {cropSellerList.length === 1 ? 'seller' : 'sellers'}
                                                 </span>
@@ -663,7 +665,7 @@ export default function BuyCropsPage() {
                                                     {isSelected && (
                                                         <span className="material-symbols-outlined text-sm text-green-500">check_circle</span>
                                                     )}
-                                                    {item}
+                                                    {tp(item)}
                                                 </button>
                                             );
                                         })}

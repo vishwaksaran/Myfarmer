@@ -2,196 +2,245 @@
 
 import { useEffect, useState } from 'react';
 
+const NAME = 'MIRAITU';
+// A few drifting leaves for a subtle "growing" farming vibe. Each value tunes
+// one leaf's horizontal start (%), size (px), delay (s), duration (s), drift (px).
+const LEAVES = [
+  { left: 8, size: 26, delay: 0.0, dur: 7.5, drift: 40 },
+  { left: 22, size: 18, delay: 1.6, dur: 9.0, drift: -30 },
+  { left: 38, size: 32, delay: 0.8, dur: 8.2, drift: 55 },
+  { left: 55, size: 20, delay: 2.4, dur: 9.6, drift: -45 },
+  { left: 70, size: 28, delay: 0.4, dur: 7.8, drift: 35 },
+  { left: 84, size: 16, delay: 3.0, dur: 10.0, drift: -25 },
+  { left: 92, size: 22, delay: 1.2, dur: 8.6, drift: 30 },
+];
+
 export default function SplashScreen() {
   const [showSplash, setShowSplash] = useState(false);
 
   useEffect(() => {
-    // Only show splash screen in standalone mode (PWA installed)
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    
-    if (!isStandalone) {
-      return; // Don't show splash on mobile website
-    }
+    // Show in installed-PWA (standalone) mode, or when previewing with ?splash
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      // iOS Safari standalone flag
+      (window.navigator as unknown as { standalone?: boolean }).standalone === true;
+    const isPreview = window.location.search.includes('splash');
+
+    if (!isStandalone && !isPreview) return;
 
     setShowSplash(true);
-
-    // Hide splash after branding displays (2-3 seconds)
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 2500);
-
+    const timer = setTimeout(() => setShowSplash(false), 3200);
     return () => clearTimeout(timer);
   }, []);
 
-  if (!showSplash) {
-    return null;
-  }
+  if (!showSplash) return null;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: '100%',
-        height: '100%',
-        zIndex: 999999,
-        background: 'linear-gradient(135deg, #2c5926 0%, #1e3d1a 100%)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        animation: 'fadeOut 0.5s ease-in-out 2s forwards',
-      }}
-    >
-      {/* Logo Container */}
-      <div
-        style={{
-          width: 120,
-          height: 120,
-          borderRadius: '50%',
-          background: 'transparent',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: 24,
-          animation: 'scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s backwards',
-          overflow: 'visible',
-        }}
-      >
-        <img
-          src="/miraitu-logo-icon.png"
-          alt="Miraitu Logo"
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain',
-            filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.2))',
-          }}
-        />
+    <div className="miraitu-splash" role="status" aria-label="Loading Miraitu">
+      {/* Drifting leaves layer */}
+      <div className="ms-leaves" aria-hidden="true">
+        {LEAVES.map((l, i) => (
+          <span
+            key={i}
+            className="ms-leaf"
+            style={{
+              left: `${l.left}%`,
+              fontSize: l.size,
+              animationDelay: `${l.delay}s`,
+              animationDuration: `${l.dur}s`,
+              // custom prop consumed by the keyframes for horizontal sway
+              ['--drift' as string]: `${l.drift}px`,
+            }}
+          >
+            🍃
+          </span>
+        ))}
       </div>
 
-      {/* App Name */}
-      <h1
-        style={{
-          color: 'white',
-          fontSize: 32,
-          fontWeight: 800,
-          margin: '0 0 12px 0',
-          textAlign: 'center',
-          letterSpacing: '-0.5px',
-          animation: 'fadeInUp 0.6s ease-out 0.4s backwards',
-        }}
-      >
-        Miraitu
-      </h1>
+      {/* Center content */}
+      <div className="ms-center">
+        {/* Pulsing glow behind the logo */}
+        <div className="ms-glow" aria-hidden="true" />
 
-      {/* Tagline */}
-      <p
-        style={{
-          color: 'rgba(255, 255, 255, 0.85)',
-          fontSize: 14,
-          margin: 0,
-          textAlign: 'center',
-          letterSpacing: '0.3px',
-          animation: 'fadeInUp 0.6s ease-out 0.6s backwards',
-        }}
-      >
-        Cultivating the Future Together
-      </p>
+        {/* Logo card (white squircle) with a moving light sheen */}
+        <div className="ms-logo-card">
+          <img src="/miraitu-logo-icon.png" alt="Miraitu" className="ms-logo-img" />
+          <span className="ms-sheen" aria-hidden="true" />
+        </div>
 
-      {/* Loading Indicator */}
-      <div
-        style={{
-          marginTop: 40,
-          display: 'flex',
-          gap: 6,
-          animation: 'fadeIn 0.6s ease-out 0.8s backwards',
-        }}
-      >
-        <div
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            background: 'rgba(255, 255, 255, 0.6)',
-            animation: 'pulse 1.5s ease-in-out 0s infinite',
-          }}
-        />
-        <div
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            background: 'rgba(255, 255, 255, 0.6)',
-            animation: 'pulse 1.5s ease-in-out 0.3s infinite',
-          }}
-        />
-        <div
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            background: 'rgba(255, 255, 255, 0.6)',
-            animation: 'pulse 1.5s ease-in-out 0.6s infinite',
-          }}
-        />
+        {/* App name — letters reveal one by one */}
+        <h1 className="ms-name" aria-label={NAME}>
+          {NAME.split('').map((ch, i) => (
+            <span
+              key={i}
+              className="ms-letter"
+              style={{ animationDelay: `${0.55 + i * 0.07}s` }}
+            >
+              {ch}
+            </span>
+          ))}
+        </h1>
+
+        {/* Tagline */}
+        <p className="ms-tagline">Where Farming Meets the Future</p>
+
+        {/* Loading progress bar */}
+        <div className="ms-bar" aria-hidden="true">
+          <span className="ms-bar-fill" />
+        </div>
       </div>
+
+      {/* Version pinned to bottom */}
+      <p className="ms-version">Version 1.0</p>
 
       <style>{`
-        @keyframes fadeOut {
-          from {
-            opacity: 1;
-            visibility: visible;
-          }
-          to {
-            opacity: 0;
-            visibility: hidden;
-          }
+        .miraitu-splash {
+          position: fixed; inset: 0; width: 100%; height: 100%;
+          z-index: 999999; overflow: hidden;
+          display: flex; align-items: center; justify-content: center;
+          background: linear-gradient(180deg, #2f7d31 0%, #3f9c3f 52%, #5bb659 100%);
+          background-size: 100% 200%;
+          animation: msBgShift 6s ease-in-out infinite, msFadeOut 0.6s ease 2.6s forwards;
+          -webkit-font-smoothing: antialiased;
+          font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
         }
 
-        @keyframes scaleIn {
-          from {
-            transform: scale(0.8);
-            opacity: 0;
-          }
-          to {
-            transform: scale(1);
-            opacity: 1;
-          }
+        /* Soft vignette + top highlight for depth */
+        .miraitu-splash::after {
+          content: ''; position: absolute; inset: 0; pointer-events: none;
+          background:
+            radial-gradient(120% 60% at 50% 18%, rgba(255,255,255,0.16), transparent 60%),
+            radial-gradient(140% 90% at 50% 120%, rgba(0,0,0,0.28), transparent 55%);
         }
 
-        @keyframes fadeInUp {
-          from {
-            transform: translateY(20px);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
+        .ms-leaves { position: absolute; inset: 0; pointer-events: none; }
+        .ms-leaf {
+          position: absolute; bottom: -8%;
+          opacity: 0; will-change: transform, opacity;
+          animation-name: msFloatUp; animation-timing-function: linear;
+          animation-iteration-count: infinite;
+          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.12));
         }
 
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
+        .ms-center {
+          position: relative; z-index: 2;
+          display: flex; flex-direction: column; align-items: center;
         }
 
-        @keyframes pulse {
-          0%, 100% {
-            transform: scale(1);
-            opacity: 0.6;
+        .ms-glow {
+          position: absolute; top: -28px; width: 260px; height: 260px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 68%);
+          animation: msGlow 2.6s ease-in-out infinite;
+        }
+
+        .ms-logo-card {
+          position: relative; width: 132px; height: 132px; border-radius: 34px;
+          background: #ffffff; display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 18px 40px rgba(0,0,0,0.25), 0 4px 10px rgba(0,0,0,0.15);
+          margin-bottom: 26px; overflow: hidden;
+          animation: msPopIn 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s backwards,
+                     msBob 3.4s ease-in-out 0.9s infinite;
+        }
+        .ms-logo-img {
+          width: 74%; height: 74%; object-fit: contain;
+          filter: drop-shadow(0 2px 5px rgba(0,0,0,0.12));
+        }
+        /* Diagonal light sweep across the card */
+        .ms-sheen {
+          position: absolute; top: 0; left: -60%; width: 45%; height: 100%;
+          transform: skewX(-20deg);
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.65), transparent);
+          animation: msSheen 2.8s ease-in-out 1.1s infinite;
+        }
+
+        .ms-name {
+          margin: 0 0 10px; display: flex; gap: 2px;
+          color: #fff; font-size: 40px; font-weight: 800; letter-spacing: 5px;
+          text-shadow: 0 3px 12px rgba(0,0,0,0.22);
+        }
+        .ms-letter {
+          display: inline-block; opacity: 0;
+          animation: msLetterUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+        }
+
+        .ms-tagline {
+          margin: 0; color: rgba(255,255,255,0.92);
+          font-size: 15px; font-weight: 600; letter-spacing: 0.4px; text-align: center;
+          padding: 0 24px;
+          animation: msFadeUp 0.6s ease-out 1.25s backwards;
+        }
+
+        .ms-bar {
+          margin-top: 34px; width: 168px; height: 5px; border-radius: 999px;
+          background: rgba(255,255,255,0.28); overflow: hidden;
+          animation: msFadeUp 0.6s ease-out 1.5s backwards;
+        }
+        .ms-bar-fill {
+          display: block; height: 100%; width: 0%; border-radius: 999px;
+          background: linear-gradient(90deg, #eafce6, #ffffff);
+          box-shadow: 0 0 10px rgba(255,255,255,0.6);
+          animation: msBar 2.3s cubic-bezier(0.65, 0, 0.35, 1) 0.7s forwards;
+        }
+
+        .ms-version {
+          position: absolute; bottom: 26px; left: 0; right: 0; z-index: 2;
+          margin: 0; text-align: center;
+          color: rgba(255,255,255,0.6); font-size: 12px; letter-spacing: 0.5px;
+          animation: msFadeUp 0.6s ease-out 1.7s backwards;
+        }
+
+        @keyframes msBgShift {
+          0%, 100% { background-position: 50% 0%; }
+          50% { background-position: 50% 100%; }
+        }
+        @keyframes msFadeOut {
+          to { opacity: 0; visibility: hidden; }
+        }
+        @keyframes msFloatUp {
+          0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+          12% { opacity: 0.85; }
+          88% { opacity: 0.85; }
+          100% { transform: translateY(-118vh) translateX(var(--drift, 30px)) rotate(220deg); opacity: 0; }
+        }
+        @keyframes msGlow {
+          0%, 100% { transform: scale(0.9); opacity: 0.55; }
+          50% { transform: scale(1.15); opacity: 0.95; }
+        }
+        @keyframes msPopIn {
+          from { transform: scale(0.6); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes msBob {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-9px); }
+        }
+        @keyframes msSheen {
+          0% { left: -60%; }
+          55%, 100% { left: 130%; }
+        }
+        @keyframes msLetterUp {
+          from { opacity: 0; transform: translateY(16px) scale(0.9); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes msFadeUp {
+          from { opacity: 0; transform: translateY(14px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes msBar {
+          0% { width: 0%; }
+          70% { width: 82%; }
+          100% { width: 100%; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .miraitu-splash, .ms-leaf, .ms-glow, .ms-logo-card, .ms-sheen,
+          .ms-letter, .ms-tagline, .ms-bar, .ms-bar-fill, .ms-version {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
           }
-          50% {
-            transform: scale(1.2);
-            opacity: 1;
-          }
+          .ms-bar-fill { width: 100% !important; }
+          .miraitu-splash { animation: msFadeOut 0.6s ease 2.6s forwards; }
         }
       `}</style>
     </div>
