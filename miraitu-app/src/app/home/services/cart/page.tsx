@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useServiceCart } from '@/context/ServiceBookingCart';
 import { useAuth } from '@/context/AuthContext';
 import { useAppLocation } from '@/context/LocationContext';
-import { serviceUnitLabel } from '@/lib/service-catalog';
+import { serviceUnitLabel, getServiceCategory } from '@/lib/service-catalog';
 import { createServiceCatalogBooking } from '@/app/actions/service-catalog-bookings';
 import { normalizeIndianPhone } from '@/lib/phone';
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -28,6 +28,24 @@ export default function ServiceCartPage() {
     const { t, lang } = useLanguage();
     // Translate stored catalog content (item name, unit, saved answers) on render.
     const tc = (s?: string) => translateCatalog(lang, s);
+
+    // GST is charged at 18% on the items subtotal; the grand total includes it.
+    const GST_RATE = 0.18;
+    const gst = Math.round(subtotal * GST_RATE);
+    const grandTotal = subtotal + gst;
+
+    // Render a line's saved answers as readable "Question: value" pairs by
+    // looking up each answer's question label from the service catalog.
+    const answerSummary = (line: (typeof lines)[number]) => {
+        const questions = getServiceCategory(line.category)?.questions ?? [];
+        return Object.entries(line.answers)
+            .filter(([, v]) => v)
+            .map(([id, v]) => {
+                const label = questions.find(q => q.id === id)?.label;
+                return label ? `${tc(label)}: ${tc(v)}` : tc(v);
+            })
+            .join(' · ');
+    };
 
     const [form, setForm] = useState({
         full_name: '',
@@ -81,7 +99,7 @@ export default function ServiceCartPage() {
                 location: form.location,
                 date: form.date,
                 time: form.time,
-                total: subtotal,
+                total: grandTotal,
                 items: lines.map(l => ({
                     category: l.category,
                     itemId: l.itemId,
@@ -165,9 +183,9 @@ export default function ServiceCartPage() {
                                     </button>
                                 </div>
                                 <p className="text-primary font-black text-sm mt-0.5">{inr(l.price)}<span className="text-xs font-medium text-gray-400">{tc(serviceUnitLabel[l.unit])}</span></p>
-                                {Object.keys(l.answers).length > 0 && (
-                                    <p className="text-[11px] text-gray-400 mt-1 truncate">
-                                        {Object.entries(l.answers).filter(([, v]) => v).map(([, v]) => tc(v)).join(' · ')}
+                                {answerSummary(l) && (
+                                    <p className="text-[11px] text-gray-400 mt-1 line-clamp-2">
+                                        {answerSummary(l)}
                                     </p>
                                 )}
                                 <div className="flex items-center gap-2 mt-2">
@@ -240,9 +258,12 @@ export default function ServiceCartPage() {
                                 <span className="font-medium shrink-0">{inr(l.price * l.quantity)}</span>
                             </div>
                         ))}
-                        <div className="flex justify-between text-gray-600 dark:text-gray-300"><span>{t('cart.tax')}</span><span className="font-medium">₹0</span></div>
+                        <div className="border-t border-dashed border-gray-200 dark:border-gray-700 mt-2 pt-2 flex justify-between text-gray-600 dark:text-gray-300">
+                            <span>{t('cart.subtotal')}</span><span className="font-medium">{inr(subtotal)}</span>
+                        </div>
+                        <div className="flex justify-between text-gray-600 dark:text-gray-300"><span>{t('cart.gst')}</span><span className="font-medium">{inr(gst)}</span></div>
                         <div className="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2 flex justify-between font-black text-gray-900 dark:text-white text-base">
-                            <span>{t('cart.totalAmount')}</span><span className="text-primary">{inr(subtotal)}</span>
+                            <span>{t('cart.totalAmount')}</span><span className="text-primary">{inr(grandTotal)}</span>
                         </div>
                     </div>
                 </div>
@@ -258,7 +279,7 @@ export default function ServiceCartPage() {
                     disabled={!canSubmit}
                     className="w-full py-4 rounded-2xl bg-primary text-white font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
                 >
-                    {submitting ? t('cart.creating') : `${t('cart.createBooking')} · ${inr(subtotal)}`}
+                    {submitting ? t('cart.creating') : `${t('cart.createBooking')} · ${inr(grandTotal)}`}
                 </button>
             </div>
         </div>

@@ -413,8 +413,8 @@ export default function BuyCropsPage() {
                                     <span className="material-symbols-outlined text-white text-xl">shopping_cart</span>
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-black text-white">Order: {selectedCrops.length} {selectedCrops.length === 1 ? 'Crop' : 'Crops'} Selected</h3>
-                                    <p className="text-white/70 text-sm">Select quantity and contact seller</p>
+                                    <h3 className="text-lg font-black text-white">{tp('Order')}: {selectedCrops.length} {selectedCrops.length === 1 ? tp('Crop') : tp('Crops')} {tp('Selected')}</h3>
+                                    <p className="text-white/70 text-sm">{tp('Select quantity and contact seller')}</p>
                                 </div>
                             </div>
                             <button
@@ -434,7 +434,7 @@ export default function BuyCropsPage() {
                                 >
                                     {tp(crop)}
                                     {cropQuantities[crop]?.qty && (
-                                        <span className="text-green-500 text-xs">({cropQuantities[crop].qty} {cropQuantities[crop].unit})</span>
+                                        <span className="text-green-500 text-xs">({cropQuantities[crop].qty} {tp(cropQuantities[crop].unit)})</span>
                                     )}
                                     <button
                                         onClick={() => removeCrop(crop)}
@@ -449,7 +449,7 @@ export default function BuyCropsPage() {
                         {/* Per-Crop Quantity Inputs */}
                         <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
                             <label className="text-sm font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-4 block">
-                                How much do you need?
+                                {tp('How much do you need?')}
                             </label>
                             <div className="space-y-3">
                                 {selectedCrops.map(crop => (
@@ -465,7 +465,7 @@ export default function BuyCropsPage() {
                                                 type="number"
                                                 min="0"
                                                 step="0.1"
-                                                placeholder="Qty"
+                                                placeholder={tp('Qty')}
                                                 value={cropQuantities[crop]?.qty || ''}
                                                 onChange={(e) => updateCropQty(crop, e.target.value)}
                                                 className="w-full pl-10 pr-3 py-2.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 font-bold text-sm focus:border-green-500 outline-none transition-colors"
@@ -477,12 +477,12 @@ export default function BuyCropsPage() {
                                             onChange={(e) => updateCropUnit(crop, e.target.value)}
                                             className="shrink-0 px-3 py-2.5 rounded-lg bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 font-bold text-sm appearance-none cursor-pointer"
                                         >
-                                            <option value="Kg">Kg</option>
-                                            <option value="Quintals">Quintals</option>
-                                            <option value="Tonnes">Tonnes</option>
-                                            <option value="Bags">Bags</option>
-                                            <option value="Pieces">Pieces</option>
-                                            <option value="Dozen">Dozen</option>
+                                            <option value="Kg">{tp('Kg')}</option>
+                                            <option value="Quintals">{tp('Quintals')}</option>
+                                            <option value="Tonnes">{tp('Tonnes')}</option>
+                                            <option value="Bags">{tp('Bags')}</option>
+                                            <option value="Pieces">{tp('Pieces')}</option>
+                                            <option value="Dozen">{tp('Dozen')}</option>
                                         </select>
                                     </div>
                                 ))}
@@ -490,7 +490,7 @@ export default function BuyCropsPage() {
                             {hasAnyQuantity && (
                                 <p className="mt-3 text-sm text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
                                     <span className="material-symbols-outlined text-sm">check_circle</span>
-                                    Order: {orderSummaryText}
+                                    {tp('Order')}: {orderSummaryText}
                                 </p>
                             )}
                         </div>
@@ -499,7 +499,7 @@ export default function BuyCropsPage() {
                         <div className="p-6">
                             <h4 className="text-sm font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-5 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-lg">group</span>
-                                Available Sellers
+                                {tp('Available Sellers')}
                             </h4>
                             <div className="space-y-6">
                                 {selectedCrops.map(crop => {
@@ -511,11 +511,11 @@ export default function BuyCropsPage() {
                                                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
                                                 <h5 className="text-sm font-black text-gray-800 dark:text-gray-200 uppercase tracking-wide">{tp(crop)}</h5>
                                                 <span className="text-xs font-semibold text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
-                                                    {cropSellerList.length} {cropSellerList.length === 1 ? 'seller' : 'sellers'}
+                                                    {cropSellerList.length} {cropSellerList.length === 1 ? tp('seller') : tp('sellers')}
                                                 </span>
                                                 {cropQuantities[crop]?.qty && (
                                                     <span className="text-xs font-semibold text-green-500 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded-full">
-                                                        Need: {cropQuantities[crop].qty} {cropQuantities[crop].unit}
+                                                        {tp('Need')}: {cropQuantities[crop].qty} {tp(cropQuantities[crop].unit)}
                                                     </span>
                                                 )}
                                             </div>
@@ -555,7 +555,7 @@ export default function BuyCropsPage() {
                                                         <div className="flex items-center gap-2 mb-3 px-2 py-1.5 rounded-lg bg-green-50/80 dark:bg-green-900/20">
                                                             <span className="font-bold text-green-600 dark:text-green-400 text-sm">{seller.price}</span>
                                                             <span className="text-gray-300 dark:text-gray-600">|</span>
-                                                            <span className="text-xs text-gray-500">Min: {seller.minQty}</span>
+                                                            <span className="text-xs text-gray-500">{tp('Min')}: {seller.minQty}</span>
                                                         </div>
 
                                                         {/* Bottom: Call Button */}
@@ -564,7 +564,7 @@ export default function BuyCropsPage() {
                                                             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-white font-bold text-sm shadow-md shadow-green-500/15 hover:shadow-green-500/25 active:scale-[0.97] transition-all mt-auto"
                                                         >
                                                             <span className="material-symbols-outlined text-base">call</span>
-                                                            Call Seller
+                                                            {tp('Call Seller')}
                                                         </button>
                                                     </div>
                                                 ))}
@@ -583,8 +583,8 @@ export default function BuyCropsPage() {
                                         </svg>
                                     </div>
                                     <div>
-                                        <p className="font-bold text-gray-900 dark:text-white text-sm">Need help finding a seller?</p>
-                                        <p className="text-xs text-gray-600 dark:text-gray-400">Chat with us on WhatsApp for assistance</p>
+                                        <p className="font-bold text-gray-900 dark:text-white text-sm">{tp('Need help finding a seller?')}</p>
+                                        <p className="text-xs text-gray-600 dark:text-gray-400">{tp('Chat with us on WhatsApp for assistance')}</p>
                                     </div>
                                 </div>
                                 <a
@@ -607,8 +607,8 @@ export default function BuyCropsPage() {
                 {filteredCategories.length === 0 ? (
                     <div className="text-center py-20">
                         <span className="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600 mb-4 block">search_off</span>
-                        <h3 className="text-xl font-bold text-gray-500 dark:text-gray-400 mb-2">No crops found</h3>
-                        <p className="text-gray-400 text-sm">Try searching for something else</p>
+                        <h3 className="text-xl font-bold text-gray-500 dark:text-gray-400 mb-2">{tp('No crops found')}</h3>
+                        <p className="text-gray-400 text-sm">{tp('Try searching for something else')}</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -715,14 +715,14 @@ export default function BuyCropsPage() {
                             <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
                                 <span className="material-symbols-outlined text-green-600 text-3xl">call</span>
                             </div>
-                            <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1">Contact Seller</h3>
+                            <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1">{tp('Contact Seller')}</h3>
                             <p className="text-gray-500 text-sm">{showCallModal.name}</p>
                         </div>
 
                         {hasAnyQuantity && (
                             <div className="mb-4 p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
                                 <p className="text-sm text-green-700 dark:text-green-300 font-medium text-center">
-                                    Requesting: <strong>{orderSummaryText}</strong>
+                                    {tp('Requesting')}: <strong>{orderSummaryText}</strong>
                                 </p>
                             </div>
                         )}
@@ -733,7 +733,7 @@ export default function BuyCropsPage() {
                                 className="flex-1 py-3.5 rounded-xl bg-green-500 hover:bg-green-600 text-white font-bold flex items-center justify-center gap-2 transition-colors"
                             >
                                 <span className="material-symbols-outlined">call</span>
-                                Call Now
+                                {tp('Call Now')}
                             </button>
                             <a
                                 href={`https://wa.me/${showCallModal.phone.replace(/[^0-9]/g, '')}?text=Hi ${showCallModal.name}, I want to buy: ${orderSummaryText}. Is it available?`}
@@ -752,7 +752,7 @@ export default function BuyCropsPage() {
                             onClick={() => setShowCallModal(null)}
                             className="w-full mt-3 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-semibold text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                         >
-                            Cancel
+                            {tp('Cancel')}
                         </button>
                     </div>
                 </div>

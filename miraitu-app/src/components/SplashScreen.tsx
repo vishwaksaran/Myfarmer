@@ -67,11 +67,19 @@ export default function SplashScreen() {
           position: fixed; inset: 0; width: 100%; height: 100%;
           z-index: 999999; overflow: hidden;
           display: flex; align-items: center; justify-content: center;
-          background: linear-gradient(180deg, #2f7d31 0%, #3f9c3f 52%, #5bb659 100%);
-          background-size: 100% 200%;
-          animation: msBgShift 6s ease-in-out infinite, msFadeOut 0.6s ease 4.0s forwards;
+          /* Solid base MUST match the manifest background_color so the OS's
+             native splash blends invisibly into this branded one. */
+          background: #2f7d31;
+          animation: msFadeOut 0.6s ease 4.0s forwards;
           -webkit-font-smoothing: antialiased;
           font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        }
+
+        /* Gradient fades in over the solid base — no color jump on hand-off. */
+        .miraitu-splash::before {
+          content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0;
+          background: linear-gradient(180deg, #2f7d31 0%, #3f9c3f 52%, #5bb659 100%);
+          animation: msGradIn 0.9s ease-out 0.2s forwards;
         }
 
         /* Soft vignette + top highlight for depth */
@@ -150,9 +158,8 @@ export default function SplashScreen() {
           animation: msFadeUp 0.6s ease-out 1.7s backwards;
         }
 
-        @keyframes msBgShift {
-          0%, 100% { background-position: 50% 0%; }
-          50% { background-position: 50% 100%; }
+        @keyframes msGradIn {
+          to { opacity: 1; }
         }
         @keyframes msFadeOut {
           to { opacity: 0; visibility: hidden; }

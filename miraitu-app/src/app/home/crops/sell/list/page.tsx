@@ -46,16 +46,16 @@ export default function SellCropsListPage() {
     const validateStep = (s: number): boolean => {
         const errs: string[] = [];
         if (s === 1) {
-            if (!selectedCategory) errs.push('Please select a category');
+            if (!selectedCategory) errs.push(tp('Please select a category'));
         } else if (s === 2) {
-            if (!formData.cropName.trim()) errs.push('Crop name is required');
-            if (!formData.quantity.trim()) errs.push('Quantity is required');
-            if (!formData.state) errs.push('State is required');
-            if (!formData.location.trim()) errs.push('Location is required');
-            if (!formData.district.trim()) errs.push('District is required');
-            if (!formData.harvestDate) errs.push('Harvest date is required');
+            if (!formData.cropName.trim()) errs.push(tp('Crop name is required'));
+            if (!formData.quantity.trim()) errs.push(tp('Quantity is required'));
+            if (!formData.state) errs.push(tp('State is required'));
+            if (!formData.location.trim()) errs.push(tp('Location is required'));
+            if (!formData.district.trim()) errs.push(tp('District is required'));
+            if (!formData.harvestDate) errs.push(tp('Harvest date is required'));
         } else if (s === 3) {
-            if (!formData.expectedPrice.trim()) errs.push('Price is required');
+            if (!formData.expectedPrice.trim()) errs.push(tp('Price is required'));
         }
         setStepErrors(errs);
         return errs.length === 0;
@@ -69,7 +69,7 @@ export default function SellCropsListPage() {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                setSubmitError('Please log in to list your produce');
+                setSubmitError(tp('Please log in to list your produce'));
                 setIsSubmitting(false);
                 return;
             }
@@ -106,7 +106,7 @@ export default function SellCropsListPage() {
                 setShowSuccess(true);
             }
         } catch (err) {
-            setSubmitError('Something went wrong. Please try again.');
+            setSubmitError(tp('Something went wrong. Please try again.'));
             console.error(err);
         } finally {
             setIsSubmitting(false);
@@ -184,7 +184,7 @@ export default function SellCropsListPage() {
                                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                     }`}
                             >
-                                Continue
+                                {tp('Continue')}
                             </button>
                         </>
                     )}
@@ -192,26 +192,26 @@ export default function SellCropsListPage() {
                     {/* Step 2: Crop Details */}
                     {step === 2 && (
                         <>
-                            <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-4 md:mb-6">Crop Details</h2>
+                            <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-4 md:mb-6">{tp('Crop Details')}</h2>
                             <div className="space-y-4 md:space-y-6 mb-6 md:mb-8">
                                 <div className="grid md:grid-cols-2 gap-4 md:gap-6">
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Crop Name *</label>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{tp('Crop Name')} *</label>
                                         <input
                                             type="text"
                                             value={formData.cropName}
                                             onChange={(e) => setFormData({ ...formData, cropName: e.target.value })}
-                                            placeholder="e.g., Wheat, Rice, Onion"
+                                            placeholder={tp('e.g., Wheat, Rice, Onion')}
                                             className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Variety</label>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{tp('Variety')}</label>
                                         <input
                                             type="text"
                                             value={formData.variety}
                                             onChange={(e) => setFormData({ ...formData, variety: e.target.value })}
-                                            placeholder="e.g., Sharbati, Basmati 1121"
+                                            placeholder={tp('e.g., Sharbati, Basmati 1121')}
                                             className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
                                         />
                                     </div>
@@ -219,13 +219,13 @@ export default function SellCropsListPage() {
 
                                 <div className="grid md:grid-cols-2 gap-4 md:gap-6">
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Quantity Available *</label>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{tp('Quantity Available')} *</label>
                                         <div className="flex gap-2">
                                             <input
                                                 type="number"
                                                 value={formData.quantity}
                                                 onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                                                placeholder="Enter quantity"
+                                                placeholder={tp('Enter quantity')}
                                                 className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
                                             />
                                             <select
@@ -233,14 +233,14 @@ export default function SellCropsListPage() {
                                                 onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                                                 className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
                                             >
-                                                <option value="quintals">Quintals</option>
-                                                <option value="kg">Kg</option>
-                                                <option value="tonnes">Tonnes</option>
+                                                <option value="quintals">{tp('Quintals')}</option>
+                                                <option value="kg">{tp('Kg')}</option>
+                                                <option value="tonnes">{tp('Tonnes')}</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Harvest Date</label>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{tp('Harvest Date')}</label>
                                         <input
                                             type="date"
                                             value={formData.harvestDate}
@@ -252,13 +252,13 @@ export default function SellCropsListPage() {
 
                                 <div className="grid md:grid-cols-2 gap-4 md:gap-6">
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">State *</label>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{tp('State')} *</label>
                                         <select
                                             value={formData.state}
                                             onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                                             className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
                                         >
-                                            <option value="">Select State</option>
+                                            <option value="">{tp('Select State')}</option>
                                             <option>Maharashtra</option>
                                             <option>Madhya Pradesh</option>
                                             <option>Punjab</option>
@@ -270,34 +270,34 @@ export default function SellCropsListPage() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Location/Village *</label>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{tp('Location/Village')} *</label>
                                         <input
                                             type="text"
                                             value={formData.location}
                                             onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                            placeholder="e.g., Indore, Dewas"
+                                            placeholder={tp('e.g., Indore, Dewas')}
                                             className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">District *</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{tp('District')} *</label>
                                     <input
                                         type="text"
                                         value={formData.district}
                                         onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                                        placeholder="e.g., Indore, Ujjain"
+                                        placeholder={tp('e.g., Indore, Ujjain')}
                                         className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{tp('Description')}</label>
                                     <textarea
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        placeholder="Describe your produce quality, grade, moisture content, etc."
+                                        placeholder={tp('Describe your produce quality, grade, moisture content, etc.')}
                                         rows={4}
                                         className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 resize-none"
                                     />
@@ -309,7 +309,7 @@ export default function SellCropsListPage() {
                                     onClick={() => setStep(1)}
                                     className="flex-1 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg border-2 border-gray-200 text-gray-700 hover:bg-gray-50 transition-all"
                                 >
-                                    Back
+                                    {tp('Back')}
                                 </button>
                                 <button
                                     onClick={() => { if (validateStep(2)) setStep(3); }}
@@ -334,10 +334,10 @@ export default function SellCropsListPage() {
                     {/* Step 3: Photos & Price */}
                     {step === 3 && (
                         <>
-                            <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-4 md:mb-6">Photos & Price</h2>
+                            <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-4 md:mb-6">{tp('Photos & Price')}</h2>
                             <div className="space-y-4 md:space-y-6 mb-6 md:mb-8">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Upload Photos</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{tp('Upload Photos')}</label>
                                     <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl md:rounded-2xl p-5 md:p-8 text-center relative">
                                         <input
                                             type="file"
@@ -354,8 +354,8 @@ export default function SellCropsListPage() {
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                         />
                                         <span className="material-symbols-outlined text-4xl md:text-5xl text-gray-400 mb-2 md:mb-3">add_photo_alternate</span>
-                                        <p className="text-sm md:text-base text-gray-500 mb-1 md:mb-2">Tap to add photos of your produce</p>
-                                        <p className="text-xs text-gray-400">Upload up to 5 photos. Max 5MB each.</p>
+                                        <p className="text-sm md:text-base text-gray-500 mb-1 md:mb-2">{tp('Tap to add photos of your produce')}</p>
+                                        <p className="text-xs text-gray-400">{tp('Upload up to 5 photos. Max 5MB each.')}</p>
                                     </div>
                                     {formData.imageFiles.length > 0 && (
                                         <div className="mt-3 flex gap-3 flex-wrap">
@@ -378,20 +378,20 @@ export default function SellCropsListPage() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Expected Price *</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{tp('Expected Price')} *</label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">₹</span>
                                         <input
                                             type="number"
                                             value={formData.expectedPrice}
                                             onChange={(e) => setFormData({ ...formData, expectedPrice: e.target.value })}
-                                            placeholder="Enter price"
+                                            placeholder={tp('Enter price')}
                                             className="w-full pl-10 pr-20 md:pr-24 py-3 md:py-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-base md:text-lg"
                                         />
-                                        <span className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 text-xs md:text-sm text-gray-500">per {formData.unit}</span>
+                                        <span className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 text-xs md:text-sm text-gray-500">{tp('per')} {formData.unit}</span>
                                     </div>
                                     <p className="text-xs md:text-sm text-gray-500 mt-2">
-                                        💡 Current mandi price for similar produce: ₹2,450/qtl
+                                        💡 {tp('Current mandi price for similar produce')}: ₹2,450/qtl
                                     </p>
                                 </div>
 
@@ -399,11 +399,11 @@ export default function SellCropsListPage() {
                                     <div className="flex items-start gap-2.5 md:gap-3">
                                         <span className="material-symbols-outlined text-primary text-xl md:text-2xl flex-shrink-0">lightbulb</span>
                                         <div>
-                                            <p className="font-semibold text-sm md:text-base text-gray-900 dark:text-white">Tips for better response</p>
+                                            <p className="font-semibold text-sm md:text-base text-gray-900 dark:text-white">{tp('Tips for better response')}</p>
                                             <ul className="text-xs md:text-sm text-gray-600 dark:text-gray-300 mt-1.5 md:mt-2 space-y-0.5 md:space-y-1">
-                                                <li>• Add clear photos of your produce</li>
-                                                <li>• Mention quality grade and moisture content</li>
-                                                <li>• Price competitively based on mandi rates</li>
+                                                <li>• {tp('Add clear photos of your produce')}</li>
+                                                <li>• {tp('Mention quality grade and moisture content')}</li>
+                                                <li>• {tp('Price competitively based on mandi rates')}</li>
                                             </ul>
                                         </div>
                                     </div>
@@ -417,14 +417,14 @@ export default function SellCropsListPage() {
                                     onClick={() => setStep(2)}
                                     className="flex-1 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg border-2 border-gray-200 text-gray-700 hover:bg-gray-50 transition-all"
                                 >
-                                    Back
+                                    {tp('Back')}
                                 </button>
                                 <button
                                     onClick={handleSubmit}
                                     disabled={isSubmitting || !agreedToTerms}
                                     className={`flex-1 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg bg-primary text-white hover:bg-primary-dark transition-all ${isSubmitting || !agreedToTerms ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
-                                    {isSubmitting ? 'Submitting...' : 'Publish Listing'}
+                                    {isSubmitting ? tp('Submitting...') : tp('Publish Listing')}
                                 </button>
                             </div>
 
@@ -452,14 +452,14 @@ export default function SellCropsListPage() {
                                 <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
                                     <span className="material-symbols-outlined text-3xl text-white">check</span>
                                 </div>
-                                <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Crop Listed!</h2>
-                                <p className="text-sm text-gray-500 mb-4">Your produce has been listed successfully. Buyers can now find it in the marketplace.</p>
+                                <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{tp('Crop Listed!')}</h2>
+                                <p className="text-sm text-gray-500 mb-4">{tp('Your produce has been listed successfully. Buyers can now find it in the marketplace.')}</p>
                                 <div className="flex gap-3">
                                     <Link href="/home/crops/sell" className="flex-1 py-3 rounded-xl bg-primary text-white font-bold text-center">
-                                        Done
+                                        {tp('Done')}
                                     </Link>
                                     <Link href="/home/crops/buy" className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold text-center">
-                                        View Market
+                                        {tp('View Market')}
                                     </Link>
                                 </div>
                             </div>
