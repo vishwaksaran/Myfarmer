@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 type Category = 'weight' | 'volume' | 'land' | 'length' | 'temperature';
 
@@ -87,6 +89,8 @@ const categories: Record<Category, { name: string; icon: string; color: string; 
 };
 
 export default function UnitConverterPage() {
+    const { lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const [category, setCategory] = useState<Category>('weight');
     const [fromUnit, setFromUnit] = useState('kg');
     const [toUnit, setToUnit] = useState('quintal');
@@ -134,11 +138,11 @@ export default function UnitConverterPage() {
                 <div className="mx-auto max-w-[1280px]">
                     {/* Breadcrumb */}
                     <nav className="flex items-center gap-1 mb-6 text-xs md:text-sm">
-                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">Home</Link>
+                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">{tp('Home')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">Agri Calculators</Link>
+                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">{tp('Agri Calculators')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <span className="text-primary font-bold">Unit Converter</span>
+                        <span className="text-primary font-bold">{tp('Unit Converter')}</span>
                     </nav>
 
                     {/* Header */}
@@ -147,9 +151,9 @@ export default function UnitConverterPage() {
                             <div className="h-12 w-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-600">
                                 <span className="material-symbols-outlined text-2xl">swap_horiz</span>
                             </div>
-                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">Unit Converter</h1>
+                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">{tp('Unit Converter')}</h1>
                         </div>
-                        <p className="text-sm md:text-base text-gray-500">Convert weight, volume, and local land units across different regions seamlessly.</p>
+                        <p className="text-sm md:text-base text-gray-500">{tp('Convert weight, volume, and local land units across different regions seamlessly.')}</p>
                     </div>
 
                     {/* Category Tabs */}
@@ -164,7 +168,7 @@ export default function UnitConverterPage() {
                                     }`}
                             >
                                 <span className="material-symbols-outlined text-lg">{c.icon}</span>
-                                {c.name}
+                                {tp(c.name)}
                             </button>
                         ))}
                     </div>
@@ -174,13 +178,13 @@ export default function UnitConverterPage() {
                         <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-8">
                             <h3 className="text-lg font-black mb-6 text-gray-900 dark:text-white flex items-center gap-2">
                                 <span className={`material-symbols-outlined p-2 rounded-xl ${cat.color}`}>{cat.icon}</span>
-                                {cat.name} Converter
+                                {tp(cat.name)} {tp('Converter')}
                             </h3>
 
                             <div className="space-y-4">
                                 {/* From */}
                                 <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50">
-                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">From</label>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{tp('From')}</label>
                                     <div className="flex gap-3">
                                         <input
                                             type="number"
@@ -196,7 +200,7 @@ export default function UnitConverterPage() {
                                         className="mt-2 w-full bg-white dark:bg-gray-800 rounded-xl px-4 py-2.5 font-bold text-sm border-none focus:ring-0"
                                     >
                                         {unitKeys.map(u => (
-                                            <option key={u} value={u}>{cat.units[u].label}</option>
+                                            <option key={u} value={u}>{tp(cat.units[u].label)}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -213,7 +217,7 @@ export default function UnitConverterPage() {
 
                                 {/* To */}
                                 <div className="p-4 rounded-2xl bg-primary/5 dark:bg-primary/10 border-2 border-primary/20">
-                                    <label className="block text-xs font-bold text-primary uppercase tracking-wider mb-2">To</label>
+                                    <label className="block text-xs font-bold text-primary uppercase tracking-wider mb-2">{tp('To')}</label>
                                     <div className="flex gap-3">
                                         <p className="flex-1 text-2xl md:text-3xl font-black text-primary truncate">
                                             {fmt(result)}
@@ -225,7 +229,7 @@ export default function UnitConverterPage() {
                                         className="mt-2 w-full bg-white dark:bg-gray-800 rounded-xl px-4 py-2.5 font-bold text-sm border-none focus:ring-0"
                                     >
                                         {unitKeys.map(u => (
-                                            <option key={u} value={u}>{cat.units[u].label}</option>
+                                            <option key={u} value={u}>{tp(cat.units[u].label)}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -233,7 +237,7 @@ export default function UnitConverterPage() {
                                 {/* Formula */}
                                 <div className="p-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-center">
                                     <p className="text-xs text-gray-500 font-bold">
-                                        {fmt(inputNum)} {cat.units[fromUnit]?.label} = {fmt(result)} {cat.units[toUnit]?.label}
+                                        {fmt(inputNum)} {tp(cat.units[fromUnit]?.label)} = {fmt(result)} {tp(cat.units[toUnit]?.label)}
                                     </p>
                                 </div>
                             </div>
@@ -242,9 +246,9 @@ export default function UnitConverterPage() {
                         {/* All Conversions Grid */}
                         <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-8">
                             <h3 className="text-lg font-black mb-5 text-gray-900 dark:text-white">
-                                All {cat.name} Conversions
+                                {tp('All {cat} Conversions').replace('{cat}', tp(cat.name))}
                             </h3>
-                            <p className="text-xs text-gray-500 mb-4">{fmt(inputNum)} {cat.units[fromUnit]?.label} equals:</p>
+                            <p className="text-xs text-gray-500 mb-4">{fmt(inputNum)} {tp(cat.units[fromUnit]?.label)} {tp('equals:')}</p>
                             <div className="space-y-2">
                                 {allResults.map(r => (
                                     <div
@@ -255,7 +259,7 @@ export default function UnitConverterPage() {
                                             : 'bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800'
                                             }`}
                                     >
-                                        <span className="text-sm font-bold text-gray-600 dark:text-gray-400">{r.label}</span>
+                                        <span className="text-sm font-bold text-gray-600 dark:text-gray-400">{tp(r.label)}</span>
                                         <span className={`text-base md:text-lg font-black ${toUnit === r.unit ? 'text-primary' : 'text-gray-900 dark:text-white'}`}>
                                             {fmt(r.value)}
                                         </span>
@@ -270,37 +274,37 @@ export default function UnitConverterPage() {
                         <div className="skeuo-card rounded-2xl p-5">
                             <h4 className="font-bold text-sm mb-3 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-green-600 text-lg">info</span>
-                                Weight Quick Reference
+                                {tp('Weight Quick Reference')}
                             </h4>
                             <div className="space-y-1.5 text-xs text-gray-600 dark:text-gray-400">
-                                <p>1 Quintal = 100 kg</p>
-                                <p>1 Maund = 37.32 kg</p>
-                                <p>1 Tonne = 10 Quintals</p>
-                                <p>1 Seer = 0.933 kg</p>
+                                <p>{tp('1 Quintal = 100 kg')}</p>
+                                <p>{tp('1 Maund = 37.32 kg')}</p>
+                                <p>{tp('1 Tonne = 10 Quintals')}</p>
+                                <p>{tp('1 Seer = 0.933 kg')}</p>
                             </div>
                         </div>
                         <div className="skeuo-card rounded-2xl p-5">
                             <h4 className="font-bold text-sm mb-3 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-amber-600 text-lg">info</span>
-                                Land Quick Reference
+                                {tp('Land Quick Reference')}
                             </h4>
                             <div className="space-y-1.5 text-xs text-gray-600 dark:text-gray-400">
-                                <p>1 Acre = 4,047 sq.m</p>
-                                <p>1 Hectare = 2.47 Acres</p>
-                                <p>1 Bigha = 0.625 Acres (varies)</p>
-                                <p>1 Kanal = 0.125 Acres</p>
+                                <p>{tp('1 Acre = 4,047 sq.m')}</p>
+                                <p>{tp('1 Hectare = 2.47 Acres')}</p>
+                                <p>{tp('1 Bigha = 0.625 Acres (varies)')}</p>
+                                <p>{tp('1 Kanal = 0.125 Acres')}</p>
                             </div>
                         </div>
                         <div className="skeuo-card rounded-2xl p-5">
                             <h4 className="font-bold text-sm mb-3 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-blue-600 text-lg">info</span>
-                                Volume Quick Reference
+                                {tp('Volume Quick Reference')}
                             </h4>
                             <div className="space-y-1.5 text-xs text-gray-600 dark:text-gray-400">
-                                <p>1 US Gallon = 3.785 Liters</p>
-                                <p>1 Cubic Meter = 1,000 L</p>
-                                <p>1 Cubic Foot = 28.32 L</p>
-                                <p>1 Imp. Gallon = 4.546 L</p>
+                                <p>{tp('1 US Gallon = 3.785 Liters')}</p>
+                                <p>{tp('1 Cubic Meter = 1,000 L')}</p>
+                                <p>{tp('1 Cubic Foot = 28.32 L')}</p>
+                                <p>{tp('1 Imp. Gallon = 4.546 L')}</p>
                             </div>
                         </div>
                     </div>

@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 type LoanType = 'kcc' | 'farm-loan' | 'equipment' | 'custom';
 
@@ -13,6 +15,8 @@ const loanPresets: Record<LoanType, { name: string; rate: number; tenure: number
 };
 
 export default function InterestCalculatorPage() {
+    const { lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const [loanType, setLoanType] = useState<LoanType>('kcc');
     const [principal, setPrincipal] = useState('100000');
     const [rate, setRate] = useState('4');
@@ -54,11 +58,11 @@ export default function InterestCalculatorPage() {
                 <div className="mx-auto max-w-[1280px]">
                     {/* Breadcrumb */}
                     <nav className="flex items-center gap-1 mb-6 text-xs md:text-sm">
-                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">Home</Link>
+                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">{tp('Home')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">Agri Calculators</Link>
+                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">{tp('Agri Calculators')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <span className="text-primary font-bold">Interest Calculator</span>
+                        <span className="text-primary font-bold">{tp('Interest Calculator')}</span>
                     </nav>
 
                     {/* Header */}
@@ -67,9 +71,9 @@ export default function InterestCalculatorPage() {
                             <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                                 <span className="material-symbols-outlined text-2xl">calculate</span>
                             </div>
-                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">Interest Calculator</h1>
+                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">{tp('Interest Calculator')}</h1>
                         </div>
-                        <p className="text-sm md:text-base text-gray-500 ml-0 md:ml-15">Estimate KCC loans, farm credit interests, and repayment schedules instantly.</p>
+                        <p className="text-sm md:text-base text-gray-500 ml-0 md:ml-15">{tp('Estimate KCC loans, farm credit interests, and repayment schedules instantly.')}</p>
                     </div>
 
                     {/* Loan Type Selector */}
@@ -81,8 +85,8 @@ export default function InterestCalculatorPage() {
                                 className={`skeuo-card rounded-xl md:rounded-2xl p-3 md:p-5 text-center transition-all ${loanType === key ? 'ring-2 ring-primary shadow-lg shadow-primary/20 scale-[1.02]' : 'hover:shadow-md'}`}
                             >
                                 <span className={`material-symbols-outlined text-2xl md:text-3xl mb-1 md:mb-2 block ${loanType === key ? 'text-primary' : 'text-gray-400'}`}>{val.icon}</span>
-                                <p className={`text-xs md:text-sm font-bold ${loanType === key ? 'text-primary' : 'text-gray-600 dark:text-gray-400'}`}>{val.name}</p>
-                                <p className="text-[10px] md:text-xs text-gray-400 mt-0.5">{val.rate}% p.a.</p>
+                                <p className={`text-xs md:text-sm font-bold ${loanType === key ? 'text-primary' : 'text-gray-600 dark:text-gray-400'}`}>{tp(val.name)}</p>
+                                <p className="text-[10px] md:text-xs text-gray-400 mt-0.5">{val.rate}% {tp('p.a.')}</p>
                             </button>
                         ))}
                     </div>
@@ -91,10 +95,10 @@ export default function InterestCalculatorPage() {
                         {/* Input Panel */}
                         <div className="lg:col-span-2">
                             <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-8 sticky top-24">
-                                <h3 className="text-lg md:text-xl font-black mb-6 text-gray-900 dark:text-white">Loan Details</h3>
+                                <h3 className="text-lg md:text-xl font-black mb-6 text-gray-900 dark:text-white">{tp('Loan Details')}</h3>
                                 <div className="space-y-5">
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Loan Amount (₹)</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{tp('Loan Amount (₹)')}</label>
                                         <input
                                             type="number"
                                             value={principal}
@@ -117,7 +121,7 @@ export default function InterestCalculatorPage() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Interest Rate (% per annum)</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{tp('Interest Rate (% per annum)')}</label>
                                         <input
                                             type="number"
                                             value={rate}
@@ -135,7 +139,7 @@ export default function InterestCalculatorPage() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tenure (Months)</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{tp('Tenure (Months)')}</label>
                                         <input
                                             type="number"
                                             value={tenure}
@@ -151,8 +155,8 @@ export default function InterestCalculatorPage() {
                                             className="w-full mt-2 accent-primary"
                                         />
                                         <div className="flex justify-between text-[10px] text-gray-400 font-bold">
-                                            <span>1 mo</span>
-                                            <span>10 yrs</span>
+                                            <span>{tp('1 mo')}</span>
+                                            <span>{tp('10 yrs')}</span>
                                         </div>
                                     </div>
 
@@ -161,7 +165,7 @@ export default function InterestCalculatorPage() {
                                         className="glossy-button w-full rounded-xl py-4 text-white font-black text-base flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
                                     >
                                         <span className="material-symbols-outlined">calculate</span>
-                                        Calculate EMI
+                                        {tp('Calculate EMI')}
                                     </button>
                                 </div>
                             </div>
@@ -172,22 +176,22 @@ export default function InterestCalculatorPage() {
                             {/* Summary Cards */}
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
                                 <div className="skeuo-card rounded-2xl p-4 md:p-6 text-center">
-                                    <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Monthly EMI</p>
+                                    <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{tp('Monthly EMI')}</p>
                                     <p className="text-xl md:text-3xl font-black text-primary">{fmt(emi)}</p>
                                 </div>
                                 <div className="skeuo-card rounded-2xl p-4 md:p-6 text-center">
-                                    <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Interest</p>
+                                    <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{tp('Total Interest')}</p>
                                     <p className="text-xl md:text-3xl font-black text-red-500">{fmt(totalInterest)}</p>
                                 </div>
                                 <div className="skeuo-card rounded-2xl p-4 md:p-6 text-center">
-                                    <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Payment</p>
+                                    <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{tp('Total Payment')}</p>
                                     <p className="text-xl md:text-3xl font-black text-gray-900 dark:text-white">{fmt(totalPayment)}</p>
                                 </div>
                             </div>
 
                             {/* Visual Breakdown */}
                             <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-8">
-                                <h4 className="font-bold text-gray-900 dark:text-white mb-4">Payment Breakdown</h4>
+                                <h4 className="font-bold text-gray-900 dark:text-white mb-4">{tp('Payment Breakdown')}</h4>
                                 <div className="flex rounded-full overflow-hidden h-6 md:h-8 mb-4">
                                     <div className="bg-primary" style={{ width: `${(P / totalPayment) * 100}%` }}></div>
                                     <div className="bg-red-400" style={{ width: `${(totalInterest / totalPayment) * 100}%` }}></div>
@@ -195,11 +199,11 @@ export default function InterestCalculatorPage() {
                                 <div className="flex flex-wrap gap-4 md:gap-6 text-sm">
                                     <div className="flex items-center gap-2">
                                         <div className="w-3 h-3 rounded-full bg-primary"></div>
-                                        <span className="text-gray-600 dark:text-gray-400">Principal: <strong>{fmt(P)}</strong> ({((P / totalPayment) * 100).toFixed(1)}%)</span>
+                                        <span className="text-gray-600 dark:text-gray-400">{tp('Principal')}: <strong>{fmt(P)}</strong> ({((P / totalPayment) * 100).toFixed(1)}%)</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                                        <span className="text-gray-600 dark:text-gray-400">Interest: <strong>{fmt(totalInterest)}</strong> ({((totalInterest / totalPayment) * 100).toFixed(1)}%)</span>
+                                        <span className="text-gray-600 dark:text-gray-400">{tp('Interest')}: <strong>{fmt(totalInterest)}</strong> ({((totalInterest / totalPayment) * 100).toFixed(1)}%)</span>
                                     </div>
                                 </div>
                             </div>
@@ -207,16 +211,16 @@ export default function InterestCalculatorPage() {
                             {/* Repayment Schedule */}
                             {calculated && (
                                 <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-8">
-                                    <h4 className="font-bold text-gray-900 dark:text-white mb-4">Repayment Schedule</h4>
+                                    <h4 className="font-bold text-gray-900 dark:text-white mb-4">{tp('Repayment Schedule')}</h4>
                                     <div className="overflow-x-auto -mx-2 md:mx-0">
                                         <table className="w-full text-xs md:text-sm">
                                             <thead>
                                                 <tr className="border-b-2 border-gray-200 dark:border-gray-700">
-                                                    <th className="text-left py-2 md:py-3 px-2 font-bold text-gray-500">Month</th>
+                                                    <th className="text-left py-2 md:py-3 px-2 font-bold text-gray-500">{tp('Month')}</th>
                                                     <th className="text-right py-2 md:py-3 px-2 font-bold text-gray-500">EMI</th>
-                                                    <th className="text-right py-2 md:py-3 px-2 font-bold text-gray-500">Principal</th>
-                                                    <th className="text-right py-2 md:py-3 px-2 font-bold text-gray-500">Interest</th>
-                                                    <th className="text-right py-2 md:py-3 px-2 font-bold text-gray-500">Balance</th>
+                                                    <th className="text-right py-2 md:py-3 px-2 font-bold text-gray-500">{tp('Principal')}</th>
+                                                    <th className="text-right py-2 md:py-3 px-2 font-bold text-gray-500">{tp('Interest')}</th>
+                                                    <th className="text-right py-2 md:py-3 px-2 font-bold text-gray-500">{tp('Balance')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -241,8 +245,8 @@ export default function InterestCalculatorPage() {
                                     <div className="flex items-start gap-3">
                                         <span className="material-symbols-outlined text-green-600 text-2xl mt-0.5">info</span>
                                         <div>
-                                            <h5 className="font-bold text-green-800 dark:text-green-300 mb-1">KCC Interest Subvention</h5>
-                                            <p className="text-sm text-green-700 dark:text-green-400">Under the Government of India scheme, KCC loans up to ₹3 lakhs receive a 2% interest subvention (effective rate ~4%). Timely repayment earns an additional 3% prompt repayment incentive, bringing the rate down to as low as <strong>4% p.a.</strong></p>
+                                            <h5 className="font-bold text-green-800 dark:text-green-300 mb-1">{tp('KCC Interest Subvention')}</h5>
+                                            <p className="text-sm text-green-700 dark:text-green-400">{tp('Under the Government of India scheme, KCC loans up to ₹3 lakhs receive a 2% interest subvention (effective rate ~4%). Timely repayment earns an additional 3% prompt repayment incentive, bringing the rate down to as low as')} <strong>4% {tp('p.a.')}</strong></p>
                                         </div>
                                     </div>
                                 </div>
