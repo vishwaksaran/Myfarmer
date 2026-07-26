@@ -11,9 +11,7 @@ import { CartProvider } from '@/context/CartContext';
 const FarmerServicesGrid = dynamic(() => import('@/components/v2/FarmerServicesGrid'));
 const FinanceBanner = dynamic(() => import('@/components/v2/FinanceBanner'));
 const FPOBanner = dynamic(() => import('@/components/v2/FPOBanner'));
-const VeterinarySection = dynamic(() => import('@/components/v2/VeterinarySection'));
 const CTABanner = dynamic(() => import('@/components/v2/CTABanner'));
-const StorageSection = dynamic(() => import('@/components/v2/StorageSection'));
 const ShopSection = dynamic(() => import('@/components/v2/ShopSection'));
 const TestimonialsSection = dynamic(() => import('@/components/v2/TestimonialsSection'));
 const FeaturedVideosSection = dynamic(() => import('@/components/v2/FeaturedVideosSection'));
@@ -45,8 +43,6 @@ export default function HomePage() {
           <CTABanner />
           <FinanceBanner />
           <FPOBanner />
-          <VeterinarySection />
-          <StorageSection />
           <ShopSection />
           <TestimonialsSection />
           <FeaturedVideosSection />
