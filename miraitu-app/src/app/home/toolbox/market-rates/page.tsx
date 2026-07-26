@@ -4,6 +4,8 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useMandiPrices } from '@/lib/useMandiPrices';
 import { getMSP, getCropEmoji, spreadPercent } from '@/lib/mandi-api';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 interface CropPrice {
     crop: string;
@@ -30,6 +32,8 @@ const fallbackPrices: CropPrice[] = [
 type SortBy = 'name' | 'price' | 'change';
 
 export default function MarketRatesPage() {
+    const { lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCrop, setSelectedCrop] = useState<CropPrice | null>(null);
     const [sortBy, setSortBy] = useState<SortBy>('name');
@@ -93,11 +97,11 @@ export default function MarketRatesPage() {
                 <div className="mx-auto max-w-[1280px]">
                     {/* Breadcrumb */}
                     <nav className="flex items-center gap-1 mb-6 text-xs md:text-sm">
-                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">Home</Link>
+                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">{tp('Home')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">Agri Calculators</Link>
+                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">{tp('Agri Calculators')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <span className="text-primary font-bold">Market Rates</span>
+                        <span className="text-primary font-bold">{tp('Market Rates')}</span>
                     </nav>
 
                     {/* Header */}
@@ -106,18 +110,18 @@ export default function MarketRatesPage() {
                             <div className="h-12 w-12 rounded-xl bg-green-500/10 flex items-center justify-center text-green-600">
                                 <span className="material-symbols-outlined text-2xl">trending_up</span>
                             </div>
-                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">Market Rates</h1>
+                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">{tp('Market Rates')}</h1>
                             {!useFallback && !loading && (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-bold">
                                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                    LIVE
+                                    {tp('LIVE')}
                                 </span>
                             )}
                         </div>
                         <p className="text-sm md:text-base text-gray-500">
                             {useFallback && !loading
-                                ? 'Sample mandi prices. Add your free data.gov.in API key for real-time data.'
-                                : 'Live mandi prices, MSP comparisons, and market trends for major crops.'}
+                                ? tp('Sample mandi prices. Add your free data.gov.in API key for real-time data.')
+                                : tp('Live mandi prices, MSP comparisons, and market trends for major crops.')}
                         </p>
                     </div>
 
@@ -127,7 +131,7 @@ export default function MarketRatesPage() {
                             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
                             <input
                                 type="text"
-                                placeholder="Search crop name..."
+                                placeholder={tp('Search crop name...')}
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
                                 className="w-full skeuo-inset rounded-xl pl-10 pr-4 py-3 text-sm"
@@ -143,7 +147,7 @@ export default function MarketRatesPage() {
                                         : 'bg-gray-100 dark:bg-gray-800/50 text-gray-500'
                                         }`}
                                 >
-                                    {s === 'name' ? 'A-Z' : s === 'price' ? 'Price ↓' : 'Change ↓'}
+                                    {s === 'name' ? tp('A-Z') : s === 'price' ? tp('Price ↓') : tp('Change ↓')}
                                 </button>
                             ))}
                         </div>
@@ -179,8 +183,8 @@ export default function MarketRatesPage() {
                                             <div className="flex items-center gap-3">
                                                 <span className="text-3xl">{crop.icon}</span>
                                                 <div>
-                                                    <h4 className="font-bold text-gray-900 dark:text-white">{crop.crop}</h4>
-                                                    <span className="text-xs text-gray-400">per {crop.unit}</span>
+                                                    <h4 className="font-bold text-gray-900 dark:text-white">{tp(crop.crop)}</h4>
+                                                    <span className="text-xs text-gray-400">{tp('per {unit}').replace('{unit}', tp(crop.unit))}</span>
                                                 </div>
                                             </div>
                                             <div className={`flex items-center gap-1 ${crop.change >= 0 ? 'text-green-600' : 'text-red-500'}`}>
@@ -190,7 +194,7 @@ export default function MarketRatesPage() {
                                         </div>
                                         <div className="flex items-end gap-4">
                                             <div>
-                                                <p className="text-xs text-gray-400 font-bold">Mandi Price</p>
+                                                <p className="text-xs text-gray-400 font-bold">{tp('Mandi Price')}</p>
                                                 <p className="text-2xl font-black text-gray-900 dark:text-white">₹{crop.mandi.toLocaleString('en-IN')}</p>
                                             </div>
                                             {crop.msp > 0 && (
@@ -205,8 +209,8 @@ export default function MarketRatesPage() {
                                                 <div className="flex items-center gap-2">
                                                     <span className={`text-xs font-bold ${crop.mandi >= crop.msp ? 'text-green-600' : 'text-red-500'}`}>
                                                         {crop.mandi >= crop.msp
-                                                            ? `▲ ₹${(crop.mandi - crop.msp).toLocaleString('en-IN')} above MSP`
-                                                            : `▼ ₹${(crop.msp - crop.mandi).toLocaleString('en-IN')} below MSP`}
+                                                            ? tp('▲ ₹{amt} above MSP').replace('{amt}', (crop.mandi - crop.msp).toLocaleString('en-IN'))
+                                                            : tp('▼ ₹{amt} below MSP').replace('{amt}', (crop.msp - crop.mandi).toLocaleString('en-IN'))}
                                                     </span>
                                                 </div>
                                             </div>
@@ -216,7 +220,7 @@ export default function MarketRatesPage() {
                                 {filtered.length === 0 && (
                                     <div className="skeuo-card rounded-2xl p-10 text-center col-span-full">
                                         <span className="material-symbols-outlined text-4xl text-gray-300 mb-3">search_off</span>
-                                        <p className="font-bold text-gray-500">No crops found matching &quot;{searchTerm}&quot;</p>
+                                        <p className="font-bold text-gray-500">{tp('No crops found matching "{q}"').replace('{q}', searchTerm)}</p>
                                     </div>
                                 )}
                             </div>
@@ -230,8 +234,8 @@ export default function MarketRatesPage() {
                                     <div className="flex items-center gap-3 mb-5">
                                         <span className="text-4xl">{selectedCrop.icon}</span>
                                         <div>
-                                            <h3 className="text-xl font-black text-gray-900 dark:text-white">{selectedCrop.crop}</h3>
-                                            <p className="text-xs text-gray-400">Market-wise rates per {selectedCrop.unit}</p>
+                                            <h3 className="text-xl font-black text-gray-900 dark:text-white">{tp(selectedCrop.crop)}</h3>
+                                            <p className="text-xs text-gray-400">{tp('Market-wise rates per {unit}').replace('{unit}', tp(selectedCrop.unit))}</p>
                                         </div>
                                     </div>
 
@@ -251,23 +255,23 @@ export default function MarketRatesPage() {
 
                                     {selectedCrop.msp > 0 && (
                                         <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
-                                            <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">MSP (Government)</p>
+                                            <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">{tp('MSP (Government)')}</p>
                                             <p className="text-2xl font-black text-primary">₹{selectedCrop.msp.toLocaleString('en-IN')}</p>
-                                            <p className="text-xs text-gray-500 mt-1">Minimum Support Price for 2025-26 season</p>
+                                            <p className="text-xs text-gray-500 mt-1">{tp('Minimum Support Price for 2025-26 season')}</p>
                                         </div>
                                     )}
 
                                     <div className="mt-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200/50">
                                         <p className="text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
                                             <span className="material-symbols-outlined text-sm mt-0.5">tips_and_updates</span>
-                                            <span>Prices are indicative and updated daily from AGMARKNET. Actual prices may vary at your local mandi.</span>
+                                            <span>{tp('Prices are indicative and updated daily from AGMARKNET. Actual prices may vary at your local mandi.')}</span>
                                         </p>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="skeuo-card rounded-2xl p-8 text-center">
                                     <span className="material-symbols-outlined text-5xl text-gray-200 dark:text-gray-700 mb-3">touch_app</span>
-                                    <p className="font-bold text-gray-400 text-sm">Tap on a crop to view market-wise rates</p>
+                                    <p className="font-bold text-gray-400 text-sm">{tp('Tap on a crop to view market-wise rates')}</p>
                                 </div>
                             )}
                         </div>
@@ -277,7 +281,7 @@ export default function MarketRatesPage() {
                     <div className="mt-8 skeuo-card rounded-2xl p-5 border-l-4 border-amber-400">
                         <p className="text-xs text-gray-500 flex items-start gap-2">
                             <span className="material-symbols-outlined text-amber-500 text-sm mt-0.5">info</span>
-                            <span>Prices are sourced from AGMARKNET via data.gov.in (Government Open Data) and various state APMC portals. MSP figures are for Kharif/Rabi 2025-26. Always verify with your local mandi before selling. Miraitu is not responsible for pricing inaccuracies.</span>
+                            <span>{tp('Prices are sourced from AGMARKNET via data.gov.in (Government Open Data) and various state APMC portals. MSP figures are for Kharif/Rabi 2025-26. Always verify with your local mandi before selling. Miraitu is not responsible for pricing inaccuracies.')}</span>
                         </p>
                     </div>
                 </div>

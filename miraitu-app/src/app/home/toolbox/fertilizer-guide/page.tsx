@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 interface FertilizerRec {
     name: string;
@@ -118,6 +120,8 @@ const cropGuides: CropGuide[] = [
 type FertType = 'all' | 'chemical' | 'organic' | 'bio';
 
 export default function FertilizerGuidePage() {
+    const { lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const [selectedCrop, setSelectedCrop] = useState(0);
     const [filterType, setFilterType] = useState<FertType>('all');
 
@@ -138,11 +142,11 @@ export default function FertilizerGuidePage() {
                 <div className="mx-auto max-w-[1280px]">
                     {/* Breadcrumb */}
                     <nav className="flex items-center gap-1 mb-6 text-xs md:text-sm">
-                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">Home</Link>
+                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">{tp('Home')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">Agri Calculators</Link>
+                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">{tp('Agri Calculators')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <span className="text-primary font-bold">Fertilizer Guide</span>
+                        <span className="text-primary font-bold">{tp('Fertilizer Guide')}</span>
                     </nav>
 
                     {/* Header */}
@@ -151,9 +155,9 @@ export default function FertilizerGuidePage() {
                             <div className="h-12 w-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-600">
                                 <span className="material-symbols-outlined text-2xl">compost</span>
                             </div>
-                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">Fertilizer Guide</h1>
+                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">{tp('Fertilizer Guide')}</h1>
                         </div>
-                        <p className="text-sm md:text-base text-gray-500">Crop-specific fertilizer recommendations, dosage, timing, and application schedule.</p>
+                        <p className="text-sm md:text-base text-gray-500">{tp('Crop-specific fertilizer recommendations, dosage, timing, and application schedule.')}</p>
                     </div>
 
                     {/* Crop Selector */}
@@ -168,7 +172,7 @@ export default function FertilizerGuidePage() {
                                     }`}
                             >
                                 <span className="text-xl">{g.icon}</span>
-                                {g.crop}
+                                {tp(g.crop)}
                             </button>
                         ))}
                     </div>
@@ -178,22 +182,22 @@ export default function FertilizerGuidePage() {
                         <div className="flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary text-lg">calendar_month</span>
                             <div>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase">Sowing Season</p>
-                                <p className="text-sm font-bold text-gray-900 dark:text-white">{guide.season}</p>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase">{tp('Sowing Season')}</p>
+                                <p className="text-sm font-bold text-gray-900 dark:text-white">{tp(guide.season)}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="material-symbols-outlined text-amber-600 text-lg">science</span>
                             <div>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase">Ideal Soil pH</p>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase">{tp('Ideal Soil pH')}</p>
                                 <p className="text-sm font-bold text-gray-900 dark:text-white">{guide.soilPh}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="material-symbols-outlined text-green-600 text-lg">inventory_2</span>
                             <div>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase">Fertilizers</p>
-                                <p className="text-sm font-bold text-gray-900 dark:text-white">{guide.fertilizers.length} recommended</p>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase">{tp('Fertilizers')}</p>
+                                <p className="text-sm font-bold text-gray-900 dark:text-white">{tp('{n} recommended').replace('{n}', String(guide.fertilizers.length))}</p>
                             </div>
                         </div>
                     </div>
@@ -209,7 +213,7 @@ export default function FertilizerGuidePage() {
                                     : 'bg-gray-100 dark:bg-gray-800/50 text-gray-500'
                                     }`}
                             >
-                                {t === 'all' ? 'All Types' : t === 'bio' ? 'Bio-fertilizer' : t}
+                                {t === 'all' ? tp('All Types') : t === 'bio' ? tp('Bio-fertilizer') : tp(t)}
                             </button>
                         ))}
                     </div>
@@ -222,32 +226,32 @@ export default function FertilizerGuidePage() {
                                 return (
                                     <div key={i} className="skeuo-card rounded-2xl p-5 md:p-6">
                                         <div className="flex flex-wrap items-center gap-2 mb-3">
-                                            <h4 className="font-bold text-gray-900 dark:text-white">{f.name}</h4>
-                                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold capitalize ${tc.bg} ${tc.text}`}>{f.type === 'bio' ? 'Bio-fertilizer' : f.type}</span>
+                                            <h4 className="font-bold text-gray-900 dark:text-white">{tp(f.name)}</h4>
+                                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold capitalize ${tc.bg} ${tc.text}`}>{f.type === 'bio' ? tp('Bio-fertilizer') : tp(f.type)}</span>
                                         </div>
 
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                                             <div className="p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                                                <p className="text-[10px] text-gray-400 font-bold uppercase">Dosage</p>
-                                                <p className="text-sm font-bold text-gray-900 dark:text-white">{f.dosage}</p>
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase">{tp('Dosage')}</p>
+                                                <p className="text-sm font-bold text-gray-900 dark:text-white">{tp(f.dosage)}</p>
                                             </div>
                                             <div className="p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/50">
                                                 <p className="text-[10px] text-gray-400 font-bold uppercase">NPK</p>
-                                                <p className="text-sm font-bold text-gray-900 dark:text-white">{f.npk}</p>
+                                                <p className="text-sm font-bold text-gray-900 dark:text-white">{tp(f.npk)}</p>
                                             </div>
                                             <div className="p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                                                <p className="text-[10px] text-gray-400 font-bold uppercase">Timing</p>
-                                                <p className="text-sm font-bold text-gray-900 dark:text-white">{f.timing}</p>
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase">{tp('Timing')}</p>
+                                                <p className="text-sm font-bold text-gray-900 dark:text-white">{tp(f.timing)}</p>
                                             </div>
                                             <div className="p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                                                <p className="text-[10px] text-gray-400 font-bold uppercase">Method</p>
-                                                <p className="text-sm font-bold text-gray-900 dark:text-white">{f.method}</p>
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase">{tp('Method')}</p>
+                                                <p className="text-sm font-bold text-gray-900 dark:text-white">{tp(f.method)}</p>
                                             </div>
                                         </div>
 
                                         <p className="text-xs text-gray-500 flex items-start gap-1.5">
                                             <span className="material-symbols-outlined text-sm text-amber-500 mt-0.5">tips_and_updates</span>
-                                            {f.notes}
+                                            {tp(f.notes)}
                                         </p>
                                     </div>
                                 );
@@ -260,7 +264,7 @@ export default function FertilizerGuidePage() {
                             <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-6">
                                 <h3 className="font-black text-base mb-4 text-gray-900 dark:text-white flex items-center gap-2">
                                     <span className="material-symbols-outlined text-primary text-lg">timeline</span>
-                                    Application Schedule
+                                    {tp('Application Schedule')}
                                 </h3>
                                 <div className="relative">
                                     <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-primary/20" />
@@ -271,9 +275,9 @@ export default function FertilizerGuidePage() {
                                                     <div className="w-2.5 h-2.5 rounded-full bg-primary" />
                                                 </div>
                                                 <div className="pb-2">
-                                                    <p className="font-bold text-sm text-gray-900 dark:text-white">{s.stage}</p>
+                                                    <p className="font-bold text-sm text-gray-900 dark:text-white">{tp(s.stage)}</p>
                                                     <p className="text-[10px] text-primary font-bold">{s.daysAfterSowing} DAS</p>
-                                                    <p className="text-xs text-gray-500 mt-0.5">{s.action}</p>
+                                                    <p className="text-xs text-gray-500 mt-0.5">{tp(s.action)}</p>
                                                 </div>
                                             </div>
                                         ))}
@@ -285,13 +289,13 @@ export default function FertilizerGuidePage() {
                             <div className="skeuo-card rounded-2xl p-5 md:p-6 border-l-4 border-green-400">
                                 <h4 className="font-bold text-sm mb-3 text-gray-900 dark:text-white flex items-center gap-2">
                                     <span className="material-symbols-outlined text-green-600 text-lg">eco</span>
-                                    Expert Tips for {guide.crop}
+                                    {tp('Expert Tips for {crop}').replace('{crop}', tp(guide.crop))}
                                 </h4>
                                 <ul className="space-y-2">
                                     {guide.tips.map((tip, i) => (
                                         <li key={i} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
                                             <span className="text-green-500 font-bold mt-0.5">•</span>
-                                            {tip}
+                                            {tp(tip)}
                                         </li>
                                     ))}
                                 </ul>

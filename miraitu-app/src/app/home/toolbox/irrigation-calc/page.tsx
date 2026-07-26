@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 type Method = 'flood' | 'drip' | 'sprinkler' | 'furrow';
 type Soil = 'sandy' | 'loamy' | 'clay' | 'silty';
@@ -41,6 +43,8 @@ const seasonFactor: Record<Season, { factor: number; label: string }> = {
 };
 
 export default function IrrigationCalcPage() {
+    const { lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const [crop, setCrop] = useState('Wheat');
     const [method, setMethod] = useState<Method>('flood');
     const [soil, setSoil] = useState<Soil>('loamy');
@@ -118,11 +122,11 @@ export default function IrrigationCalcPage() {
                 <div className="mx-auto max-w-[1280px]">
                     {/* Breadcrumb */}
                     <nav className="flex items-center gap-1 mb-6 text-xs md:text-sm">
-                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">Home</Link>
+                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">{tp('Home')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">Agri Calculators</Link>
+                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">{tp('Agri Calculators')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <span className="text-primary font-bold">Irrigation Calculator</span>
+                        <span className="text-primary font-bold">{tp('Irrigation Calculator')}</span>
                     </nav>
 
                     {/* Header */}
@@ -131,9 +135,9 @@ export default function IrrigationCalcPage() {
                             <div className="h-12 w-12 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-600">
                                 <span className="material-symbols-outlined text-2xl">water_drop</span>
                             </div>
-                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">Irrigation Calculator</h1>
+                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">{tp('Irrigation Calculator')}</h1>
                         </div>
-                        <p className="text-sm md:text-base text-gray-500">Calculate water requirements, pump runtime, and irrigation schedule for your crops.</p>
+                        <p className="text-sm md:text-base text-gray-500">{tp('Calculate water requirements, pump runtime, and irrigation schedule for your crops.')}</p>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -142,19 +146,19 @@ export default function IrrigationCalcPage() {
                             <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-8">
                                 <h3 className="text-lg font-black mb-6 text-gray-900 dark:text-white flex items-center gap-2">
                                     <span className="material-symbols-outlined text-cyan-600 p-2 rounded-xl bg-cyan-500/10">tune</span>
-                                    Parameters
+                                    {tp('Parameters')}
                                 </h3>
 
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Crop</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{tp('Crop')}</label>
                                         <select value={crop} onChange={e => setCrop(e.target.value)} className="w-full skeuo-inset rounded-xl px-4 py-3 font-bold text-sm">
-                                            {Object.keys(cropWaterNeeds).map(c => <option key={c} value={c}>{c}</option>)}
+                                            {Object.keys(cropWaterNeeds).map(c => <option key={c} value={c}>{tp(c)}</option>)}
                                         </select>
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Irrigation Method</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{tp('Irrigation Method')}</label>
                                         <div className="grid grid-cols-2 gap-2">
                                             {(Object.entries(methodEfficiency) as [Method, typeof methodEfficiency.flood][]).map(([k, v]) => (
                                                 <button
@@ -166,37 +170,37 @@ export default function IrrigationCalcPage() {
                                                         }`}
                                                 >
                                                     <span className={`material-symbols-outlined text-lg ${method === k ? 'text-cyan-600' : 'text-gray-400'}`}>{v.icon}</span>
-                                                    <p className={`text-xs font-bold mt-1 ${method === k ? 'text-cyan-600' : 'text-gray-500'}`}>{v.label}</p>
+                                                    <p className={`text-xs font-bold mt-1 ${method === k ? 'text-cyan-600' : 'text-gray-500'}`}>{tp(v.label)}</p>
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Soil Type</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{tp('Soil Type')}</label>
                                         <select value={soil} onChange={e => setSoil(e.target.value as Soil)} className="w-full skeuo-inset rounded-xl px-4 py-3 font-bold text-sm">
                                             {(Object.entries(soilFactor) as [Soil, typeof soilFactor.loamy][]).map(([k, v]) => (
-                                                <option key={k} value={k}>{v.label}</option>
+                                                <option key={k} value={k}>{tp(v.label)}</option>
                                             ))}
                                         </select>
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Season</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{tp('Season')}</label>
                                         <select value={season} onChange={e => setSeason(e.target.value as Season)} className="w-full skeuo-inset rounded-xl px-4 py-3 font-bold text-sm">
                                             {(Object.entries(seasonFactor) as [Season, typeof seasonFactor.rabi][]).map(([k, v]) => (
-                                                <option key={k} value={k}>{v.label}</option>
+                                                <option key={k} value={k}>{tp(v.label)}</option>
                                             ))}
                                         </select>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Area (Acres)</label>
+                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{tp('Area (Acres)')}</label>
                                             <input type="number" value={area} onChange={e => setArea(e.target.value)} className="w-full skeuo-inset rounded-xl px-4 py-3 text-sm font-bold" />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Pump (HP)</label>
+                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{tp('Pump (HP)')}</label>
                                             <input type="number" value={pumpHP} onChange={e => setPumpHP(e.target.value)} className="w-full skeuo-inset rounded-xl px-4 py-3 text-sm font-bold" />
                                         </div>
                                     </div>
@@ -212,45 +216,45 @@ export default function IrrigationCalcPage() {
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                         <div className="skeuo-card rounded-2xl p-4 text-center">
                                             <span className="material-symbols-outlined text-cyan-500 text-xl mb-1">water_drop</span>
-                                            <p className="text-xs text-gray-400 font-bold uppercase">Daily Need</p>
+                                            <p className="text-xs text-gray-400 font-bold uppercase">{tp('Daily Need')}</p>
                                             <p className="text-lg md:text-xl font-black text-gray-900 dark:text-white">{fmtL(results.totalLitersPerDay)}</p>
                                             <p className="text-[10px] text-gray-400">{results.adjDaily.toFixed(1)} mm/day</p>
                                         </div>
                                         <div className="skeuo-card rounded-2xl p-4 text-center">
                                             <span className="material-symbols-outlined text-blue-500 text-xl mb-1">waves</span>
-                                            <p className="text-xs text-gray-400 font-bold uppercase">Season Total</p>
+                                            <p className="text-xs text-gray-400 font-bold uppercase">{tp('Season Total')}</p>
                                             <p className="text-lg md:text-xl font-black text-gray-900 dark:text-white">{fmtL(results.totalSeasonLiters)}</p>
-                                            <p className="text-[10px] text-gray-400">{results.duration} days</p>
+                                            <p className="text-[10px] text-gray-400">{tp('{n} days').replace('{n}', String(results.duration))}</p>
                                         </div>
                                         <div className="skeuo-card rounded-2xl p-4 text-center">
                                             <span className="material-symbols-outlined text-purple-500 text-xl mb-1">schedule</span>
-                                            <p className="text-xs text-gray-400 font-bold uppercase">Pump / Day</p>
+                                            <p className="text-xs text-gray-400 font-bold uppercase">{tp('Pump / Day')}</p>
                                             <p className="text-lg md:text-xl font-black text-gray-900 dark:text-white">{results.dailyPumpHours.toFixed(1)}h</p>
-                                            <p className="text-[10px] text-gray-400">{hpNum} HP pump</p>
+                                            <p className="text-[10px] text-gray-400">{tp('{n} HP pump').replace('{n}', String(hpNum))}</p>
                                         </div>
                                         <div className="skeuo-card rounded-2xl p-4 text-center">
                                             <span className="material-symbols-outlined text-green-500 text-xl mb-1">event_repeat</span>
-                                            <p className="text-xs text-gray-400 font-bold uppercase">Irrigations</p>
+                                            <p className="text-xs text-gray-400 font-bold uppercase">{tp('Irrigations')}</p>
                                             <p className="text-lg md:text-xl font-black text-gray-900 dark:text-white">{results.numIrrigations}</p>
-                                            <p className="text-[10px] text-gray-400">Every {results.intervalDays} days</p>
+                                            <p className="text-[10px] text-gray-400">{tp('Every {n} days').replace('{n}', String(results.intervalDays))}</p>
                                         </div>
                                         <div className="skeuo-card rounded-2xl p-4 text-center">
                                             <span className="material-symbols-outlined text-amber-500 text-xl mb-1">bolt</span>
-                                            <p className="text-xs text-gray-400 font-bold uppercase">Electricity Cost</p>
+                                            <p className="text-xs text-gray-400 font-bold uppercase">{tp('Electricity Cost')}</p>
                                             <p className="text-lg md:text-xl font-black text-gray-900 dark:text-white">₹{Math.round(results.electricityCost).toLocaleString('en-IN')}</p>
-                                            <p className="text-[10px] text-gray-400">Full season (est.)</p>
+                                            <p className="text-[10px] text-gray-400">{tp('Full season (est.)')}</p>
                                         </div>
                                         <div className={`skeuo-card rounded-2xl p-4 text-center ${results.savingPct > 0 ? 'border-2 border-green-300/50' : ''}`}>
                                             <span className="material-symbols-outlined text-green-600 text-xl mb-1">eco</span>
-                                            <p className="text-xs text-gray-400 font-bold uppercase">Water Saved</p>
+                                            <p className="text-xs text-gray-400 font-bold uppercase">{tp('Water Saved')}</p>
                                             <p className="text-lg md:text-xl font-black text-green-600">{results.savingPct.toFixed(0)}%</p>
-                                            <p className="text-[10px] text-gray-400">vs Flood method</p>
+                                            <p className="text-[10px] text-gray-400">{tp('vs Flood method')}</p>
                                         </div>
                                     </div>
 
                                     {/* Method Comparison */}
                                     <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-8">
-                                        <h3 className="text-lg font-black mb-5 text-gray-900 dark:text-white">Method Comparison</h3>
+                                        <h3 className="text-lg font-black mb-5 text-gray-900 dark:text-white">{tp('Method Comparison')}</h3>
                                         <div className="space-y-3">
                                             {(Object.entries(methodEfficiency) as [Method, typeof methodEfficiency.flood][]).map(([k, v]) => {
                                                 const cropData = cropWaterNeeds[crop];
@@ -269,13 +273,13 @@ export default function IrrigationCalcPage() {
                                                         <div className="flex items-center gap-3">
                                                             <span className={`material-symbols-outlined text-lg ${isActive ? 'text-cyan-600' : 'text-gray-400'}`}>{v.icon}</span>
                                                             <div>
-                                                                <p className={`text-sm font-bold ${isActive ? 'text-cyan-600' : 'text-gray-700 dark:text-gray-300'}`}>{v.label}</p>
-                                                                <p className="text-[10px] text-gray-400">{v.savings}</p>
+                                                                <p className={`text-sm font-bold ${isActive ? 'text-cyan-600' : 'text-gray-700 dark:text-gray-300'}`}>{tp(v.label)}</p>
+                                                                <p className="text-[10px] text-gray-400">{tp(v.savings)}</p>
                                                             </div>
                                                         </div>
                                                         <div className="text-right">
                                                             <p className={`text-sm font-black ${isActive ? 'text-cyan-600' : 'text-gray-900 dark:text-white'}`}>{fmtL(totalL)}</p>
-                                                            <p className="text-[10px] text-gray-400">Eff: {(v.efficiency * 100).toFixed(0)}%</p>
+                                                            <p className="text-[10px] text-gray-400">{tp('Eff: {n}%').replace('{n}', (v.efficiency * 100).toFixed(0))}</p>
                                                         </div>
                                                     </div>
                                                 );
@@ -287,9 +291,15 @@ export default function IrrigationCalcPage() {
                                     <div className="skeuo-card rounded-2xl p-5 border-l-4 border-cyan-400">
                                         <h4 className="font-bold text-sm mb-2 text-gray-900 dark:text-white flex items-center gap-2">
                                             <span className="material-symbols-outlined text-cyan-600 text-lg">info</span>
-                                            {soilFactor[soil].label}
+                                            {tp(soilFactor[soil].label)}
                                         </h4>
-                                        <p className="text-xs text-gray-500">{soilFactor[soil].desc}. Soil adjustment factor: {soilFactor[soil].factor}x. Season factor ({seasonFactor[season].label}): {seasonFactor[season].factor}x.</p>
+                                        <p className="text-xs text-gray-500">
+                                            {tp(soilFactor[soil].desc)}.{' '}
+                                            {tp('Soil adjustment factor: {f}x. Season factor ({season}): {sf}x.')
+                                                .replace('{f}', String(soilFactor[soil].factor))
+                                                .replace('{season}', tp(seasonFactor[season].label))
+                                                .replace('{sf}', String(seasonFactor[season].factor))}
+                                        </p>
                                     </div>
                                 </>
                             )}

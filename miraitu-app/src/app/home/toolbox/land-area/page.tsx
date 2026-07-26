@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 type UnitSystem = 'acre' | 'hectare' | 'bigha' | 'guntha' | 'cent' | 'sqft' | 'sqm' | 'kanal' | 'marla';
 
@@ -39,6 +41,8 @@ const SUPPORTED_STATES = [
 ];
 
 export default function LandAreaPage() {
+    const { lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const [mode, setMode] = useState<'converter' | 'manual'>('converter');
 
     // Converter state
@@ -436,11 +440,11 @@ export default function LandAreaPage() {
                 <div className="mx-auto max-w-[1280px]">
                     {/* Breadcrumb */}
                     <nav className="flex items-center gap-1 mb-6 text-xs md:text-sm">
-                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">Home</Link>
+                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">{tp('Home')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">Agri Calculators</Link>
+                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">{tp('Agri Calculators')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <span className="text-primary font-bold">Land Area Tool</span>
+                        <span className="text-primary font-bold">{tp('Land Area Tool')}</span>
                     </nav>
 
                     {/* Header */}
@@ -449,9 +453,9 @@ export default function LandAreaPage() {
                             <div className="h-12 w-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600">
                                 <span className="material-symbols-outlined text-2xl">map</span>
                             </div>
-                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">Land Area Tool</h1>
+                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">{tp('Land Area Tool')}</h1>
                         </div>
-                        <p className="text-sm md:text-base text-gray-500">Map-based perimeter and area measurement. Supports Acres, Bigha, and Hectares.</p>
+                        <p className="text-sm md:text-base text-gray-500">{tp('Map-based perimeter and area measurement. Supports Acres, Bigha, and Hectares.')}</p>
                     </div>
 
                     {/* Mode Tabs */}
@@ -462,7 +466,7 @@ export default function LandAreaPage() {
                                 onClick={() => setMode(m)}
                                 className={`px-4 md:px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${mode === m ? 'bg-white dark:bg-gray-700 text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                             >
-                                {m === 'converter' ? 'Unit Converter' : 'Measure Area'}
+                                {m === 'converter' ? tp('Unit Converter') : tp('Measure Area')}
                             </button>
                         ))}
                     </div>
@@ -471,10 +475,10 @@ export default function LandAreaPage() {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* Input */}
                             <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-8">
-                                <h3 className="text-lg font-black mb-5 text-gray-900 dark:text-white">Convert Area</h3>
+                                <h3 className="text-lg font-black mb-5 text-gray-900 dark:text-white">{tp('Convert Area')}</h3>
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Value</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{tp('Value')}</label>
                                         <input
                                             type="number"
                                             value={inputValue}
@@ -484,7 +488,7 @@ export default function LandAreaPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Unit</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{tp('Unit')}</label>
                                         <div className="grid grid-cols-3 gap-2">
                                             {(Object.keys(unitLabels) as UnitSystem[]).map(u => (
                                                 <button
@@ -492,7 +496,7 @@ export default function LandAreaPage() {
                                                     onClick={() => setFromUnit(u)}
                                                     className={`py-2 md:py-2.5 px-2 rounded-lg text-xs md:text-sm font-bold transition-all ${fromUnit === u ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200'}`}
                                                 >
-                                                    {unitLabels[u]}
+                                                    {tp(unitLabels[u])}
                                                 </button>
                                             ))}
                                         </div>
@@ -502,11 +506,11 @@ export default function LandAreaPage() {
 
                             {/* Results */}
                             <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-8">
-                                <h3 className="text-lg font-black mb-5 text-gray-900 dark:text-white">Results</h3>
+                                <h3 className="text-lg font-black mb-5 text-gray-900 dark:text-white">{tp('Results')}</h3>
                                 <div className="space-y-3">
                                     {conversions.map(c => (
                                         <div key={c.unit} className="flex items-center justify-between p-3 md:p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors">
-                                            <span className="text-sm font-bold text-gray-600 dark:text-gray-400">{c.label}</span>
+                                            <span className="text-sm font-bold text-gray-600 dark:text-gray-400">{tp(c.label)}</span>
                                             <span className="text-base md:text-lg font-black text-gray-900 dark:text-white">{fmt(c.value)}</span>
                                         </div>
                                     ))}
@@ -518,7 +522,7 @@ export default function LandAreaPage() {
                             {/* Manual Measurement */}
                             <div className="space-y-6">
                                 <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-8">
-                                    <h3 className="text-lg font-black mb-5 text-gray-900 dark:text-white">Rectangular Plot</h3>
+                                    <h3 className="text-lg font-black mb-5 text-gray-900 dark:text-white">{tp('Rectangular Plot')}</h3>
                                     <div className="space-y-4">
                                         <div className="flex gap-2 mb-4">
                                             {(['feet', 'meters'] as const).map(u => (
@@ -527,13 +531,13 @@ export default function LandAreaPage() {
                                                     onClick={() => setMeasureUnit(u)}
                                                     className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${measureUnit === u ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600'}`}
                                                 >
-                                                    {u === 'feet' ? 'Feet' : 'Meters'}
+                                                    {u === 'feet' ? tp('Feet') : tp('Meters')}
                                                 </button>
                                             ))}
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Length ({measureUnit})</label>
+                                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{tp('Length')} ({tp(measureUnit)})</label>
                                                 <input
                                                     type="number"
                                                     value={length}
@@ -543,7 +547,7 @@ export default function LandAreaPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Width ({measureUnit})</label>
+                                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{tp('Width')} ({tp(measureUnit)})</label>
                                                 <input
                                                     type="number"
                                                     value={width}
@@ -554,14 +558,14 @@ export default function LandAreaPage() {
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Display Result In</label>
+                                            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{tp('Display Result In')}</label>
                                             <select
                                                 value={displayUnit}
                                                 onChange={e => setDisplayUnit(e.target.value as UnitSystem)}
                                                 className="w-full skeuo-inset rounded-xl px-4 py-3 font-bold focus:ring-0 border-none"
                                             >
                                                 {(Object.keys(unitLabels) as UnitSystem[]).map(u => (
-                                                    <option key={u} value={u}>{unitLabels[u]}</option>
+                                                    <option key={u} value={u}>{tp(unitLabels[u])}</option>
                                                 ))}
                                             </select>
                                         </div>
@@ -569,9 +573,9 @@ export default function LandAreaPage() {
 
                                     {L > 0 && W > 0 && (
                                         <div className="mt-6 p-4 md:p-6 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                                            <p className="text-xs font-bold text-blue-500 uppercase mb-1">Calculated Area</p>
-                                            <p className="text-3xl md:text-4xl font-black text-blue-600">{fmt(manualResult)} <span className="text-lg">{unitLabels[displayUnit]}</span></p>
-                                            <p className="text-xs text-gray-500 mt-2">{fmt(areaSqM)} sq. meters | {fmt(areaSqM * 10.7639)} sq. feet</p>
+                                            <p className="text-xs font-bold text-blue-500 uppercase mb-1">{tp('Calculated Area')}</p>
+                                            <p className="text-3xl md:text-4xl font-black text-blue-600">{fmt(manualResult)} <span className="text-lg">{tp(unitLabels[displayUnit])}</span></p>
+                                            <p className="text-xs text-gray-500 mt-2">{fmt(areaSqM)} {tp('sq. meters')} | {fmt(areaSqM * 10.7639)} {tp('sq. feet')}</p>
                                         </div>
                                     )}
                                 </div>
@@ -582,15 +586,15 @@ export default function LandAreaPage() {
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-lg font-black text-gray-900 dark:text-white flex items-center gap-2">
                                         <span className="material-symbols-outlined text-blue-600">satellite_alt</span>
-                                        Satellite Map
+                                        {tp('Satellite Map')}
                                     </h3>
                                     {locationStatus === 'granted' && mapPoints.length > 0 && (
                                         <div className="flex items-center gap-2">
                                             <button onClick={undoLastPoint} className="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1">
-                                                <span className="material-symbols-outlined text-sm">undo</span> Undo
+                                                <span className="material-symbols-outlined text-sm">undo</span> {tp('Undo')}
                                             </button>
                                             <button onClick={clearMapPoints} className="text-xs font-bold text-red-500 hover:text-red-600 flex items-center gap-1">
-                                                <span className="material-symbols-outlined text-sm">delete</span> Clear
+                                                <span className="material-symbols-outlined text-sm">delete</span> {tp('Clear')}
                                             </button>
                                         </div>
                                     )}
@@ -601,9 +605,9 @@ export default function LandAreaPage() {
                                         <div className="h-20 w-20 rounded-full bg-blue-500/10 flex items-center justify-center mx-auto mb-4">
                                             <span className="material-symbols-outlined text-4xl text-blue-600">my_location</span>
                                         </div>
-                                        <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Open Satellite Map</h4>
+                                        <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{tp('Open Satellite Map')}</h4>
                                         <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">
-                                            Use your GPS location or search for any place to view satellite imagery and measure field boundaries.
+                                            {tp('Use your GPS location or search for any place to view satellite imagery and measure field boundaries.')}
                                         </p>
                                         <button
                                             onClick={requestLocation}
@@ -611,13 +615,13 @@ export default function LandAreaPage() {
                                         >
                                             <span className="flex items-center gap-2">
                                                 <span className="material-symbols-outlined text-lg">location_on</span>
-                                                Use My Location
+                                                {tp('Use My Location')}
                                             </span>
                                         </button>
 
                                         <div className="flex items-center gap-3 my-5">
                                             <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-                                            <span className="text-xs font-bold text-gray-400 uppercase">or search</span>
+                                            <span className="text-xs font-bold text-gray-400 uppercase">{tp('or search')}</span>
                                             <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
                                         </div>
 
@@ -627,7 +631,7 @@ export default function LandAreaPage() {
                                                 <span className="material-symbols-outlined text-gray-400 text-lg">search</span>
                                                 <input
                                                     type="text"
-                                                    placeholder="Type village, city or area name..."
+                                                    placeholder={tp('Type village, city or area name...')}
                                                     value={searchQuery}
                                                     onChange={e => handleSearchInput(e.target.value)}
                                                     onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
@@ -662,8 +666,8 @@ export default function LandAreaPage() {
                                 {locationStatus === 'requesting' && (
                                     <div className="text-center py-16">
                                         <div className="h-16 w-16 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin mx-auto mb-4"></div>
-                                        <p className="text-sm font-bold text-gray-600">Requesting location permission...</p>
-                                        <p className="text-xs text-gray-400 mt-1">Please allow access in your browser</p>
+                                        <p className="text-sm font-bold text-gray-600">{tp('Requesting location permission...')}</p>
+                                        <p className="text-xs text-gray-400 mt-1">{tp('Please allow access in your browser')}</p>
                                     </div>
                                 )}
 
@@ -672,17 +676,17 @@ export default function LandAreaPage() {
                                         <div className="h-20 w-20 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
                                             <span className="material-symbols-outlined text-4xl text-red-500">location_disabled</span>
                                         </div>
-                                        <h4 className="text-lg font-bold text-red-600 mb-2">Location Access Denied</h4>
+                                        <h4 className="text-lg font-bold text-red-600 mb-2">{tp('Location Access Denied')}</h4>
                                         <p className="text-sm text-gray-500 mb-4 max-w-sm mx-auto">
-                                            Location permission was denied. Please enable it in your browser settings to use the satellite map feature.
+                                            {tp('Location permission was denied. Please enable it in your browser settings to use the satellite map feature.')}
                                         </p>
                                         <div className="skeuo-inset rounded-xl p-4 text-left max-w-sm mx-auto">
-                                            <p className="text-xs font-bold text-gray-600 mb-2">How to enable:</p>
+                                            <p className="text-xs font-bold text-gray-600 mb-2">{tp('How to enable:')}</p>
                                             <ol className="text-xs text-gray-500 space-y-1 list-decimal list-inside">
-                                                <li>Click the lock/info icon in your browser&apos;s address bar</li>
-                                                <li>Find &quot;Location&quot; permission</li>
-                                                <li>Change to &quot;Allow&quot;</li>
-                                                <li>Reload this page</li>
+                                                <li>{tp("Click the lock/info icon in your browser's address bar")}</li>
+                                                <li>{tp('Find "Location" permission')}</li>
+                                                <li>{tp('Change to "Allow"')}</li>
+                                                <li>{tp('Reload this page')}</li>
                                             </ol>
                                         </div>
                                     </div>
@@ -694,18 +698,18 @@ export default function LandAreaPage() {
                                             <span className="material-symbols-outlined text-4xl text-amber-600">warning</span>
                                         </div>
                                         <h4 className="text-lg font-bold text-amber-600 mb-2">
-                                            {locationStatus === 'unavailable' ? 'Location Not Available' : 'Location Error'}
+                                            {locationStatus === 'unavailable' ? tp('Location Not Available') : tp('Location Error')}
                                         </h4>
                                         <p className="text-sm text-gray-500 mb-4 max-w-sm mx-auto">
                                             {locationStatus === 'unavailable'
-                                                ? 'Your browser does not support geolocation. Please use a modern browser.'
-                                                : 'Could not determine your location. Please check GPS settings and try again.'}
+                                                ? tp('Your browser does not support geolocation. Please use a modern browser.')
+                                                : tp('Could not determine your location. Please check GPS settings and try again.')}
                                         </p>
                                         <button
                                             onClick={requestLocation}
                                             className="px-5 py-2.5 rounded-xl bg-amber-500/10 text-amber-600 font-bold text-sm hover:bg-amber-500/20 transition-colors"
                                         >
-                                            Try Again
+                                            {tp('Try Again')}
                                         </button>
                                     </div>
                                 )}
@@ -725,7 +729,7 @@ export default function LandAreaPage() {
                                                 <span className="material-symbols-outlined text-gray-400 text-base">search</span>
                                                 <input
                                                     type="text"
-                                                    placeholder="Search any location to navigate..."
+                                                    placeholder={tp('Search any location to navigate...')}
                                                     value={searchQuery}
                                                     onChange={e => handleSearchInput(e.target.value)}
                                                     onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
@@ -771,25 +775,25 @@ export default function LandAreaPage() {
                                         {/* Pin Customization Toggle */}
                                         <div className="flex items-center justify-between mb-3">
                                             <p className="text-xs text-gray-400">
-                                                Tap to place points. Drag to move. Right-click or double-tap to remove.
+                                                {tp('Tap to place points. Drag to move. Right-click or double-tap to remove.')}
                                             </p>
                                             <button
                                                 onClick={() => setShowPinSettings(!showPinSettings)}
                                                 className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-lg transition-all ${showPinSettings ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
                                             >
                                                 <span className="material-symbols-outlined text-sm">palette</span>
-                                                Pin
+                                                {tp('Pin')}
                                             </button>
                                         </div>
 
                                         {/* Pin Settings Panel */}
                                         {showPinSettings && (
                                             <div className="mb-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 space-y-3">
-                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Customize Pin</p>
-                                                
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{tp('Customize Pin')}</p>
+
                                                 {/* Color */}
                                                 <div>
-                                                    <label className="text-[10px] font-bold text-gray-500 uppercase mb-1.5 block">Color</label>
+                                                    <label className="text-[10px] font-bold text-gray-500 uppercase mb-1.5 block">{tp('Color')}</label>
                                                     <div className="flex gap-2">
                                                         {PIN_COLORS.map(c => (
                                                             <button
@@ -805,7 +809,7 @@ export default function LandAreaPage() {
 
                                                 {/* Size */}
                                                 <div>
-                                                    <label className="text-[10px] font-bold text-gray-500 uppercase mb-1.5 block">Size</label>
+                                                    <label className="text-[10px] font-bold text-gray-500 uppercase mb-1.5 block">{tp('Size')}</label>
                                                     <div className="flex gap-2">
                                                         {PIN_SIZES.map(s => (
                                                             <button
@@ -821,7 +825,7 @@ export default function LandAreaPage() {
 
                                                 {/* Style */}
                                                 <div>
-                                                    <label className="text-[10px] font-bold text-gray-500 uppercase mb-1.5 block">Shape</label>
+                                                    <label className="text-[10px] font-bold text-gray-500 uppercase mb-1.5 block">{tp('Shape')}</label>
                                                     <div className="flex gap-2">
                                                         {([
                                                             { key: 'circle' as PinStyle, icon: 'circle', label: 'Circle' },
@@ -834,7 +838,7 @@ export default function LandAreaPage() {
                                                                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${pinStyle === s.key ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-300'}`}
                                                             >
                                                                 <span className="material-symbols-outlined text-sm">{s.icon}</span>
-                                                                {s.label}
+                                                                {tp(s.label)}
                                                             </button>
                                                         ))}
                                                     </div>
@@ -842,7 +846,7 @@ export default function LandAreaPage() {
 
                                                 {/* Preview */}
                                                 <div className="flex items-center gap-2 pt-1">
-                                                    <span className="text-[10px] text-gray-400 font-bold">Preview:</span>
+                                                    <span className="text-[10px] text-gray-400 font-bold">{tp('Preview:')}</span>
                                                     <div className="flex items-center justify-center w-8 h-8">
                                                         <div
                                                             style={{
@@ -868,19 +872,19 @@ export default function LandAreaPage() {
                                         {mapPoints.length >= 3 && (
                                             <div className="mt-4 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
                                                 <div className="flex items-center justify-between mb-2">
-                                                    <p className="text-xs font-bold text-green-600 uppercase">Measured Area ({mapPoints.length} points)</p>
+                                                    <p className="text-xs font-bold text-green-600 uppercase">{tp('Measured Area ({n} points)').replace('{n}', String(mapPoints.length))}</p>
                                                     <select
                                                         value={mapDisplayUnit}
                                                         onChange={e => setMapDisplayUnit(e.target.value as UnitSystem)}
                                                         className="text-xs font-bold bg-transparent text-green-700 border-none focus:ring-0 p-0"
                                                     >
                                                         {(Object.keys(unitLabels) as UnitSystem[]).map(u => (
-                                                            <option key={u} value={u}>{unitLabels[u]}</option>
+                                                            <option key={u} value={u}>{tp(unitLabels[u])}</option>
                                                         ))}
                                                     </select>
                                                 </div>
                                                 <p className="text-2xl font-black text-green-600">
-                                                    {fmt(mapAreaSqM / toSqM[mapDisplayUnit])} {unitLabels[mapDisplayUnit]}
+                                                    {fmt(mapAreaSqM / toSqM[mapDisplayUnit])} {tp(unitLabels[mapDisplayUnit])}
                                                 </p>
                                                 <p className="text-xs text-gray-500 mt-1">
                                                     {fmt(mapAreaSqM)} sq.m | {fmt(mapAreaSqM / toSqM.acre)} acres | {fmt(mapAreaSqM / toSqM.hectare)} ha | {fmt(mapAreaSqM / toSqM.bigha)} bigha
@@ -892,16 +896,16 @@ export default function LandAreaPage() {
                                             <div className="mt-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
                                                 <p className="text-xs text-amber-600 font-bold">
                                                     <span className="material-symbols-outlined text-sm align-middle mr-1">info</span>
-                                                    {3 - mapPoints.length} more point{3 - mapPoints.length > 1 ? 's' : ''} needed to calculate area
+                                                    {3 - mapPoints.length} {tp('more points needed to calculate area')}
                                                 </p>
                                             </div>
                                         )}
 
                                         <div className="mt-4 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase mb-2">Available Regions</p>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase mb-2">{tp('Available Regions')}</p>
                                             <div className="flex flex-wrap gap-1">
                                                 {SUPPORTED_STATES.map(s => (
-                                                    <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">{s}</span>
+                                                    <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">{tp(s)}</span>
                                                 ))}
                                             </div>
                                         </div>

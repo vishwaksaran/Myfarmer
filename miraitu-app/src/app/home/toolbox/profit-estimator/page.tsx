@@ -4,6 +4,8 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useMandiPrices } from '@/lib/useMandiPrices';
 import { formatPrice } from '@/lib/mandi-api';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 interface CostItem {
     id: number;
@@ -74,6 +76,8 @@ const PRESET_TO_COMMODITY: Record<string, string> = {
 let nextId = 100;
 
 export default function ProfitEstimatorPage() {
+    const { lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const [cropName, setCropName] = useState('Wheat');
     const [area, setArea] = useState('1');
     const [yieldQty, setYieldQty] = useState('18');
@@ -178,11 +182,11 @@ export default function ProfitEstimatorPage() {
                 <div className="mx-auto max-w-[1280px]">
                     {/* Breadcrumb */}
                     <nav className="flex items-center gap-1 mb-6 text-xs md:text-sm">
-                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">Home</Link>
+                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">{tp('Home')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">Agri Calculators</Link>
+                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">{tp('Agri Calculators')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <span className="text-primary font-bold">Profit Estimator</span>
+                        <span className="text-primary font-bold">{tp('Profit Estimator')}</span>
                     </nav>
 
                     {/* Header */}
@@ -191,9 +195,9 @@ export default function ProfitEstimatorPage() {
                             <div className="h-12 w-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-600">
                                 <span className="material-symbols-outlined text-2xl">payments</span>
                             </div>
-                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">Profit Estimator</h1>
+                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">{tp('Profit Estimator')}</h1>
                         </div>
-                        <p className="text-sm md:text-base text-gray-500">Calculate profit, ROI, and break-even price for your crop season.</p>
+                        <p className="text-sm md:text-base text-gray-500">{tp('Calculate profit, ROI, and break-even price for your crop season.')}</p>
                     </div>
 
                     {/* Presets */}
@@ -207,7 +211,7 @@ export default function ProfitEstimatorPage() {
                                     : 'bg-gray-100 dark:bg-gray-800/50 text-gray-500 hover:bg-gray-200'
                                     }`}
                             >
-                                {k}
+                                {tp(k)}
                             </button>
                         ))}
                     </div>
@@ -217,24 +221,24 @@ export default function ProfitEstimatorPage() {
                         <div className="lg:col-span-3 space-y-6">
                             {/* Basic Details */}
                             <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-8">
-                                <h3 className="text-lg font-black mb-5 text-gray-900 dark:text-white">Crop Details</h3>
+                                <h3 className="text-lg font-black mb-5 text-gray-900 dark:text-white">{tp('Crop Details')}</h3>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Crop Name</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{tp('Crop Name')}</label>
                                         <input type="text" value={cropName} onChange={e => setCropName(e.target.value)} className="skeuo-inset rounded-xl px-4 py-3 w-full text-sm font-bold" />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Area (Acres)</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{tp('Area (Acres)')}</label>
                                         <input type="number" value={area} onChange={e => setArea(e.target.value)} className="skeuo-inset rounded-xl px-4 py-3 w-full text-sm font-bold" />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Yield (Qtl/Acre)</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{tp('Yield (Qtl/Acre)')}</label>
                                         <input type="number" value={yieldQty} onChange={e => setYieldQty(e.target.value)} className="skeuo-inset rounded-xl px-4 py-3 w-full text-sm font-bold" />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Selling ₹/Qtl</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{tp('Selling ₹/Qtl')}</label>
                                         <input type="number" value={pricePerUnit} onChange={e => setPricePerUnit(e.target.value)} className="skeuo-inset rounded-xl px-4 py-3 w-full text-sm font-bold" />
-                                        {livePriceLoading && <p className="text-[10px] text-gray-400 mt-1 animate-pulse">Fetching live rate…</p>}
+                                        {livePriceLoading && <p className="text-[10px] text-gray-400 mt-1 animate-pulse">{tp('Fetching live rate…')}</p>}
                                         {!livePriceLoading && activeLivePrice && (
                                             <button
                                                 type="button"
@@ -242,7 +246,7 @@ export default function ProfitEstimatorPage() {
                                                 className="text-[10px] text-primary font-bold mt-1 hover:underline flex items-center gap-0.5"
                                             >
                                                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                                                Live mandi: {formatPrice(activeLivePrice)}/qtl — use this
+                                                {tp('Live mandi: {price}/qtl — use this').replace('{price}', formatPrice(activeLivePrice))}
                                             </button>
                                         )}
                                     </div>
@@ -252,9 +256,9 @@ export default function ProfitEstimatorPage() {
                             {/* Cost Items */}
                             <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-8">
                                 <div className="flex items-center justify-between mb-5">
-                                    <h3 className="text-lg font-black text-gray-900 dark:text-white">Cost Items (per Acre)</h3>
+                                    <h3 className="text-lg font-black text-gray-900 dark:text-white">{tp('Cost Items (per Acre)')}</h3>
                                     <button onClick={addCost} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition-colors">
-                                        <span className="material-symbols-outlined text-sm">add</span>Add
+                                        <span className="material-symbols-outlined text-sm">add</span>{tp('Add')}
                                     </button>
                                 </div>
 
@@ -266,15 +270,15 @@ export default function ProfitEstimatorPage() {
                                                 onChange={e => updateCost(c.id, 'category', e.target.value)}
                                                 className="w-20 md:w-28 bg-transparent text-xs font-bold border-none focus:ring-0 p-0"
                                             >
-                                                <option value="input">Input</option>
-                                                <option value="labor">Labor</option>
-                                                <option value="machinery">Machine</option>
-                                                <option value="other">Other</option>
+                                                <option value="input">{tp('Input')}</option>
+                                                <option value="labor">{tp('Labor')}</option>
+                                                <option value="machinery">{tp('Machine')}</option>
+                                                <option value="other">{tp('Other')}</option>
                                             </select>
                                             <input
                                                 type="text"
-                                                placeholder="Item name"
-                                                value={c.label}
+                                                placeholder={tp('Item name')}
+                                                value={tp(c.label)}
                                                 onChange={e => updateCost(c.id, 'label', e.target.value)}
                                                 className="flex-1 bg-transparent text-sm font-medium border-none focus:ring-0 p-0 min-w-0"
                                             />
@@ -296,7 +300,7 @@ export default function ProfitEstimatorPage() {
                                 </div>
 
                                 <div className="mt-4 pt-4 border-t flex justify-between items-center">
-                                    <span className="font-bold text-gray-500 text-sm">Total Cost / Acre</span>
+                                    <span className="font-bold text-gray-500 text-sm">{tp('Total Cost / Acre')}</span>
                                     <span className="text-xl font-black text-gray-900 dark:text-white">₹{singleAcCost.toLocaleString('en-IN')}</span>
                                 </div>
                             </div>
@@ -306,21 +310,25 @@ export default function ProfitEstimatorPage() {
                         <div className="lg:col-span-2 space-y-6">
                             {/* Profit Card */}
                             <div className={`skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-8 border-2 ${results.profit >= 0 ? 'border-green-300/50' : 'border-red-300/50'}`}>
-                                <h3 className="text-lg font-black mb-5 text-gray-900 dark:text-white">Profit Summary</h3>
-                                <p className="text-xs text-gray-400 font-bold mb-4">For {results.areaNum} Acre(s) of {cropName}</p>
+                                <h3 className="text-lg font-black mb-5 text-gray-900 dark:text-white">{tp('Profit Summary')}</h3>
+                                <p className="text-xs text-gray-400 font-bold mb-4">
+                                    {tp('For {n} Acre(s) of {crop}')
+                                        .replace('{n}', String(results.areaNum))
+                                        .replace('{crop}', tp(cropName))}
+                                </p>
 
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-sm text-gray-500 font-bold">Total Revenue</span>
+                                        <span className="text-sm text-gray-500 font-bold">{tp('Total Revenue')}</span>
                                         <span className="text-lg font-black text-green-600">₹{results.totalRevenue.toLocaleString('en-IN')}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-sm text-gray-500 font-bold">Total Cost</span>
+                                        <span className="text-sm text-gray-500 font-bold">{tp('Total Cost')}</span>
                                         <span className="text-lg font-black text-red-500">₹{results.totalCost.toLocaleString('en-IN')}</span>
                                     </div>
                                     <div className="border-t pt-4">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-sm font-bold text-gray-900 dark:text-white">Net Profit / Loss</span>
+                                            <span className="text-sm font-bold text-gray-900 dark:text-white">{tp('Net Profit / Loss')}</span>
                                             <span className={`text-2xl font-black ${results.profit >= 0 ? 'text-green-600' : 'text-red-500'}`}>
                                                 {results.profit >= 0 ? '+' : ''}₹{results.profit.toLocaleString('en-IN')}
                                             </span>
@@ -336,19 +344,19 @@ export default function ProfitEstimatorPage() {
                                     <p className={`text-2xl font-black ${results.roi >= 0 ? 'text-green-600' : 'text-red-500'}`}>{results.roi.toFixed(1)}%</p>
                                 </div>
                                 <div className="skeuo-card rounded-2xl p-4 text-center">
-                                    <p className="text-xs text-gray-400 font-bold uppercase mb-1">Cost / Quintal</p>
+                                    <p className="text-xs text-gray-400 font-bold uppercase mb-1">{tp('Cost / Quintal')}</p>
                                     <p className="text-2xl font-black text-gray-900 dark:text-white">₹{Math.round(results.costPerQtl).toLocaleString('en-IN')}</p>
                                 </div>
                                 <div className="skeuo-card rounded-2xl p-4 text-center col-span-2">
-                                    <p className="text-xs text-gray-400 font-bold uppercase mb-1">Break-Even Selling Price</p>
-                                    <p className="text-2xl font-black text-amber-600">₹{Math.round(results.breakEvenPrice).toLocaleString('en-IN')} <span className="text-sm text-gray-400">/ qtl</span></p>
-                                    <p className="text-xs text-gray-500 mt-1">Sell above this price to make profit</p>
+                                    <p className="text-xs text-gray-400 font-bold uppercase mb-1">{tp('Break-Even Selling Price')}</p>
+                                    <p className="text-2xl font-black text-amber-600">₹{Math.round(results.breakEvenPrice).toLocaleString('en-IN')} <span className="text-sm text-gray-400">{tp('/ qtl')}</span></p>
+                                    <p className="text-xs text-gray-500 mt-1">{tp('Sell above this price to make profit')}</p>
                                 </div>
                             </div>
 
                             {/* Cost Breakdown */}
                             <div className="skeuo-card rounded-2xl p-5">
-                                <h4 className="font-bold text-sm mb-4 text-gray-900 dark:text-white">Cost Breakdown</h4>
+                                <h4 className="font-bold text-sm mb-4 text-gray-900 dark:text-white">{tp('Cost Breakdown')}</h4>
                                 <div className="space-y-3">
                                     {Object.entries(results.byCat).map(([cat, amt]) => {
                                         const cc = catColors[cat] || catColors.other;
@@ -356,7 +364,7 @@ export default function ProfitEstimatorPage() {
                                         return (
                                             <div key={cat}>
                                                 <div className="flex justify-between items-center mb-1">
-                                                    <span className={`text-xs font-bold capitalize ${cc.text} px-2 py-0.5 rounded-full ${cc.bg}`}>{cat}</span>
+                                                    <span className={`text-xs font-bold capitalize ${cc.text} px-2 py-0.5 rounded-full ${cc.bg}`}>{tp(cat)}</span>
                                                     <span className="text-xs font-bold text-gray-600">₹{amt.toLocaleString('en-IN')} ({pct.toFixed(0)}%)</span>
                                                 </div>
                                                 <div className="h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">

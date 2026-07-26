@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 interface SoilParam {
     name: string;
@@ -31,6 +33,8 @@ const cropRecommendations: Record<string, string[]> = {
 };
 
 export default function SoilTestingPage() {
+    const { lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const [soilType, setSoilType] = useState('Alluvial Soil');
     const [ph, setPh] = useState('6.5');
     const [showResults, setShowResults] = useState(false);
@@ -111,11 +115,11 @@ export default function SoilTestingPage() {
                 <div className="mx-auto max-w-[1280px]">
                     {/* Breadcrumb */}
                     <nav className="flex items-center gap-1 mb-6 text-xs md:text-sm">
-                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">Home</Link>
+                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">{tp('Home')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">Agri Calculators</Link>
+                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">{tp('Agri Calculators')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <span className="text-primary font-bold">Soil Testing</span>
+                        <span className="text-primary font-bold">{tp('Soil Testing')}</span>
                     </nav>
 
                     {/* Header */}
@@ -124,9 +128,9 @@ export default function SoilTestingPage() {
                             <div className="h-12 w-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600">
                                 <span className="material-symbols-outlined text-2xl">science</span>
                             </div>
-                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">Soil Testing Guide</h1>
+                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">{tp('Soil Testing Guide')}</h1>
                         </div>
-                        <p className="text-sm md:text-base text-gray-500">Enter your soil test report values to get personalized recommendations for your farm.</p>
+                        <p className="text-sm md:text-base text-gray-500">{tp('Enter your soil test report values to get personalized recommendations for your farm.')}</p>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -135,23 +139,23 @@ export default function SoilTestingPage() {
                             <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-8">
                                 <h3 className="text-lg font-black mb-6 text-gray-900 dark:text-white flex items-center gap-2">
                                     <span className="material-symbols-outlined text-amber-600 p-2 rounded-xl bg-amber-500/10">edit_note</span>
-                                    Soil Details
+                                    {tp('Soil Details')}
                                 </h3>
 
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Soil Type</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{tp('Soil Type')}</label>
                                         <select
                                             value={soilType}
                                             onChange={e => setSoilType(e.target.value)}
                                             className="w-full skeuo-inset rounded-xl px-4 py-3 font-bold text-sm"
                                         >
-                                            {soilTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                                            {soilTypes.map(t => <option key={t} value={t}>{tp(t)}</option>)}
                                         </select>
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">pH Level</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{tp('pH Level')}</label>
                                         <div className="flex items-center gap-4">
                                             <input
                                                 type="range"
@@ -167,18 +171,18 @@ export default function SoilTestingPage() {
                                             </div>
                                         </div>
                                         <div className="flex justify-between mt-1">
-                                            <span className="text-[10px] text-red-500 font-bold">Acidic (3)</span>
-                                            <span className="text-[10px] text-green-500 font-bold">Neutral (7)</span>
-                                            <span className="text-[10px] text-purple-500 font-bold">Alkaline (11)</span>
+                                            <span className="text-[10px] text-red-500 font-bold">{tp('Acidic (3)')}</span>
+                                            <span className="text-[10px] text-green-500 font-bold">{tp('Neutral (7)')}</span>
+                                            <span className="text-[10px] text-purple-500 font-bold">{tp('Alkaline (11)')}</span>
                                         </div>
                                     </div>
 
                                     <div className="border-t pt-4 mt-4">
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Nutrient Values (from soil report)</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{tp('Nutrient Values (from soil report)')}</label>
                                         <div className="space-y-3">
                                             {params.map((p, i) => (
                                                 <div key={p.name} className="flex items-center gap-3">
-                                                    <span className="text-xs font-bold text-gray-600 dark:text-gray-400 w-28 truncate">{p.name}</span>
+                                                    <span className="text-xs font-bold text-gray-600 dark:text-gray-400 w-28 truncate">{tp(p.name)}</span>
                                                     <input
                                                         type="number"
                                                         value={p.value}
@@ -198,7 +202,7 @@ export default function SoilTestingPage() {
                                 >
                                     <span className="flex items-center justify-center gap-2">
                                         <span className="material-symbols-outlined text-lg">biotech</span>
-                                        Analyze Soil
+                                        {tp('Analyze Soil')}
                                     </span>
                                 </button>
                             </div>
@@ -209,27 +213,27 @@ export default function SoilTestingPage() {
                             {!showResults ? (
                                 <div className="skeuo-card rounded-2xl md:rounded-3xl p-10 md:p-16 text-center">
                                     <span className="material-symbols-outlined text-6xl text-gray-200 dark:text-gray-700 mb-4">science</span>
-                                    <h3 className="text-xl font-bold text-gray-400 mb-2">Enter Your Soil Test Values</h3>
-                                    <p className="text-sm text-gray-400">Fill in the details on the left and click &quot;Analyze Soil&quot; to see recommendations.</p>
+                                    <h3 className="text-xl font-bold text-gray-400 mb-2">{tp('Enter Your Soil Test Values')}</h3>
+                                    <p className="text-sm text-gray-400">{tp('Fill in the details on the left and click "Analyze Soil" to see recommendations.')}</p>
                                 </div>
                             ) : (
                                 <>
                                     {/* pH Analysis Card */}
                                     <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-8">
-                                        <h3 className="text-lg font-black mb-4 text-gray-900 dark:text-white">pH Analysis</h3>
+                                        <h3 className="text-lg font-black mb-4 text-gray-900 dark:text-white">{tp('pH Analysis')}</h3>
                                         <div className="flex items-center gap-6 mb-4">
                                             <div className="skeuo-inset rounded-2xl p-5 text-center">
                                                 <p className="text-4xl font-black text-gray-900 dark:text-white">{phNum.toFixed(1)}</p>
-                                                <p className={`text-sm font-bold ${phInfo.color}`}>{phInfo.label}</p>
+                                                <p className={`text-sm font-bold ${phInfo.color}`}>{tp(phInfo.label)}</p>
                                             </div>
                                             <div className="flex-1">
                                                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                                                    <strong>Soil Type:</strong> {soilType}
+                                                    <strong>{tp('Soil Type')}:</strong> {tp(soilType)}
                                                 </p>
                                                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                    {phNum < 6.0 && 'Consider applying lime (calcium carbonate) at 2-4 quintals/acre to raise pH. Acidic soils can cause aluminum/manganese toxicity.'}
-                                                    {phNum >= 6.0 && phNum <= 7.5 && 'Your soil pH is in the optimal range for most crops. Maintain by adding organic matter regularly.'}
-                                                    {phNum > 7.5 && 'Consider applying gypsum (calcium sulphate) at 2-5 quintals/acre. Alkaline soils can cause iron and zinc deficiency.'}
+                                                    {phNum < 6.0 && tp('Consider applying lime (calcium carbonate) at 2-4 quintals/acre to raise pH. Acidic soils can cause aluminum/manganese toxicity.')}
+                                                    {phNum >= 6.0 && phNum <= 7.5 && tp('Your soil pH is in the optimal range for most crops. Maintain by adding organic matter regularly.')}
+                                                    {phNum > 7.5 && tp('Consider applying gypsum (calcium sulphate) at 2-5 quintals/acre. Alkaline soils can cause iron and zinc deficiency.')}
                                                 </p>
                                             </div>
                                         </div>
@@ -247,7 +251,7 @@ export default function SoilTestingPage() {
 
                                     {/* Nutrient Analysis */}
                                     <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-8">
-                                        <h3 className="text-lg font-black mb-5 text-gray-900 dark:text-white">Nutrient Analysis</h3>
+                                        <h3 className="text-lg font-black mb-5 text-gray-900 dark:text-white">{tp('Nutrient Analysis')}</h3>
                                         <div className="space-y-3">
                                             {displayParams.map(p => {
                                                 const sc = statusColors[p.status];
@@ -256,15 +260,15 @@ export default function SoilTestingPage() {
                                                         <div className="flex items-center justify-between mb-2">
                                                             <div className="flex items-center gap-2">
                                                                 <span className="material-symbols-outlined text-lg">{p.icon}</span>
-                                                                <span className="font-bold text-sm text-gray-900 dark:text-white">{p.name}</span>
+                                                                <span className="font-bold text-sm text-gray-900 dark:text-white">{tp(p.name)}</span>
                                                             </div>
                                                             <div className="flex items-center gap-3">
                                                                 <span className="text-sm font-bold text-gray-900 dark:text-white">{p.value} {p.unit}</span>
-                                                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${sc.text} ${sc.bg}`}>{p.status}</span>
+                                                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${sc.text} ${sc.bg}`}>{tp(p.status)}</span>
                                                             </div>
                                                         </div>
                                                         <p className="text-xs text-gray-600 dark:text-gray-400">
-                                                            <span className="font-bold">Ideal: {p.ideal} {p.unit}</span> — {p.tip}
+                                                            <span className="font-bold">{tp('Ideal:')} {p.ideal} {p.unit}</span> — {tp(p.tip)}
                                                         </p>
                                                     </div>
                                                 );
@@ -275,12 +279,12 @@ export default function SoilTestingPage() {
                                     {/* Crop Recommendations */}
                                     <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-8">
                                         <h3 className="text-lg font-black mb-4 text-gray-900 dark:text-white">
-                                            Recommended Crops for {phInfo.label} Soil
+                                            {tp('Recommended Crops for {label} Soil').replace('{label}', tp(phInfo.label))}
                                         </h3>
                                         <div className="flex flex-wrap gap-2">
                                             {(cropRecommendations[phCategory] || cropRecommendations.neutral).map(c => (
                                                 <span key={c} className="px-4 py-2 rounded-xl bg-primary/10 text-primary font-bold text-sm">
-                                                    {c}
+                                                    {tp(c)}
                                                 </span>
                                             ))}
                                         </div>
@@ -294,7 +298,7 @@ export default function SoilTestingPage() {
                     <div className="mt-8 skeuo-card rounded-2xl p-5 md:p-6">
                         <h4 className="font-bold text-sm mb-4 text-gray-900 dark:text-white flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary text-lg">help</span>
-                            How to Collect a Soil Sample
+                            {tp('How to Collect a Soil Sample')}
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             {[
@@ -308,8 +312,8 @@ export default function SoilTestingPage() {
                                         {s.step}
                                     </div>
                                     <div>
-                                        <p className="font-bold text-sm text-gray-900 dark:text-white">{s.title}</p>
-                                        <p className="text-xs text-gray-500">{s.desc}</p>
+                                        <p className="font-bold text-sm text-gray-900 dark:text-white">{tp(s.title)}</p>
+                                        <p className="text-xs text-gray-500">{tp(s.desc)}</p>
                                     </div>
                                 </div>
                             ))}

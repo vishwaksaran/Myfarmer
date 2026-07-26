@@ -21,6 +21,8 @@ import {
     type WeatherLocationConsent,
     type WeatherCoords,
 } from '@/lib/weather-location';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 type SeverityFilter = 'all' | WeatherAlertData['severity'];
 
@@ -74,6 +76,8 @@ const severityColors: Record<string, string> = {
 };
 
 export default function WeatherAlertsPage() {
+    const { lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const [selectedSeverity, setSelectedSeverity] = useState<SeverityFilter>('all');
     const [locationInput, setLocationInput] = useState('');
     const [locationConsent, setLocationConsent] = useState<WeatherLocationConsent | null>(null);
@@ -387,11 +391,11 @@ export default function WeatherAlertsPage() {
                 <div className="mx-auto max-w-[1280px]">
                     {/* Breadcrumb */}
                     <nav className="flex items-center gap-1 mb-6 text-xs md:text-sm">
-                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">Home</Link>
+                        <Link href="/home" className="text-gray-500 hover:text-primary font-medium">{tp('Home')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">Agri Calculators</Link>
+                        <Link href="/home/toolbox" className="text-gray-500 hover:text-primary font-medium">{tp('Agri Calculators')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs">chevron_right</span>
-                        <span className="text-primary font-bold">Weather Alerts</span>
+                        <span className="text-primary font-bold">{tp('Weather Alerts')}</span>
                     </nav>
 
                     {/* Header */}
@@ -400,27 +404,27 @@ export default function WeatherAlertsPage() {
                             <div className="h-12 w-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
                                 <span className="material-symbols-outlined text-2xl">thunderstorm</span>
                             </div>
-                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">Weather Alerts</h1>
+                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">{tp('Weather Alerts')}</h1>
                         </div>
-                        <p className="text-sm md:text-base text-gray-500">Stay informed about weather changes that may affect your farming activities.</p>
+                        <p className="text-sm md:text-base text-gray-500">{tp('Stay informed about weather changes that may affect your farming activities.')}</p>
                         {weatherData && (
                             <div className="mt-4 inline-flex items-center gap-4 rounded-2xl bg-white/80 dark:bg-gray-900/50 px-4 py-3 border border-blue-100 dark:border-blue-900/40">
                                 <div className="flex items-center gap-2">
                                     <span className="material-symbols-outlined text-blue-500">{weatherData.current.icon}</span>
                                     <span className="font-black text-gray-900 dark:text-white">{weatherData.current.temperature}°C</span>
                                 </div>
-                                <span className="text-sm text-gray-600 dark:text-gray-300">{weatherData.current.condition}</span>
-                                <span className="text-xs text-gray-500">Humidity {weatherData.current.humidity}%</span>
-                                {updatedAt && <span className="text-xs text-gray-400">Updated {updatedAt}</span>}
+                                <span className="text-sm text-gray-600 dark:text-gray-300">{tp(weatherData.current.condition)}</span>
+                                <span className="text-xs text-gray-500">{tp('Humidity {n}%').replace('{n}', String(weatherData.current.humidity))}</span>
+                                {updatedAt && <span className="text-xs text-gray-400">{tp('Updated {time}').replace('{time}', updatedAt)}</span>}
                             </div>
                         )}
                     </div>
 
                     {!locationConsent ? (
                         <div className="skeuo-card rounded-2xl md:rounded-3xl p-6 md:p-8 mb-6 border border-blue-100 dark:border-blue-900/40">
-                            <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2">Enable Live Weather</h2>
+                            <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2">{tp('Enable Live Weather')}</h2>
                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-5">
-                                Before showing live weather reports and alerts, choose how you want location to be used.
+                                {tp('Before showing live weather reports and alerts, choose how you want location to be used.')}
                             </p>
                             <div className="flex flex-wrap gap-3">
                                 <button
@@ -428,17 +432,17 @@ export default function WeatherAlertsPage() {
                                     className="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors flex items-center gap-2"
                                 >
                                     <span className="material-symbols-outlined text-base">my_location</span>
-                                    Use Current Location
+                                    {tp('Use Current Location')}
                                 </button>
                                 <button
                                     onClick={handleEnableManualWeather}
                                     className="px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-sm font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                                 >
-                                    Select District/State Manually
+                                    {tp('Select District/State Manually')}
                                 </button>
                             </div>
                             <p className="text-xs text-gray-500 mt-4">
-                                Note: Current location works on HTTPS or localhost. On LAN HTTP URLs, choose manual location.
+                                {tp('Note: Current location works on HTTPS or localhost. On LAN HTTP URLs, choose manual location.')}
                             </p>
                         </div>
                     ) : (
@@ -449,13 +453,13 @@ export default function WeatherAlertsPage() {
                                     <div className="flex items-center gap-3 mb-1">
                                         <span className="material-symbols-outlined text-blue-500 text-xl">location_on</span>
                                         <span className="font-bold text-gray-900 dark:text-white">
-                                            {weatherData?.location.name || loadingLocation || 'Your Region'}
+                                            {tp(weatherData?.location.name || loadingLocation || 'Your Region')}
                                         </span>
                                     </div>
                                     <p className="text-sm text-gray-500">
                                         {criticalCount > 0
-                                            ? `⚠️ ${criticalCount} high/critical alert(s) active`
-                                            : '✅ No high-risk alerts right now'}
+                                            ? tp('⚠️ {n} high/critical alert(s) active').replace('{n}', String(criticalCount))
+                                            : tp('✅ No high-risk alerts right now')}
                                     </p>
                                 </div>
                                 <div className="flex flex-col sm:flex-row flex-wrap gap-2 justify-start md:justify-end w-full md:w-auto">
@@ -464,13 +468,13 @@ export default function WeatherAlertsPage() {
                                         className="px-4 py-2.5 rounded-xl bg-blue-100 text-blue-700 text-sm font-bold hover:bg-blue-200 transition-colors flex items-center gap-1.5 w-full sm:w-auto"
                                     >
                                         <span className="material-symbols-outlined text-base">my_location</span>
-                                        {locatingCurrent ? 'Locating...' : 'Use Current'}
+                                        {locatingCurrent ? tp('Locating...') : tp('Use Current')}
                                     </button>
                                     <div className="relative w-full sm:flex-1 md:flex-none md:w-80">
                                         <input
                                             ref={inputRef}
                                             type="text"
-                                            placeholder="District, State (e.g., Mysuru, Karnataka)"
+                                            placeholder={tp('District, State (e.g., Mysuru, Karnataka)')}
                                             value={locationInput}
                                             onChange={e => {
                                                 setLocationInput(e.target.value);
@@ -494,38 +498,38 @@ export default function WeatherAlertsPage() {
                                                         onClick={() => handleSelectSuggestion(suggestion)}
                                                         className="w-full text-left px-4 py-2.5 hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors border-b last:border-b-0 border-gray-100 dark:border-gray-800"
                                                     >
-                                                        <p className="text-sm font-semibold text-gray-900 dark:text-white">{suggestion.label}</p>
+                                                        <p className="text-sm font-semibold text-gray-900 dark:text-white">{tp(suggestion.label)}</p>
                                                         <p className="text-[11px] text-gray-500">
                                                             {suggestion.kind === 'state'
-                                                                ? 'State'
+                                                                ? tp('State')
                                                                 : (suggestion.district && suggestion.state)
-                                                                    ? `${suggestion.district}, ${suggestion.state}`
-                                                                    : suggestion.state || 'Place'}
+                                                                    ? `${tp(suggestion.district)}, ${tp(suggestion.state)}`
+                                                                    : tp(suggestion.state) || tp('Place')}
                                                         </p>
                                                     </button>
                                                 ))}
                                                 {suggestionsLoading && (
-                                                    <p className="px-4 py-2 text-xs text-gray-500">Searching locations...</p>
+                                                    <p className="px-4 py-2 text-xs text-gray-500">{tp('Searching locations...')}</p>
                                                 )}
                                             </div>
                                         )}
                                     </div>
                                     <button onClick={handleSetLocation} className="vibrant-gradient px-5 py-2.5 rounded-xl text-white font-bold text-sm w-full sm:w-auto">
-                                        {loading ? 'Loading...' : 'Set'}
+                                        {loading ? tp('Loading...') : tp('Set')}
                                     </button>
                                 </div>
                             </div>
 
                             {/* 5-Day Forecast Bar */}
                             <div className="skeuo-card rounded-2xl md:rounded-3xl p-5 md:p-6 mb-6">
-                                <h3 className="font-bold text-sm text-gray-900 dark:text-white mb-4">5-Day Outlook</h3>
+                                <h3 className="font-bold text-sm text-gray-900 dark:text-white mb-4">{tp('5-Day Outlook')}</h3>
                                 {loading ? (
-                                    <div className="py-8 text-center text-sm text-gray-500">Fetching live forecast...</div>
+                                    <div className="py-8 text-center text-sm text-gray-500">{tp('Fetching live forecast...')}</div>
                                 ) : fiveDayForecast.length > 0 ? (
                                     <div className="grid grid-cols-5 gap-2 md:gap-4">
                                         {fiveDayForecast.map(d => (
                                             <div key={d.date} className="flex flex-col items-center gap-1 p-2 md:p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-                                                <span className="text-xs font-bold text-gray-600">{d.dayLabel}</span>
+                                                <span className="text-xs font-bold text-gray-600">{tp(d.dayLabel)}</span>
                                                 <span className="material-symbols-outlined text-xl md:text-2xl text-blue-500">{d.icon}</span>
                                                 <span className="text-xs md:text-sm font-bold text-gray-900 dark:text-white">{d.tempMax}°/{d.tempMin}°</span>
                                                 <span className="text-[10px] md:text-xs text-blue-500 font-bold">🌧 {d.rainChance}%</span>
@@ -533,7 +537,7 @@ export default function WeatherAlertsPage() {
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="py-8 text-center text-sm text-gray-500">Forecast unavailable for this location.</div>
+                                    <div className="py-8 text-center text-sm text-gray-500">{tp('Forecast unavailable for this location.')}</div>
                                 )}
                             </div>
 
@@ -550,7 +554,7 @@ export default function WeatherAlertsPage() {
                                                 : 'bg-gray-100 dark:bg-gray-800/50 text-gray-500 hover:bg-gray-200'
                                                 }`}
                                         >
-                                            {s === 'all' ? `All Alerts (${count})` : `${s} (${count})`}
+                                            {s === 'all' ? tp('All Alerts ({n})').replace('{n}', String(count)) : `${tp(s)} (${count})`}
                                         </button>
                                     );
                                 })}
@@ -560,7 +564,7 @@ export default function WeatherAlertsPage() {
                             <div className="space-y-4">
                                 {error && (
                                     <div className="skeuo-card rounded-2xl p-6 border border-red-200 dark:border-red-900/40 bg-red-50/70 dark:bg-red-900/10">
-                                        <p className="font-bold text-red-700 dark:text-red-300">{error}</p>
+                                        <p className="font-bold text-red-700 dark:text-red-300">{tp(error)}</p>
                                         <button
                                             onClick={() => {
                                                 const retryQuery = lastQuery || getFallbackQuery();
@@ -568,7 +572,7 @@ export default function WeatherAlertsPage() {
                                             }}
                                             className="mt-3 px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors"
                                         >
-                                            Retry
+                                            {tp('Retry')}
                                         </button>
                                     </div>
                                 )}
@@ -583,17 +587,17 @@ export default function WeatherAlertsPage() {
                                                 </div>
                                                 <div className="flex-1">
                                                     <div className="flex flex-wrap items-center gap-2 mb-2">
-                                                        <h4 className="font-bold text-gray-900 dark:text-white">{alert.title}</h4>
+                                                        <h4 className="font-bold text-gray-900 dark:text-white">{tp(alert.title)}</h4>
                                                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${severityColors[alert.severity]}`}>
-                                                            {alert.severity}
+                                                            {tp(alert.severity)}
                                                         </span>
                                                         <span className="text-xs text-gray-400 font-medium ml-auto">{alert.date}</span>
                                                     </div>
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{alert.description}</p>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{tp(alert.description)}</p>
                                                     <div className="p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200/50 dark:border-green-800/30">
                                                         <p className="text-xs font-bold text-green-700 dark:text-green-400 flex items-start gap-2">
                                                             <span className="material-symbols-outlined text-sm mt-0.5">agriculture</span>
-                                                            <span><strong>Farming Advice:</strong> {alert.advice}</span>
+                                                            <span><strong>{tp('Farming Advice:')}</strong> {tp(alert.advice)}</span>
                                                         </p>
                                                     </div>
                                                 </div>
@@ -605,7 +609,7 @@ export default function WeatherAlertsPage() {
                                 {!error && !loading && filteredAlerts.length === 0 && (
                                     <div className="skeuo-card rounded-2xl p-10 text-center">
                                         <span className="material-symbols-outlined text-4xl text-gray-300 mb-3">check_circle</span>
-                                        <p className="font-bold text-gray-500">No alerts for the selected severity level.</p>
+                                        <p className="font-bold text-gray-500">{tp('No alerts for the selected severity level.')}</p>
                                     </div>
                                 )}
                             </div>
@@ -614,10 +618,10 @@ export default function WeatherAlertsPage() {
                             <div className="mt-8 skeuo-card rounded-2xl p-5 md:p-6 border-l-4 border-primary">
                                 <h4 className="font-bold text-sm mb-2 text-gray-900 dark:text-white flex items-center gap-2">
                                     <span className="material-symbols-outlined text-primary text-lg">tips_and_updates</span>
-                                    Pro Tip
+                                    {tp('Pro Tip')}
                                 </h4>
                                 <p className="text-xs text-gray-600 dark:text-gray-400">
-                                    Use "Use Current" for GPS-based weather, or type district and state together (example: Mysuru, Karnataka) for accurate regional forecast and alerts.
+                                    {tp('Use "Use Current" for GPS-based weather, or type district and state together (example: Mysuru, Karnataka) for accurate regional forecast and alerts.')}
                                 </p>
                             </div>
                         </>
