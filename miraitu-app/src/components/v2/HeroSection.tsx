@@ -11,49 +11,49 @@ interface ImagePreview {
 
 const galleryItems = [
     {
-        image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800&h=600&fit=crop',
+        image: '/images/smartirrigation.png',
         title: 'Smart Irrigation',
         desc: 'Modern drip & sprinkler systems save up to 60% water while boosting crop yield significantly.',
         brief: 'Water is the lifeline of agriculture. Smart irrigation technologies like drip irrigation, sprinkler systems, and automated sensors are transforming how Indian farmers manage water resources. These systems deliver water directly to plant roots, reducing wastage by up to 60% compared to traditional flood irrigation. With climate change making rainfall increasingly unpredictable, smart irrigation ensures consistent crop growth regardless of monsoon patterns. Farmers using these systems report 30-50% higher yields while consuming significantly less water — a win for both productivity and sustainability.',
     },
     {
-        image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=800&h=600&fit=crop',
+        image: '/images/OrganincFarming.png',
         title: 'Organic Farming',
         desc: 'Chemical-free farming practices that produce healthier crops and protect soil for future generations.',
         brief: 'Organic farming is more than a trend — it\'s a return to nature\'s way of growing food. By eliminating synthetic pesticides and fertilizers, organic farmers produce crops that are safer for consumers and gentler on the environment. The organic market in India is growing at 25% annually, with premium prices rewarding farmers who make the switch. Practices like composting, crop rotation, and bio-pest control not only improve soil health but also reduce input costs over time. Miraitu connects organic farmers directly with health-conscious consumers, ensuring fair prices and eliminating middlemen.',
     },
     {
-        image: 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=800&h=600&fit=crop',
+        image: '/images/services/other/VeterinaryCare.png',
         title: 'Livestock Care',
         desc: 'Proper animal husbandry and veterinary care ensure healthy livestock and better dairy production.',
         brief: 'India has the world\'s largest livestock population, and proper animal care is crucial for rural livelihoods. Good livestock management includes balanced nutrition, timely vaccinations, clean shelter, and access to veterinary services. Healthy animals produce more milk, grow faster, and have better reproductive outcomes. With Miraitu\'s veterinary services, farmers can connect with qualified vets for on-demand consultations, schedule vaccinations, and get expert advice on breeding programs. This reduces mortality rates and significantly increases farm income from dairy and meat production.',
     },
     {
-        image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=800&h=600&fit=crop',
+        image: '/images/ModernMachinery.png',
         title: 'Modern Machinery',
         desc: 'Tractors, harvesters & drones are revolutionizing farming efficiency across rural India.',
         brief: 'Agricultural mechanization is transforming Indian farming from labor-intensive to efficient and scalable. Modern tractors with GPS guidance, combine harvesters that reduce post-harvest losses, and agricultural drones for precision spraying are now accessible to farmers through Miraitu\'s rental and marketplace platform. A single drone can spray 10 acres in 30 minutes — work that would take manual laborers an entire day. Mechanization reduces costs by 20-40%, improves crop quality, and frees farmers to focus on strategic decisions rather than back-breaking manual labor.',
     },
     {
-        image: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=800&h=600&fit=crop',
+        image: '/images/Cropdiversity.png',
         title: 'Crop Diversity',
         desc: 'Growing multiple crops reduces risk and ensures food security while maintaining soil nutrients.',
         brief: 'Crop diversification is a farmer\'s best insurance policy against market volatility and climate risks. By growing a mix of cereals, pulses, vegetables, and cash crops, farmers spread their risk and maintain multiple income streams throughout the year. Intercropping and mixed farming systems also improve soil fertility naturally — legumes fix nitrogen for neighboring cereal crops, reducing fertilizer needs. The Indian government\'s push for crop diversification aligns with Miraitu\'s mission to help farmers explore profitable alternatives beyond traditional rice-wheat systems.',
     },
     {
-        image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop',
+        image: '/images/machinery/featured-harvester.jpg',
         title: 'Golden Harvests',
         desc: 'India\'s wheat and rice fields feed billions — timely harvesting maximizes returns for farmers.',
         brief: 'Harvesting at the right time is critical for maximizing both quality and quantity of produce. Delayed harvesting can lead to 15-25% crop losses due to shattering, pest damage, and weather exposure. Modern harvesting techniques and machinery help farmers collect their crops at peak maturity, preserving nutritional value and commanding better market prices. Miraitu\'s real-time mandi price tracking helps farmers decide the optimal time to sell, while our logistics network ensures produce reaches markets quickly, minimizing post-harvest losses that cost Indian agriculture ₹92,000 crores annually.',
     },
     {
-        image: 'https://images.unsplash.com/photo-1585336261022-680e295ce3fe?w=800&h=600&fit=crop',
+        image: '/images/services/soil-testing/soilTesting.png',
         title: 'Soil Health',
         desc: 'Regular soil testing and proper fertilization are the foundation of high-yield sustainable farming.',
         brief: 'Healthy soil is the foundation of productive agriculture. India\'s soils face challenges from over-cultivation, chemical overuse, and erosion. Regular soil testing reveals pH levels, nutrient deficiencies, and organic matter content — enabling farmers to apply exactly the right fertilizers in the right amounts. This precision approach reduces input costs by 20-30% while improving yields. Practices like cover cropping, minimum tillage, and adding organic matter rebuild soil structure over time. Miraitu\'s soil testing service connects farmers with certified labs and provides actionable recommendations in their local language.',
     },
     {
-        image: 'https://images.unsplash.com/photo-1498579150354-977475b7ea0b?w=800&h=600&fit=crop',
+        image: '/images/services/other/Transportation.png',
         title: 'Farm to Market',
         desc: 'Direct market access eliminates middlemen and ensures farmers get fair prices for their produce.',
         brief: 'The journey from farm to consumer\'s plate involves multiple middlemen, each taking a cut that reduces farmer income. Studies show Indian farmers receive only 15-25% of the final retail price. Miraitu\'s digital marketplace connects farmers directly with buyers, processors, and retailers — increasing farmer earnings by 30-50%. Real-time price discovery across mandis empowers farmers to negotiate better deals. Our platform also facilitates group selling through FPOs, giving small farmers the bargaining power of large cooperatives. From listing produce to arranging transport, Miraitu handles the entire supply chain.',
