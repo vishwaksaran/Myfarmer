@@ -5,8 +5,12 @@ import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { normalizeIndianPhone } from '@/lib/phone';
 import { usePrefillLocation } from '@/context/LocationContext';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 export default function SoilTestingPage() {
+    const { lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const [headerVisible, setHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -59,11 +63,11 @@ export default function SoilTestingPage() {
 
     const handleScheduleVisit = async () => {
         const errs: Record<string, string> = {};
-        if (!formData.full_name.trim()) errs.full_name = 'Name is required';
+        if (!formData.full_name.trim()) errs.full_name = tp('Name is required');
         const digits = formData.phone.replace(/\D/g, '');
-        if (!digits) errs.phone = 'Phone number is required';
-        else if (digits.length !== 10) errs.phone = 'Enter a valid 10-digit number';
-        if (!formData.location.trim()) errs.location = 'Location is required';
+        if (!digits) errs.phone = tp('Phone number is required');
+        else if (digits.length !== 10) errs.phone = tp('Enter a valid 10-digit number');
+        if (!formData.location.trim()) errs.location = tp('Location is required');
         if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
         setFormErrors({});
         const result = await submit({
@@ -82,7 +86,7 @@ export default function SoilTestingPage() {
             },
         });
         if (result.success) setShowSuccessModal(true);
-        else setFormErrors({ submit: result.error || 'Failed to submit' });
+        else setFormErrors({ submit: result.error || tp('Failed to submit') });
     };
 
     const soilServices = [
@@ -116,11 +120,11 @@ export default function SoilTestingPage() {
             <header className="w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
                 <div className="mx-auto max-w-[1280px] px-4 md:px-6 py-3 md:py-4">
                     <nav className="flex items-center gap-1 text-xs md:text-sm">
-                        <a href="/home" className="text-gray-500 hover:text-primary transition-colors font-medium">Home</a>
+                        <a href="/home" className="text-gray-500 hover:text-primary transition-colors font-medium">{tp('Home')}</a>
                         <span className="material-symbols-outlined text-gray-400 text-xs md:text-sm">chevron_right</span>
-                        <a href="/home/services" className="text-gray-500 hover:text-primary transition-colors font-medium">Services</a>
+                        <a href="/home/services" className="text-gray-500 hover:text-primary transition-colors font-medium">{tp('Services')}</a>
                         <span className="material-symbols-outlined text-gray-400 text-xs md:text-sm">chevron_right</span>
-                        <span className="text-primary font-bold">Soil Testing</span>
+                        <span className="text-primary font-bold">{tp('Soil Testing')}</span>
                     </nav>
                 </div>
             </header>
@@ -132,9 +136,9 @@ export default function SoilTestingPage() {
                         <div className="inline-flex items-center justify-center size-16 md:size-20 rounded-2xl md:rounded-3xl bg-gradient-to-br from-green-600 to-emerald-600 text-white mb-6 md:mb-8 shadow-lg md:shadow-2xl">
                             <span className="material-symbols-outlined text-4xl md:text-5xl">science</span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-4 leading-tight">Soil Testing Labs</h1>
+                        <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-4 leading-tight">{tp('Soil Testing Labs')}</h1>
                         <p className="text-base md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-                            Get accurate soil health reports and expert fertilizer recommendations for higher yields.
+                            {tp('Get accurate soil health reports and expert fertilizer recommendations for higher yields.')}
                         </p>
                     </div>
                 </div>
@@ -143,8 +147,8 @@ export default function SoilTestingPage() {
             {/* Services Grid */}
             <section className="px-4 md:px-6 py-12 bg-gradient-to-b from-white to-green-50/30 dark:from-gray-900 dark:to-green-900/10">
                 <div className="mx-auto max-w-[1280px]">
-                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-2">Testing Packages</h2>
-                    <p className="text-gray-600 dark:text-gray-400 mb-8 md:mb-12">Choose the package that fits your farm&apos;s needs</p>
+                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-2">{tp('Testing Packages')}</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mb-8 md:mb-12">{tp("Choose the package that fits your farm's needs")}</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                         {soilServices.map((service) => (
                             <div key={service.id} className={`skeuo-card rounded-2xl md:rounded-3xl p-6 md:p-8 border-2 md:border transition-all duration-300 ${formData.service_type === service.id
@@ -157,21 +161,21 @@ export default function SoilTestingPage() {
                                         <span className="material-symbols-outlined text-3xl md:text-4xl text-green-600 dark:text-green-400">{service.icon}</span>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Starting from</p>
+                                        <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">{tp('Starting from')}</p>
                                         <p className="text-xl md:text-2xl font-black text-green-600 dark:text-green-400">{service.price}</p>
                                     </div>
                                 </div>
 
                                 {/* Title & Description */}
-                                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white mb-2">{service.title}</h3>
-                                <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-6">{service.description}</p>
+                                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white mb-2">{tp(service.title)}</h3>
+                                <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-6">{tp(service.description)}</p>
 
                                 {/* Features Grid */}
                                 <div className="grid grid-cols-1 gap-3 mb-8">
                                     {service.features.map((feature, idx) => (
                                         <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-green-50/50 dark:bg-green-900/20">
                                             <span className="material-symbols-outlined text-sm text-green-600 dark:text-green-400 flex-shrink-0">check_circle</span>
-                                            <span className="text-sm md:text-base font-medium text-gray-700 dark:text-gray-200">{feature}</span>
+                                            <span className="text-sm md:text-base font-medium text-gray-700 dark:text-gray-200">{tp(feature)}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -184,7 +188,7 @@ export default function SoilTestingPage() {
                                         : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white hover:shadow-green-600/30'
                                         }`}
                                 >
-                                    {formData.service_type === service.id ? '✓ SELECTED' : 'Book Test'}
+                                    {formData.service_type === service.id ? tp('✓ SELECTED') : tp('Book Test')}
                                 </button>
                             </div>
                         ))}
@@ -195,8 +199,8 @@ export default function SoilTestingPage() {
             {/* Booking Form */}
             <section className="px-4 md:px-6 py-12 md:py-16 bg-gradient-to-b from-green-50/30 to-transparent dark:from-green-900/10">
                 <div className="mx-auto max-w-[1280px]">
-                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-3">Get Started Today</h2>
-                    <p className="text-gray-600 dark:text-gray-400 mb-12">Choose your package and schedule a sample collection visit</p>
+                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-3">{tp('Get Started Today')}</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mb-12">{tp('Choose your package and schedule a sample collection visit')}</p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Cost Calculator */}
@@ -205,36 +209,36 @@ export default function SoilTestingPage() {
                                 <div className="size-10 rounded-lg bg-gradient-to-br from-green-100 to-emerald-50 dark:from-green-900/30 dark:to-green-900/10 flex items-center justify-center">
                                     <span className="material-symbols-outlined text-lg text-green-600 dark:text-green-400">calculate</span>
                                 </div>
-                                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">Estimate Cost</h3>
+                                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">{tp('Estimate Cost')}</h3>
                             </div>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Farm Size (Acres)</label>
+                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">{tp('Farm Size (Acres)')}</label>
                                     <input
                                         type="number"
                                         value={formData.area_size}
                                         onChange={(e) => setFormData({ ...formData, area_size: e.target.value })}
                                         className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm md:text-base"
-                                        placeholder="Enter total acres"
+                                        placeholder={tp('Enter total acres')}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Test Package</label>
+                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">{tp('Test Package')}</label>
                                     <select
                                         value={formData.service_type}
                                         onChange={(e) => setFormData({ ...formData, service_type: e.target.value })}
                                         className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm md:text-base appearance-none"
                                     >
-                                        <option value="basic">Basic Analysis (₹500)</option>
-                                        <option value="comprehensive">Comprehensive (₹1200)</option>
-                                        <option value="micro_nutrient">Micro-Nutrients Only (₹800)</option>
+                                        <option value="basic">{tp('Basic Analysis (₹500)')}</option>
+                                        <option value="comprehensive">{tp('Comprehensive (₹1200)')}</option>
+                                        <option value="micro_nutrient">{tp('Micro-Nutrients Only (₹800)')}</option>
                                     </select>
                                 </div>
                                 {formData.area_size && (
                                     <div className="mt-6 p-4 md:p-6 rounded-lg md:rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100/50 dark:from-green-900/20 dark:to-emerald-900/10 border-2 border-green-200 dark:border-green-800">
-                                        <p className="text-xs md:text-sm font-bold text-gray-600 dark:text-gray-400 mb-2">Estimated Total</p>
+                                        <p className="text-xs md:text-sm font-bold text-gray-600 dark:text-gray-400 mb-2">{tp('Estimated Total')}</p>
                                         <p className="text-3xl md:text-4xl font-black text-green-600 dark:text-green-400">₹{calculateCost()}</p>
-                                        <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-500 mt-3">*Includes sample collection charges</p>
+                                        <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-500 mt-3">{tp('*Includes sample collection charges')}</p>
                                     </div>
                                 )}
                             </div>
@@ -246,15 +250,15 @@ export default function SoilTestingPage() {
                                 <div className="size-10 rounded-lg bg-gradient-to-br from-green-100 to-emerald-50 dark:from-green-900/30 dark:to-green-900/10 flex items-center justify-center">
                                     <span className="material-symbols-outlined text-lg text-green-600 dark:text-green-400">location_on</span>
                                 </div>
-                                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">Schedule Collection</h3>
+                                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">{tp('Schedule Collection')}</h3>
                             </div>
-                            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mb-6 ml-13">Our agent will visit your farm to collect soil samples</p>
+                            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mb-6 ml-13">{tp('Our agent will visit your farm to collect soil samples')}</p>
 
                             {/* Selected Package Indicator */}
                             <div className="mb-4 p-3 md:p-4 rounded-lg md:rounded-xl bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800">
-                                <p className="text-xs md:text-sm font-bold text-gray-600 dark:text-gray-400 mb-0.5">Selected Package:</p>
+                                <p className="text-xs md:text-sm font-bold text-gray-600 dark:text-gray-400 mb-0.5">{tp('Selected Package:')}</p>
                                 <p className="text-base md:text-lg font-black text-green-600 dark:text-green-400">
-                                    {packageLabels[formData.service_type] || 'Basic Analysis'}
+                                    {tp(packageLabels[formData.service_type] || 'Basic Analysis')}
                                 </p>
                             </div>
 
@@ -266,42 +270,42 @@ export default function SoilTestingPage() {
 
                             <div className="space-y-3 md:space-y-4">
                                 <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Full Name *</label>
+                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">{tp('Full Name')} *</label>
                                     <input
                                         type="text"
                                         value={formData.full_name}
                                         onChange={(e) => { setFormData({ ...formData, full_name: e.target.value }); setFormErrors(prev => { const { full_name, ...r } = prev; return r; }); }}
                                         className={`w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 outline-none transition-colors dark:text-white text-sm md:text-base ${formErrors.full_name ? 'border-red-400' : 'border-transparent focus:border-green-500'}`}
-                                        placeholder="Enter your name"
+                                        placeholder={tp('Enter your name')}
                                     />
                                     {formErrors.full_name && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.full_name}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Phone Number *</label>
+                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">{tp('Phone Number')} *</label>
                                     <input
                                         type="tel"
                                         value={formData.phone}
                                         onChange={(e) => { setFormData({ ...formData, phone: normalizeIndianPhone(e.target.value) }); setFormErrors(prev => { const { phone, ...r } = prev; return r; }); }}
                                         className={`w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 outline-none transition-colors dark:text-white text-sm md:text-base ${formErrors.phone ? 'border-red-400' : 'border-transparent focus:border-green-500'}`}
-                                        placeholder="10-digit number"
+                                        placeholder={tp('10-digit number')}
                                         maxLength={14}
                                     />
                                     {formErrors.phone && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.phone}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Farm Location *</label>
+                                    <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">{tp('Farm Location')} *</label>
                                     <input
                                         type="text"
                                         value={formData.location}
                                         onChange={(e) => { setFormData({ ...formData, location: e.target.value }); setFormErrors(prev => { const { location, ...r } = prev; return r; }); }}
                                         className={`w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 outline-none transition-colors dark:text-white text-sm md:text-base ${formErrors.location ? 'border-red-400' : 'border-transparent focus:border-green-500'}`}
-                                        placeholder="Village, District"
+                                        placeholder={tp('Village, District')}
                                     />
                                     {formErrors.location && <p className="text-red-500 text-xs font-bold mt-1">{formErrors.location}</p>}
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                                     <div>
-                                        <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Preferred Start Date</label>
+                                        <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">{tp('Preferred Start Date')}</label>
                                         <input
                                             type="date"
                                             value={formData.preferred_date}
@@ -311,17 +315,17 @@ export default function SoilTestingPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Preferred Time</label>
+                                        <label className="block text-xs md:text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">{tp('Preferred Time')}</label>
                                         <select
                                             value={formData.preferred_time}
                                             onChange={(e) => setFormData({ ...formData, preferred_time: e.target.value })}
                                             className="w-full rounded-lg md:rounded-xl px-4 py-2.5 md:py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm md:text-base appearance-none"
                                         >
-                                            <option value="">Select a time slot</option>
-                                            <option value="Morning (8 AM – 11 AM)">Morning (8 AM – 11 AM)</option>
-                                            <option value="Late Morning (11 AM – 2 PM)">Late Morning (11 AM – 2 PM)</option>
-                                            <option value="Afternoon (2 PM – 5 PM)">Afternoon (2 PM – 5 PM)</option>
-                                            <option value="Evening (5 PM – 8 PM)">Evening (5 PM – 8 PM)</option>
+                                            <option value="">{tp('Select a time slot')}</option>
+                                            <option value="Morning (8 AM – 11 AM)">{tp('Morning (8 AM – 11 AM)')}</option>
+                                            <option value="Late Morning (11 AM – 2 PM)">{tp('Late Morning (11 AM – 2 PM)')}</option>
+                                            <option value="Afternoon (2 PM – 5 PM)">{tp('Afternoon (2 PM – 5 PM)')}</option>
+                                            <option value="Evening (5 PM – 8 PM)">{tp('Evening (5 PM – 8 PM)')}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -334,12 +338,12 @@ export default function SoilTestingPage() {
                                     {submitting ? (
                                         <>
                                             <span className="material-symbols-outlined text-xl animate-spin">progress_activity</span>
-                                            SUBMITTING...
+                                            {tp('SUBMITTING...')}
                                         </>
                                     ) : (
                                         <>
                                             <span className="material-symbols-outlined text-xl">send</span>
-                                            SCHEDULE VISIT
+                                            {tp('SCHEDULE VISIT')}
                                         </>
                                     )}
                                 </button>
@@ -358,10 +362,10 @@ export default function SoilTestingPage() {
                                 <span className="material-symbols-outlined text-4xl md:text-5xl text-white">check_circle</span>
                             </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-primary-dark dark:text-white mb-2 md:mb-3">Visit Scheduled!</h2>
-                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4">Your soil testing request has been submitted successfully.</p>
+                        <h2 className="text-2xl md:text-3xl font-black text-primary-dark dark:text-white mb-2 md:mb-3">{tp('Visit Scheduled!')}</h2>
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4">{tp('Your soil testing request has been submitted successfully.')}</p>
                         <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
-                            <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will contact you soon to schedule the soil sample collection</p>
+                            <p className="text-sm font-bold text-green-700 dark:text-green-400">{tp('📞 Our team will contact you soon to schedule the soil sample collection')}</p>
                         </div>
                         <button
                             onClick={() => {
@@ -370,7 +374,7 @@ export default function SoilTestingPage() {
                             }}
                             className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors"
                         >
-                            Done
+                            {tp('Done')}
                         </button>
                     </div>
                     <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>

@@ -5,6 +5,8 @@ import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { normalizeIndianPhone } from '@/lib/phone';
 import { usePrefillLocation } from '@/context/LocationContext';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 // ─── Storage types catalogue ───────────────────────────────────────────────
 const storageServices = [
@@ -48,6 +50,8 @@ function BookingModal({
     onClose: () => void;
 }) {
     const { submit, submitting } = useBookingSubmit();
+    const { lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const firstFocusRef = useRef<HTMLInputElement>(null);
 
     const [form, setForm] = useState({
@@ -88,11 +92,11 @@ function BookingModal({
 
     const validate = (): boolean => {
         const errs: Record<string, string> = {};
-        if (!form.full_name.trim()) errs.full_name = 'Name is required';
+        if (!form.full_name.trim()) errs.full_name = tp('Name is required');
         const digits = form.phone.replace(/\D/g, '');
-        if (!digits) errs.phone = 'Phone number is required';
-        else if (digits.length !== 10) errs.phone = 'Enter a valid 10-digit number';
-        if (!form.location.trim()) errs.location = 'Location is required';
+        if (!digits) errs.phone = tp('Phone number is required');
+        else if (digits.length !== 10) errs.phone = tp('Enter a valid 10-digit number');
+        if (!form.location.trim()) errs.location = tp('Location is required');
         setErrors(errs);
         return Object.keys(errs).length === 0;
     };
@@ -120,7 +124,7 @@ function BookingModal({
             },
         });
         if (result.success) setShowSuccess(true);
-        else setErrors({ submit: result.error || 'Submission failed. Please try again.' });
+        else setErrors({ submit: result.error || tp('Submission failed. Please try again.') });
     };
 
     // ── Success screen ──
@@ -135,19 +139,19 @@ function BookingModal({
                     <div className="w-20 h-20 mx-auto mb-5 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-xl shadow-green-500/30">
                         <span className="material-symbols-outlined text-4xl text-white" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                     </div>
-                    <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Booking Request Sent!</h2>
+                    <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{tp('Booking Request Sent!')}</h2>
                     <p className="text-gray-500 dark:text-gray-400 text-sm mb-5">
-                        Thank you, <strong className="text-gray-700 dark:text-gray-200">{form.full_name}</strong>! Your storage booking for <strong className="text-green-600">{storageType.title}</strong> has been received.
+                        {tp('Thank you')}, <strong className="text-gray-700 dark:text-gray-200">{form.full_name}</strong>! {tp('Your storage booking for {item} has been received.').replace('{item}', tp(storageType.title))}
                     </p>
                     <div className="flex items-center gap-3 bg-green-50 dark:bg-green-900/25 border border-green-200 dark:border-green-800 rounded-2xl px-4 py-3 mb-6 text-left">
                         <span className="material-symbols-outlined text-green-600 text-2xl flex-shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>support_agent</span>
-                        <p className="text-sm text-green-700 dark:text-green-300 font-semibold">Our team will reach you within 24 hours at {form.phone}.</p>
+                        <p className="text-sm text-green-700 dark:text-green-300 font-semibold">{tp('Our team will reach you within 24 hours at {phone}.').replace('{phone}', form.phone)}</p>
                     </div>
                     <button
                         onClick={onClose}
                         className="w-full py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold hover:from-green-700 hover:to-emerald-700 transition-all active:scale-[0.98]"
                     >
-                        Done
+                        {tp('Done')}
                     </button>
                 </div>
                 <style>{`@keyframes successPop{0%{transform:scale(.8);opacity:0}60%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}`}</style>
@@ -178,11 +182,11 @@ function BookingModal({
                             <span className="material-symbols-outlined text-2xl text-white" style={{ fontVariationSettings: "'FILL' 1" }}>{storageType.icon}</span>
                         </div>
                         <div>
-                            <p className="text-white/70 text-xs font-semibold uppercase tracking-wider">Book Storage</p>
-                            <h2 className="text-xl font-black text-white">{storageType.title}</h2>
+                            <p className="text-white/70 text-xs font-semibold uppercase tracking-wider">{tp('Book Storage')}</p>
+                            <h2 className="text-xl font-black text-white">{tp(storageType.title)}</h2>
                         </div>
                     </div>
-                    <p className="text-white/80 text-sm">{storageType.rateLabel} · {storageType.description}</p>
+                    <p className="text-white/80 text-sm">{storageType.rateLabel} · {tp(storageType.description)}</p>
                 </div>
 
                 {/* Form body */}
@@ -193,7 +197,7 @@ function BookingModal({
                         <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                             <span className="flex items-center gap-1.5">
                                 <span className="material-symbols-outlined text-base text-gray-400">person</span>
-                                Full Name <span className="text-red-400">*</span>
+                                {tp('Full Name')} <span className="text-red-400">*</span>
                             </span>
                         </label>
                         <input
@@ -201,7 +205,7 @@ function BookingModal({
                             type="text"
                             value={form.full_name}
                             onChange={e => setForm({ ...form, full_name: e.target.value })}
-                            placeholder="Enter your full name"
+                            placeholder={tp('Enter your full name')}
                             className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${errors.full_name ? 'border-red-400' : 'border-transparent focus:border-green-500'} outline-none transition-colors dark:text-white text-sm`}
                         />
                         {errors.full_name && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-sm">error</span>{errors.full_name}</p>}
@@ -212,7 +216,7 @@ function BookingModal({
                         <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                             <span className="flex items-center gap-1.5">
                                 <span className="material-symbols-outlined text-base text-gray-400">phone</span>
-                                Phone Number <span className="text-red-400">*</span>
+                                {tp('Phone Number')} <span className="text-red-400">*</span>
                             </span>
                         </label>
                         <input
@@ -230,14 +234,14 @@ function BookingModal({
                         <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                             <span className="flex items-center gap-1.5">
                                 <span className="material-symbols-outlined text-base text-gray-400">location_on</span>
-                                Location <span className="text-red-400">*</span>
+                                {tp('Location')} <span className="text-red-400">*</span>
                             </span>
                         </label>
                         <input
                             type="text"
                             value={form.location}
                             onChange={e => setForm({ ...form, location: e.target.value })}
-                            placeholder="Village, Taluk, District"
+                            placeholder={tp('Village, Taluk, District')}
                             className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${errors.location ? 'border-red-400' : 'border-transparent focus:border-green-500'} outline-none transition-colors dark:text-white text-sm`}
                         />
                         {errors.location && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-sm">error</span>{errors.location}</p>}
@@ -248,14 +252,14 @@ function BookingModal({
                         <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                             <span className="flex items-center gap-1.5">
                                 <span className="material-symbols-outlined text-base text-gray-400">grass</span>
-                                Crop / Produce
+                                {tp('Crop / Produce')}
                             </span>
                         </label>
                         <input
                             type="text"
                             value={form.crop_type}
                             onChange={e => setForm({ ...form, crop_type: e.target.value })}
-                            placeholder="e.g. Wheat, Onion, Potato"
+                            placeholder={tp('e.g. Wheat, Onion, Potato')}
                             className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm"
                         />
                     </div>
@@ -266,7 +270,7 @@ function BookingModal({
                             <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                                 <span className="flex items-center gap-1.5">
                                     <span className="material-symbols-outlined text-base text-gray-400">scale</span>
-                                    Qty (Qtl)
+                                    {tp('Qty (Qtl)')}
                                 </span>
                             </label>
                             <input
@@ -274,7 +278,7 @@ function BookingModal({
                                 min="1"
                                 value={form.quantity}
                                 onChange={e => setForm({ ...form, quantity: e.target.value })}
-                                placeholder="e.g. 100"
+                                placeholder={tp('e.g. 100')}
                                 className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm"
                             />
                         </div>
@@ -282,7 +286,7 @@ function BookingModal({
                             <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                                 <span className="flex items-center gap-1.5">
                                     <span className="material-symbols-outlined text-base text-gray-400">calendar_month</span>
-                                    Months
+                                    {tp('Months')}
                                 </span>
                             </label>
                             <input
@@ -290,7 +294,7 @@ function BookingModal({
                                 min="1"
                                 value={form.duration}
                                 onChange={e => setForm({ ...form, duration: e.target.value })}
-                                placeholder="e.g. 3"
+                                placeholder={tp('e.g. 3')}
                                 className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm"
                             />
                         </div>
@@ -302,7 +306,7 @@ function BookingModal({
                             <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                                 <span className="flex items-center gap-1.5">
                                     <span className="material-symbols-outlined text-base text-gray-400">calendar_month</span>
-                                    Preferred Date
+                                    {tp('Preferred Date')}
                                 </span>
                             </label>
                             <input
@@ -317,7 +321,7 @@ function BookingModal({
                             <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                                 <span className="flex items-center gap-1.5">
                                     <span className="material-symbols-outlined text-base text-gray-400">schedule</span>
-                                    Preferred Time
+                                    {tp('Preferred Time')}
                                 </span>
                             </label>
                             <select
@@ -325,11 +329,11 @@ function BookingModal({
                                 onChange={e => setForm({ ...form, preferred_time: e.target.value })}
                                 className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm appearance-none"
                             >
-                                <option value="">Select slot</option>
-                                <option value="Morning (8 AM – 11 AM)">Morning (8–11 AM)</option>
-                                <option value="Late Morning (11 AM – 2 PM)">Late Morning (11–2)</option>
-                                <option value="Afternoon (2 PM – 5 PM)">Afternoon (2–5 PM)</option>
-                                <option value="Evening (5 PM – 8 PM)">Evening (5–8 PM)</option>
+                                <option value="">{tp('Select slot')}</option>
+                                <option value="Morning (8 AM – 11 AM)">{tp('Morning (8–11 AM)')}</option>
+                                <option value="Late Morning (11 AM – 2 PM)">{tp('Late Morning (11–2)')}</option>
+                                <option value="Afternoon (2 PM – 5 PM)">{tp('Afternoon (2–5 PM)')}</option>
+                                <option value="Evening (5 PM – 8 PM)">{tp('Evening (5–8 PM)')}</option>
                             </select>
                         </div>
                     </div>
@@ -339,7 +343,7 @@ function BookingModal({
                         <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
                             <span className="material-symbols-outlined text-green-600 text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>calculate</span>
                             <div>
-                                <p className="text-xs text-green-600 dark:text-green-400 font-semibold">Estimated Cost</p>
+                                <p className="text-xs text-green-600 dark:text-green-400 font-semibold">{tp('Estimated Cost')}</p>
                                 <p className="text-xl font-black text-green-700 dark:text-green-300">₹{cost}</p>
                             </div>
                         </div>
@@ -350,13 +354,13 @@ function BookingModal({
                         <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                             <span className="flex items-center gap-1.5">
                                 <span className="material-symbols-outlined text-base text-gray-400">notes</span>
-                                Additional Notes
+                                {tp('Additional Notes')}
                             </span>
                         </label>
                         <textarea
                             value={form.notes}
                             onChange={e => setForm({ ...form, notes: e.target.value })}
-                            placeholder="Special requirements, preferred location, etc."
+                            placeholder={tp('Special requirements, preferred location, etc.')}
                             rows={2}
                             className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm resize-none"
                         />
@@ -380,19 +384,19 @@ function BookingModal({
                         {submitting ? (
                             <>
                                 <span className="material-symbols-outlined text-xl animate-spin">progress_activity</span>
-                                Submitting…
+                                {tp('Submitting…')}
                             </>
                         ) : (
                             <>
                                 <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>warehouse</span>
-                                Confirm Booking Request
+                                {tp('Confirm Booking Request')}
                             </>
                         )}
                     </button>
 
                     <p className="text-center text-xs text-gray-400 pb-2">
                         <span className="material-symbols-outlined text-xs align-middle mr-0.5">lock</span>
-                        Your details are safe with us
+                        {tp('Your details are safe with us')}
                     </p>
                 </form>
             </div>
@@ -403,6 +407,8 @@ function BookingModal({
 
 // ─── Page ───────────────────────────────────────────────────────────────────
 export default function StoragePage() {
+    const { lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const [headerVisible, setHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
     const [activeStorage, setActiveStorage] = useState<(typeof storageServices)[0] | null>(null);
@@ -443,11 +449,11 @@ export default function StoragePage() {
             <header className="w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
                 <div className="mx-auto max-w-[1280px] px-4 md:px-6 py-3 md:py-4">
                     <nav className="flex items-center gap-1 text-xs md:text-sm">
-                        <a href="/home" className="text-gray-500 hover:text-primary transition-colors font-medium">Home</a>
+                        <a href="/home" className="text-gray-500 hover:text-primary transition-colors font-medium">{tp('Home')}</a>
                         <span className="material-symbols-outlined text-gray-400 text-xs md:text-sm">chevron_right</span>
-                        <a href="/home/services" className="text-gray-500 hover:text-primary transition-colors font-medium">Services</a>
+                        <a href="/home/services" className="text-gray-500 hover:text-primary transition-colors font-medium">{tp('Services')}</a>
                         <span className="material-symbols-outlined text-gray-400 text-xs md:text-sm">chevron_right</span>
-                        <span className="text-primary font-bold">Storage & Godowns</span>
+                        <span className="text-primary font-bold">{tp('Storage & Godowns')}</span>
                     </nav>
                 </div>
             </header>
@@ -458,9 +464,9 @@ export default function StoragePage() {
                     <div className="inline-flex items-center justify-center size-16 md:size-20 rounded-2xl md:rounded-3xl bg-gradient-to-br from-green-600 to-emerald-700 text-white mb-6 shadow-2xl">
                         <span className="material-symbols-outlined text-4xl md:text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>warehouse</span>
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-4">Agricultural Storage & Godowns</h1>
+                    <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-4">{tp('Agricultural Storage & Godowns')}</h1>
                     <p className="text-base md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-                        Protect your harvest from spoilage, pests, and price fluctuations. Secure storage facilities near you.
+                        {tp('Protect your harvest from spoilage, pests, and price fluctuations. Secure storage facilities near you.')}
                     </p>
                 </div>
             </section>
@@ -468,8 +474,8 @@ export default function StoragePage() {
             {/* ── Storage Cards ── */}
             <section className="px-4 md:px-6 py-12 md:py-16">
                 <div className="mx-auto max-w-[1280px]">
-                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-2">Storage Types</h2>
-                    <p className="text-gray-600 dark:text-gray-400 mb-8 md:mb-12">Choose the storage solution that fits your crop and budget</p>
+                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-2">{tp('Storage Types')}</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mb-8 md:mb-12">{tp('Choose the storage solution that fits your crop and budget')}</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                         {storageServices.map((service) => (
                             <div key={service.key} className="skeuo-card rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-xl transition-all duration-300 group flex flex-col">
@@ -479,21 +485,21 @@ export default function StoragePage() {
                                         <span className="material-symbols-outlined text-3xl md:text-4xl text-green-700 dark:text-green-400" style={{ fontVariationSettings: "'FILL' 1" }}>{service.icon}</span>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-xs text-gray-500 font-medium mb-0.5">Starting from</p>
+                                        <p className="text-xs text-gray-500 font-medium mb-0.5">{tp('Starting from')}</p>
                                         <p className="text-xl md:text-2xl font-black text-green-600 dark:text-green-400">{service.price}</p>
                                     </div>
                                 </div>
 
                                 {/* Title & Desc */}
-                                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white mb-2">{service.title}</h3>
-                                <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-5">{service.description}</p>
+                                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white mb-2">{tp(service.title)}</h3>
+                                <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-5">{tp(service.description)}</p>
 
                                 {/* Features */}
                                 <div className="grid grid-cols-1 gap-2 mb-6 flex-1">
                                     {service.features.map((feature, idx) => (
                                         <div key={idx} className="flex items-center gap-3 p-2.5 rounded-lg bg-green-50/60 dark:bg-green-900/20">
                                             <span className="material-symbols-outlined text-sm text-green-600 dark:text-green-400 flex-shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                                            <span className="text-sm md:text-base font-medium text-gray-700 dark:text-gray-200">{feature}</span>
+                                            <span className="text-sm md:text-base font-medium text-gray-700 dark:text-gray-200">{tp(feature)}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -505,7 +511,7 @@ export default function StoragePage() {
                                     className="w-full rounded-lg md:rounded-xl py-3 md:py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-black text-base md:text-lg shadow-lg hover:shadow-xl group-hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                                 >
                                     <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>event_available</span>
-                                    Book Space
+                                    {tp('Book Space')}
                                 </button>
                             </div>
                         ))}
@@ -516,48 +522,48 @@ export default function StoragePage() {
             {/* ── Cost Estimator ── */}
             <section className="px-4 md:px-6 py-12 md:py-16 bg-gradient-to-b from-green-50/30 to-transparent dark:from-green-900/10">
                 <div className="mx-auto max-w-[640px]">
-                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-3">Estimate Storage Cost</h2>
-                    <p className="text-gray-600 dark:text-gray-400 mb-8">Quick calculator before you book</p>
+                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-3">{tp('Estimate Storage Cost')}</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mb-8">{tp('Quick calculator before you book')}</p>
 
                     <div className="skeuo-card rounded-2xl md:rounded-3xl p-6 md:p-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="size-10 rounded-lg bg-gradient-to-br from-green-100 to-emerald-50 dark:from-green-900/30 flex items-center justify-center">
                                 <span className="material-symbols-outlined text-lg text-green-600 dark:text-green-400" style={{ fontVariationSettings: "'FILL' 1" }}>calculate</span>
                             </div>
-                            <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">Storage Estimator</h3>
+                            <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">{tp('Storage Estimator')}</h3>
                         </div>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Storage Type</label>
+                                <label className="block text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">{tp('Storage Type')}</label>
                                 <select
                                     value={calcForm.storage_type}
                                     onChange={e => setCalcForm({ ...calcForm, storage_type: e.target.value })}
                                     className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm appearance-none"
                                 >
-                                    <option value="dry">Dry Godown (₹50/qtl/mo)</option>
-                                    <option value="cold">Cold Storage (₹150/qtl/mo)</option>
-                                    <option value="silo">Grain Silo (₹80/qtl/mo)</option>
+                                    <option value="dry">{tp('Dry Godown (₹50/qtl/mo)')}</option>
+                                    <option value="cold">{tp('Cold Storage (₹150/qtl/mo)')}</option>
+                                    <option value="silo">{tp('Grain Silo (₹80/qtl/mo)')}</option>
                                 </select>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Quantity (Qtl)</label>
+                                    <label className="block text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">{tp('Quantity (Qtl)')}</label>
                                     <input
                                         type="number"
                                         value={calcForm.quantity}
                                         onChange={e => setCalcForm({ ...calcForm, quantity: e.target.value })}
-                                        placeholder="e.g. 100"
+                                        placeholder={tp('e.g. 100')}
                                         min="1"
                                         className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Duration (Months)</label>
+                                    <label className="block text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">{tp('Duration (Months)')}</label>
                                     <input
                                         type="number"
                                         value={calcForm.duration}
                                         onChange={e => setCalcForm({ ...calcForm, duration: e.target.value })}
-                                        placeholder="e.g. 3"
+                                        placeholder={tp('e.g. 3')}
                                         min="1"
                                         className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-transparent focus:border-green-500 outline-none transition-colors dark:text-white text-sm"
                                     />
@@ -567,13 +573,13 @@ export default function StoragePage() {
                                 onClick={handleCalculate}
                                 className="w-full rounded-xl py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold shadow-lg hover:shadow-xl active:scale-[0.98] transition-all"
                             >
-                                Calculate Cost
+                                {tp('Calculate Cost')}
                             </button>
                             {estimatedCost && (
                                 <div className="mt-2 p-6 rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100/50 dark:from-green-900/20 dark:to-emerald-900/10 border-2 border-green-200 dark:border-green-800">
-                                    <p className="text-sm font-bold text-gray-600 dark:text-gray-400 mb-2">Estimated Total</p>
+                                    <p className="text-sm font-bold text-gray-600 dark:text-gray-400 mb-2">{tp('Estimated Total')}</p>
                                     <p className="text-4xl font-black text-green-600 dark:text-green-400">₹{estimatedCost}</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-3">*Includes handling charges. Actual may vary.</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-3">{tp('*Includes handling charges. Actual may vary.')}</p>
                                 </div>
                             )}
                         </div>

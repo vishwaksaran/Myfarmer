@@ -7,6 +7,8 @@ import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { normalizeIndianPhone } from '@/lib/phone';
 import { usePrefillLocation } from '@/context/LocationContext';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 const serviceData: Record<string, any> = {
     'harvester': {
@@ -119,6 +121,8 @@ const serviceData: Record<string, any> = {
 
 export default function GenericServicePage() {
     const params = useParams();
+    const { lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const slug = params.slug as string;
     const service = serviceData[slug];
     const [headerVisible, setHeaderVisible] = useState(true);
@@ -149,11 +153,11 @@ export default function GenericServicePage() {
 
     const handleFindProviders = async () => {
         const errs: Record<string, string> = {};
-        if (!formData.name.trim()) errs.name = 'Name is required';
+        if (!formData.name.trim()) errs.name = tp('Name is required');
         const digits = formData.phone.replace(/\D/g, '');
-        if (!digits) errs.phone = 'Phone number is required';
-        else if (digits.length !== 10) errs.phone = 'Enter a valid 10-digit number';
-        if (!formData.location.trim()) errs.location = 'Location is required';
+        if (!digits) errs.phone = tp('Phone number is required');
+        else if (digits.length !== 10) errs.phone = tp('Enter a valid 10-digit number');
+        if (!formData.location.trim()) errs.location = tp('Location is required');
         if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
         setFormErrors({});
         const result = await submit({
@@ -168,7 +172,7 @@ export default function GenericServicePage() {
         if (result.success) setShowSuccessModal(true);
         else {
             console.error('[handleFindProviders] Submit failed:', result.error);
-            setFormErrors({ submit: result.error || 'Failed to submit booking. Please try again.' });
+            setFormErrors({ submit: result.error || tp('Failed to submit booking. Please try again.') });
         }
     };
 
@@ -177,10 +181,10 @@ export default function GenericServicePage() {
             <div className="min-h-screen bg-background-light dark:bg-background-dark flex flex-col">
                 <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
                     <span className="material-symbols-outlined text-6xl text-gray-400 mb-4">error</span>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Service Not Found</h1>
-                    <p className="text-gray-500 mb-6">The service you are looking for is not available or coming soon.</p>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{tp('Service Not Found')}</h1>
+                    <p className="text-gray-500 mb-6">{tp('The service you are looking for is not available or coming soon.')}</p>
                     <Link href="/home/services" className="px-6 py-3 bg-primary text-white rounded-xl font-bold">
-                        Browse Services
+                        {tp('Browse Services')}
                     </Link>
                 </div>
             </div>
@@ -206,11 +210,11 @@ export default function GenericServicePage() {
             <header className="w-full border-b border-black/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
                 <div className="mx-auto max-w-[1280px] px-4 md:px-6 py-3 md:py-4">
                     <nav className="flex items-center gap-1 text-xs md:text-sm">
-                        <Link href="/home" className="text-gray-500 hover:text-primary transition-colors font-medium">Home</Link>
+                        <Link href="/home" className="text-gray-500 hover:text-primary transition-colors font-medium">{tp('Home')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs md:text-sm">chevron_right</span>
-                        <Link href="/home/services" className="text-gray-500 hover:text-primary transition-colors font-medium">Services</Link>
+                        <Link href="/home/services" className="text-gray-500 hover:text-primary transition-colors font-medium">{tp('Services')}</Link>
                         <span className="material-symbols-outlined text-gray-400 text-xs md:text-sm">chevron_right</span>
-                        <span className="text-primary font-bold">{service.title}</span>
+                        <span className="text-primary font-bold">{tp(service.title)}</span>
                     </nav>
                 </div>
             </header>
@@ -223,8 +227,8 @@ export default function GenericServicePage() {
                             <span className="material-symbols-outlined text-5xl">{service.icon}</span>
                         </div>
                         <div className="text-center md:text-left">
-                            <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-2">{service.title}</h1>
-                            <p className="text-xl text-gray-500 max-w-2xl">{service.description}</p>
+                            <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-2">{tp(service.title)}</h1>
+                            <p className="text-xl text-gray-500 max-w-2xl">{tp(service.description)}</p>
                         </div>
                     </div>
                 </div>
@@ -240,22 +244,22 @@ export default function GenericServicePage() {
                                 {service.features.map((feature: string, idx: number) => (
                                     <div key={idx} className="p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center gap-3">
                                         <span className={`material-symbols-outlined ${colors.icon}`}>check_circle</span>
-                                        <span className="font-semibold text-gray-700 dark:text-gray-300">{feature}</span>
+                                        <span className="font-semibold text-gray-700 dark:text-gray-300">{tp(feature)}</span>
                                     </div>
                                 ))}
                             </div>
 
                             <div className="p-6 rounded-3xl bg-white dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-700">
-                                <h3 className="text-xl font-bold mb-4">Availability & Pricing</h3>
+                                <h3 className="text-xl font-bold mb-4">{tp('Availability & Pricing')}</h3>
                                 <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl mb-4">
-                                    <span className="text-gray-500">Base Price</span>
-                                    <span className={`text-2xl font-black ${colors.text}`}>{service.price}</span>
+                                    <span className="text-gray-500">{tp('Base Price')}</span>
+                                    <span className={`text-2xl font-black ${colors.text}`}>{tp(service.price)}</span>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     {service.stats.map((stat: any, idx: number) => (
                                         <div key={idx} className="text-center p-4">
                                             <div className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</div>
-                                            <div className="text-xs font-bold text-gray-500 uppercase">{stat.label}</div>
+                                            <div className="text-xs font-bold text-gray-500 uppercase">{tp(stat.label)}</div>
                                         </div>
                                     ))}
                                 </div>
@@ -266,12 +270,12 @@ export default function GenericServicePage() {
                         <div className="lg:col-span-1">
                             <div className="sticky top-24 p-6 rounded-3xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl">
                                 <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">
-                                    {slug === 'register-provider' ? 'Register Now' : 'Book Service'}
+                                    {slug === 'register-provider' ? tp('Register Now') : tp('Book Service')}
                                 </h3>
                                 <p className="text-sm text-gray-500 mb-6">
                                     {slug === 'register-provider'
-                                        ? 'Fill in your details and our team will get you onboarded'
-                                        : 'Fill details to get callbacks from providers'
+                                        ? tp('Fill in your details and our team will get you onboarded')
+                                        : tp('Fill details to get callbacks from providers')
                                     }
                                 </p>
 
@@ -283,10 +287,10 @@ export default function GenericServicePage() {
 
                                 <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your Name <span className="text-red-500">*</span></label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tp('Your Name')} <span className="text-red-500">*</span></label>
                                         <input
                                             type="text"
-                                            placeholder="Your Name"
+                                            placeholder={tp('Your Name')}
                                             value={formData.name}
                                             onChange={(e) => { setFormData({ ...formData, name: e.target.value }); setFormErrors(prev => { const { name, ...r } = prev; return r; }); }}
                                             className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 ${formErrors.name ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none`}
@@ -294,10 +298,10 @@ export default function GenericServicePage() {
                                         {formErrors.name && <p className="text-red-500 text-xs mt-1 ml-1">{formErrors.name}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number <span className="text-red-500">*</span></label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tp('Phone Number')} <span className="text-red-500">*</span></label>
                                         <input
                                             type="tel"
-                                            placeholder="10 digit phone number"
+                                            placeholder={tp('10 digit phone number')}
                                             value={formData.phone}
                                             onChange={(e) => { setFormData({ ...formData, phone: normalizeIndianPhone(e.target.value) }); setFormErrors(prev => { const { phone, ...r } = prev; return r; }); }}
                                             className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 ${formErrors.phone ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none`}
@@ -306,10 +310,10 @@ export default function GenericServicePage() {
                                         {formErrors.phone && <p className="text-red-500 text-xs mt-1 ml-1">{formErrors.phone}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location/Village <span className="text-red-500">*</span></label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tp('Location/Village')} <span className="text-red-500">*</span></label>
                                         <input
                                             type="text"
-                                            placeholder="Enter your location"
+                                            placeholder={tp('Enter your location')}
                                             value={formData.location}
                                             onChange={(e) => { setFormData({ ...formData, location: e.target.value }); setFormErrors(prev => { const { location, ...r } = prev; return r; }); }}
                                             className={`w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 ${formErrors.location ? 'border-red-400' : 'border-transparent'} focus:border-primary outline-none`}
@@ -317,7 +321,7 @@ export default function GenericServicePage() {
                                         {formErrors.location && <p className="text-red-500 text-xs mt-1 ml-1">{formErrors.location}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Preferred Date</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tp('Preferred Date')}</label>
                                         <input
                                             type="date"
                                             value={formData.date}
@@ -327,17 +331,17 @@ export default function GenericServicePage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Preferred Time</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tp('Preferred Time')}</label>
                                         <select
                                             value={formData.time}
                                             onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                                             className="w-full rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-primary outline-none appearance-none"
                                         >
-                                            <option value="">Select a time slot</option>
-                                            <option value="Morning (8 AM – 11 AM)">Morning (8 AM – 11 AM)</option>
-                                            <option value="Late Morning (11 AM – 2 PM)">Late Morning (11 AM – 2 PM)</option>
-                                            <option value="Afternoon (2 PM – 5 PM)">Afternoon (2 PM – 5 PM)</option>
-                                            <option value="Evening (5 PM – 8 PM)">Evening (5 PM – 8 PM)</option>
+                                            <option value="">{tp('Select a time slot')}</option>
+                                            <option value="Morning (8 AM – 11 AM)">{tp('Morning (8 AM – 11 AM)')}</option>
+                                            <option value="Late Morning (11 AM – 2 PM)">{tp('Late Morning (11 AM – 2 PM)')}</option>
+                                            <option value="Afternoon (2 PM – 5 PM)">{tp('Afternoon (2 PM – 5 PM)')}</option>
+                                            <option value="Evening (5 PM – 8 PM)">{tp('Evening (5 PM – 8 PM)')}</option>
                                         </select>
                                     </div>
 
@@ -348,7 +352,7 @@ export default function GenericServicePage() {
                                         onClick={handleFindProviders}
                                         disabled={submitting || !formData.name || !formData.phone || !formData.location || !agreedToTerms}
                                         className={`w-full py-4 rounded-xl ${colors.bg} ${colors.hover} text-white font-bold text-lg transition-all shadow-lg mt-2 disabled:opacity-50 disabled:cursor-not-allowed`}>
-                                        {submitting ? 'SUBMITTING…' : slug === 'register-provider' ? 'REGISTER AS PROVIDER' : 'FIND PROVIDERS'}
+                                        {submitting ? tp('SUBMITTING…') : slug === 'register-provider' ? tp('REGISTER AS PROVIDER') : tp('FIND PROVIDERS')}
                                     </button>
                                 </form>
                             </div>
@@ -366,12 +370,12 @@ export default function GenericServicePage() {
                                 <span className="material-symbols-outlined text-4xl md:text-5xl text-white">check_circle</span>
                             </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">Booking Submitted!</h2>
-                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4">Your {service.title.toLowerCase()} booking request has been submitted successfully.</p>
+                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">{tp('Booking Submitted!')}</h2>
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4">{tp('Your {item} booking request has been submitted successfully.').replace('{item}', tp(service.title))}</p>
                         <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
-                            <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will contact you soon to connect with verified providers</p>
+                            <p className="text-sm font-bold text-green-700 dark:text-green-400">{tp('📞 Our team will contact you soon to connect with verified providers')}</p>
                         </div>
-                        <button onClick={() => { setShowSuccessModal(false); setFormData({ name: '', phone: '', location: '', date: '', time: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">Done</button>
+                        <button onClick={() => { setShowSuccessModal(false); setFormData({ name: '', phone: '', location: '', date: '', time: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">{tp('Done')}</button>
                     </div>
                     <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>
                 </div>

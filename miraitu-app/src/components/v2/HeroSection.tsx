@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 interface ImagePreview {
     file: File;
@@ -60,7 +61,8 @@ const galleryItems = [
 ];
 
 export default function HeroSection() {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
     const [images, setImages] = useState<ImagePreview[]>([]);
     const [showGallery, setShowGallery] = useState(false);
     const [expandedItem, setExpandedItem] = useState<number | null>(null);
@@ -467,11 +469,11 @@ export default function HeroSection() {
                                             <span className="material-symbols-outlined text-xs">eco</span>
                                             {t('hero.galleryAgriculture')}
                                         </span>
-                                        <h3 className="text-2xl md:text-4xl font-black text-white tracking-tight">{galleryItems[expandedItem].title}</h3>
+                                        <h3 className="text-2xl md:text-4xl font-black text-white tracking-tight">{tp(galleryItems[expandedItem].title)}</h3>
                                     </div>
                                 </div>
                                 <div className="p-5 md:p-8">
-                                    <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed mb-6">{galleryItems[expandedItem].brief}</p>
+                                    <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed mb-6">{tp(galleryItems[expandedItem].brief)}</p>
                                     <button onClick={() => setExpandedItem(null)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary/10 text-primary font-bold text-sm hover:bg-primary/20 transition-colors">
                                         <span className="material-symbols-outlined text-lg">arrow_back</span>
                                         {t('hero.galleryBackBtn')}
@@ -504,8 +506,8 @@ export default function HeroSection() {
                                                 </div>
                                             </div>
                                             <div className="p-3 md:p-4">
-                                                <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white mb-1">{item.title}</h3>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">{item.desc}</p>
+                                                <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white mb-1">{tp(item.title)}</h3>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">{tp(item.desc)}</p>
                                                 <span className="inline-flex items-center gap-1 text-primary text-[11px] font-bold mt-2">
                                                     {t('hero.galleryReadMore')} <span className="material-symbols-outlined text-xs">arrow_forward</span>
                                                 </span>
