@@ -18,11 +18,13 @@ interface NavItem {
     tab?: string;
 }
 
+// The Shop slot is temporarily occupied by Community. To restore Shop, swap the
+// entry back to: { label: 'Shop', tKey: 'bottomNav.shop', icon: 'shopping_bag', path: '/home/shop' }
 const baseNavItems: NavItem[] = [
     { label: 'Home', tKey: 'bottomNav.home', icon: 'home', path: '/home' },
     { label: 'Services', tKey: 'bottomNav.services', icon: 'home_repair_service', path: '/home/services' },
     { label: 'Sell', tKey: 'bottomNav.sell', icon: 'add', path: '/home/become-seller', isCenterAction: true },
-    { label: 'Shop', tKey: 'bottomNav.shop', icon: 'shopping_bag', path: '/home/shop' },
+    { label: 'Community', tKey: 'nav.community', icon: 'groups', path: '/home/community' },
     { label: 'Dashboard', tKey: 'bottomNav.dashboard', icon: 'dashboard', path: '/home/dashboard' },
 ];
 

@@ -12,9 +12,9 @@ import { useViewMode } from '@/hooks/useViewMode';
 import { useProviderTab } from '@/hooks/useProviderTab';
 import HeaderAuthSection from './HeaderAuthSection';
 
-// Cart icon in the header is temporarily swapped for a Community shortcut.
-// Set back to true to restore the cart button (the cart itself still works).
-const SHOW_CART = false;
+// Header shows the cart. Set to false to swap it for a Community shortcut
+// (the Community link is also in the mobile bottom nav).
+const SHOW_CART = true;
 
 // Provider workspace menu — shown in the hamburger for providers/dealers in provider view
 const PROVIDER_ROLES = ['service_provider', 'dealer'];
