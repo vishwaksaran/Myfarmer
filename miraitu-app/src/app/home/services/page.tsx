@@ -136,6 +136,21 @@ const services = [
     },
 ];
 
+// Temporarily hidden from the "Our Services" grid — remove a name from this set
+// to bring the service card back. The routes/pages themselves are untouched.
+const hiddenServices = new Set([
+    'Rent Machinery',
+    'CCTV Installation',
+    'Fencing Services',
+    'Farm Labours',
+    'Transportation',
+    'Storage and Godown',
+    'Plumber',
+    'Electrician',
+    'Mechanic',
+    'Milk Vendors',
+]);
+
 const stateKisanPortals: Record<string, string> = {
     'Andhra Pradesh': 'https://apfr.agristack.gov.in/',
     'Bihar': 'https://bhfr.agristack.gov.in/',
@@ -239,7 +254,7 @@ export default function ServicesPage() {
     const ourServices = [
         ...topCategories.map((c) => ({ label: c.label, tKey: c.tKey, image: c.image, icon: c.icon, link: c.link })),
         ...services
-            .filter((s) => !topCategoryLabels.has(s.name))
+            .filter((s) => !topCategoryLabels.has(s.name) && !hiddenServices.has(s.name))
             .map((s) => ({ label: s.name, tKey: undefined as string | undefined, image: s.image, icon: s.icon, link: s.href })),
     ];
 

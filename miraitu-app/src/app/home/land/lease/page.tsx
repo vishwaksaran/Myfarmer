@@ -8,6 +8,7 @@ import MiraituLoader from '@/components/v2/MiraituLoader';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import { fetchApprovedLeaseListings, type LeaseListingRecord } from '@/app/actions/bookings';
+import { logListingContact, type ContactChannel } from '@/app/actions/listing-contact';
 import { useAuth } from '@/context/AuthContext';
 import LoginModal from '@/components/auth/LoginModal';
 
@@ -32,6 +33,22 @@ async function uploadLeasePhoto(file: File): Promise<string | null> {
 type TabType = 'browse' | 'list';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop';
+
+/**
+ * Formats a price the seller typed into a free-text field. Anything non-numeric
+ * ("60,000", "₹60000", "60000 per acre") is stripped down to its digits rather
+ * than being fed straight to Number(), which used to render "₹NaN".
+ * Returns null when there is nothing usable, so callers can say "on request".
+ */
+function formatPrice(raw?: string | number | null): string | null {
+    if (raw === undefined || raw === null) return null;
+    const text = String(raw).trim();
+    if (!text) return null;
+    const n = Number(text.replace(/[^\d.]/g, ''));
+    // Unparseable (e.g. "call me") — show what the seller wrote, never "NaN".
+    if (!isFinite(n) || n <= 0) return text;
+    return `₹${n.toLocaleString('en-IN')}`;
+}
 
 function timeAgo(dateStr: string): string {
     const diff = Date.now() - new Date(dateStr).getTime();
@@ -73,6 +90,20 @@ export default function LeaseLandPage() {
         setContactListing(listing);
     };
 
+    // Records the tap in Admin → Activity Log. Fire-and-forget — the tel:/wa.me
+    // link opens regardless of whether this lands.
+    const trackContact = (listing: LeaseListingRecord, channel: ContactChannel) => {
+        void logListingContact({
+            channel,
+            listingId: listing.id,
+            listingType: listing.extra_data?.service_type === 'rent' ? 'rent' : 'lease',
+            listingTitle: listing.extra_data?.title,
+            sellerName: listing.full_name,
+            sellerPhone: listing.phone,
+            location: listing.location,
+        }).catch(() => { /* tracking must never block the user */ });
+    };
+
     const shareListing = async (listing: LeaseListingRecord) => {
         const ed = listing.extra_data;
         const isRent = ed.service_type === 'rent';
@@ -81,7 +112,7 @@ export default function LeaseLandPage() {
             `${title} — ${isRent ? 'For Rent' : 'For Lease'}`,
             `📍 ${listing.location}`,
             ed.area ? `📐 ${ed.area} Acres` : '',
-            ed.lease_price ? `💰 ₹${Number(ed.lease_price).toLocaleString('en-IN')}${isRent ? '/acre/month' : '/acre/year'}` : '',
+            formatPrice(ed.lease_price) ? `💰 ${formatPrice(ed.lease_price)}${isRent ? '/acre/month' : '/acre/year'}` : '',
             ed.description ? `\n${ed.description.slice(0, 120)}…` : '',
             '\nFind more on Miraitu 🌾',
         ].filter(Boolean).join('\n');
@@ -166,6 +197,7 @@ export default function LeaseLandPage() {
         if (!formData.area.trim()) newErrors.area = 'Area is required';
         else if (isNaN(Number(formData.area))) newErrors.area = 'Enter a valid number';
         if (!formData.leasePrice.trim()) newErrors.leasePrice = 'Price is required';
+        else if (isNaN(Number(formData.leasePrice))) newErrors.leasePrice = 'Enter digits only — no commas, ₹ or text';
         if (serviceType === 'lease' && !formData.duration) newErrors.duration = 'Duration is required';
         if (!formData.contactName.trim()) newErrors.contactName = 'Name is required';
         if (!formData.contactPhone.trim()) newErrors.contactPhone = 'Phone number is required';
@@ -444,8 +476,8 @@ export default function LeaseLandPage() {
                                                                 {/* Price row */}
                                                                 <div className="flex items-baseline justify-between mb-2">
                                                                     <p className="text-base md:text-xl font-bold text-primary">
-                                                                        {ed.lease_price
-                                                                            ? `₹${Number(ed.lease_price).toLocaleString('en-IN')}${isRent ? '/acre/mo' : '/acre/yr'}`
+                                                                        {formatPrice(ed.lease_price)
+                                                                            ? `${formatPrice(ed.lease_price)}${isRent ? '/acre/mo' : '/acre/yr'}`
                                                                             : 'Price on request'}
                                                                     </p>
                                                                     <p className="text-[10px] md:text-xs text-gray-500 ml-2 shrink-0">{timeAgo(listing.created_at)}</p>
@@ -801,6 +833,7 @@ export default function LeaseLandPage() {
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                     <a
                                         href={`tel:+91${digits}`}
+                                        onClick={() => trackContact(contactListing, 'call')}
                                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', background: '#16a34a', color: 'white', fontWeight: 700, borderRadius: '12px', textDecoration: 'none', fontSize: '14px' }}
                                     >
                                         <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>call</span>
@@ -810,6 +843,7 @@ export default function LeaseLandPage() {
                                         href={`https://wa.me/91${digits}?text=${encodeURIComponent(`Hi, I saw your land listing "${contactListing.extra_data.title || 'Land for Lease'}" at ${contactListing.location} on Miraitu. I'm interested in leasing it.`)}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        onClick={() => trackContact(contactListing, 'whatsapp')}
                                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', background: '#25D366', color: 'white', fontWeight: 700, borderRadius: '12px', textDecoration: 'none', fontSize: '14px' }}
                                     >
                                         <svg viewBox="0 0 24 24" style={{ width: '16px', height: '16px', fill: 'white' }}><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.138.563 4.14 1.539 5.875L.054 23.477a.5.5 0 0 0 .613.612l5.744-1.506A11.95 11.95 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.938a9.934 9.934 0 0 1-5.062-1.377l-.362-.215-3.757.985.995-3.65-.236-.376A9.944 9.944 0 0 1 2.062 12C2.062 6.509 6.509 2.062 12 2.062c5.491 0 9.938 4.447 9.938 9.938 0 5.491-4.447 9.938-9.938 9.938z"/></svg>
@@ -897,7 +931,7 @@ export default function LeaseLandPage() {
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
                                 {[
                                     { icon: 'square_foot', label: 'Area', value: ed.area ? `${ed.area} Acres` : '—' },
-                                    { icon: 'payments', label: isRent ? 'Rent' : 'Lease Price', value: ed.lease_price ? `₹${Number(ed.lease_price).toLocaleString('en-IN')}${priceUnit}` : 'On request' },
+                                    { icon: 'payments', label: isRent ? 'Rent' : 'Lease Price', value: formatPrice(ed.lease_price) ? `${formatPrice(ed.lease_price)}${priceUnit}` : 'On request' },
                                     { icon: 'schedule', label: 'Duration', value: isRent ? 'Flexible' : (ed.duration || '—') },
                                 ].map(stat => (
                                     <div key={stat.label} style={{ background: '#f9fafb', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>

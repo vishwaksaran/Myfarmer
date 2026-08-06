@@ -4,6 +4,9 @@ import MiraituLogo from '@/components/MiraituLogo';
 import { useLanguage } from '@/i18n/LanguageContext';
 import Script from 'next/script';
 
+// Corporate Identity Number — shown in the footer legal line (desktop + mobile).
+const CIN = 'U62099KA2026PTC216873';
+
 export default function Footer() {
     const currentYear = new Date().getFullYear();
     const { t } = useLanguage();
@@ -197,9 +200,10 @@ export default function Footer() {
                                 <span className="material-symbols-outlined text-xs text-green-400">verified</span>
                                 <span>{t('footer.secureBadge')}</span>
                             </div>
-                            <p className="text-xs text-gray-500">
-                                © {currentYear} Miraitu. {t('footer.rights')}
-                            </p>
+                            <div className="text-xs text-gray-500 text-center md:text-right">
+                                <p>© {currentYear} Miraitu. {t('footer.rights')}</p>
+                                <p className="mt-0.5">CIN: {CIN}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -237,6 +241,7 @@ export default function Footer() {
                 {/* Made with love */}
                 <p className="text-xs text-gray-300/70 mt-6 font-medium">{t('footer.madeWith')}</p>
                 <p className="text-[11px] text-gray-500 mt-1">© {currentYear} Miraitu. {t('footer.rights')}</p>
+                <p className="text-[11px] text-gray-500 mt-0.5">CIN: {CIN}</p>
 
                 {/* Back to top */}
                 <button

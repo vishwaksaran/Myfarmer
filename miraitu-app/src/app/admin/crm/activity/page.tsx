@@ -14,6 +14,8 @@ interface ActivityRow {
     shops: { name: string; slug: string } | null;
 }
 
+const isContactAction = (action: string) => action.startsWith('listing_contact_');
+
 export default function ActivityLogPage() {
     const [logs, setLogs] = useState<ActivityRow[]>([]);
     const [loading, setLoading] = useState(true);
@@ -40,7 +42,14 @@ export default function ActivityLogPage() {
         'username_changed', 'password_changed', 'password_reset',
         'product_created', 'product_updated', 'product_deleted',
         'order_created', 'order_status_changed',
+        'listing_contact_call', 'listing_contact_whatsapp',
     ];
+
+    // Friendlier titles than the raw underscored action name.
+    const actionLabels: Record<string, string> = {
+        listing_contact_call: 'Called a listing owner',
+        listing_contact_whatsapp: 'WhatsApped a listing owner',
+    };
 
     const actionIcons: Record<string, { icon: string; color: string }> = {
         credential_created: { icon: 'person_add', color: 'text-green-600 bg-green-50' },
@@ -53,6 +62,8 @@ export default function ActivityLogPage() {
         username_changed: { icon: 'edit', color: 'text-amber-600 bg-amber-50' },
         password_changed: { icon: 'key', color: 'text-amber-600 bg-amber-50' },
         password_reset: { icon: 'lock_reset', color: 'text-amber-600 bg-amber-50' },
+        listing_contact_call: { icon: 'call', color: 'text-emerald-600 bg-emerald-50' },
+        listing_contact_whatsapp: { icon: 'chat', color: 'text-emerald-600 bg-emerald-50' },
     };
 
     const handleCsvExport = () => {
@@ -123,8 +134,19 @@ export default function ActivityLogPage() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-semibold text-gray-900">
-                                            {log.action.replace(/_/g, ' ')}
+                                            {actionLabels[log.action] || log.action.replace(/_/g, ' ')}
                                         </p>
+                                        {isContactAction(log.action) && (
+                                            <p className="text-xs text-gray-600 mt-0.5">
+                                                <span className="font-semibold">{String(log.details?.user_name || 'Unknown user')}</span>
+                                                {log.details?.user_phone ? ` (${String(log.details.user_phone)})` : ''}
+                                                {' → '}
+                                                <span className="font-semibold">{String(log.details?.seller_name || 'listing owner')}</span>
+                                                {log.details?.seller_phone ? ` (${String(log.details.seller_phone)})` : ''}
+                                                {log.details?.listing_title ? ` · ${String(log.details.listing_title)}` : ''}
+                                                {log.details?.location ? `, ${String(log.details.location)}` : ''}
+                                            </p>
+                                        )}
                                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                                             {log.vendor_credentials && (
                                                 <span className="text-xs text-gray-500">

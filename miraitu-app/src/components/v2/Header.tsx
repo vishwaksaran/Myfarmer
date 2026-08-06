@@ -12,6 +12,10 @@ import { useViewMode } from '@/hooks/useViewMode';
 import { useProviderTab } from '@/hooks/useProviderTab';
 import HeaderAuthSection from './HeaderAuthSection';
 
+// Cart icon in the header is temporarily swapped for a Community shortcut.
+// Set back to true to restore the cart button (the cart itself still works).
+const SHOW_CART = false;
+
 // Provider workspace menu — shown in the hamburger for providers/dealers in provider view
 const PROVIDER_ROLES = ['service_provider', 'dealer'];
 const providerMenuItems: { label: string; icon: string; tab: string }[] = [
@@ -483,7 +487,7 @@ export default function Header() {
                             )}
 
                             {/* Cart Button — hidden in provider view (no shopping there) */}
-                            {!isProviderView && (
+                            {!isProviderView && SHOW_CART && (
                                 <Link href="/home/shop/checkout" className="relative flex items-center justify-center size-9 sm:size-10 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-black/5 dark:border-white/10 hover:bg-primary/5 hover:text-primary transition-colors skeuo-card shrink-0">
                                     <span className="material-symbols-outlined text-xl">shopping_cart</span>
                                     {totalItems > 0 && (
@@ -491,6 +495,18 @@ export default function Header() {
                                             {totalItems}
                                         </span>
                                     )}
+                                </Link>
+                            )}
+
+                            {/* Community shortcut — temporarily stands in for the cart button */}
+                            {!isProviderView && !SHOW_CART && (
+                                <Link
+                                    href="/home/community"
+                                    aria-label={t('nav.community')}
+                                    title={t('nav.community')}
+                                    className="relative flex items-center justify-center size-9 sm:size-10 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-black/5 dark:border-white/10 hover:bg-primary/5 hover:text-primary transition-colors skeuo-card shrink-0"
+                                >
+                                    <span className="material-symbols-outlined text-xl">groups</span>
                                 </Link>
                             )}
                             {/* Provider view: replace avatar with a Switch-to-Farmer button */}

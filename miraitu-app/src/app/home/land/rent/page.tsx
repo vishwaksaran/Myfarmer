@@ -124,6 +124,7 @@ export default function RentFarmLandPage() {
         if (!formData.area.trim()) newErrors.area = 'Area is required';
         else if (isNaN(Number(formData.area))) newErrors.area = 'Enter a valid number';
         if (!formData.rentPrice.trim()) newErrors.rentPrice = 'Rent price is required';
+        else if (isNaN(Number(formData.rentPrice))) newErrors.rentPrice = 'Enter digits only — no commas, ₹ or text';
         if (!formData.period) newErrors.period = 'Rental period is required';
         if (!formData.contactName.trim()) newErrors.contactName = 'Name is required';
         if (!formData.contactPhone.trim()) newErrors.contactPhone = 'Phone number is required';

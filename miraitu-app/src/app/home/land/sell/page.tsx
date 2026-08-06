@@ -5,6 +5,26 @@ import Link from 'next/link';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 
+// Uploads to the shared `listing-images` bucket and returns the public URL.
+// Same endpoint the Lease form uses — it is not lease-specific.
+async function uploadLandPhoto(file: File): Promise<string | null> {
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+        const res = await fetch('/api/upload/lease-photo', { method: 'POST', body: fd });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            console.error('[uploadLandPhoto] API error:', err);
+            return null;
+        }
+        const { url } = await res.json();
+        return url ?? null;
+    } catch (err) {
+        console.error('[uploadLandPhoto] fetch error:', err);
+        return null;
+    }
+}
+
 const landCategories = [
     { id: 'agriculture', name: 'Agriculture Land', icon: '🌾' },
     { id: 'farmhouse', name: 'Farm House', icon: '🏡' },
@@ -20,6 +40,7 @@ export default function SellLandPage() {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [agreedToTerms, setAgreedToTerms] = useState(false);
+    const [uploadingPhotos, setUploadingPhotos] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
         location: '',
@@ -93,6 +114,21 @@ export default function SellLandPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
+
+        // 1. Upload photos to Supabase Storage first — the Buy page shows the
+        // first one as the listing image.
+        let photoUrls: string[] = [];
+        if (photos.length > 0) {
+            setUploadingPhotos(true);
+            try {
+                const uploads = await Promise.all(photos.map(uploadLandPhoto));
+                photoUrls = uploads.filter((url): url is string => url !== null);
+            } finally {
+                setUploadingPhotos(false);
+            }
+        }
+
+        // 2. Save the booking with the photo URLs in extra_data.
         const result = await submit({
             module: 'land',
             category: 'sell',
@@ -109,11 +145,19 @@ export default function SellLandPage() {
                 description: formData.description,
                 amenities: formData.amenities,
                 land_category: selectedCategory,
+                photos: photoUrls,
             },
         });
         if (result.success) {
             setShowSuccessModal(true);
             setTimeout(() => setShowSuccessModal(false), 6000);
+            // Reset form
+            setSelectedCategory('');
+            setFormData({ title: '', location: '', district: '', state: '', area: '', pricePerAcre: '', totalPrice: '', description: '', amenities: '', contactName: '', contactPhone: '' });
+            previews.forEach(url => URL.revokeObjectURL(url));
+            setPhotos([]);
+            setPreviews([]);
+            setAgreedToTerms(false);
         } else {
             setErrors({ submit: result.error || 'Failed to submit' });
         }
@@ -327,10 +371,19 @@ export default function SellLandPage() {
                         <TermsAgreementCheckbox checked={agreedToTerms} onChange={setAgreedToTerms} />
 
                         {/* Submit */}
-                        <button type="submit" disabled={!agreedToTerms} className={`w-full py-3 md:py-4 bg-primary text-white font-bold text-sm md:text-lg rounded-lg md:rounded-xl hover:bg-primary/90 transition-colors shadow-lg flex items-center justify-center gap-2 ${!agreedToTerms ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                            <span className="material-symbols-outlined text-lg md:text-xl">publish</span>
-                            Submit Listing for Review
+                        <button
+                            type="submit"
+                            disabled={!agreedToTerms || submitting || uploadingPhotos}
+                            className={`w-full py-3 md:py-4 bg-primary text-white font-bold text-sm md:text-lg rounded-lg md:rounded-xl hover:bg-primary/90 transition-colors shadow-lg flex items-center justify-center gap-2 ${!agreedToTerms || submitting || uploadingPhotos ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            <span className={`material-symbols-outlined text-lg md:text-xl ${submitting || uploadingPhotos ? 'animate-spin' : ''}`}>
+                                {submitting || uploadingPhotos ? 'progress_activity' : 'publish'}
+                            </span>
+                            {uploadingPhotos ? 'Uploading photos…' : submitting ? 'Submitting…' : 'Submit Listing for Review'}
                         </button>
+                        {errors.submit && (
+                            <p className="mt-3 text-center text-xs md:text-sm font-semibold text-red-600">{errors.submit}</p>
+                        )}
                     </div>
                 </form>
             </div>

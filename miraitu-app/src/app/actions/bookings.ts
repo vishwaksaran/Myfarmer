@@ -509,9 +509,9 @@ export async function deleteUser(userId: string): Promise<{ success: boolean; er
     }
 }
 
-// ─── Admin: Toggle public visibility of a land lease listing ─────────
+// ─── Admin: Toggle public visibility of a land listing (lease / rent / sell) ──
 
-export async function setLeasePublished(
+export async function setListingPublished(
     bookingId: string,
     published: boolean
 ): Promise<{ success: boolean; error?: string }> {
@@ -525,7 +525,10 @@ export async function setLeasePublished(
             .eq('id', bookingId)
             .single();
 
-        if (fetchErr) return { success: false, error: fetchErr.message };
+        if (fetchErr) {
+            console.error('[setListingPublished] Fetch error:', fetchErr);
+            return { success: false, error: fetchErr.message };
+        }
 
         const merged = { ...((row?.extra_data as Record<string, unknown>) ?? {}), published };
 
@@ -535,13 +538,13 @@ export async function setLeasePublished(
             .eq('id', bookingId);
 
         if (error) {
-            console.error('[setLeasePublished] Error:', error);
+            console.error('[setListingPublished] Error:', error);
             return { success: false, error: error.message };
         }
 
         return { success: true };
     } catch (err) {
-        console.error('[setLeasePublished] Unexpected error:', err);
+        console.error('[setListingPublished] Unexpected error:', err);
         return { success: false, error: 'Failed to update listing' };
     }
 }
@@ -603,6 +606,68 @@ export async function fetchApprovedLeaseListings(): Promise<{ data: LeaseListing
         return { data: data as LeaseListingRecord[] };
     } catch (err) {
         console.error('[fetchApprovedLeaseListings] Unexpected error:', err);
+        return { data: [], error: 'Failed to fetch listings' };
+    }
+}
+
+// ─── Public: Fetch approved land-for-sale listings ────────────────────
+
+export interface SellListingRecord {
+    id: string;
+    full_name: string;
+    phone: string;
+    location: string;
+    status: string;
+    created_at: string;
+    extra_data: {
+        title?: string;
+        district?: string;
+        state?: string;
+        area?: string;
+        price_per_acre?: string;
+        total_price?: string;
+        description?: string;
+        amenities?: string;
+        land_category?: string;
+        photos?: string[];
+        featured?: boolean;
+        published?: boolean;
+    };
+}
+
+export async function fetchApprovedSellListings(): Promise<{ data: SellListingRecord[]; error?: string }> {
+    try {
+        const supabase = createSupabaseAdminClient();
+
+        // Same visibility rule as lease listings: a row is public when the admin
+        // set status = 'confirmed' OR clicked Publish (extra_data.published = true).
+        // Two queries merged, to avoid relying on OR with JSON operators.
+        const base = { module: 'land', category: 'sell' } as const;
+        const columns = 'id, full_name, phone, location, status, extra_data, created_at';
+
+        const [r1, r2] = await Promise.all([
+            supabase
+                .from('service_bookings')
+                .select(columns)
+                .match(base)
+                .eq('status', 'confirmed')
+                .order('created_at', { ascending: false }),
+            supabase
+                .from('service_bookings')
+                .select(columns)
+                .match(base)
+                .filter('extra_data->>published', 'eq', 'true')
+                .neq('status', 'confirmed') // exclude duplicates already in r1
+                .order('created_at', { ascending: false }),
+        ]);
+
+        if (r1.error) console.error('[fetchApprovedSellListings] r1 error:', r1.error);
+        if (r2.error) console.error('[fetchApprovedSellListings] r2 error:', r2.error);
+
+        const data = [...(r1.data ?? []), ...(r2.data ?? [])];
+        return { data: data as SellListingRecord[] };
+    } catch (err) {
+        console.error('[fetchApprovedSellListings] Unexpected error:', err);
         return { data: [], error: 'Failed to fetch listings' };
     }
 }

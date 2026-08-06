@@ -3,8 +3,14 @@
 import { Fragment, Suspense, useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import MiraituLoader from '@/components/v2/MiraituLoader';
-import { fetchAllBookings, updateBookingStatus, deleteBooking, setLeasePublished, type BookingRecord } from '@/app/actions/bookings';
+import { fetchAllBookings, updateBookingStatus, deleteBooking, setListingPublished, type BookingRecord } from '@/app/actions/bookings';
 import { downloadCSV } from '@/lib/csv-export';
+
+// Where a published land listing shows up, per booking category.
+const PUBLIC_PAGE_LABEL: Record<string, string> = {
+    lease: 'the Lease Browse tab',
+    sell: 'the Buy Land page',
+};
 
 const MODULE_OPTIONS = [
     { value: '', label: 'All Modules' },
@@ -24,6 +30,14 @@ const STATUS_OPTIONS = [
     { value: 'completed', label: 'Completed' },
     { value: 'cancelled', label: 'Cancelled' },
 ];
+
+/** ISO timestamp → local YYYY-MM-DD, so the date column filter matches what the row displays. */
+function toLocalDate(iso: string): string {
+    const d = new Date(iso);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+const COLUMN_FILTER_CLASS = 'w-full px-2 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-normal normal-case tracking-normal text-gray-700 outline-none focus:border-green-500';
 
 export default function AdminBookingsPage() {
     return (
@@ -49,6 +63,12 @@ function AdminBookingsContent() {
     const [todayOnly, setTodayOnly] = useState(initialFilter === 'today');
     const [searchQuery, setSearchQuery] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('');
+    // Per-column filters (the row under the table header). Module, Category and
+    // Status reuse the toolbar state above so the two controls stay in sync.
+    const [nameFilter, setNameFilter] = useState('');
+    const [phoneFilter, setPhoneFilter] = useState('');
+    const [locationFilter, setLocationFilter] = useState('');
+    const [dateFilter, setDateFilter] = useState('');
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [publishingId, setPublishingId] = useState<string | null>(null);
@@ -78,7 +98,15 @@ function AdminBookingsContent() {
             const d = new Date(b.created_at);
             if (d.toDateString() !== new Date().toDateString()) return false;
         }
+        if (dateFilter && toLocalDate(b.created_at) !== dateFilter) return false;
         if (categoryFilter && b.category.toLowerCase() !== categoryFilter.toLowerCase()) return false;
+        if (nameFilter && !b.full_name.toLowerCase().includes(nameFilter.toLowerCase())) return false;
+        if (phoneFilter && !b.phone.includes(phoneFilter.replace(/\D/g, ''))) return false;
+        if (locationFilter && !b.location.toLowerCase().includes(locationFilter.toLowerCase())) return false;
+        // Module/status are already applied server-side; re-checked so the column
+        // dropdowns stay honest if the fetch and the filter ever drift.
+        if (moduleFilter && b.module !== moduleFilter) return false;
+        if (statusFilter && b.status !== statusFilter) return false;
         if (!searchQuery) return true;
         const q = searchQuery.toLowerCase();
         return (
@@ -88,6 +116,17 @@ function AdminBookingsContent() {
             b.category.toLowerCase().includes(q)
         );
     });
+
+    const activeFilterCount = [
+        searchQuery, moduleFilter, statusFilter, categoryFilter,
+        nameFilter, phoneFilter, locationFilter, dateFilter,
+    ].filter(Boolean).length + (todayOnly ? 1 : 0);
+
+    const clearAllFilters = () => {
+        setSearchQuery(''); setModuleFilter(''); setStatusFilter(''); setCategoryFilter('');
+        setNameFilter(''); setPhoneFilter(''); setLocationFilter(''); setDateFilter('');
+        setTodayOnly(false);
+    };
 
     const handleStatusChange = async (id: string, newStatus: string) => {
         setUpdatingId(id);
@@ -104,14 +143,15 @@ function AdminBookingsContent() {
     const handleTogglePublish = async (booking: BookingRecord) => {
         const isPublished = (booking.extra_data as Record<string, unknown>)?.published === true;
         setPublishingId(booking.id);
-        const result = await setLeasePublished(booking.id, !isPublished);
+        const result = await setListingPublished(booking.id, !isPublished);
         if (result.success) {
             setBookings(prev => prev.map(b =>
                 b.id === booking.id
                     ? { ...b, extra_data: { ...(b.extra_data as Record<string, unknown>), published: !isPublished } }
                     : b
             ));
-            showToast(isPublished ? 'Listing unpublished — removed from Browse tab' : 'Listing published — now visible in Browse tab');
+            const where = PUBLIC_PAGE_LABEL[booking.category] ?? 'the public page';
+            showToast(isPublished ? `Listing unpublished — removed from ${where}` : `Listing published — now visible on ${where}`);
         } else {
             showToast(result.error || 'Failed to update listing', 'error');
         }
@@ -150,8 +190,9 @@ function AdminBookingsContent() {
         setActionLoading(false);
     };
 
-    // Group by category for the module-specific CSV export
-    const categories = [...new Set(filteredBookings.map(b => b.category))];
+    // Every category in the loaded set — derived from `bookings`, not the filtered
+    // list, so picking one category doesn't hide all the others from the picker.
+    const categories = [...new Set(bookings.map(b => b.category))].sort();
 
     const handleExportCategory = (category: string) => {
         const rows = filteredBookings
@@ -175,7 +216,15 @@ function AdminBookingsContent() {
     return (
         <div>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <h1 className="text-2xl md:text-3xl font-black text-gray-900">Bookings</h1>
+                <div>
+                    <h1 className="text-2xl md:text-3xl font-black text-gray-900">Bookings</h1>
+                    {!loading && (
+                        <p className="text-sm text-gray-500 mt-1">
+                            Showing {filteredBookings.length} of {bookings.length}
+                            {activeFilterCount > 0 && ` · ${activeFilterCount} filter${activeFilterCount > 1 ? 's' : ''} active`}
+                        </p>
+                    )}
+                </div>
                 <button
                     onClick={handleExportCSV}
                     className="flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-colors shadow-sm"
@@ -273,6 +322,15 @@ function AdminBookingsContent() {
                 <div className="bg-white rounded-2xl p-12 border border-gray-100 text-center">
                     <span className="material-symbols-outlined text-5xl text-gray-300 mb-3">inbox</span>
                     <p className="text-gray-500 font-medium">No bookings found</p>
+                    {activeFilterCount > 0 && (
+                        <button
+                            onClick={clearAllFilters}
+                            className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                        >
+                            <span className="material-symbols-outlined text-sm">filter_alt_off</span>
+                            Clear {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''}
+                        </button>
+                    )}
                 </div>
             ) : (
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -288,6 +346,84 @@ function AdminBookingsContent() {
                                     <th className="px-4 py-3">Status</th>
                                     <th className="px-4 py-3">Date</th>
                                     <th className="px-4 py-3">Actions</th>
+                                </tr>
+                                {/* Per-column filters */}
+                                <tr className="bg-gray-50/60 border-b border-gray-100">
+                                    <th className="px-3 py-2 min-w-[130px]">
+                                        <input
+                                            type="text"
+                                            placeholder="Filter name"
+                                            value={nameFilter}
+                                            onChange={(e) => setNameFilter(e.target.value)}
+                                            className={COLUMN_FILTER_CLASS}
+                                        />
+                                    </th>
+                                    <th className="px-3 py-2 min-w-[120px]">
+                                        <input
+                                            type="text"
+                                            inputMode="numeric"
+                                            placeholder="Filter phone"
+                                            value={phoneFilter}
+                                            onChange={(e) => setPhoneFilter(e.target.value)}
+                                            className={COLUMN_FILTER_CLASS}
+                                        />
+                                    </th>
+                                    <th className="px-3 py-2 min-w-[130px]">
+                                        <input
+                                            type="text"
+                                            placeholder="Filter location"
+                                            value={locationFilter}
+                                            onChange={(e) => setLocationFilter(e.target.value)}
+                                            className={COLUMN_FILTER_CLASS}
+                                        />
+                                    </th>
+                                    <th className="px-3 py-2 min-w-[120px]">
+                                        <select
+                                            value={moduleFilter}
+                                            onChange={(e) => setModuleFilter(e.target.value)}
+                                            className={COLUMN_FILTER_CLASS}
+                                        >
+                                            {MODULE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                        </select>
+                                    </th>
+                                    <th className="px-3 py-2 min-w-[130px]">
+                                        <select
+                                            value={categoryFilter}
+                                            onChange={(e) => setCategoryFilter(e.target.value)}
+                                            className={`${COLUMN_FILTER_CLASS} capitalize`}
+                                        >
+                                            <option value="">All Categories</option>
+                                            {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                        </select>
+                                    </th>
+                                    <th className="px-3 py-2 min-w-[120px]">
+                                        <select
+                                            value={statusFilter}
+                                            onChange={(e) => setStatusFilter(e.target.value)}
+                                            className={COLUMN_FILTER_CLASS}
+                                        >
+                                            {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                        </select>
+                                    </th>
+                                    <th className="px-3 py-2 min-w-[140px]">
+                                        <input
+                                            type="date"
+                                            value={dateFilter}
+                                            onChange={(e) => { setDateFilter(e.target.value); if (e.target.value) setTodayOnly(false); }}
+                                            className={COLUMN_FILTER_CLASS}
+                                        />
+                                    </th>
+                                    <th className="px-3 py-2">
+                                        <button
+                                            onClick={clearAllFilters}
+                                            disabled={activeFilterCount === 0}
+                                            title="Clear every filter"
+                                            className="flex items-center gap-1 px-2 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold normal-case tracking-normal text-gray-600 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            <span className="material-symbols-outlined text-sm">filter_alt_off</span>
+                                            Clear
+                                        </button>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -390,16 +526,16 @@ function AdminBookingsContent() {
                                                             <p className="text-gray-900">{new Date(b.updated_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true })}</p>
                                                         </div>
                                                     </div>
-                                                    {/* Publish toggle — only for land/lease listings */}
-                                                    {b.module === 'land' && b.category === 'lease' && (
+                                                    {/* Publish toggle — land listings that have a public page (lease/rent and sell) */}
+                                                    {b.module === 'land' && (b.category === 'lease' || b.category === 'sell') && (
                                                         <div className="mt-4 flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
                                                             <span className="material-symbols-outlined text-emerald-600 text-xl">public</span>
                                                             <div className="flex-1">
                                                                 <p className="text-xs font-bold text-emerald-800">Public Listing Visibility</p>
                                                                 <p className="text-[11px] text-emerald-600">
                                                                     {(b.extra_data as Record<string, unknown>)?.published === true
-                                                                        ? 'Currently LIVE — visible in the Browse tab for all users'
-                                                                        : 'Currently HIDDEN — not visible in Browse tab'}
+                                                                        ? `Currently LIVE — visible on ${PUBLIC_PAGE_LABEL[b.category]} for all users`
+                                                                        : `Currently HIDDEN — not visible on ${PUBLIC_PAGE_LABEL[b.category]}`}
                                                                 </p>
                                                             </div>
                                                             <button
@@ -417,7 +553,9 @@ function AdminBookingsContent() {
                                                                         {(b.extra_data as Record<string, unknown>)?.published === true ? 'visibility_off' : 'visibility'}
                                                                       </span>
                                                                 }
-                                                                {(b.extra_data as Record<string, unknown>)?.published === true ? 'Unpublish' : 'Publish to Browse Tab'}
+                                                                {(b.extra_data as Record<string, unknown>)?.published === true
+                                                                    ? 'Unpublish'
+                                                                    : `Publish to ${PUBLIC_PAGE_LABEL[b.category]}`}
                                                             </button>
                                                         </div>
                                                     )}
