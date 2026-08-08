@@ -1,16 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
-import { samplePosts, suggestedUsers } from '@/components/community/sampleData';
-import { getFollowedUsernames, normalizeUsername, toggleFollowedUsername } from '@/components/community/followStore';
+import { normalizeUsername } from '@/components/community/followStore';
 import { DEFAULT_COMMUNITY_AVATAR, resolveAvatarSrc } from '@/components/community/avatarUtils';
 import { useAuth } from '@/context/AuthContext';
-
-const baseFollowersCount = 560;
+import { fetchUserProfileByHandle, fetchFollowStats, toggleFollow as toggleFollowAction, type CommunityUser } from '@/app/actions/community';
+import type { Post } from '@/components/community/types';
 
 export default function CommunityUserProfilePage() {
     const params = useParams<{ username: string }>();
@@ -21,50 +20,69 @@ export default function CommunityUserProfilePage() {
     const normalizedLoggedInName = normalizeUsername(user?.displayName || '');
     const isLoggedInUsersProfile = !!user && !!normalizedLoggedInName && normalizedLoggedInName === normalizedRouteUsername;
 
-    const authorPosts = useMemo(
-        () => samplePosts.filter(post => normalizeUsername(post.username) === normalizedRouteUsername),
-        [normalizedRouteUsername]
-    );
-
-    const suggestedProfile = useMemo(
-        () => suggestedUsers.find(user => normalizeUsername(user.username) === normalizedRouteUsername),
-        [normalizedRouteUsername]
-    );
-
-    const displayName = isLoggedInUsersProfile
-        ? (user?.displayName || routeUsername || 'Community User')
-        : (authorPosts[0]?.author || suggestedProfile?.name || routeUsername || 'Community User');
-    const avatar = isLoggedInUsersProfile
-        ? (user?.photoURL || '')
-        : (authorPosts[0]?.avatar || suggestedProfile?.avatar || '');
-    const resolvedProfileAvatar = resolveAvatarSrc(avatar, displayName);
-    const location = authorPosts[0]?.location || 'India';
-    const bio = suggestedProfile?.bio || 'Active member of the Miraitu farming community.';
-
-    const [isFollowing, setIsFollowing] = useState(false);
-    const [followerCount, setFollowerCount] = useState(baseFollowersCount);
+    // Real profile + that person's real posts, looked up by handle.
+    const [profile, setProfile] = useState<CommunityUser | null>(null);
+    const [authorPosts, setAuthorPosts] = useState<Post[]>([]);
+    const [loadedHandle, setLoadedHandle] = useState<string | null>(null);
+    // Derived rather than a separate flag, so navigating between profiles shows
+    // the loading state without a synchronous setState inside the effect.
+    const profileLoading = loadedHandle !== routeUsername;
 
     useEffect(() => {
-        const followed = getFollowedUsernames();
-        const following = followed.has(normalizedRouteUsername);
-        setIsFollowing(following);
-        setFollowerCount(baseFollowersCount + (following ? 1 : 0));
+        let cancelled = false;
+        fetchUserProfileByHandle(routeUsername).then(res => {
+            if (cancelled) return;
+            setProfile(res.user);
+            setAuthorPosts(res.posts);
+            setLoadedHandle(routeUsername);
+        });
+        return () => { cancelled = true; };
+    }, [routeUsername]);
 
-        const onStorage = () => {
-            const latest = getFollowedUsernames().has(normalizedRouteUsername);
-            setIsFollowing(latest);
-            setFollowerCount(baseFollowersCount + (latest ? 1 : 0));
-        };
+    const displayName = isLoggedInUsersProfile
+        ? (user?.displayName || profile?.name || routeUsername || 'Community User')
+        : (profile?.name || authorPosts[0]?.author || routeUsername || 'Community User');
+    const avatar = isLoggedInUsersProfile
+        ? (user?.photoURL || profile?.avatar || '')
+        : (profile?.avatar || authorPosts[0]?.avatar || '');
+    const resolvedProfileAvatar = resolveAvatarSrc(avatar, displayName);
+    const location = profile?.location || authorPosts[0]?.location || 'India';
+    const bio = profile?.bio || 'Active member of the Miraitu farming community.';
 
-        window.addEventListener('storage', onStorage);
-        return () => window.removeEventListener('storage', onStorage);
-    }, [normalizedRouteUsername]);
+    // Real, server-side follow state and tallies — identical on every device.
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [followerCount, setFollowerCount] = useState(0);
+    const [followingCount, setFollowingCount] = useState(0);
+
+    useEffect(() => {
+        let cancelled = false;
+        fetchFollowStats(routeUsername).then(stats => {
+            if (cancelled) return;
+            setIsFollowing(stats.isFollowing);
+            setFollowerCount(stats.followers);
+            setFollowingCount(stats.following);
+        });
+        return () => { cancelled = true; };
+    }, [routeUsername]);
 
     const handleToggleFollow = () => {
-        const latest = toggleFollowedUsername(normalizedRouteUsername);
-        const following = latest.has(normalizedRouteUsername);
-        setIsFollowing(following);
-        setFollowerCount(baseFollowersCount + (following ? 1 : 0));
+        // Optimistic, then reconciled with what the server actually stored.
+        const next = !isFollowing;
+        setIsFollowing(next);
+        setFollowerCount(c => Math.max(0, c + (next ? 1 : -1)));
+
+        void toggleFollowAction(routeUsername).then(res => {
+            if (!res.success) {
+                setIsFollowing(!next);
+                setFollowerCount(c => Math.max(0, c + (next ? -1 : 1)));
+                return;
+            }
+            void fetchFollowStats(routeUsername).then(stats => {
+                setIsFollowing(stats.isFollowing);
+                setFollowerCount(stats.followers);
+                setFollowingCount(stats.following);
+            });
+        });
     };
 
     return (
@@ -133,7 +151,7 @@ export default function CommunityUserProfilePage() {
                                     <p className="text-gray-500 mt-1">Followers</p>
                                 </div>
                                 <div className="rounded-xl bg-gray-50 dark:bg-gray-800/40 px-3 py-2.5">
-                                    <p className="font-extrabold text-gray-900 dark:text-white text-lg leading-none">{isFollowing ? 'Yes' : 'No'}</p>
+                                    <p className="font-extrabold text-gray-900 dark:text-white text-lg leading-none">{followingCount}</p>
                                     <p className="text-gray-500 mt-1">Following</p>
                                 </div>
                                 <div className="rounded-xl bg-gray-50 dark:bg-gray-800/40 px-3 py-2.5">
@@ -155,7 +173,12 @@ export default function CommunityUserProfilePage() {
                             </button>
                         </div>
 
-                        {authorPosts.length === 0 ? (
+                        {profileLoading ? (
+                            <div className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 p-8 text-center text-gray-400 shadow-sm">
+                                <span className="material-symbols-outlined animate-spin align-middle mr-2">progress_activity</span>
+                                Loading posts…
+                            </div>
+                        ) : authorPosts.length === 0 ? (
                             <div className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 p-8 text-center text-gray-500 shadow-sm">
                                 No public posts available for this user yet.
                             </div>

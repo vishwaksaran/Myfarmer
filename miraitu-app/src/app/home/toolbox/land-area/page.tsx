@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { translatePage } from '@/i18n/pageContent';
+import { getPreciseCoords, reverseGeocodeDetailed } from '@/lib/geolocation';
 
 type UnitSystem = 'acre' | 'hectare' | 'bigha' | 'guntha' | 'cent' | 'sqft' | 'sqm' | 'kanal' | 'marla';
 
@@ -145,32 +146,36 @@ export default function LandAreaPage() {
             return;
         }
         setLocationStatus('requesting');
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const { latitude, longitude } = position.coords;
-                setUserLocation({ lat: latitude, lng: longitude });
+        // Field measurement needs the tightest fix we can get, so wait for GPS
+        // to refine rather than accepting the first network estimate.
+        getPreciseCoords({ desiredAccuracy: 20, timeout: 20000 })
+            .then(async ({ lat, lon }) => {
+                setUserLocation({ lat, lng: lon });
                 setLocationStatus('granted');
-                // Reverse geocode to get location name
                 try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`);
-                    const data = await res.json();
-                    const state = data.address?.state || '';
-                    const district = data.address?.county || data.address?.state_district || '';
-                    const village = data.address?.village || data.address?.town || data.address?.city || '';
-                    setLocationName([village, district, state].filter(Boolean).join(', '));
+                    const geo = await reverseGeocodeDetailed(lat, lon);
+                    setLocationName(geo.address);
                 } catch {
-                    setLocationName(`${latitude.toFixed(4)}°N, ${longitude.toFixed(4)}°E`);
+                    setLocationName(`${lat.toFixed(5)}°N, ${lon.toFixed(5)}°E`);
                 }
-            },
-            (error) => {
-                if (error.code === error.PERMISSION_DENIED) {
-                    setLocationStatus('denied');
-                } else {
-                    setLocationStatus('error');
-                }
-            },
-            { enableHighAccuracy: true, timeout: 15000 }
-        );
+            })
+            .catch((err: Error) => {
+                setLocationStatus(err.message === 'PERMISSION_DENIED' ? 'denied' : 'error');
+            });
+    };
+
+    // Re-centre on the user, waiting for a refined GPS fix and relabelling to
+    // the locality that fix actually falls in.
+    const goToMyLocation = async () => {
+        try {
+            const { lat, lon } = await getPreciseCoords({ desiredAccuracy: 20, timeout: 20000 });
+            let name = locationName;
+            try {
+                name = (await reverseGeocodeDetailed(lat, lon)).address;
+                setLocationName(name);
+            } catch { /* keep the previous label */ }
+            navigateToLocation(lat, lon, name);
+        } catch { /* permission/timeout — leave the map where it is */ }
     };
 
     // Navigate to a location by typing (without GPS)
@@ -817,13 +822,7 @@ export default function LandAreaPage() {
                                                     <div className="h-3.5 w-3.5 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
                                                 )}
                                                 <button
-                                                    onClick={() => {
-                                                        if (navigator.geolocation) {
-                                                            navigator.geolocation.getCurrentPosition((pos) => {
-                                                                navigateToLocation(pos.coords.latitude, pos.coords.longitude, locationName);
-                                                            });
-                                                        }
-                                                    }}
+                                                    onClick={goToMyLocation}
                                                     className="text-blue-500 hover:text-blue-600 transition-colors"
                                                     title="Go to my location"
                                                 >
@@ -1042,13 +1041,7 @@ export default function LandAreaPage() {
                                                         <span className="material-symbols-outlined text-gray-700 dark:text-gray-200">zoom_out</span>
                                                     </button>
                                                     <button
-                                                        onClick={() => {
-                                                            if (navigator.geolocation) {
-                                                                navigator.geolocation.getCurrentPosition(pos => {
-                                                                    navigateToLocation(pos.coords.latitude, pos.coords.longitude, locationName);
-                                                                });
-                                                            }
-                                                        }}
+                                                        onClick={goToMyLocation}
                                                         aria-label="My location"
                                                         className="size-10 rounded-xl bg-white dark:bg-[#1a231a] shadow-lg flex items-center justify-center"
                                                     >

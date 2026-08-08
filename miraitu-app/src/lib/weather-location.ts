@@ -1,3 +1,5 @@
+import { getPreciseCoords } from '@/lib/geolocation';
+
 export interface WeatherCoords {
     lat: number;
     lon: number;
@@ -198,30 +200,12 @@ export const requestBrowserCoords = async (): Promise<WeatherCoords> => {
     // Many browsers allow geolocation on LAN IPs. If blocked, the error
     // callback will fire with PERMISSION_DENIED or POSITION_UNAVAILABLE.
 
-    return new Promise<WeatherCoords>((resolve, reject) => {
-        window.navigator.geolocation.getCurrentPosition(
-            (position) => {
-                resolve({
-                    lat: toRoundedCoord(position.coords.latitude),
-                    lon: toRoundedCoord(position.coords.longitude),
-                });
-            },
-            (error) => {
-                if (error.code === error.PERMISSION_DENIED) {
-                    reject(new Error('PERMISSION_DENIED'));
-                    return;
-                }
-                if (error.code === error.TIMEOUT) {
-                    reject(new Error('TIMEOUT'));
-                    return;
-                }
-                reject(new Error('UNAVAILABLE'));
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 20000,
-                maximumAge: 5 * 60 * 1000,
-            }
-        );
-    });
+    // Waits for the GPS fix to refine instead of taking the first coarse
+    // network estimate, and never serves a cached position. Throws the same
+    // PERMISSION_DENIED / TIMEOUT / UNAVAILABLE messages callers already handle.
+    const coords = await getPreciseCoords({ desiredAccuracy: 50, timeout: 15000 });
+    return {
+        lat: toRoundedCoord(coords.lat),
+        lon: toRoundedCoord(coords.lon),
+    };
 };

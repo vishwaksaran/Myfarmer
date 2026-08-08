@@ -2,6 +2,21 @@
 
 import { useState, useRef } from 'react';
 
+/** Uploads a post image to the shared bucket and returns its public URL. */
+async function uploadCommunityImage(file: File): Promise<string | null> {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('folder', 'community');
+  try {
+    const res = await fetch('/api/upload/lease-photo', { method: 'POST', body: fd });
+    if (!res.ok) return null;
+    const { url } = await res.json();
+    return url ?? null;
+  } catch {
+    return null;
+  }
+}
+
 interface CreatePostModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -13,6 +28,7 @@ interface CreatePostModalProps {
 export default function CreatePostModal({ isOpen, onClose, onSubmit, userAvatar, userName }: CreatePostModalProps) {
   const [content, setContent] = useState('');
   const [images, setImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [video, setVideo] = useState<string | null>(null);
   const [showTagInput, setShowTagInput] = useState(false);
   const [tagInput, setTagInput] = useState('');
@@ -33,24 +49,19 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit, userAvatar,
     const files = e.target.files;
     if (!files) return;
     setUploadError(null);
-    Array.from(files).forEach(file => {
-      if (file.size > 10 * 1024 * 1024) {
-        setUploadError('Image must be under 10MB');
-        return;
+    // Uploaded immediately to storage. A data URL would only ever exist in this
+    // browser, so other users could never see the photo.
+    void (async () => {
+      setUploading(true);
+      for (const file of Array.from(files)) {
+        if (file.size > 5 * 1024 * 1024) { setUploadError('Image must be under 5MB'); continue; }
+        if (!file.type.startsWith('image/')) { setUploadError('Only image files are allowed'); continue; }
+        const url = await uploadCommunityImage(file);
+        if (url) setImages(prev => [...prev, url]);
+        else setUploadError('Upload failed. Please try again.');
       }
-      if (!file.type.startsWith('image/')) {
-        setUploadError('Only image files are allowed');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        if (ev.target?.result) {
-          setImages(prev => [...prev, ev.target!.result as string]);
-        }
-      };
-      reader.onerror = () => setUploadError('Failed to read image. Please try again.');
-      reader.readAsDataURL(file);
-    });
+      setUploading(false);
+    })();
     setActiveTab('image');
   };
 
@@ -133,10 +144,10 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit, userAvatar,
           <h3 className="font-bold text-gray-900 dark:text-white text-lg">Create Post</h3>
           <button
             onClick={handleSubmit}
-            disabled={!content.trim()}
+            disabled={uploading || (!content.trim() && images.length === 0 && !video)}
             className="px-5 py-2 rounded-full bg-[#22c33d] text-white text-sm font-bold hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Post
+            {uploading ? 'Uploading…' : 'Post'}
           </button>
         </div>
 

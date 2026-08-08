@@ -34,14 +34,89 @@ const DroneIcon = ({ className }: { className?: string }) => (
     </svg>
 );
 
-const categories = [
-    { id: 'tractors', name: 'Tractors', icon: 'agriculture' },
-    { id: 'jcb', name: 'JCB', icon: 'front_loader' },
-    { id: 'small-machineries', name: 'Small Machineries', icon: 'precision_manufacturing' },
-    { id: 'implements', name: 'Implements', icon: 'handyman' },
-    { id: 'harvesters', name: 'Harvesters', icon: 'grass' },
-    { id: 'drones', name: 'Agri Drones', icon: 'drone' },
-];
+// Per-category copy and field shapes. The form is always rendered from a
+// category-specific page (/home/machinery/<category>/sell), so the category is
+// fixed and every label, placeholder and option list is tailored to it rather
+// than asking the seller to pick a category first.
+interface CategoryConfig {
+    name: string;          // plural, for the locked chip
+    singular: string;      // used in the heading — "Sell Your Tractor"
+    icon: string;
+    modelPlaceholder: string;
+    /** Headline spec captured on step 1. */
+    specLabel: string;
+    specIcon: string;
+    specOptions: string[];
+    specUnit: string;
+    /** Free-text spec on step 2. */
+    specDetailLabel: string;
+    specDetailPlaceholder: string;
+    /** Usage/wear measure on step 2. */
+    usageLabel: string;
+    usagePlaceholder: string;
+    usageUnit: string;
+    /** Whether the HP-based price estimator is meaningful for this category. */
+    showEstimate: boolean;
+}
+
+const CATEGORY_CONFIG: Record<string, CategoryConfig> = {
+    tractors: {
+        name: 'Tractors', singular: 'Tractor', icon: 'agriculture',
+        modelPlaceholder: 'e.g. Yuvo 575 DI',
+        specLabel: 'Engine Power', specIcon: 'speed',
+        specOptions: ['25-35', '35-45', '45-55', '55-65', '65-75', '75+'], specUnit: 'HP',
+        specDetailLabel: 'Horsepower (HP)', specDetailPlaceholder: '45',
+        usageLabel: 'Hours Used (Engine)', usagePlaceholder: 'e.g. 1200', usageUnit: 'HRS',
+        showEstimate: true,
+    },
+    jcb: {
+        name: 'JCBs & Excavators', singular: 'JCB', icon: 'front_loader',
+        modelPlaceholder: 'e.g. 3DX Super',
+        specLabel: 'Engine Power', specIcon: 'speed',
+        specOptions: ['70-90', '90-110', '110-140', '140+'], specUnit: 'HP',
+        specDetailLabel: 'Horsepower (HP)', specDetailPlaceholder: '92',
+        usageLabel: 'Hours Used (Engine)', usagePlaceholder: 'e.g. 4500', usageUnit: 'HRS',
+        showEstimate: true,
+    },
+    'small-machineries': {
+        name: 'Small Machineries', singular: 'Machine', icon: 'precision_manufacturing',
+        modelPlaceholder: 'e.g. VST Shakti 130 DI',
+        specLabel: 'Engine Power', specIcon: 'speed',
+        specOptions: ['2-5', '5-8', '8-13', '13+'], specUnit: 'HP',
+        specDetailLabel: 'Horsepower (HP)', specDetailPlaceholder: '5',
+        usageLabel: 'Hours Used (Engine)', usagePlaceholder: 'e.g. 300', usageUnit: 'HRS',
+        showEstimate: false,
+    },
+    implements: {
+        name: 'Implements', singular: 'Implement', icon: 'handyman',
+        modelPlaceholder: 'e.g. 9 Tyne Cultivator',
+        specLabel: 'Working Width', specIcon: 'straighten',
+        specOptions: ['3-5', '5-7', '7-9', '9+'], specUnit: 'FT',
+        specDetailLabel: 'Number of Tynes / Discs', specDetailPlaceholder: '9',
+        usageLabel: 'Seasons Used', usagePlaceholder: 'e.g. 4', usageUnit: 'SEASONS',
+        showEstimate: false,
+    },
+    harvesters: {
+        name: 'Harvesters', singular: 'Harvester', icon: 'grass',
+        modelPlaceholder: 'e.g. Preet 987',
+        specLabel: 'Engine Power', specIcon: 'speed',
+        specOptions: ['60-80', '80-100', '100-120', '120+'], specUnit: 'HP',
+        specDetailLabel: 'Horsepower (HP)', specDetailPlaceholder: '101',
+        usageLabel: 'Hours Used (Engine)', usagePlaceholder: 'e.g. 2000', usageUnit: 'HRS',
+        showEstimate: true,
+    },
+    drones: {
+        name: 'Agri Drones', singular: 'Agri Drone', icon: 'drone',
+        modelPlaceholder: 'e.g. Agras T30',
+        specLabel: 'Tank Capacity', specIcon: 'water_drop',
+        specOptions: ['5-10', '10-16', '16-20', '20+'], specUnit: 'L',
+        specDetailLabel: 'Tank Capacity (Litres)', specDetailPlaceholder: '16',
+        usageLabel: 'Flight Hours', usagePlaceholder: 'e.g. 120', usageUnit: 'HRS',
+        showEstimate: false,
+    },
+};
+
+const FALLBACK_CONFIG = CATEGORY_CONFIG.tractors;
 
 const brands: Record<string, string[]> = {
     tractors: ['Mahindra', 'John Deere', 'Swaraj', 'Sonalika', 'New Holland', 'Kubota', 'TAFE', 'Eicher'],
@@ -58,7 +133,10 @@ interface SellMachineryFormProps {
 
 export default function SellMachineryForm({ category = 'tractors' }: SellMachineryFormProps) {
     const [currentStep, setCurrentStep] = useState(1);
-    const [selectedCategory, setSelectedCategory] = useState(category);
+    // The category comes from the page and never changes — each category has its
+    // own /sell page, so there is nothing for the seller to choose here.
+    const selectedCategory = category;
+    const config = CATEGORY_CONFIG[category] ?? FALLBACK_CONFIG;
     const [showSuccess, setShowSuccess] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -203,38 +281,28 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                 {/* Step 1: Basic Details */}
                 {currentStep === 1 && (
                     <>
-                        <h2 className="text-2xl font-bold text-primary text-center mb-2">Sell Your Machinery</h2>
-                        <p className="text-gray-500 text-center mb-8">Step 1: Provide basic information about your equipment</p>
+                        <h2 className="text-2xl font-bold text-primary text-center mb-2">Sell Your {config.singular}</h2>
+                        <p className="text-gray-500 text-center mb-8">Step 1: Provide basic information about your {config.singular.toLowerCase()}</p>
 
-                        {/* Category Selection */}
-                        <div className="mb-8">
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">Select Category</label>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                {categories.map((cat) => (
-                                    <button
-                                        key={cat.id}
-                                        onClick={() => {
-                                            setSelectedCategory(cat.id);
-                                            setFormData(prev => ({ ...prev, category: cat.id, brand: '' }));
-                                        }}
-                                        className={`p-4 rounded-2xl border-2 transition-all ${selectedCategory === cat.id
-                                            ? 'border-primary bg-primary/5'
-                                            : 'border-gray-200 dark:border-gray-700 hover:border-primary/50'
-                                            }`}
-                                    >
-                                        {cat.icon === 'drone' ? (
-                                            <DroneIcon className={selectedCategory === cat.id ? 'text-primary' : 'text-gray-400'} />
-                                        ) : (
-                                            <span className={`material-symbols-outlined text-3xl ${selectedCategory === cat.id ? 'text-primary' : 'text-gray-400'}`}>
-                                                {cat.icon}
-                                            </span>
-                                        )}
-                                        <p className={`mt-1 font-semibold text-sm ${selectedCategory === cat.id ? 'text-primary' : 'text-gray-600 dark:text-gray-300'}`}>
-                                            {cat.name}
-                                        </p>
-                                    </button>
-                                ))}
+                        {/* Locked category — this page only lists this one category */}
+                        <div className="mb-8 flex items-center gap-3 rounded-2xl border-2 border-primary bg-primary/5 px-4 py-3">
+                            <div className="size-11 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                                {config.icon === 'drone' ? (
+                                    <DroneIcon className="text-primary" />
+                                ) : (
+                                    <span className="material-symbols-outlined text-2xl">{config.icon}</span>
+                                )}
                             </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Listing category</p>
+                                <p className="font-bold text-primary">{config.name}</p>
+                            </div>
+                            <a
+                                href="/home/machinery"
+                                className="shrink-0 text-xs font-bold text-gray-500 hover:text-primary underline underline-offset-2"
+                            >
+                                Change
+                            </a>
                         </div>
 
                         {/* Brand and Model */}
@@ -262,7 +330,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                     type="text"
                                     value={formData.model}
                                     onChange={(e) => setFormData(prev => ({ ...prev, model: e.target.value }))}
-                                    placeholder="e.g. Yuvo 575 DI"
+                                    placeholder={config.modelPlaceholder}
                                     className="w-full px-4 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none"
                                 />
                             </div>
@@ -287,17 +355,17 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Estimated HP Range</label>
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{config.specLabel} ({config.specUnit})</label>
                                 <div className="relative">
-                                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">speed</span>
+                                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">{config.specIcon}</span>
                                     <select
                                         value={formData.hp}
                                         onChange={(e) => setFormData(prev => ({ ...prev, hp: e.target.value }))}
                                         className="w-full pl-12 pr-4 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none appearance-none"
                                     >
-                                        <option value="">Select HP</option>
-                                        {['25-35', '35-45', '45-55', '55-65', '65-75', '75+'].map((hp) => (
-                                            <option key={hp} value={hp.split('-')[0]}>{hp} HP</option>
+                                        <option value="">Select {config.specLabel}</option>
+                                        {config.specOptions.map((opt) => (
+                                            <option key={opt} value={opt.split('-')[0]}>{opt} {config.specUnit}</option>
                                         ))}
                                     </select>
                                     <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
@@ -311,7 +379,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                 {currentStep === 2 && (
                     <>
                         <h2 className="text-2xl font-bold text-primary mb-2">Condition & Specs</h2>
-                        <p className="text-gray-500 mb-8">Step 2 of 3: Technical details of your machinery</p>
+                        <p className="text-gray-500 mb-8">Step 2 of 3: Technical details of your {config.singular.toLowerCase()}</p>
 
                         <div className="grid grid-cols-3 gap-6 mb-8">
                             <div className="col-span-2">
@@ -333,31 +401,31 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-sm text-gray-600 mb-2">Hours Used (Engine)</label>
+                                            <label className="block text-sm text-gray-600 mb-2">{config.usageLabel}</label>
                                             <div className="relative">
                                                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">schedule</span>
                                                 <input
                                                     type="text"
                                                     value={formData.hoursUsed}
                                                     onChange={(e) => setFormData(prev => ({ ...prev, hoursUsed: e.target.value }))}
-                                                    placeholder="e.g. 1200"
-                                                    className="w-full pl-12 pr-16 py-3 rounded-xl bg-gray-50 border-2 border-transparent focus:border-primary outline-none"
+                                                    placeholder={config.usagePlaceholder}
+                                                    className="w-full pl-12 pr-20 py-3 rounded-xl bg-gray-50 border-2 border-transparent focus:border-primary outline-none"
                                                 />
-                                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">HRS</span>
+                                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-[11px]">{config.usageUnit}</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-6 mb-6">
                                         <div>
-                                            <label className="block text-sm text-gray-600 mb-2">Horsepower (HP)</label>
+                                            <label className="block text-sm text-gray-600 mb-2">{config.specDetailLabel}</label>
                                             <div className="relative">
-                                                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">speed</span>
+                                                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">{config.specIcon}</span>
                                                 <input
                                                     type="text"
                                                     value={formData.hp}
                                                     onChange={(e) => setFormData(prev => ({ ...prev, hp: e.target.value }))}
-                                                    placeholder="45"
+                                                    placeholder={config.specDetailPlaceholder}
                                                     className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border-2 border-transparent focus:border-primary outline-none"
                                                 />
                                             </div>
@@ -473,11 +541,15 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                     </p>
                                 </div>
 
-                                <div className="p-6 rounded-2xl bg-primary text-white">
-                                    <p className="text-sm text-white/70 mb-1">Estimated Value</p>
-                                    <p className="text-2xl font-bold mb-2">{estimatedValue}</p>
-                                    <p className="text-xs text-white/60 uppercase tracking-wide">Based on current market trends</p>
-                                </div>
+                                {/* The estimator is an HP × age formula, so it is only shown for
+                                    categories where the headline spec really is horsepower. */}
+                                {config.showEstimate && (
+                                    <div className="p-6 rounded-2xl bg-primary text-white">
+                                        <p className="text-sm text-white/70 mb-1">Estimated Value</p>
+                                        <p className="text-2xl font-bold mb-2">{estimatedValue}</p>
+                                        <p className="text-xs text-white/60 uppercase tracking-wide">Based on current market trends</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </>
@@ -543,7 +615,9 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                     className="w-full pl-10 pr-4 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-2xl font-bold"
                                 />
                             </div>
-                            <p className="text-sm text-gray-500 mt-2">Suggested range: {estimatedValue}</p>
+                            {config.showEstimate && (
+                                <p className="text-sm text-gray-500 mt-2">Suggested range: {estimatedValue}</p>
+                            )}
                         </div>
 
                         {/* Description */}
@@ -552,7 +626,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                             <textarea
                                 value={formData.description}
                                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                placeholder="Add any additional details about your machinery..."
+                                placeholder={`Add any additional details about your ${config.singular.toLowerCase()}...`}
                                 rows={4}
                                 className="w-full px-4 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none resize-none"
                             />

@@ -59,7 +59,9 @@ export default function MachineryCartPage() {
                 setLocating(false);
             },
             () => { setError('Could not access your location. Enter it manually.'); setLocating(false); },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+            // maximumAge was 5 minutes, which happily returned a stale fix from
+            // wherever the device was last located. Always take a fresh one.
+            { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
         );
     };
 

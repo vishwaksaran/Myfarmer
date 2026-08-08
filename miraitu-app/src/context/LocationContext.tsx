@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { requestBrowserCoords } from '@/lib/weather-location';
+import { reverseGeocodeDetailed } from '@/lib/geolocation';
 
 // ─── Types ───────────────────────────────────────────────────────────
 export interface AppLocation {
@@ -43,17 +44,17 @@ const K_PROMPTED = 'miraitu.location.prompted'; // '1' once user has answered th
 const LocationContext = createContext<LocationContextValue | null>(null);
 
 // ─── Reverse geocode (Nominatim) ─────────────────────────────────────
+// Uses zoom=18 via the shared helper. The old zoom=10 request only ever
+// resolved to city level, so an exact GPS fix still displayed as "Bangalore"
+// instead of the actual locality.
 async function reverseGeocode(lat: number, lng: number): Promise<{ address: string; district?: string; state?: string }> {
     try {
-        const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10`
-        );
-        const data = await res.json();
-        const a = data.address || {};
-        const district = a.city || a.town || a.village || a.county || a.state_district || '';
-        const state = a.state || '';
-        const address = [district, state].filter(Boolean).join(', ') || 'Location detected';
-        return { address, district: district || undefined, state: state || undefined };
+        const geo = await reverseGeocodeDetailed(lat, lng);
+        return {
+            address: geo.address,
+            district: geo.locality || geo.district,
+            state: geo.state,
+        };
     } catch {
         return { address: 'Location detected' };
     }

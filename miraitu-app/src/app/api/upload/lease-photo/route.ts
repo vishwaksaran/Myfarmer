@@ -25,9 +25,13 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'File exceeds 5 MB limit' }, { status: 400 });
         }
 
+        // Optional folder, whitelisted so callers cannot write anywhere they like.
+        const requested = String(formData.get('folder') ?? 'land-lease');
+        const folder = ['land-lease', 'community'].includes(requested) ? requested : 'land-lease';
+
         const supabase = createSupabaseAdminClient();
         const ext = (file.name.split('.').pop() ?? 'jpg').toLowerCase();
-        const path = `land-lease/${Date.now()}-${Math.random().toString(36).slice(7)}.${ext}`;
+        const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(7)}.${ext}`;
 
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);

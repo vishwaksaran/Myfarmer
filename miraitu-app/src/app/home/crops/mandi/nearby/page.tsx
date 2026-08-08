@@ -71,7 +71,7 @@ export default function NearbyMandisPage() {
                 setGeoLoading(false);
             },
             () => setGeoLoading(false),
-            { enableHighAccuracy: false, timeout: 8000 }
+            { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 }
         );
     }, []);
 
@@ -206,7 +206,7 @@ export default function NearbyMandisPage() {
         try {
             const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
                 navigator.geolocation.getCurrentPosition(resolve, reject, {
-                    enableHighAccuracy: false, timeout: 10000,
+                    enableHighAccuracy: true, maximumAge: 0, timeout: 12000,
                 })
             );
 

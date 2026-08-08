@@ -10,6 +10,7 @@ import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import { useCart } from '@/context/CartContext';
 import { SHOP_CART_ENABLED } from '@/lib/feature-flags';
+import { getPreciseCoords, reverseGeocodeDetailed } from '@/lib/geolocation';
 import { useAuth } from '@/context/AuthContext';
 import { useShopWishlist } from '@/lib/use-shop-wishlist';
 
@@ -165,19 +166,14 @@ export default function ShopPage() {
                                     {/* Use current location */}
                                     <button
                                         onClick={() => {
-                                            if (navigator.geolocation) {
-                                                navigator.geolocation.getCurrentPosition(
-                                                    async (pos) => {
-                                                        try {
-                                                            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`);
-                                                            const data = await res.json();
-                                                            const city = data.address?.city || data.address?.town || data.address?.village || data.address?.county || 'Your Location';
-                                                            handleSelectCity(city);
-                                                        } catch { handleSelectCity('Current Location'); }
-                                                    },
-                                                    () => handleSelectCity('Current Location')
-                                                );
-                                            }
+                                            // Was a bare getCurrentPosition with no options — that
+                                            // defaults to low accuracy and resolved to the wrong city.
+                                            getPreciseCoords()
+                                                .then(async ({ lat, lon }) => {
+                                                    const geo = await reverseGeocodeDetailed(lat, lon);
+                                                    handleSelectCity(geo.locality || geo.district || 'Your Location');
+                                                })
+                                                .catch(() => handleSelectCity('Current Location'));
                                         }}
                                         className="w-full flex items-center gap-3 px-4 py-3 text-sm text-primary font-bold hover:bg-green-50 dark:hover:bg-green-900/20 border-b border-gray-100 dark:border-gray-800 transition-colors"
                                     >

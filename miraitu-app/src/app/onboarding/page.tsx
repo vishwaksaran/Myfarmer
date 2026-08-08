@@ -665,7 +665,7 @@ export default function OnboardingPage() {
                 setError('Location access denied. Please enter manually.');
                 setLocationLoading(false);
             },
-            { enableHighAccuracy: true, timeout: 10000 }
+            { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
         );
     };
 

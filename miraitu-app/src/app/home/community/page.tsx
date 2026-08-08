@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef, Suspense } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { translatePage } from '@/i18n/pageContent';
 import Header from '@/components/v2/Header';
@@ -10,7 +10,22 @@ import Footer from '@/components/v2/Footer';
 import LoginModal from '@/components/auth/LoginModal';
 
 import { Post, ReactionType, Story } from '@/components/community/types';
-import { samplePosts, sampleStories, sampleNewsEvents, trendingTopics, suggestedUsers } from '@/components/community/sampleData';
+import { sampleStories, sampleNewsEvents, trendingTopics } from '@/components/community/sampleData';
+import {
+    fetchFeed,
+    createPost as createPostAction,
+    updatePost as updatePostAction,
+    deletePost as deletePostAction,
+    toggleReaction as toggleReactionAction,
+    addComment as addCommentAction,
+    fetchCommunityUsers,
+    toggleCommentLike as toggleCommentLikeAction,
+    recordShare as recordShareAction,
+    toggleFollow as toggleFollowAction,
+    fetchFollowing,
+    type CommunityUser,
+} from '@/app/actions/community';
+import supabase from '@/lib/supabase';
 import StoriesBar from '@/components/community/StoriesBar';
 import CreatePostModal from '@/components/community/CreatePostModal';
 import CreateStoryModal from '@/components/community/CreateStoryModal';
@@ -20,16 +35,42 @@ import PostCard from '@/components/community/PostCard';
 import HashtagSearch from '@/components/community/HashtagSearch';
 import NewsEvents from '@/components/community/NewsEvents';
 import SuggestedUsers from '@/components/community/SuggestedUsers';
-import { getFollowedUsernames, normalizeUsername, saveFollowedUsernames } from '@/components/community/followStore';
+import { normalizeUsername, saveFollowedUsernames } from '@/components/community/followStore';
 import { DEFAULT_COMMUNITY_AVATAR, resolveAvatarSrc } from '@/components/community/avatarUtils';
 
 const BASE_FOLLOWING_COUNT = 128;
+const POSTS_PER_PAGE = 20;
+
+/** Uploads a post image and returns its public URL, or null on failure. */
+async function uploadCommunityImage(file: File): Promise<string | null> {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('folder', 'community');
+    try {
+        const res = await fetch('/api/upload/lease-photo', { method: 'POST', body: fd });
+        if (!res.ok) return null;
+        const { url } = await res.json();
+        return url ?? null;
+    } catch {
+        return null;
+    }
+}
 
 const getTrendingScore = (post: Post) => {
     return post.totalReactions + (post.commentCount * 2) + (post.shares * 3);
 };
 
+// useSearchParams (for the shared ?post= link) must sit inside a Suspense
+// boundary, otherwise the production build fails to prerender this route.
 export default function CommunityPage() {
+    return (
+        <Suspense fallback={null}>
+            <CommunityFeedPage />
+        </Suspense>
+    );
+}
+
+function CommunityFeedPage() {
     const { t, lang } = useLanguage();
     const tp = (s?: string) => translatePage(lang, s);
     const { user } = useAuth();
@@ -37,9 +78,17 @@ export default function CommunityPage() {
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [showCreatePost, setShowCreatePost] = useState(false);
     const [editingPost, setEditingPost] = useState<Post | null>(null);
-    const [posts, setPosts] = useState<Post[]>(samplePosts);
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [feedLoading, setFeedLoading] = useState(true);
+    const [hasMorePosts, setHasMorePosts] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
+    /** How many posts are currently loaded — the offset for the next page. */
+    const loadedCountRef = useRef(0);
     const [stories, setStories] = useState<Story[]>(sampleStories);
-    const [users, setUsers] = useState(suggestedUsers);
+    const [users, setUsers] = useState<(CommunityUser & { following: boolean; followers: string })[]>([]);
+    const [peopleQuery, setPeopleQuery] = useState('');
+    /** Bumped by realtime follow events to re-pull follower tallies. */
+    const [peopleRefreshKey, setPeopleRefreshKey] = useState(0);
     const [followedUsernames, setFollowedUsernames] = useState<Set<string>>(
         () => new Set<string>()
     );
@@ -53,6 +102,14 @@ export default function CommunityPage() {
     const [inlineImages, setInlineImages] = useState<string[]>([]);
     const [inlineVideo, setInlineVideo] = useState<string | null>(null);
     const [uploadError, setUploadError] = useState<string | null>(null);
+    const [inlineUploading, setInlineUploading] = useState(false);
+    const [inlinePosting, setInlinePosting] = useState(false);
+    // Shared-link handling: /home/community?post=<id>
+    const searchParams = useSearchParams();
+    const sharedPostId = searchParams.get('post');
+    const [highlightedPostId, setHighlightedPostId] = useState<string | null>(null);
+    const [sharedPostMissing, setSharedPostMissing] = useState(false);
+    const resolvedShareRef = useRef<string | null>(null);
     const inlinePhotoRef = useRef<HTMLInputElement>(null);
     const inlineVideoRef = useRef<HTMLInputElement>(null);
 
@@ -61,8 +118,128 @@ export default function CommunityPage() {
         action();
     }, []);
 
-    // React to a post (toggle or switch reaction)
+    // ── Shared feed ──────────────────────────────────────────────────
+    // Reloads from the top. `loadedCountRef` keeps however many pages the user
+    // has already pulled, so a realtime refresh does not collapse the feed back
+    // to page one under them.
+    const loadFeed = useCallback(async () => {
+        const res = await fetchFeed({ limit: Math.max(POSTS_PER_PAGE, loadedCountRef.current) });
+        setPosts(res.data);
+        setHasMorePosts(res.hasMore);
+        loadedCountRef.current = res.data.length;
+        setFeedLoading(false);
+    }, []);
+
+    // Append the next page.
+    const loadMorePosts = useCallback(async () => {
+        setLoadingMore(true);
+        const res = await fetchFeed({ limit: POSTS_PER_PAGE, offset: loadedCountRef.current });
+        setPosts(prev => {
+            // Dedupe: a new post arriving mid-scroll shifts the window, so the
+            // same row can come back in two pages.
+            const seen = new Set(prev.map(p => p.id));
+            const merged = [...prev, ...res.data.filter(p => !seen.has(p.id))];
+            loadedCountRef.current = merged.length;
+            return merged;
+        });
+        setHasMorePosts(res.hasMore);
+        setLoadingMore(false);
+    }, []);
+
+    useEffect(() => {
+        // loadFeed only sets state after awaiting the fetch, so this is not a
+        // synchronous cascade — the lint rule cannot see through the async call.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void loadFeed();
+    }, [loadFeed]);
+
+    // Realtime: any insert/update/delete on posts, reactions or comments
+    // re-pulls the feed, so likes and comments from other users land live.
+    useEffect(() => {
+        let pending: ReturnType<typeof setTimeout> | null = null;
+        // Bursts of events (e.g. a post plus its first reaction) collapse into
+        // a single refetch.
+        const refresh = () => {
+            if (pending) clearTimeout(pending);
+            pending = setTimeout(() => { void loadFeed(); }, 400);
+        };
+
+        const channel = supabase
+            .channel('community-feed')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'community_posts' }, refresh)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'community_reactions' }, refresh)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'community_comments' }, refresh)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'community_comment_likes' }, refresh)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'community_shares' }, refresh)
+            .subscribe();
+
+        return () => {
+            if (pending) clearTimeout(pending);
+            void supabase.removeChannel(channel);
+        };
+    }, [loadFeed]);
+
+    // ── Shared-link deep dive (/home/community?post=<id>) ────────────
+    // Scrolls to the shared post and highlights it. If it is not in the loaded
+    // feed (older than the 50 we pull), it is fetched and pinned to the top so
+    // the link always lands somewhere useful.
+    useEffect(() => {
+        if (!sharedPostId || feedLoading || resolvedShareRef.current === sharedPostId) return;
+
+        const focusPost = () => {
+            const el = document.getElementById(`post-${sharedPostId}`);
+            if (!el) return false;
+            resolvedShareRef.current = sharedPostId;
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setHighlightedPostId(sharedPostId);
+            // Fade the highlight out; the post stays put.
+            setTimeout(() => setHighlightedPostId(null), 3200);
+            return true;
+        };
+
+        // The node exists once React has painted the current feed.
+        if (requestAnimationFrame(focusPost)) { /* scheduled */ }
+
+        if (!posts.some(p => p.id === sharedPostId)) {
+            resolvedShareRef.current = sharedPostId;
+            void fetchFeed({ postId: sharedPostId }).then(res => {
+                if (res.data.length === 0) {
+                    setSharedPostMissing(true);
+                    return;
+                }
+                setPosts(prev => {
+                    const merged = [...res.data, ...prev.filter(p => p.id !== sharedPostId)];
+                    // Keep the paging cursor honest after pinning an extra post.
+                    loadedCountRef.current = merged.length;
+                    return merged;
+                });
+                requestAnimationFrame(() => { requestAnimationFrame(focusPost); });
+            });
+        }
+    }, [sharedPostId, feedLoading, posts]);
+
+    // ── People who have created a profile ────────────────────────────
+    useEffect(() => {
+        let cancelled = false;
+        const timer = setTimeout(async () => {
+            const res = await fetchCommunityUsers(peopleQuery);
+            if (cancelled) return;
+            setUsers(res.data.map(u => ({
+                ...u,
+                following: !!u.isFollowing,
+                followers: `${u.followerCount ?? 0} follower${(u.followerCount ?? 0) === 1 ? '' : 's'} · ${u.postCount} post${u.postCount === 1 ? '' : 's'}`,
+            })));
+        }, peopleQuery ? 350 : 0); // debounce typing, load immediately on mount
+        return () => { cancelled = true; clearTimeout(timer); };
+    }, [peopleQuery, peopleRefreshKey]);
+
+    // React to a post (toggle or switch reaction).
+    // Updates locally for instant feedback, then persists; realtime brings
+    // everyone else's tallies in.
     const handleReact = (postId: string, reaction: ReactionType) => {
+        void toggleReactionAction(postId, reaction).then(res => {
+            if (!res.success) void loadFeed(); // roll back to server truth
+        });
         setPosts(prev => prev.map(p => {
             if (p.id !== postId) return p;
             const prev_reaction = p.myReaction;
@@ -87,8 +264,11 @@ export default function CommunityPage() {
         }));
     };
 
-    // Add comment
+    // Add comment — persisted, then broadcast to every open feed.
     const handleComment = (postId: string, text: string, parentId?: string) => {
+        void addCommentAction(postId, text, parentId).then(res => {
+            if (res.success) void loadFeed();
+        });
         setPosts(prev => prev.map(p => {
             if (p.id !== postId) return p;
             const newComment = {
@@ -117,7 +297,11 @@ export default function CommunityPage() {
     };
 
     // Like a comment
+    // Like a comment — persisted, so it shows on every device the user signs in on.
     const handleLikeComment = (postId: string, commentId: string) => {
+        void toggleCommentLikeAction(commentId).then(res => {
+            if (!res.success) void loadFeed(); // roll back to server truth
+        });
         setPosts(prev => prev.map(p => {
             if (p.id !== postId) return p;
             const toggleLike = (comments: typeof p.comments): typeof p.comments =>
@@ -130,17 +314,39 @@ export default function CommunityPage() {
         }));
     };
 
-    // Share post
+    // Share post — every share is recorded, so the count is real and shared.
     const handleShare = (postId: string) => {
-        setPosts(prev => prev.map(p => p.id === postId ? { ...p, shares: p.shares + 1 } : p));
+        const post = posts.find(p => p.id === postId);
+        const shareUrl = typeof window !== 'undefined'
+            ? `${window.location.origin}/home/community?post=${postId}`
+            : '';
+
+        const record = (channel: string) => {
+            void recordShareAction(postId, channel).then(res => {
+                if (!res.success) void loadFeed();
+            });
+            setPosts(prev => prev.map(p => p.id === postId ? { ...p, shares: p.shares + 1 } : p));
+        };
+
         if (typeof navigator !== 'undefined' && navigator.share) {
-            const post = posts.find(p => p.id === postId);
             navigator.share({
                 title: `Post by ${post?.author}`,
                 text: post?.content?.slice(0, 100),
-                url: window.location.href,
-            }).catch(() => { });
+                url: shareUrl,
+            })
+                // Only count a share the user actually went through with —
+                // cancelling the sheet rejects and must not inflate the tally.
+                .then(() => record('native'))
+                .catch(() => { });
+            return;
         }
+
+        if (typeof navigator !== 'undefined' && navigator.clipboard) {
+            void navigator.clipboard.writeText(shareUrl).then(() => record('copy')).catch(() => { });
+            return;
+        }
+
+        record('native');
     };
 
     // Save/bookmark post
@@ -148,31 +354,19 @@ export default function CommunityPage() {
         setPosts(prev => prev.map(p => p.id === postId ? { ...p, saved: !p.saved } : p));
     };
 
-    // Create new post
-    const handleCreatePost = (data: { content: string; images: string[]; video: string | null; tags: string[] }) => {
-        const newPost: Post = {
-            id: 'p' + Date.now(),
-            author: user?.displayName || 'You',
-            username: 'you',
-            avatar: '🧑‍🌾',
-            verified: false,
-            location: 'India',
-            time: 'Just now',
+    // Create new post — saved to the shared feed so every user sees it.
+    const handleCreatePost = async (data: { content: string; images: string[]; video: string | null; tags: string[] }) => {
+        const res = await createPostAction({
             content: data.content,
-            images: data.images.length > 0 ? data.images : undefined,
-            video: data.video || undefined,
-            reactions: { like: 0, love: 0, celebrate: 0, insightful: 0, funny: 0, growth: 0 },
-            myReaction: null,
-            totalReactions: 0,
-            comments: [],
-            commentCount: 0,
-            shares: 0,
-            saved: false,
+            images: data.images,
+            video: data.video,
             tags: data.tags,
-            type: data.video ? 'video' : data.images.length > 0 ? 'image' : 'post',
-            isOwn: true,
-        };
-        setPosts(prev => [newPost, ...prev]);
+        });
+        if (res.success) {
+            await loadFeed();
+        } else {
+            setUploadError(res.error || 'Could not publish your post');
+        }
     };
 
     // Create/update own stories
@@ -270,9 +464,29 @@ export default function CommunityPage() {
         [communityProfiles, followedUsernames]
     );
 
+    // Follows live on the server, so they are the same on every device the
+    // user signs in on. localStorage is only a first-paint hint.
+    // The realtime channel keeps a second device in step: follow someone on
+    // your phone and the button flips on your laptop too.
     useEffect(() => {
-        const stored = getFollowedUsernames();
-        setFollowedUsernames(stored);
+        let cancelled = false;
+        const pull = () => {
+            fetchFollowing().then(res => {
+                if (!cancelled) setFollowedUsernames(new Set(res.data.map(normalizeUsername)));
+            });
+        };
+        pull();
+
+        const channel = supabase
+            .channel('community-follows')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'community_follows' }, () => {
+                pull();
+                // Refresh follower tallies in the people directory as well.
+                setPeopleRefreshKey(k => k + 1);
+            })
+            .subscribe();
+
+        return () => { cancelled = true; void supabase.removeChannel(channel); };
     }, []);
 
     useEffect(() => {
@@ -294,12 +508,19 @@ export default function CommunityPage() {
         return () => window.removeEventListener('popstate', handlePopState);
     }, []);
 
+    // Mirror the server's follow set into localStorage purely as a first-paint
+    // cache, and keep the directory's Follow buttons in step.
     useEffect(() => {
         saveFollowedUsernames(followedUsernames);
-        setUsers(prev => prev.map(userItem => ({
-            ...userItem,
-            following: followedUsernames.has(normalizeUsername(userItem.username)),
-        })));
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setUsers(prev => {
+            const next = prev.map(userItem => ({
+                ...userItem,
+                following: followedUsernames.has(normalizeUsername(userItem.username)),
+            }));
+            // Skip the update entirely when nothing actually changed.
+            return next.some((u, i) => u.following !== prev[i].following) ? next : prev;
+        });
     }, [followedUsernames]);
 
     const handleOpenUserProfile = (username: string) => {
@@ -312,18 +533,34 @@ export default function CommunityPage() {
         router.push(`/home/community/user/${encodeURIComponent(normalized)}`);
     };
 
-    // Follow/unfollow user
+    // Follow/unfollow — written to the server, then reconciled with its answer.
     const handleFollow = (username: string) => {
         const normalized = normalizeUsername(username);
 
         setFollowedUsernames(prev => {
             const next = new Set(prev);
-            if (next.has(normalized)) {
-                next.delete(normalized);
-            } else {
-                next.add(normalized);
-            }
+            if (next.has(normalized)) next.delete(normalized);
+            else next.add(normalized);
             return next;
+        });
+
+        void toggleFollowAction(username).then(res => {
+            if (!res.success) {
+                // Undo the optimistic flip — the write did not land.
+                setFollowedUsernames(prev => {
+                    const next = new Set(prev);
+                    if (next.has(normalized)) next.delete(normalized);
+                    else next.add(normalized);
+                    return next;
+                });
+                return;
+            }
+            setFollowedUsernames(prev => {
+                const next = new Set(prev);
+                if (res.following) next.add(normalized);
+                else next.delete(normalized);
+                return next;
+            });
         });
     };
 
@@ -333,8 +570,12 @@ export default function CommunityPage() {
         if (post) setEditingPost(post);
     };
 
-    // Save edited post
+    // Save edited post. Only the text is persisted — the server rejects edits
+    // to posts the caller does not own.
     const handleEditSave = (postId: string, data: { content: string; images: string[]; video: string | null; tags: string[] }) => {
+        void updatePostAction(postId, data.content).then(res => {
+            if (res.success) void loadFeed();
+        });
         setPosts(prev => prev.map(p =>
             p.id === postId
                 ? {
@@ -351,6 +592,9 @@ export default function CommunityPage() {
 
     // Delete post
     const handleDelete = (postId: string) => {
+        void deletePostAction(postId).then(res => {
+            if (!res.success) void loadFeed(); // it was not ours to delete
+        });
         setPosts(prev => prev.filter(p => p.id !== postId));
     };
 
@@ -669,26 +913,21 @@ export default function CommunityPage() {
                                     accept="image/*"
                                     multiple
                                     className="hidden"
-                                    onChange={(e) => {
+                                    onChange={async (e) => {
                                         const files = e.target.files;
                                         if (!files) return;
                                         setUploadError(null);
-                                        Array.from(files).forEach(file => {
-                                            if (file.size > 10 * 1024 * 1024) {
-                                                setUploadError('Image must be under 10MB');
-                                                return;
-                                            }
-                                            if (!file.type.startsWith('image/')) {
-                                                setUploadError('Only image files are allowed');
-                                                return;
-                                            }
-                                            const reader = new FileReader();
-                                            reader.onload = (ev) => {
-                                                if (ev.target?.result) setInlineImages(prev => [...prev, ev.target!.result as string]);
-                                            };
-                                            reader.onerror = () => setUploadError('Failed to read image. Please try again.');
-                                            reader.readAsDataURL(file);
-                                        });
+                                        // Upload straight away so the composer holds real public URLs.
+                                        // Data URLs could never be shared with other users.
+                                        setInlineUploading(true);
+                                        for (const file of Array.from(files)) {
+                                            if (file.size > 5 * 1024 * 1024) { setUploadError('Image must be under 5MB'); continue; }
+                                            if (!file.type.startsWith('image/')) { setUploadError('Only image files are allowed'); continue; }
+                                            const url = await uploadCommunityImage(file);
+                                            if (url) setInlineImages(prev => [...prev, url]);
+                                            else setUploadError('Upload failed. Please try again.');
+                                        }
+                                        setInlineUploading(false);
                                         e.target.value = '';
                                     }}
                                 />
@@ -756,38 +995,25 @@ export default function CommunityPage() {
                                     </button>
                                     {(inlineText.trim() || inlineImages.length > 0 || inlineVideo) && (
                                         <button
-                                            onClick={() => {
+                                            disabled={inlineUploading || inlinePosting}
+                                            onClick={async () => {
                                                 if (!inlineText.trim() && inlineImages.length === 0 && !inlineVideo) return;
                                                 const tags = inlineText.match(/#\w+/g)?.map(t => t.slice(1)) || [];
-                                                const newPost: Post = {
-                                                    id: `p${Date.now()}`,
-                                                    author: user?.displayName || 'You',
-                                                    username: `@${(user?.displayName || 'user').toLowerCase().replace(/\s+/g, '')}`,
-                                                    avatar: user?.photoURL || '',
-                                                    verified: false,
-                                                    location: '',
-                                                    time: 'Just now',
+                                                setInlinePosting(true);
+                                                await handleCreatePost({
                                                     content: inlineText,
-                                                    images: inlineImages.length > 0 ? inlineImages : undefined,
-                                                    video: inlineVideo || undefined,
-                                                    reactions: { like: 0, love: 0, celebrate: 0, insightful: 0, funny: 0, growth: 0 },
-                                                    totalReactions: 0,
-                                                    comments: [],
-                                                    commentCount: 0,
-                                                    shares: 0,
-                                                    saved: false,
+                                                    images: inlineImages,
+                                                    video: inlineVideo,
                                                     tags,
-                                                    type: inlineVideo ? 'video' : inlineImages.length > 0 ? 'image' : 'post',
-                                                    isOwn: true,
-                                                };
-                                                setPosts(prev => [newPost, ...prev]);
+                                                });
+                                                setInlinePosting(false);
                                                 setInlineText('');
                                                 setInlineImages([]);
                                                 setInlineVideo(null);
                                             }}
-                                            className="px-5 py-2 rounded-xl bg-[#22c33d] text-white text-sm font-semibold hover:bg-[#1ba332] transition-colors"
+                                            className="px-5 py-2 rounded-xl bg-[#22c33d] text-white text-sm font-semibold hover:bg-[#1ba332] transition-colors disabled:opacity-50"
                                         >
-                                            Post
+                                            {inlineUploading ? 'Uploading…' : inlinePosting ? 'Posting…' : 'Post'}
                                         </button>
                                     )}
                                 </div>
@@ -807,11 +1033,33 @@ export default function CommunityPage() {
                                 </div>
                             )}
 
+                            {/* A shared link pointed at a post that is gone */}
+                            {sharedPostMissing && (
+                                <div className="mb-4 flex items-center gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                                    <span className="material-symbols-outlined text-amber-600">link_off</span>
+                                    <p className="flex-1 text-sm text-amber-700 dark:text-amber-300">
+                                        That shared post is no longer available — it may have been deleted.
+                                    </p>
+                                    <button
+                                        onClick={() => { setSharedPostMissing(false); router.replace('/home/community'); }}
+                                        className="text-xs font-bold text-amber-700 hover:underline"
+                                    >
+                                        Dismiss
+                                    </button>
+                                </div>
+                            )}
+
                             {/* Posts Feed */}
                             <div className="space-y-5">
                                 {filteredPosts.length > 0 ? filteredPosts.map((post) => (
-                                    <PostCard
+                                    <div
                                         key={post.id}
+                                        id={`post-${post.id}`}
+                                        className={`scroll-mt-24 rounded-2xl transition-all duration-500 ${highlightedPostId === post.id
+                                            ? 'ring-2 ring-[#22c33d] ring-offset-2 ring-offset-[#f4f6f0] dark:ring-offset-[#0d110d]'
+                                            : ''}`}
+                                    >
+                                    <PostCard
                                         post={post}
                                         onReact={handleReact}
                                         onComment={handleComment}
@@ -827,6 +1075,7 @@ export default function CommunityPage() {
                                         userAvatar={user?.photoURL}
                                         requireAuth={requireAuth}
                                     />
+                                    </div>
                                 )) : (
                                     <div className="text-center py-16 bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800">
                                         <span className="material-symbols-outlined text-5xl text-gray-300 mb-3">search_off</span>
@@ -847,13 +1096,29 @@ export default function CommunityPage() {
                                 )}
                             </div>
 
-                            {/* Load More */}
-                            {filteredPosts.length > 0 && (
+                            {/* Load More / end of feed.
+                                Hidden while a tag or tab filter is narrowing the list, since
+                                filtering happens client-side over what is loaded — paging in
+                                that state would be misleading. */}
+                            {posts.length > 0 && !activeTag && feedTab === 'forYou' && (
                                 <div className="text-center mt-8 mb-4">
-                                    <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white dark:bg-[#1a231a] border border-gray-100 dark:border-gray-800 text-sm text-gray-400 font-medium">
-                                        <span className="material-symbols-outlined text-[#22c33d]">check_circle</span>
-                                        You&apos;re all caught up! Check back later for new posts.
-                                    </div>
+                                    {hasMorePosts ? (
+                                        <button
+                                            onClick={() => { void loadMorePosts(); }}
+                                            disabled={loadingMore}
+                                            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white dark:bg-[#1a231a] border border-gray-200 dark:border-gray-700 text-sm font-bold text-[#22c33d] hover:bg-[#22c33d]/5 hover:border-[#22c33d] disabled:opacity-50 transition-colors"
+                                        >
+                                            <span className={`material-symbols-outlined ${loadingMore ? 'animate-spin' : ''}`}>
+                                                {loadingMore ? 'progress_activity' : 'expand_more'}
+                                            </span>
+                                            {loadingMore ? 'Loading…' : 'Load more posts'}
+                                        </button>
+                                    ) : (
+                                        <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white dark:bg-[#1a231a] border border-gray-100 dark:border-gray-800 text-sm text-gray-400 font-medium">
+                                            <span className="material-symbols-outlined text-[#22c33d]">check_circle</span>
+                                            You&apos;re all caught up! Check back later for new posts.
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -876,7 +1141,13 @@ export default function CommunityPage() {
                                 />
 
                                 {/* Suggested Users */}
-                                <SuggestedUsers users={users} onFollow={handleFollow} />
+                                <SuggestedUsers
+                                    users={users}
+                                    onFollow={handleFollow}
+                                    onOpenProfile={handleOpenUserProfile}
+                                    query={peopleQuery}
+                                    onQueryChange={setPeopleQuery}
+                                />
 
                                 {/* News & Events */}
                                 <NewsEvents events={sampleNewsEvents} />
