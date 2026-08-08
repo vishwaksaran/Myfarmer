@@ -26,7 +26,7 @@ export default function FloatingActionButtons() {
 
     return (
         <>
-            <div className="fixed z-50 flex flex-col items-end gap-4 bottom-24 md:bottom-6 right-4 lg:bottom-10 lg:right-10">
+            <div data-floating-actions className="fixed z-50 flex flex-col items-end gap-4 bottom-24 md:bottom-6 right-4 lg:bottom-10 lg:right-10">
                 {/* Crop Assistant Button — Only on crops pages */}
                 {showCropAssistant && (
                     <button

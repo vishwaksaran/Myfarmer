@@ -461,3 +461,28 @@ select.skeuo-inset option:checked {
     'GRAD' 0,
     'opsz' 24
 }
+
+/* ── Edge-to-edge map mode (Land Area tool) ───────────────────────────────
+   Pages under /home/toolbox render inside <main class="relative z-10">, which
+   creates a stacking context. Anything inside it — including a fixed, z-[60]
+   map — is capped at z-10 in the root context, so the sticky header, the
+   footer, the bottom nav and the floating action buttons all paint on top of
+   it. Hiding that chrome outright is the only reliable fix, and it matches how
+   a full-screen map app behaves anyway. */
+body.map-fullscreen header,
+body.map-fullscreen footer,
+body.map-fullscreen [data-bottom-nav],
+body.map-fullscreen [data-floating-actions] {
+    display: none !important;
+}
+
+/* Leaflet's own zoom buttons would sit under our top card and duplicate the
+   zoom rail, so hide them while the custom chrome is up. */
+body.map-fullscreen .leaflet-control-zoom {
+    display: none !important;
+}
+
+/* The layout reserves space for the bottom nav; reclaim it while full screen. */
+body.map-fullscreen .pb-20 {
+    padding-bottom: 0 !important;
+}

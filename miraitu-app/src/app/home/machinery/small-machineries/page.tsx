@@ -8,11 +8,13 @@ import CompareModal from '@/components/v2/machinery/CompareModal';
 
 type TabType = 'new' | 'sell' | 'buy' | 'rent';
 
+// New and Rent are temporarily hidden here to match the machinery category modal.
+// Restore by uncommenting the two entries below.
 const tabs = [
-    { id: 'new' as TabType, title: 'New Machines', shortTitle: 'New', icon: 'add_circle', description: 'Browse brand new equipment', bgColor: 'bg-emerald-500' },
+    // { id: 'new' as TabType, title: 'New Machines', shortTitle: 'New', icon: 'add_circle', description: 'Browse brand new equipment', bgColor: 'bg-emerald-500' },
     { id: 'sell' as TabType, title: 'Sell Used', shortTitle: 'Sell', icon: 'sell', description: 'List your equipment for sale', bgColor: 'bg-orange-500' },
     { id: 'buy' as TabType, title: 'Buy Used', shortTitle: 'Buy', icon: 'shopping_cart', description: 'Find pre-owned equipment', bgColor: 'bg-blue-500' },
-    { id: 'rent' as TabType, title: 'Rent', shortTitle: 'Rent', icon: 'handshake', description: 'Hire compact equipment', bgColor: 'bg-teal-500' },
+    // { id: 'rent' as TabType, title: 'Rent', shortTitle: 'Rent', icon: 'handshake', description: 'Hire compact equipment', bgColor: 'bg-teal-500' },
 ];
 
 const newItems = [
@@ -29,7 +31,9 @@ const usedItems = [
 ];
 
 export default function SmallMachineriesPage() {
-    const [activeTab, setActiveTab] = useState<TabType>('new');
+    // 'new' is temporarily hidden, so default to the other browse view rather
+    // than dropping users straight into the Sell form.
+    const [activeTab, setActiveTab] = useState<TabType>('buy');
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
     const [selectedCondition, setSelectedCondition] = useState('All');
@@ -63,7 +67,7 @@ export default function SmallMachineriesPage() {
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+                <div className={`grid grid-cols-2 gap-3 mb-8 ${tabs.length > 2 ? 'sm:grid-cols-4' : ''}`}>
                     {tabs.map((tab) => (
                         <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                             className={`relative flex items-center gap-3 p-4 rounded-2xl border-2 transition-all duration-300 ${activeTab === tab.id ? 'border-primary bg-primary/5 shadow-lg' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a231a] hover:border-primary/30'}`}>

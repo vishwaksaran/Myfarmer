@@ -9,12 +9,14 @@ import { CartProvider } from '@/context/CartContext';
 
 // Below-the-fold sections loaded lazily — reduces initial compile & JS bundle
 const FarmerServicesGrid = dynamic(() => import('@/components/v2/FarmerServicesGrid'));
-const FinanceBanner = dynamic(() => import('@/components/v2/FinanceBanner'));
 const FPOBanner = dynamic(() => import('@/components/v2/FPOBanner'));
 const CTABanner = dynamic(() => import('@/components/v2/CTABanner'));
-const ShopSection = dynamic(() => import('@/components/v2/ShopSection'));
+// Temporarily hidden from the home page — the components and their routes are
+// untouched. Restore by uncommenting the import and the tag in the layout below.
+// const FinanceBanner = dynamic(() => import('@/components/v2/FinanceBanner'));
+// const ShopSection = dynamic(() => import('@/components/v2/ShopSection'));
 const TestimonialsSection = dynamic(() => import('@/components/v2/TestimonialsSection'));
-const FeaturedVideosSection = dynamic(() => import('@/components/v2/FeaturedVideosSection'));
+// const FeaturedVideosSection = dynamic(() => import('@/components/v2/FeaturedVideosSection'));
 const Footer = dynamic(() => import('@/components/v2/Footer'));
 const FloatingActionButtons = dynamic(() => import('@/components/FloatingActionButtons'));
 const BottomNav = dynamic(() => import('@/components/v2/BottomNav'));
@@ -41,11 +43,11 @@ export default function HomePage() {
           <AgriCalculators />
           <FarmerServicesGrid />
           <CTABanner />
-          <FinanceBanner />
+          {/* <FinanceBanner /> — temporarily hidden */}
           <FPOBanner />
-          <ShopSection />
+          {/* <ShopSection /> — temporarily hidden */}
           <TestimonialsSection />
-          <FeaturedVideosSection />
+          {/* <FeaturedVideosSection /> — "Watch Farmer Stories" temporarily hidden */}
           <Footer />
         </main>
       </div>

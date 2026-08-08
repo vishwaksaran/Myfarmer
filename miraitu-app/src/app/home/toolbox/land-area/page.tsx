@@ -69,6 +69,9 @@ export default function LandAreaPage() {
     const polygonRef = useRef<any>(null);
     const [mapPoints, setMapPoints] = useState<{ lat: number; lng: number }[]>([]);
     const [mapAreaSqM, setMapAreaSqM] = useState(0);
+    // Google-Maps-style edge-to-edge map. Auto-on for phones, toggleable elsewhere.
+    const [mapFullscreen, setMapFullscreen] = useState(false);
+    const [showMapOptions, setShowMapOptions] = useState(false);
 
     // Location search state
     const [searchQuery, setSearchQuery] = useState('');
@@ -412,6 +415,53 @@ export default function LandAreaPage() {
         }
     }, [mapPoints, calculateGeoArea]);
 
+    // Phones open the map edge-to-edge, like Google Maps.
+    useEffect(() => {
+        if (locationStatus !== 'granted') return;
+        if (typeof window !== 'undefined' && window.innerWidth < 768) setMapFullscreen(true);
+    }, [locationStatus]);
+
+    // Leaflet caches the container size — tell it to re-measure after the resize.
+    useEffect(() => {
+        if (!mapRef.current) return;
+        const timer = setTimeout(() => mapRef.current?.invalidateSize(), 250);
+        return () => clearTimeout(timer);
+    }, [mapFullscreen]);
+
+    // While the map is edge-to-edge: lock page scroll and hide the app chrome.
+    // The chrome has to be hidden rather than out-z-indexed — the toolbox layout
+    // wraps pages in `<main class="relative z-10">`, which caps every descendant
+    // at z-10 in the root stacking context, so the header/footer/bottom-nav/FAB
+    // would paint over the map whatever z-index it is given.
+    useEffect(() => {
+        if (!mapFullscreen) return;
+        const previous = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        document.body.classList.add('map-fullscreen');
+        return () => {
+            document.body.style.overflow = previous;
+            document.body.classList.remove('map-fullscreen');
+        };
+    }, [mapFullscreen]);
+
+    // Perimeter of the marked field, in metres (closed loop once there are 3+ points).
+    const perimeterMeters = (() => {
+        if (mapPoints.length < 2) return 0;
+        const R = 6371000;
+        const rad = (d: number) => (d * Math.PI) / 180;
+        const segment = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) => {
+            const dLat = rad(b.lat - a.lat);
+            const dLng = rad(b.lng - a.lng);
+            const h = Math.sin(dLat / 2) ** 2 +
+                Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+            return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+        };
+        let total = 0;
+        for (let i = 0; i < mapPoints.length - 1; i++) total += segment(mapPoints[i], mapPoints[i + 1]);
+        if (mapPoints.length >= 3) total += segment(mapPoints[mapPoints.length - 1], mapPoints[0]);
+        return total;
+    })();
+
     const clearMapPoints = () => {
         // Remove markers
         markersRef.current.forEach(m => {
@@ -433,6 +483,54 @@ export default function LandAreaPage() {
         if (last) last.remove();
         setMapPoints(prev => prev.slice(0, -1));
     };
+
+    // Place search — the GPS-free way into the map. Shown on the idle screen and,
+    // importantly, on every failure screen so a denied permission is not a dead end.
+    // Only one of those branches renders at a time, so sharing `searchRef` is safe.
+    const locationSearchFallback = (
+        <div className="relative max-w-md mx-auto" ref={searchRef}>
+            <div className="flex items-center gap-2 skeuo-inset rounded-xl px-4 py-3">
+                <span className="material-symbols-outlined text-gray-400 text-lg">search</span>
+                <input
+                    type="text"
+                    placeholder={tp('Type village, city or area name...')}
+                    value={searchQuery}
+                    onChange={e => handleSearchInput(e.target.value)}
+                    onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
+                    className="flex-1 bg-transparent text-sm font-semibold text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none"
+                />
+                {isSearching && (
+                    <div className="h-4 w-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
+                )}
+            </div>
+            {showSearchResults && searchResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1a231a] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
+                    {searchResults.map((r, i) => (
+                        <button
+                            key={i}
+                            onClick={() => {
+                                navigateToLocation(parseFloat(r.lat), parseFloat(r.lon), r.display_name.split(',').slice(0, 3).join(','));
+                                setSearchQuery(r.display_name.split(',').slice(0, 2).join(','));
+                                setShowSearchResults(false);
+                            }}
+                            className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex items-start gap-2 border-b border-gray-100 dark:border-gray-800 last:border-0"
+                        >
+                            <span className="material-symbols-outlined text-blue-500 text-base mt-0.5 shrink-0">location_on</span>
+                            <span className="line-clamp-2">{r.display_name}</span>
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+
+    const searchDivider = (
+        <div className="flex items-center gap-3 my-5 max-w-md mx-auto">
+            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+            <span className="text-xs font-bold text-gray-400 uppercase">{tp('or search')}</span>
+            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+        </div>
+    );
 
     return (
         <div className="agri-grid-bg min-h-screen">
@@ -588,16 +686,23 @@ export default function LandAreaPage() {
                                         <span className="material-symbols-outlined text-blue-600">satellite_alt</span>
                                         {tp('Satellite Map')}
                                     </h3>
-                                    {locationStatus === 'granted' && mapPoints.length > 0 && (
-                                        <div className="flex items-center gap-2">
-                                            <button onClick={undoLastPoint} className="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1">
-                                                <span className="material-symbols-outlined text-sm">undo</span> {tp('Undo')}
+                                    <div className="flex items-center gap-2">
+                                        {locationStatus === 'granted' && mapPoints.length > 0 && (
+                                            <>
+                                                <button onClick={undoLastPoint} className="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1">
+                                                    <span className="material-symbols-outlined text-sm">undo</span> {tp('Undo')}
+                                                </button>
+                                                <button onClick={clearMapPoints} className="text-xs font-bold text-red-500 hover:text-red-600 flex items-center gap-1">
+                                                    <span className="material-symbols-outlined text-sm">delete</span> {tp('Clear')}
+                                                </button>
+                                            </>
+                                        )}
+                                        {locationStatus === 'granted' && !mapFullscreen && (
+                                            <button onClick={() => setMapFullscreen(true)} className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                                                <span className="material-symbols-outlined text-sm">open_in_full</span> {tp('Full screen')}
                                             </button>
-                                            <button onClick={clearMapPoints} className="text-xs font-bold text-red-500 hover:text-red-600 flex items-center gap-1">
-                                                <span className="material-symbols-outlined text-sm">delete</span> {tp('Clear')}
-                                            </button>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
 
                                 {locationStatus === 'idle' && (
@@ -619,47 +724,8 @@ export default function LandAreaPage() {
                                             </span>
                                         </button>
 
-                                        <div className="flex items-center gap-3 my-5">
-                                            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-                                            <span className="text-xs font-bold text-gray-400 uppercase">{tp('or search')}</span>
-                                            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-                                        </div>
-
-                                        {/* Search location input (available even without GPS) */}
-                                        <div className="relative max-w-md mx-auto" ref={searchRef}>
-                                            <div className="flex items-center gap-2 skeuo-inset rounded-xl px-4 py-3">
-                                                <span className="material-symbols-outlined text-gray-400 text-lg">search</span>
-                                                <input
-                                                    type="text"
-                                                    placeholder={tp('Type village, city or area name...')}
-                                                    value={searchQuery}
-                                                    onChange={e => handleSearchInput(e.target.value)}
-                                                    onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
-                                                    className="flex-1 bg-transparent text-sm font-semibold text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none"
-                                                />
-                                                {isSearching && (
-                                                    <div className="h-4 w-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
-                                                )}
-                                            </div>
-                                            {showSearchResults && searchResults.length > 0 && (
-                                                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1a231a] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
-                                                    {searchResults.map((r, i) => (
-                                                        <button
-                                                            key={i}
-                                                            onClick={() => {
-                                                                navigateToLocation(parseFloat(r.lat), parseFloat(r.lon), r.display_name.split(',').slice(0, 3).join(','));
-                                                                setSearchQuery(r.display_name.split(',').slice(0, 2).join(','));
-                                                                setShowSearchResults(false);
-                                                            }}
-                                                            className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex items-start gap-2 border-b border-gray-100 dark:border-gray-800 last:border-0"
-                                                        >
-                                                            <span className="material-symbols-outlined text-blue-500 text-base mt-0.5 shrink-0">location_on</span>
-                                                            <span className="line-clamp-2">{r.display_name}</span>
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
+                                        {searchDivider}
+                                        {locationSearchFallback}
                                     </div>
                                 )}
 
@@ -689,6 +755,12 @@ export default function LandAreaPage() {
                                                 <li>{tp('Reload this page')}</li>
                                             </ol>
                                         </div>
+
+                                        {searchDivider}
+                                        <p className="text-xs text-gray-500 mb-3 max-w-sm mx-auto">
+                                            {tp('No GPS needed — type a village, city or area name and measure your field on the map.')}
+                                        </p>
+                                        {locationSearchFallback}
                                     </div>
                                 )}
 
@@ -711,6 +783,12 @@ export default function LandAreaPage() {
                                         >
                                             {tp('Try Again')}
                                         </button>
+
+                                        {searchDivider}
+                                        <p className="text-xs text-gray-500 mb-3 max-w-sm mx-auto">
+                                            {tp('No GPS needed — type a village, city or area name and measure your field on the map.')}
+                                        </p>
+                                        {locationSearchFallback}
                                     </div>
                                 )}
 
@@ -865,9 +943,167 @@ export default function LandAreaPage() {
                                         )}
                                         <div
                                             ref={mapContainerRef}
-                                            className="w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700"
-                                            style={{ height: '400px' }}
+                                            className={mapFullscreen
+                                                ? 'fixed inset-0 z-[60] w-full h-[100dvh]'
+                                                : 'w-full h-[400px] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700'}
                                         />
+
+                                        {/* ─── Edge-to-edge map chrome (Google-Maps style) ─── */}
+                                        {mapFullscreen && (
+                                            <>
+                                                {/* Top hint card + Options */}
+                                                <div className="fixed top-3 left-3 right-3 z-[70] flex items-start gap-2">
+                                                    <div className="flex-1 rounded-2xl bg-white/95 dark:bg-[#1a231a]/95 backdrop-blur shadow-lg px-3 py-2.5">
+                                                        <p className="text-center text-[13px] font-semibold text-gray-800 dark:text-gray-100 leading-snug">
+                                                            📍 {tp('Tap on the map to start marking your field.')}
+                                                        </p>
+                                                        {mapPoints.length > 0 && mapPoints.length < 3 && (
+                                                            <p className="mt-1 text-center text-[11px] font-bold text-amber-600">
+                                                                {3 - mapPoints.length} {tp('more points needed to calculate area')}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <button
+                                                        onClick={() => setShowMapOptions(v => !v)}
+                                                        className="shrink-0 flex items-center gap-1.5 rounded-2xl bg-primary text-white px-3 py-2.5 text-xs font-bold shadow-lg"
+                                                    >
+                                                        <span className="material-symbols-outlined text-base">tune</span>
+                                                        {tp('Options')}
+                                                    </button>
+                                                </div>
+
+                                                {/* Options sheet */}
+                                                {showMapOptions && (
+                                                    <div className="fixed top-20 left-3 right-3 z-[70] rounded-2xl bg-white dark:bg-[#1a231a] shadow-2xl p-3 space-y-3 max-h-[55vh] overflow-y-auto">
+                                                        <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl px-3 py-2.5 border border-gray-200 dark:border-gray-700">
+                                                            <span className="material-symbols-outlined text-gray-400 text-base">search</span>
+                                                            <input
+                                                                type="text"
+                                                                placeholder={tp('Search any location to navigate...')}
+                                                                value={searchQuery}
+                                                                onChange={e => handleSearchInput(e.target.value)}
+                                                                className="flex-1 bg-transparent text-xs font-semibold text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none"
+                                                            />
+                                                            {isSearching && <div className="h-3.5 w-3.5 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />}
+                                                        </div>
+                                                        {searchResults.length > 0 && (
+                                                            <div className="rounded-xl border border-gray-200 dark:border-gray-700 max-h-40 overflow-y-auto">
+                                                                {searchResults.map((r, i) => (
+                                                                    <button
+                                                                        key={i}
+                                                                        onClick={() => {
+                                                                            navigateToLocation(parseFloat(r.lat), parseFloat(r.lon), r.display_name.split(',').slice(0, 3).join(','));
+                                                                            setSearchQuery(r.display_name.split(',').slice(0, 2).join(','));
+                                                                            setShowSearchResults(false);
+                                                                            setShowMapOptions(false);
+                                                                        }}
+                                                                        className="w-full text-left px-3 py-2.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 border-b border-gray-100 dark:border-gray-800 last:border-0"
+                                                                    >
+                                                                        {r.display_name}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        <div>
+                                                            <label className="text-[10px] font-bold text-gray-500 uppercase mb-1.5 block">{tp('Show area in')}</label>
+                                                            <select
+                                                                value={mapDisplayUnit}
+                                                                onChange={e => setMapDisplayUnit(e.target.value as UnitSystem)}
+                                                                className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-xs font-bold"
+                                                            >
+                                                                {(Object.keys(unitLabels) as UnitSystem[]).map(u => (
+                                                                    <option key={u} value={u}>{tp(unitLabels[u])}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] font-bold text-gray-500 uppercase mb-1.5 block">{tp('Color')}</label>
+                                                            <div className="flex gap-2">
+                                                                {PIN_COLORS.map(c => (
+                                                                    <button
+                                                                        key={c.value}
+                                                                        onClick={() => setPinColor(c.value)}
+                                                                        className={`w-7 h-7 rounded-full border-2 transition-all ${pinColor === c.value ? 'border-gray-900 dark:border-white scale-110' : 'border-transparent'}`}
+                                                                        style={{ backgroundColor: c.value }}
+                                                                        title={c.name}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Zoom / locate rail */}
+                                                <div className="fixed left-3 top-1/2 -translate-y-1/2 z-[70] flex flex-col gap-2">
+                                                    <button onClick={() => mapRef.current?.zoomIn()} aria-label="Zoom in" className="size-10 rounded-xl bg-white dark:bg-[#1a231a] shadow-lg flex items-center justify-center">
+                                                        <span className="material-symbols-outlined text-gray-700 dark:text-gray-200">zoom_in</span>
+                                                    </button>
+                                                    <button onClick={() => mapRef.current?.zoomOut()} aria-label="Zoom out" className="size-10 rounded-xl bg-white dark:bg-[#1a231a] shadow-lg flex items-center justify-center">
+                                                        <span className="material-symbols-outlined text-gray-700 dark:text-gray-200">zoom_out</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            if (navigator.geolocation) {
+                                                                navigator.geolocation.getCurrentPosition(pos => {
+                                                                    navigateToLocation(pos.coords.latitude, pos.coords.longitude, locationName);
+                                                                });
+                                                            }
+                                                        }}
+                                                        aria-label="My location"
+                                                        className="size-10 rounded-xl bg-white dark:bg-[#1a231a] shadow-lg flex items-center justify-center"
+                                                    >
+                                                        <span className="material-symbols-outlined text-blue-600">my_location</span>
+                                                    </button>
+                                                </div>
+
+                                                {/* Exit */}
+                                                <button
+                                                    onClick={() => { setMapFullscreen(false); setShowMapOptions(false); }}
+                                                    aria-label={tp('Exit full screen')}
+                                                    className="fixed right-3 top-20 z-[70] size-10 rounded-xl bg-white dark:bg-[#1a231a] shadow-lg flex items-center justify-center"
+                                                >
+                                                    <span className="material-symbols-outlined text-gray-700 dark:text-gray-200">close_fullscreen</span>
+                                                </button>
+
+                                                {/* Bottom readout sheet */}
+                                                <div className="fixed bottom-0 left-0 right-0 z-[70] rounded-t-3xl bg-white dark:bg-[#1a231a] shadow-[0_-4px_20px_rgba(0,0,0,0.15)] px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                                                    <div className="grid grid-cols-2 divide-x divide-gray-200 dark:divide-gray-700 mb-3">
+                                                        <div className="text-center">
+                                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{tp('Area')}</p>
+                                                            <p className="text-xl font-black text-primary leading-tight">
+                                                                {fmt(mapAreaSqM / toSqM[mapDisplayUnit])}
+                                                                <span className="ml-1 text-xs font-bold text-gray-500">{tp(unitLabels[mapDisplayUnit])}</span>
+                                                            </p>
+                                                        </div>
+                                                        <div className="text-center">
+                                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{tp('Distance')}</p>
+                                                            <p className="text-xl font-black text-primary leading-tight">
+                                                                {fmt(perimeterMeters)}
+                                                                <span className="ml-1 text-xs font-bold text-gray-500">{tp('meters')}</span>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <button
+                                                            onClick={undoLastPoint}
+                                                            disabled={mapPoints.length === 0}
+                                                            className="flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 dark:border-gray-700 py-2.5 text-xs font-bold text-gray-700 dark:text-gray-200 disabled:opacity-40"
+                                                        >
+                                                            <span className="material-symbols-outlined text-base">undo</span>
+                                                            {tp('Undo')}
+                                                        </button>
+                                                        <button
+                                                            onClick={clearMapPoints}
+                                                            disabled={mapPoints.length === 0}
+                                                            className="flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 dark:border-gray-700 py-2.5 text-xs font-bold text-red-500 disabled:opacity-40"
+                                                        >
+                                                            <span className="material-symbols-outlined text-base">delete</span>
+                                                            {tp('Clear')}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
 
                                         {mapPoints.length >= 3 && (
                                             <div className="mt-4 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">

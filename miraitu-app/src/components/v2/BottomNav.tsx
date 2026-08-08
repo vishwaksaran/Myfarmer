@@ -83,7 +83,9 @@ export default function BottomNav() {
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50" data-bottom-nav data-no-auth>
             <div className="relative mx-2 mb-1 rounded-2xl bg-white dark:bg-[#1e2a1c] border border-gray-200 dark:border-white/10 shadow-[0_-2px_12px_rgba(0,0,0,0.1)]">
-                <div className="flex items-end justify-around px-1 pt-1.5 pb-[max(0.25rem,env(safe-area-inset-bottom))]">
+                {/* Every slot is flex-1 + min-w-0 so five items divide the width evenly
+                    and labels truncate instead of overflowing on 320px screens. */}
+                <div className="flex items-end justify-between px-1 pt-1.5 pb-[max(0.25rem,env(safe-area-inset-bottom))]">
                     {navItems.map((item) => {
                         const active = isActive(item);
 
@@ -92,13 +94,13 @@ export default function BottomNav() {
                                 <Link
                                     key={item.label}
                                     href={item.path}
-                                    className="relative -mt-4 flex flex-col items-center group"
+                                    className="flex-1 min-w-0 relative -mt-4 flex flex-col items-center group"
                                 >
                                     {/* Main FAB button */}
-                                    <div className="relative flex items-center justify-center size-12 rounded-full bg-gradient-to-b from-[#34a832] to-[#2c5926] shadow-[0_3px_0_#1b3817,_0_6px_12px_rgba(44,89,38,0.35)] group-active:shadow-[0_1px_0_#1b3817,_0_3px_6px_rgba(44,89,38,0.25)] group-active:translate-y-[2px] transition-all">
+                                    <div className="relative flex items-center justify-center size-12 shrink-0 rounded-full bg-gradient-to-b from-[#34a832] to-[#2c5926] shadow-[0_3px_0_#1b3817,_0_6px_12px_rgba(44,89,38,0.35)] group-active:shadow-[0_1px_0_#1b3817,_0_3px_6px_rgba(44,89,38,0.25)] group-active:translate-y-[2px] transition-all">
                                         <span className="material-symbols-outlined text-white text-xl font-bold">add</span>
                                     </div>
-                                    <span className="text-[10px] font-bold mt-1 text-[#2c5926] dark:text-[#6abf62]">{t(item.tKey)}</span>
+                                    <span className="whitespace-nowrap text-[9px] min-[360px]:text-[10px] font-bold mt-1 text-[#2c5926] dark:text-[#6abf62]">{t(item.tKey)}</span>
                                 </Link>
                             );
                         }
@@ -108,9 +110,9 @@ export default function BottomNav() {
                                 key={item.label}
                                 href={item.path}
                                 onClick={() => { if (item.tab) setProviderTab(item.tab); }}
-                                className="flex flex-col items-center gap-0.5 py-0.5 px-3 group"
+                                className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-0.5 px-0.5 group"
                             >
-                                <div className={`flex items-center justify-center size-7 rounded-lg transition-all duration-200 ${active
+                                <div className={`flex items-center justify-center size-7 shrink-0 rounded-lg transition-all duration-200 ${active
                                     ? 'bg-primary/10'
                                     : ''
                                     }`}>
@@ -124,7 +126,7 @@ export default function BottomNav() {
                                         {item.icon}
                                     </span>
                                 </div>
-                                <span className={`text-[11px] transition-colors ${active
+                                <span className={`whitespace-nowrap text-[9px] min-[360px]:text-[10px] min-[400px]:text-[11px] leading-tight transition-colors ${active
                                     ? 'text-[#2c5926] dark:text-[#6abf62] font-bold'
                                     : 'text-gray-600 dark:text-gray-400 font-semibold'
                                     }`}>

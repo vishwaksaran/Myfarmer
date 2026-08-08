@@ -5,6 +5,7 @@ import Link from 'next/link';
 import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { MACHINERY_NEW_ENABLED, MACHINERY_RENT_ENABLED } from '@/lib/feature-flags';
 
 // Category data with real images
 const categories = [
@@ -293,32 +294,10 @@ export default function MachineryPage() {
                         {/* Category Cards */}
                         <div className="pb-2">
                             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+                                {/* Every category opens the action modal. Tractors used to link
+                                    straight to /home/machinery/tractors — that landing page is
+                                    temporarily bypassed, so it behaves like JCBs now. */}
                                 {categories.map((category) => {
-                                    // Tractors navigate directly to their page
-                                    if (category.id === 'tractors') {
-                                        return (
-                                            <Link
-                                                key={category.id}
-                                                href={category.path}
-                                                className="group relative aspect-[4/3] md:aspect-[4/5] w-full overflow-hidden rounded-2xl border border-black/15 bg-gray-200 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
-                                            >
-                                                <img
-                                                    src={category.image}
-                                                    alt={category.name}
-                                                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent" />
-                                                <div className="absolute inset-x-0 bottom-1 md:bottom-1.5 z-10 p-3 md:p-4">
-                                                    <h3 className="text-xl sm:text-2xl md:text-[1.75rem] font-black text-white leading-[1.08] tracking-tight drop-shadow pr-1 line-clamp-2">
-                                                        {catTitle[category.id] ?? category.cardTitle}
-                                                    </h3>
-                                                    <p className="text-xs md:text-sm text-white/90 leading-tight mt-1 break-words line-clamp-2">
-                                                        {catSubtitle[category.id] ?? `${category.count}+ units available`}
-                                                    </p>
-                                                </div>
-                                            </Link>
-                                        );
-                                    }
                                     return (
                                         <button
                                             key={category.id}
@@ -385,6 +364,7 @@ export default function MachineryPage() {
                                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">{t('machineryPage.whatToDo')}</p>
                                     <div className="space-y-2">
 
+                                        {MACHINERY_NEW_ENABLED && (
                                         <Link
                                             href={`${modalCategory.path}/new`}
                                             onClick={() => setModalCategory(null)}
@@ -399,6 +379,7 @@ export default function MachineryPage() {
                                             </div>
                                             <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-blue-500 group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
                                         </Link>
+                                        )}
 
                                         <Link
                                             href={`${modalCategory.path}/buy`}
@@ -430,6 +411,7 @@ export default function MachineryPage() {
                                             <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-orange-500 group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
                                         </Link>
 
+                                        {MACHINERY_RENT_ENABLED && (
                                         <Link
                                             href={`${modalCategory.path}/rent`}
                                             onClick={() => setModalCategory(null)}
@@ -444,6 +426,7 @@ export default function MachineryPage() {
                                             </div>
                                             <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-gray-500 group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
                                         </Link>
+                                        )}
 
                                     </div>
                                 </div>

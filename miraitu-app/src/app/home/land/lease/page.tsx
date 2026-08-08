@@ -32,6 +32,34 @@ async function uploadLeasePhoto(file: File): Promise<string | null> {
 
 type TabType = 'browse' | 'list';
 
+// Full class strings (not built at runtime) so Tailwind keeps them in the build.
+const SERVICE_TYPE_OPTIONS = [
+    {
+        key: 'lease' as const,
+        icon: 'handshake',
+        title: 'Long-term Lease',
+        subtitle: 'Fixed term, priced per year',
+        hint: 'price is per acre per year, and a lease duration is required.',
+        borderOn: 'border-teal-600',
+        bgOn: 'bg-teal-50 dark:bg-teal-900/20',
+        textOn: 'text-teal-700 dark:text-teal-400',
+        iconOn: 'bg-teal-600 text-white',
+        bannerBg: 'bg-teal-50 dark:bg-teal-900/20',
+    },
+    {
+        key: 'rent' as const,
+        icon: 'home',
+        title: 'Short-term Rent',
+        subtitle: 'Flexible, priced per month',
+        hint: 'price is per acre per month, and no duration is needed.',
+        borderOn: 'border-amber-500',
+        bgOn: 'bg-amber-50 dark:bg-amber-900/20',
+        textOn: 'text-amber-700 dark:text-amber-400',
+        iconOn: 'bg-amber-500 text-white',
+        bannerBg: 'bg-amber-50 dark:bg-amber-900/20',
+    },
+];
+
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop';
 
 /**
@@ -520,19 +548,57 @@ export default function LeaseLandPage() {
                             <h2 className="text-xl md:text-2xl font-bold text-primary text-center mb-2">List Your Land</h2>
                             <p className="text-sm md:text-base text-gray-500 text-center mb-4 md:mb-6">Connect with farmers looking for land</p>
 
-                            {/* Service type toggle */}
-                            <div className="flex rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 mb-6 md:mb-8">
-                                {(['lease', 'rent'] as const).map(type => (
-                                    <button
-                                        key={type}
-                                        type="button"
-                                        onClick={() => { setServiceType(type); setErrors({}); }}
-                                        className={`flex-1 py-2.5 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${serviceType === type ? (type === 'lease' ? 'bg-teal-600 text-white' : 'bg-amber-500 text-white') : 'bg-gray-50 dark:bg-gray-800 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
-                                    >
-                                        <span className="material-symbols-outlined text-lg">{type === 'lease' ? 'handshake' : 'home'}</span>
-                                        {type === 'lease' ? 'Long-term Lease' : 'Short-term Rent'}
-                                    </button>
-                                ))}
+                            {/* Service type — selectable cards. A plain segmented toggle made it
+                                hard to tell which side was active, so each option is now a card
+                                that visibly changes (ring, tint, check badge) plus a confirmation
+                                strip below restating the choice and what it changes. */}
+                            <div className="mb-6 md:mb-8">
+                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">What are you offering?</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label="Listing type">
+                                    {SERVICE_TYPE_OPTIONS.map(opt => {
+                                        const selected = serviceType === opt.key;
+                                        return (
+                                            <button
+                                                key={opt.key}
+                                                type="button"
+                                                role="radio"
+                                                aria-checked={selected}
+                                                onClick={() => { setServiceType(opt.key); setErrors({}); }}
+                                                className={`relative text-left rounded-2xl border-2 p-4 transition-all duration-200 ${selected
+                                                    ? `${opt.borderOn} ${opt.bgOn} shadow-md`
+                                                    : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm'}`}
+                                            >
+                                                {selected && (
+                                                    <span className={`absolute top-3 right-3 material-symbols-outlined text-xl ${opt.textOn}`} style={{ fontVariationSettings: "'FILL' 1" }}>
+                                                        check_circle
+                                                    </span>
+                                                )}
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`size-11 shrink-0 rounded-xl flex items-center justify-center transition-colors ${selected ? opt.iconOn : 'bg-gray-200 dark:bg-gray-700 text-gray-400'}`}>
+                                                        <span className="material-symbols-outlined text-xl">{opt.icon}</span>
+                                                    </div>
+                                                    <div className="min-w-0 pr-6">
+                                                        <p className={`font-bold text-sm ${selected ? opt.textOn : 'text-gray-700 dark:text-gray-300'}`}>{opt.title}</p>
+                                                        <p className="text-[11px] text-gray-500 leading-snug">{opt.subtitle}</p>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Live confirmation of the current choice */}
+                                {(() => {
+                                    const active = SERVICE_TYPE_OPTIONS.find(o => o.key === serviceType)!;
+                                    return (
+                                        <div key={active.key} className={`animate-fade-in mt-3 flex items-start gap-2 rounded-xl px-3 py-2.5 ${active.bannerBg}`}>
+                                            <span className={`material-symbols-outlined text-base shrink-0 ${active.textOn}`}>info</span>
+                                            <p className="text-xs text-gray-600 dark:text-gray-300 leading-snug">
+                                                Listing as <span className={`font-bold ${active.textOn}`}>{active.title}</span> — {active.hint}
+                                            </p>
+                                        </div>
+                                    );
+                                })()}
                             </div>
 
                             <div className="space-y-4 md:space-y-6">

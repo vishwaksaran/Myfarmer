@@ -12,9 +12,9 @@ import { useViewMode } from '@/hooks/useViewMode';
 import { useProviderTab } from '@/hooks/useProviderTab';
 import HeaderAuthSection from './HeaderAuthSection';
 
-// Header shows the cart. Set to false to swap it for a Community shortcut
-// (the Community link is also in the mobile bottom nav).
-const SHOW_CART = true;
+// Cart button is temporarily hidden from the header. Set back to true to
+// restore it — the cart itself and /home/shop/checkout still work.
+const SHOW_CART = false;
 
 // Provider workspace menu — shown in the hamburger for providers/dealers in provider view
 const PROVIDER_ROLES = ['service_provider', 'dealer'];
@@ -76,13 +76,15 @@ const searchableItems = [
     { name: 'Sell Crops', path: '/home/crops/sell', icon: 'sell', keywords: ['sell crops', 'sell harvest', 'list produce', 'sell grain'] },
 ];
 
+// Drives both the desktop nav bar and the mobile hamburger menu.
+// Finance and Shop are temporarily hidden — restore by uncommenting:
+//   { tKey: 'nav.finance', path: '/home/finance', icon: 'account_balance' },
+//   { tKey: 'nav.shop', path: '/home/shop', icon: 'shopping_bag' },
 const primaryNavItems = [
     { tKey: 'nav.about', path: '/home/about', icon: 'info' },
     { tKey: 'nav.machinery', path: '/home/machinery', icon: 'agriculture' },
     { tKey: 'nav.crops', path: '/home/crops', icon: 'grass' },
     { tKey: 'nav.livestock', path: '/home/livestock', icon: 'pets' },
-    { tKey: 'nav.finance', path: '/home/finance', icon: 'account_balance' },
-    { tKey: 'nav.shop', path: '/home/shop', icon: 'shopping_bag' },
 ];
 
 const moreNavItems = [
@@ -498,17 +500,6 @@ export default function Header() {
                                 </Link>
                             )}
 
-                            {/* Community shortcut — temporarily stands in for the cart button */}
-                            {!isProviderView && !SHOW_CART && (
-                                <Link
-                                    href="/home/community"
-                                    aria-label={t('nav.community')}
-                                    title={t('nav.community')}
-                                    className="relative flex items-center justify-center size-9 sm:size-10 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-black/5 dark:border-white/10 hover:bg-primary/5 hover:text-primary transition-colors skeuo-card shrink-0"
-                                >
-                                    <span className="material-symbols-outlined text-xl">groups</span>
-                                </Link>
-                            )}
                             {/* Provider view: replace avatar with a Switch-to-Farmer button */}
                             {isProviderView ? (
                                 <button

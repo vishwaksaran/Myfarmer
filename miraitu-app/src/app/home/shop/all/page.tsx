@@ -7,6 +7,7 @@ import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import MiraituLoader from '@/components/v2/MiraituLoader';
 import { useCart } from '@/context/CartContext';
+import { SHOP_CART_ENABLED } from '@/lib/feature-flags';
 import { useAuth } from '@/context/AuthContext';
 import { shopCategories } from '../data';
 import { categoryProducts, categoryMeta } from '../categoryData';
@@ -145,7 +146,7 @@ export default function AllProductsPage() {
                                         <span className="font-bold text-primary">{product.price}</span>
                                         <span className="text-xs text-gray-400 line-through">{product.originalPrice}</span>
                                     </div>
-                                    {(quantities[product.id] || 0) > 0 ? (
+                                    {SHOP_CART_ENABLED && ((quantities[product.id] || 0) > 0 ? (
                                         <div className="w-full mt-3 flex items-center justify-between rounded-lg bg-primary text-white overflow-hidden">
                                             <button onClick={() => removeItem(product.id)} className="px-4 py-2 hover:bg-primary-dark transition-colors font-bold text-lg">−</button>
                                             <span className="font-black text-sm">{quantities[product.id]}</span>
@@ -153,7 +154,7 @@ export default function AllProductsPage() {
                                         </div>
                                     ) : (
                                         <button onClick={() => addItem(product.id)} className="w-full mt-3 py-2 rounded-lg bg-primary/10 text-primary text-sm font-semibold hover:bg-primary hover:text-white transition-colors">Add to Cart</button>
-                                    )}
+                                    ))}
                                 </div>
                             </div>
                         ))}

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import { useCart } from '@/context/CartContext';
+import { SHOP_CART_ENABLED } from '@/lib/feature-flags';
 import { categoryProducts } from '../../categoryData';
 
 const products = categoryProducts['solar-dry-products'] || [];
@@ -418,7 +419,7 @@ export default function RalosBrandPage() {
                                             <span className="text-xs text-gray-400 line-through">{product.originalPrice}</span>
                                         </div>
 
-                                        {(quantities[product.id] || 0) > 0 ? (
+                                        {SHOP_CART_ENABLED && ((quantities[product.id] || 0) > 0 ? (
                                             <div className="w-full flex items-center justify-between rounded-xl overflow-hidden" style={{ background: '#16a34a' }}>
                                                 <button onClick={() => removeItem(product.id)} className="px-4 py-2 font-black text-white hover:bg-black/10 text-lg">−</button>
                                                 <span className="font-black text-white text-sm">{quantities[product.id]}</span>
@@ -432,7 +433,7 @@ export default function RalosBrandPage() {
                                             >
                                                 Add to Cart
                                             </button>
-                                        )}
+                                        ))}
                                     </div>
                                 </div>
                             ))}

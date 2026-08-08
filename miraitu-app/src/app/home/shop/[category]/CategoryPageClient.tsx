@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import { useCart } from '@/context/CartContext';
+import { SHOP_CART_ENABLED } from '@/lib/feature-flags';
 import { shopCategories } from '../data';
 import { categoryProducts, categoryMeta, featuredBrands } from '../categoryData';
 import FeaturedBrandBanner from '@/components/v2/FeaturedBrandBanner';
@@ -268,7 +269,7 @@ export default function CategoryPage({ categorySlug }: { categorySlug?: string }
                                         <span className="text-xs text-gray-400 line-through">{product.originalPrice}</span>
                                     </div>
 
-                                    {(quantities[product.id] || 0) > 0 ? (
+                                    {SHOP_CART_ENABLED && ((quantities[product.id] || 0) > 0 ? (
                                         <div className="w-full mt-3 flex items-center justify-between rounded-lg bg-primary text-white overflow-hidden">
                                             <button
                                                 onClick={() => removeItem(product.id)}
@@ -291,7 +292,7 @@ export default function CategoryPage({ categorySlug }: { categorySlug?: string }
                                         >
                                             {t('shopPage.addToCart')}
                                         </button>
-                                    )}
+                                    ))}
                                 </div>
                             </div>
                         ))}

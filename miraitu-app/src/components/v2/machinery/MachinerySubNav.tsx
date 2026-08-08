@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { MACHINERY_NEW_ENABLED, MACHINERY_RENT_ENABLED } from '@/lib/feature-flags';
 
 // Category display names mapping
 const categoryLabels: Record<string, string> = {
@@ -21,7 +22,9 @@ export default function MachinerySubNav({ category, currentAction }: MachinerySu
     const categoryLabel = categoryLabels[category] || category;
     const basePath = `/home/machinery/${category}`;
 
-    const navItems = [
+    // New and Rent are gated by the same flags as the machinery category modal,
+    // so the tab strip can never offer an action the modal has hidden.
+    const navItems = ([
         {
             key: 'new' as const,
             label: `New ${categoryLabel}`,
@@ -70,7 +73,11 @@ export default function MachinerySubNav({ category, currentAction }: MachinerySu
             activeBg: 'bg-primary/10 dark:bg-primary/20',
             activeText: 'text-primary dark:text-primary',
         },
-    ];
+    ]).filter(item => {
+        if (item.key === 'new') return MACHINERY_NEW_ENABLED;
+        if (item.key === 'rent') return MACHINERY_RENT_ENABLED;
+        return true;
+    });
 
     return (
         <div className="mb-6">
