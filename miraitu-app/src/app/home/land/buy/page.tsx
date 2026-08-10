@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import { fetchApprovedSellListings, type SellListingRecord } from '@/app/actions/bookings';
@@ -49,6 +50,9 @@ interface ListingView {
     title: string;
     location: string;
     district: string;
+    state: string;
+    /** Village / locality as typed on the Sell form, before district and state are appended. */
+    village: string;
     area: string;
     areaValue: number;
     price: string;
@@ -57,7 +61,7 @@ interface ListingView {
     pricePerAcreValue: number;
     type: string;
     image: string;
-    /** Every photo the seller uploaded. Empty for the showcase listings. */
+    /** Every photo the seller uploaded. */
     photos: string[];
     verified: boolean;
     featured: boolean;
@@ -97,6 +101,8 @@ function toView(record: SellListingRecord): ListingView {
         title: ed.title?.trim() || 'Farm Land for Sale',
         location: locationParts.join(', '),
         district: (ed.district ?? '').trim(),
+        state: (ed.state ?? '').trim(),
+        village: (record.location ?? '').trim(),
         area: areaValue ? `${areaValue} Acre${areaValue === 1 ? '' : 's'}` : '—',
         areaValue: areaValue || 0,
         price: formatRupees(ed.total_price),
@@ -123,103 +129,6 @@ function toView(record: SellListingRecord): ListingView {
     };
 }
 
-// Showcase listings that always lead the grid. Admin-approved listings from
-// `service_bookings` are appended after these. Delete this array to show only
-// real listings.
-const HELPLINE = '9380306475';
-const DEMO_LISTINGS: ListingView[] = [
-    {
-        id: 'demo-1',
-        title: '5 Acres Irrigated Farm Land',
-        location: 'Mandya, Karnataka', district: 'Mandya',
-        area: '5 Acres', areaValue: 5,
-        price: '₹45,00,000', priceValue: 4500000,
-        pricePerAcre: '₹9,00,000/acre', pricePerAcreValue: 900000,
-        type: 'Irrigated',
-        image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop',
-        photos: [],
-        verified: true, featured: true,
-        amenities: ['Borewell', 'Fencing', 'Road Access'],
-        seller: 'Ramesh Kumar', phone: HELPLINE,
-        description: '', postedDate: '2 days ago', createdAt: 0,
-    },
-    {
-        id: 'demo-2',
-        title: '10 Acres Dry Land with Mango Trees',
-        location: 'Ramanagara, Karnataka', district: 'Ramanagara',
-        area: '10 Acres', areaValue: 10,
-        price: '₹70,00,000', priceValue: 7000000,
-        pricePerAcre: '₹7,00,000/acre', pricePerAcreValue: 700000,
-        type: 'Orchard',
-        image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=300&fit=crop',
-        photos: [],
-        verified: true, featured: true,
-        amenities: ['Mango Trees', 'Electricity', 'Compound Wall'],
-        seller: 'Suresh Gowda', phone: HELPLINE,
-        description: '', postedDate: '5 days ago', createdAt: 0,
-    },
-    {
-        id: 'demo-3',
-        title: '3 Acres Farm House Land',
-        location: 'Mysore, Karnataka', district: 'Mysore',
-        area: '3 Acres', areaValue: 3,
-        price: '₹1,20,00,000', priceValue: 12000000,
-        pricePerAcre: '₹40,00,000/acre', pricePerAcreValue: 4000000,
-        type: 'Farm House',
-        image: 'https://images.unsplash.com/photo-1500076656116-558758c991c1?w=400&h=300&fit=crop',
-        photos: [],
-        verified: false, featured: false,
-        amenities: ['Farm House', 'Swimming Pool', 'Garden'],
-        seller: 'Prakash Reddy', phone: HELPLINE,
-        description: '', postedDate: '1 week ago', createdAt: 0,
-    },
-    {
-        id: 'demo-4',
-        title: '8 Acres Coconut Plantation',
-        location: 'Hassan, Karnataka', district: 'Hassan',
-        area: '8 Acres', areaValue: 8,
-        price: '₹56,00,000', priceValue: 5600000,
-        pricePerAcre: '₹7,00,000/acre', pricePerAcreValue: 700000,
-        type: 'Plantation',
-        image: 'https://images.unsplash.com/photo-1591543620767-582b2e76369e?w=400&h=300&fit=crop',
-        photos: [],
-        verified: true, featured: false,
-        amenities: ['200+ Coconut Trees', 'Borewell', 'Canal Water'],
-        seller: 'Mahesh B', phone: HELPLINE,
-        description: '', postedDate: '3 days ago', createdAt: 0,
-    },
-    {
-        id: 'demo-5',
-        title: '15 Acres Agriculture Land',
-        location: 'Tumkur, Karnataka', district: 'Tumkur',
-        area: '15 Acres', areaValue: 15,
-        price: '₹90,00,000', priceValue: 9000000,
-        pricePerAcre: '₹6,00,000/acre', pricePerAcreValue: 600000,
-        type: 'Agriculture',
-        image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=400&h=300&fit=crop',
-        photos: [],
-        verified: true, featured: false,
-        amenities: ['Open Well', 'Road Access', 'Electricity'],
-        seller: 'Venkatesh N', phone: HELPLINE,
-        description: '', postedDate: '1 day ago', createdAt: 0,
-    },
-    {
-        id: 'demo-6',
-        title: '2 Acres Irrigated Land Near Highway',
-        location: 'Davangere, Karnataka', district: 'Davangere',
-        area: '2 Acres', areaValue: 2,
-        price: '₹24,00,000', priceValue: 2400000,
-        pricePerAcre: '₹12,00,000/acre', pricePerAcreValue: 1200000,
-        type: 'Irrigated',
-        image: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400&h=300&fit=crop',
-        photos: [],
-        verified: true, featured: false,
-        amenities: ['Highway Access', 'Drip Irrigation', 'Power Supply'],
-        seller: 'Deepak M', phone: HELPLINE,
-        description: '', postedDate: '4 days ago', createdAt: 0,
-    },
-];
-
 export default function BuyLandPage() {
     const { user } = useAuth();
     const [selectedType, setSelectedType] = useState('All');
@@ -229,7 +138,9 @@ export default function BuyLandPage() {
     const [error, setError] = useState<string | null>(null);
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [contactListing, setContactListing] = useState<ListingView | null>(null);
+    const [detailPhotoIdx, setDetailPhotoIdx] = useState(0);
     const [gallery, setGallery] = useState<{ photos: string[]; index: number } | null>(null);
+    const [shareToast, setShareToast] = useState('');
 
     // Keyboard nav for the photo lightbox
     useEffect(() => {
@@ -256,9 +167,9 @@ export default function BuyLandPage() {
         return () => { cancelled = true; };
     }, []);
 
-    // Showcase listings first, then the admin-approved ones (newest first —
-    // the query already orders by created_at desc).
-    const allListings = useMemo(() => [...DEMO_LISTINGS, ...listings], [listings]);
+    // Only admin-approved listings (newest first — the query already orders by
+    // created_at desc).
+    const allListings = listings;
 
     // Chips are derived from what is actually listed, so no filter is ever a dead end.
     const landTypes = useMemo(
@@ -275,7 +186,7 @@ export default function BuyLandPage() {
             case 'price-low': rows.sort((a, b) => a.priceValue - b.priceValue); break;
             case 'price-high': rows.sort((a, b) => b.priceValue - a.priceValue); break;
             case 'area': rows.sort((a, b) => b.areaValue - a.areaValue); break;
-            // 'newest' keeps the showcase-first, then newest-published order.
+            // 'newest' keeps the newest-published order from the query.
             default: break;
         }
         return rows;
@@ -300,7 +211,31 @@ export default function BuyLandPage() {
             setShowLoginModal(true);
             return;
         }
+        setDetailPhotoIdx(0);
         setContactListing(listing);
+    };
+
+    const shareListing = async (listing: ListingView) => {
+        const text = [
+            `${listing.title} — For Sale`,
+            `📍 ${listing.location}`,
+            listing.areaValue ? `📐 ${listing.area}` : '',
+            listing.priceValue ? `💰 ${listing.price}${listing.pricePerAcre ? ` (${listing.pricePerAcre})` : ''}` : '',
+            listing.description ? `\n${listing.description.slice(0, 120)}…` : '',
+            '\nFind more on Miraitu 🌾',
+        ].filter(Boolean).join('\n');
+        const url = typeof window !== 'undefined' ? window.location.href.split('?')[0] : '';
+        try {
+            if (navigator.share) {
+                await navigator.share({ title: listing.title, text, url });
+            } else {
+                await navigator.clipboard.writeText(`${text}\n\n${url}`);
+                setShareToast('Link copied to clipboard!');
+                setTimeout(() => setShareToast(''), 3000);
+            }
+        } catch {
+            // user cancelled share — do nothing
+        }
     };
 
     // Fire-and-forget — the tel:/wa.me link opens regardless of whether this lands.
@@ -396,7 +331,7 @@ export default function BuyLandPage() {
                     )}
                 </div>
 
-                {/* Error — non-blocking: the showcase listings below still render */}
+                {/* Error — the grid below falls back to the empty state */}
                 {!loading && error && (
                     <div className="mb-4 flex items-center gap-2 px-4 py-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900">
                         <span className="material-symbols-outlined text-lg text-red-500">error</span>
@@ -506,6 +441,37 @@ export default function BuyLandPage() {
                     </div>
                 )}
 
+                {/* Empty state — no approved listings yet, or the filter excludes them all */}
+                {!loading && filteredListings.length === 0 && (
+                    <div className="bg-white dark:bg-[#1a231a] rounded-xl md:rounded-2xl border border-gray-100 dark:border-gray-800 px-6 py-12 md:py-16 text-center">
+                        <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-green-50 dark:bg-green-900/30 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-3xl text-green-600">landscape</span>
+                        </div>
+                        <h3 className="text-base md:text-lg font-bold text-gray-900 dark:text-white mb-1.5">
+                            {selectedType === 'All' ? 'No land listings yet' : `No ${selectedType} land right now`}
+                        </h3>
+                        <p className="text-xs md:text-sm text-gray-500 max-w-sm mx-auto mb-5">
+                            {selectedType === 'All'
+                                ? 'New listings appear here once a seller posts and our team approves them.'
+                                : 'Try a different land type, or check back soon for new listings.'}
+                        </p>
+                        {selectedType === 'All' ? (
+                            <Link href="/home/land/sell" className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors">
+                                <span className="material-symbols-outlined text-base">post_add</span>
+                                List Your Land
+                            </Link>
+                        ) : (
+                            <button
+                                onClick={() => setSelectedType('All')}
+                                className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-base">filter_alt_off</span>
+                                Clear Filter
+                            </button>
+                        )}
+                    </div>
+                )}
+
                 {/* CTA */}
                 <div className="mt-8 md:mt-12 bg-gradient-to-r from-green-600 to-emerald-700 rounded-xl md:rounded-2xl p-6 md:p-10 text-center">
                     <h2 className="text-xl md:text-2xl font-bold text-white mb-2 md:mb-3">Can&apos;t Find What You&apos;re Looking For?</h2>
@@ -517,72 +483,189 @@ export default function BuyLandPage() {
                 </div>
             </div>
 
-            {/* Contact Seller modal — only reachable by signed-in users */}
-            {contactListing && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50" onClick={() => setContactListing(null)}>
-                    <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-6 shadow-2xl max-w-sm w-full" onClick={e => e.stopPropagation()}>
-                        <div className="flex items-start justify-between gap-3 mb-4">
-                            <div className="min-w-0">
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2">{contactListing.title}</h3>
-                                <p className="text-xs text-gray-500 mt-0.5">{contactListing.location}</p>
+            {/* Listing detail modal — same layout as the Lease detail modal.
+                Only reachable by signed-in users. Portaled to document.body so no
+                parent stacking context (sticky header, transformed card) clips it;
+                safe without a mount guard because it only opens on a click. */}
+            {contactListing && createPortal((() => {
+                const listing = contactListing;
+                const photos = listing.photos.length ? listing.photos : [listing.image];
+                const heroImg = photos[detailPhotoIdx] || photos[0];
+                const address = [
+                    listing.village && { label: 'Village / Locality', value: listing.village },
+                    listing.district && { label: 'District', value: listing.district },
+                    listing.state && { label: 'State', value: listing.state },
+                    listing.type && { label: 'Land Type', value: listing.type },
+                ].filter(Boolean) as { label: string; value: string }[];
+
+                return (
+                    <div
+                        style={{ position: 'fixed', inset: 0, zIndex: 99997, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+                        onClick={() => setContactListing(null)}
+                    >
+                        <div
+                            style={{ background: 'white', borderRadius: '20px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 32px 64px rgba(0,0,0,0.3)' }}
+                            onClick={e => e.stopPropagation()}
+                        >
+                            {/* Photo section */}
+                            <div style={{ position: 'relative', height: '240px', background: '#f3f4f6', flexShrink: 0 }}>
+                                <img
+                                    src={heroImg}
+                                    alt={listing.title}
+                                    onClick={() => setGallery({ photos, index: detailPhotoIdx })}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'zoom-in' }}
+                                    onError={e => { (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE; }}
+                                />
+                                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%)', pointerEvents: 'none' }} />
+                                {/* type badge */}
+                                <div style={{ position: 'absolute', top: '12px', left: '12px', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 700, color: 'white', background: '#16a34a' }}>
+                                    FOR SALE
+                                </div>
+                                {/* close */}
+                                <button onClick={() => setContactListing(null)} style={{ position: 'absolute', top: '10px', right: '10px', padding: '6px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', border: 'none', cursor: 'pointer', display: 'flex' }}>
+                                    <span className="material-symbols-outlined" style={{ color: 'white', fontSize: '20px' }}>close</span>
+                                </button>
+                                {/* thumbnails */}
+                                {photos.length > 1 && (
+                                    <div style={{ position: 'absolute', bottom: '10px', left: 0, right: 0, display: 'flex', gap: '6px', justifyContent: 'center', padding: '0 12px' }}>
+                                        {photos.map((src, i) => (
+                                            <button key={i} onClick={() => setDetailPhotoIdx(i)} style={{ width: '36px', height: '36px', borderRadius: '6px', overflow: 'hidden', border: detailPhotoIdx === i ? '2px solid white' : '2px solid rgba(255,255,255,0.4)', cursor: 'pointer', padding: 0, flexShrink: 0 }}>
+                                                <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                                {/* nav arrows */}
+                                {detailPhotoIdx > 0 && (
+                                    <button onClick={() => setDetailPhotoIdx(i => i - 1)} style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', padding: '6px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', border: 'none', cursor: 'pointer', display: 'flex' }}>
+                                        <span className="material-symbols-outlined" style={{ color: 'white', fontSize: '22px' }}>chevron_left</span>
+                                    </button>
+                                )}
+                                {detailPhotoIdx < photos.length - 1 && (
+                                    <button onClick={() => setDetailPhotoIdx(i => i + 1)} style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', padding: '6px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', border: 'none', cursor: 'pointer', display: 'flex' }}>
+                                        <span className="material-symbols-outlined" style={{ color: 'white', fontSize: '22px' }}>chevron_right</span>
+                                    </button>
+                                )}
                             </div>
-                            <button onClick={() => setContactListing(null)} className="text-gray-400 hover:text-gray-600 shrink-0" aria-label="Close">
-                                <span className="material-symbols-outlined">close</span>
-                            </button>
-                        </div>
 
-                        {contactListing.photos.length > 0 && (
-                            <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
-                                {contactListing.photos.map((photo, i) => (
-                                    <img
-                                        key={photo}
-                                        src={photo}
-                                        alt={`${contactListing.title} photo ${i + 1}`}
-                                        onClick={() => setGallery({ photos: contactListing.photos, index: i })}
-                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                        className="h-16 w-20 shrink-0 rounded-lg object-cover cursor-zoom-in hover:opacity-80 transition-opacity"
-                                    />
-                                ))}
+                            {/* Scrollable body */}
+                            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+                                <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#111', margin: '0 0 4px' }}>{listing.title}</h2>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#6b7280', fontSize: '13px', marginBottom: '16px' }}>
+                                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>location_on</span>
+                                    {listing.location}
+                                </div>
+
+                                {/* Key stats */}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
+                                    {[
+                                        { icon: 'square_foot', label: 'Area', value: listing.area },
+                                        { icon: 'payments', label: 'Price', value: listing.price },
+                                        { icon: 'currency_rupee', label: 'Per Acre', value: listing.pricePerAcre || '—' },
+                                    ].map(stat => (
+                                        <div key={stat.label} style={{ background: '#f9fafb', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                                            <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#16a34a', display: 'block', marginBottom: '4px' }}>{stat.icon}</span>
+                                            <p style={{ fontSize: '10px', color: '#9ca3af', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</p>
+                                            <p style={{ fontSize: '13px', fontWeight: 700, color: '#111', margin: 0, wordBreak: 'break-word' }}>{stat.value}</p>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Address details */}
+                                {address.length > 0 && (
+                                    <div style={{ marginBottom: '20px' }}>
+                                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>Land Location Details</p>
+                                        <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '14px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                            {address.map(item => (
+                                                <div key={item.label}>
+                                                    <p style={{ fontSize: '11px', color: '#9ca3af', margin: '0 0 2px' }}>{item.label}</p>
+                                                    <p style={{ fontSize: '13px', fontWeight: 600, color: '#374151', margin: 0 }}>{item.value}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Amenities */}
+                                {listing.amenities.length > 0 && (
+                                    <div style={{ marginBottom: '20px' }}>
+                                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>Amenities</p>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                            {listing.amenities.map(a => (
+                                                <span key={a} style={{ padding: '5px 10px', borderRadius: '8px', background: '#f3f4f6', color: '#4b5563', fontSize: '12px', fontWeight: 600 }}>{a}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Description */}
+                                {listing.description && (
+                                    <div style={{ marginBottom: '20px' }}>
+                                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>About the Land</p>
+                                        <p style={{ fontSize: '14px', color: '#374151', lineHeight: 1.7, whiteSpace: 'pre-wrap', margin: 0 }}>{listing.description}</p>
+                                    </div>
+                                )}
+
+                                {/* Listed by */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', background: '#f9fafb', borderRadius: '12px', marginBottom: '4px' }}>
+                                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                        <span className="material-symbols-outlined" style={{ color: 'white', fontSize: '18px' }}>person</span>
+                                    </div>
+                                    <div>
+                                        <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>Listed by</p>
+                                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#111', margin: 0 }}>{listing.seller}</p>
+                                    </div>
+                                    <p style={{ marginLeft: 'auto', fontSize: '11px', color: '#9ca3af' }}>{listing.postedDate}</p>
+                                </div>
                             </div>
-                        )}
 
-                        {contactListing.description && (
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-4">{contactListing.description}</p>
-                        )}
-
-                        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 mb-4">
-                            <p className="text-xs text-gray-500 mb-1">Seller</p>
-                            <p className="font-bold text-gray-900 dark:text-white">{contactListing.seller}</p>
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">+91 {contactListing.phone}</p>
-                        </div>
-
-                        <div className="flex gap-2">
-                            <a
-                                href={`tel:+91${contactListing.phone}`}
-                                onClick={() => trackContact(contactListing, 'call')}
-                                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors"
-                            >
-                                <span className="material-symbols-outlined text-base">call</span>
-                                Call
-                            </a>
-                            <a
-                                href={`https://wa.me/91${contactListing.phone}?text=${encodeURIComponent(`Hi, I saw your land listing "${contactListing.title}" at ${contactListing.location} on Miraitu. I'm interested in buying it.`)}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={() => trackContact(contactListing, 'whatsapp')}
-                                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-green-500 text-white font-bold text-sm rounded-xl hover:bg-green-600 transition-colors"
-                            >
-                                <span className="material-symbols-outlined text-base">chat</span>
-                                WhatsApp
-                            </a>
+                            {/* Footer CTA */}
+                            <div style={{ padding: '16px 24px', borderTop: '1px solid #f3f4f6', flexShrink: 0, display: 'flex', gap: '10px' }}>
+                                <button
+                                    onClick={() => shareListing(listing)}
+                                    title="Share"
+                                    style={{ padding: '12px 14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, fontSize: '14px', color: '#374151', flexShrink: 0 }}
+                                >
+                                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>share</span>
+                                    Share
+                                </button>
+                                <a
+                                    href={`tel:+91${listing.phone}`}
+                                    onClick={() => trackContact(listing, 'call')}
+                                    style={{ flex: 1, padding: '12px', borderRadius: '12px', background: '#16a34a', color: 'white', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none' }}
+                                >
+                                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>call</span>
+                                    Call
+                                </a>
+                                <a
+                                    href={`https://wa.me/91${listing.phone}?text=${encodeURIComponent(`Hi, I saw your land listing "${listing.title}" at ${listing.location} on Miraitu. I'm interested in buying it.`)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => trackContact(listing, 'whatsapp')}
+                                    style={{ flex: 1, padding: '12px', borderRadius: '12px', background: '#22c55e', color: 'white', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none' }}
+                                >
+                                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chat</span>
+                                    WhatsApp
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
+                );
+            })(), document.body)}
+
+            {/* Share toast */}
+            {shareToast && createPortal(
+                <div style={{ position: 'fixed', bottom: '80px', left: '50%', transform: 'translateX(-50%)', zIndex: 999999, background: '#111', color: 'white', padding: '10px 20px', borderRadius: '24px', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#4ade80' }}>check_circle</span>
+                    {shareToast}
+                </div>,
+                document.body
             )}
 
-            {/* Photo lightbox — every image the seller uploaded */}
-            {gallery && (
-                <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/90 p-4" onClick={() => setGallery(null)}>
+            {/* Photo lightbox — every image the seller uploaded. Portaled at a
+                higher z-index than the detail modal so zooming from it works. */}
+            {gallery && createPortal(
+                <div style={{ zIndex: 99999 }} className="fixed inset-0 flex items-center justify-center bg-black/90 p-4" onClick={() => setGallery(null)}>
                     <button
                         onClick={() => setGallery(null)}
                         className="absolute top-4 right-4 flex items-center justify-center size-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
@@ -624,7 +707,8 @@ export default function BuyLandPage() {
                             </span>
                         </>
                     )}
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Login modal — shown when a guest taps Contact Seller */}
