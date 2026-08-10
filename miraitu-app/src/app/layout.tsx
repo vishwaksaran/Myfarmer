@@ -5,6 +5,7 @@ import { LoginPromptProvider } from "@/context/LoginPromptContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { LocationProvider } from "@/context/LocationContext";
 import LocationGate from "@/components/v2/LocationGate";
+import LanguageFirstRunGate from "@/components/language/LanguageFirstRunGate";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import SplashScreen from "@/components/SplashScreen";
 import "./globals.css";
@@ -333,6 +334,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
             <LanguageProvider>
               <LocationProvider>
                 {children}
+                {/* Mobile-only, once per device: pick a language before the app. */}
+                <LanguageFirstRunGate />
                 <LocationGate />
                 <ServiceWorkerRegistration />
               </LocationProvider>
