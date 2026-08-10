@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Noto_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import { AuthProvider } from "@/context/AuthContext";
 import { LoginPromptProvider } from "@/context/LoginPromptContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
@@ -9,24 +9,42 @@ import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import SplashScreen from "@/components/SplashScreen";
 import "./globals.css";
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+// Fonts are self-hosted from ./fonts rather than fetched via next/font/google.
+//
+// `next/font/google` downloads the woff2 files at BUILD time, which made every
+// build depend on reaching fonts.googleapis.com and fonts.gstatic.com. That broke
+// twice, in two different ways: locally the TLS handshake was rejected by an
+// intercepting proxy, and on Vercel a restored build cache still pointed at
+// gstatic URLs that Google had since rotated (they returned 404). Committing the
+// files removes the network from the build path entirely.
+//
+// These are the same latin-subset files Google served, one per weight the app
+// actually uses — re-download from the same CSS endpoint if a weight is added.
+const plusJakartaSans = localFont({
   variable: "--font-jakarta",
-  subsets: ["latin"],
-  weight: ["400", "500", "700", "800"],
   display: "swap",
   fallback: ["system-ui", "arial"],
   preload: true,
-  adjustFontFallback: true,
+  adjustFontFallback: "Arial",
+  src: [
+    { path: "./fonts/plus-jakarta-sans-latin-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/plus-jakarta-sans-latin-500.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/plus-jakarta-sans-latin-700.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/plus-jakarta-sans-latin-800.woff2", weight: "800", style: "normal" },
+  ],
 });
 
-const notoSans = Noto_Sans({
+const notoSans = localFont({
   variable: "--font-noto",
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
   display: "swap",
   fallback: ["system-ui", "arial"],
   preload: false,
-  adjustFontFallback: true,
+  adjustFontFallback: "Arial",
+  src: [
+    { path: "./fonts/noto-sans-latin-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/noto-sans-latin-500.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/noto-sans-latin-700.woff2", weight: "700", style: "normal" },
+  ],
 });
 
 export const metadata: Metadata = {
