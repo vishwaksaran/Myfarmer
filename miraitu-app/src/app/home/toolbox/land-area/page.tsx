@@ -62,6 +62,8 @@ export default function LandAreaPage() {
     const [locationName, setLocationName] = useState('');
     const [mapDisplayUnit, setMapDisplayUnit] = useState<UnitSystem>('acre');
     const mapContainerRef = useRef<HTMLDivElement>(null);
+    /** Wraps the Leaflet container and carries the fullscreen/inline layout classes. */
+    const mapWrapperRef = useRef<HTMLDivElement>(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mapRef = useRef<any>(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -426,12 +428,28 @@ export default function LandAreaPage() {
         if (typeof window !== 'undefined' && window.innerWidth < 768) setMapFullscreen(true);
     }, [locationStatus]);
 
-    // Leaflet caches the container size — tell it to re-measure after the resize.
+    // Leaflet caches the container size, so every change of shape has to be
+    // announced or the tile layer comes back blank. A single fixed timeout was
+    // racing the CSS: observing the wrapper catches the resize whenever it
+    // actually lands, and the rAF + timeout cover the first paint after a
+    // fullscreen toggle (when the observer may fire before layout settles).
     useEffect(() => {
-        if (!mapRef.current) return;
-        const timer = setTimeout(() => mapRef.current?.invalidateSize(), 250);
-        return () => clearTimeout(timer);
-    }, [mapFullscreen]);
+        const wrapper = mapWrapperRef.current;
+        if (!wrapper || typeof ResizeObserver === 'undefined') return;
+
+        const remeasure = () => mapRef.current?.invalidateSize({ animate: false });
+        const observer = new ResizeObserver(remeasure);
+        observer.observe(wrapper);
+
+        const frame = requestAnimationFrame(remeasure);
+        const timer = setTimeout(remeasure, 300);
+
+        return () => {
+            observer.disconnect();
+            cancelAnimationFrame(frame);
+            clearTimeout(timer);
+        };
+    }, [mapFullscreen, locationStatus]);
 
     // While the map is edge-to-edge: lock page scroll and hide the app chrome.
     // The chrome has to be hidden rather than out-z-indexed — the toolbox layout
@@ -940,12 +958,20 @@ export default function LandAreaPage() {
                                                 </div>
                                             </div>
                                         )}
+                                        {/* The wrapper carries the layout; the inner element is the
+                                            Leaflet container and never changes shape or position.
+                                            Swapping `fixed inset-0` on and off the Leaflet container
+                                            itself left its panes positioned for the old geometry —
+                                            markers kept painting over the page and the tile layer
+                                            came back blank on exit. */}
                                         <div
-                                            ref={mapContainerRef}
+                                            ref={mapWrapperRef}
                                             className={mapFullscreen
-                                                ? 'fixed inset-0 z-[60] w-full h-[100dvh]'
-                                                : 'w-full h-[400px] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700'}
-                                        />
+                                                ? 'fixed inset-0 z-[60] h-[100dvh] overflow-hidden'
+                                                : 'relative w-full h-[400px] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700'}
+                                        >
+                                            <div ref={mapContainerRef} className="w-full h-full" />
+                                        </div>
 
                                         {/* ─── Edge-to-edge map chrome (Google-Maps style) ─── */}
                                         {mapFullscreen && (

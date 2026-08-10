@@ -11,6 +11,7 @@ import { fetchApprovedLeaseListings, type LeaseListingRecord } from '@/app/actio
 import { logListingContact, type ContactChannel } from '@/app/actions/listing-contact';
 import { useAuth } from '@/context/AuthContext';
 import LoginModal from '@/components/auth/LoginModal';
+import { Z } from '@/lib/z-layers';
 
 async function uploadLeasePhoto(file: File): Promise<string | null> {
     const fd = new FormData();
@@ -808,7 +809,7 @@ export default function LeaseLandPage() {
         {/* ── Photo Gallery Lightbox — rendered via portal to bypass any parent stacking context ── */}
         {mounted && gallery && createPortal(
             <div
-                style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.95)', display: 'flex', flexDirection: 'column' }}
+                style={{ position: 'fixed', inset: 0, zIndex: Z.LIGHTBOX, background: 'rgba(0,0,0,0.95)', display: 'flex', flexDirection: 'column' }}
                 onClick={() => setGallery(null)}
             >
                 {/* Top bar */}
@@ -867,7 +868,7 @@ export default function LeaseLandPage() {
         {/* ── Contact Owner Modal — rendered via portal ── */}
         {mounted && contactListing && createPortal(
             <div
-                style={{ position: 'fixed', inset: 0, zIndex: 99998, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+                style={{ position: 'fixed', inset: 0, zIndex: Z.MODAL + 1, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
                 onClick={() => setContactListing(null)}
             >
                 <div
@@ -934,7 +935,7 @@ export default function LeaseLandPage() {
             const hasAddress = ed.survey_no || ed.district || ed.taluk || ed.hobli || ed.village;
             return (
                 <div
-                    style={{ position: 'fixed', inset: 0, zIndex: 99997, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+                    style={{ position: 'fixed', inset: 0, zIndex: Z.MODAL, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
                     onClick={() => setDetailListing(null)}
                 >
                     <div
@@ -1084,7 +1085,7 @@ export default function LeaseLandPage() {
 
         {/* ── Share toast notification ── */}
         {mounted && shareToast && createPortal(
-            <div style={{ position: 'fixed', bottom: '80px', left: '50%', transform: 'translateX(-50%)', zIndex: 999999, background: '#111', color: 'white', padding: '10px 20px', borderRadius: '24px', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+            <div style={{ position: 'fixed', bottom: '80px', left: '50%', transform: 'translateX(-50%)', zIndex: Z.TOAST, background: '#111', color: 'white', padding: '10px 20px', borderRadius: '24px', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
                 <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#4ade80' }}>check_circle</span>
                 {shareToast}
             </div>,

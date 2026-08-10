@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import MiraituLogo from '@/components/MiraituLogo';
 import { normalizeIndianPhone } from '@/lib/phone';
+import { Z } from '@/lib/z-layers';
 
 interface LoginModalProps {
     isOpen: boolean;
@@ -26,7 +28,8 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     const [sendingOtp, setSendingOtp] = useState(false);
     const [isEmailSigningIn, setIsEmailSigningIn] = useState(false);
 
-    if (!isOpen) return null;
+    // `document` is unavailable during SSR/prerender, so bail before the portal.
+    if (!isOpen || typeof document === 'undefined') return null;
 
     const handleSendOtp = async () => {
         if (!phoneInput.trim()) {
@@ -123,8 +126,11 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         }
     };
 
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-5 animate-fadeIn" onClick={onClose}>
+    // Portaled to document.body at the auth layer. Rendering inline left it
+    // trapped in whatever stacking context the trigger lived in — so opening it
+    // from inside a portaled detail modal put the login form *behind* that modal.
+    return createPortal(
+        <div style={{ zIndex: Z.AUTH }} className="fixed inset-0 flex items-center justify-center p-3 sm:p-5 animate-fadeIn" onClick={onClose}>
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
             <div className="relative bg-white dark:bg-[#1a231a] rounded-3xl px-5 sm:px-8 pb-6 sm:pb-8 pt-12 sm:pt-14 max-w-[540px] w-full shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                 <button onClick={() => { onClose(); resetState(); }} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
@@ -306,6 +312,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
                 .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
             `}</style>
-        </div>
+        </div>,
+        document.body
     );
 }

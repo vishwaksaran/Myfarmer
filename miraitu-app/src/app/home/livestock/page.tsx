@@ -62,6 +62,73 @@ const sellCategories = [
     { id: 'others', name: 'Others', icon: '🐾' },
 ];
 
+/**
+ * Category-specific detail fields for the Sell form.
+ *
+ * A single fixed set of fields asked every seller for Milk Yield — meaningless
+ * for poultry, fish and rabbits — while never asking a poultry seller the things
+ * that actually price a lot (bird count, layer vs broiler, eggs/day). Each
+ * category now declares its own fields, and both rendering and validation are
+ * driven off this one table.
+ */
+type SellField = {
+    key: string;
+    label: string;
+    placeholder?: string;
+    required?: boolean;
+    type?: 'text' | 'select';
+    options?: string[];
+};
+
+const CATEGORY_FIELDS: Record<string, SellField[]> = {
+    cattle: [
+        { key: 'breed', label: 'Breed', placeholder: 'e.g. Gir', required: true },
+        { key: 'age', label: 'Age', placeholder: 'e.g. 3 Years', required: true },
+        { key: 'gender', label: 'Gender', type: 'select', options: ['Female (Cow)', 'Male (Bull)', 'Calf'] },
+        { key: 'milkYield', label: 'Milk Yield (L/day)', placeholder: 'e.g. 12' },
+        { key: 'lactation', label: 'Lactation No.', placeholder: 'e.g. 2' },
+        { key: 'weight', label: 'Weight (Kg)', placeholder: 'e.g. 450' },
+        { key: 'quantity', label: 'Quantity (Heads)', placeholder: 'e.g. 1' },
+    ],
+    goats: [
+        { key: 'breed', label: 'Breed', placeholder: 'e.g. Osmanabadi', required: true },
+        { key: 'age', label: 'Age', placeholder: 'e.g. 2 Years', required: true },
+        { key: 'gender', label: 'Gender', type: 'select', options: ['Female', 'Male', 'Mixed Lot'] },
+        { key: 'weight', label: 'Weight (Kg)', placeholder: 'e.g. 35' },
+        { key: 'quantity', label: 'Quantity (Heads)', placeholder: 'e.g. 2', required: true },
+    ],
+    poultry: [
+        { key: 'breed', label: 'Breed / Variety', placeholder: 'e.g. Kadaknath', required: true },
+        { key: 'birdType', label: 'Bird Type', type: 'select', options: ['Layer', 'Broiler', 'Desi / Country', 'Breeder', 'Chicks'], required: true },
+        { key: 'age', label: 'Age', placeholder: 'e.g. 6 Months', required: true },
+        { key: 'quantity', label: 'Quantity (Birds)', placeholder: 'e.g. 50', required: true },
+        { key: 'eggsPerDay', label: 'Eggs / Day', placeholder: 'e.g. 40' },
+        { key: 'avgWeight', label: 'Avg Weight (Kg)', placeholder: 'e.g. 1.8' },
+    ],
+    fish: [
+        { key: 'species', label: 'Species', placeholder: 'e.g. Rohu', required: true },
+        { key: 'stage', label: 'Stage', type: 'select', options: ['Spawn', 'Fry', 'Fingerling', 'Juvenile', 'Table Size'], required: true },
+        { key: 'quantity', label: 'Quantity (Pieces)', placeholder: 'e.g. 10000', required: true },
+        { key: 'avgWeight', label: 'Avg Weight (g)', placeholder: 'e.g. 50' },
+    ],
+    others: [
+        { key: 'animalType', label: 'Animal Type', placeholder: 'e.g. Rabbit', required: true },
+        { key: 'breed', label: 'Breed', placeholder: 'e.g. White Giant' },
+        { key: 'age', label: 'Age', placeholder: 'e.g. 6 Months' },
+        { key: 'quantity', label: 'Quantity', placeholder: 'e.g. 10' },
+        { key: 'weight', label: 'Weight (Kg)', placeholder: 'e.g. 3' },
+    ],
+};
+
+/** Title hint matched to the category, so the example is never a cow for a fish seller. */
+const TITLE_PLACEHOLDER: Record<string, string> = {
+    cattle: 'e.g. Pure Gir Cow',
+    goats: 'e.g. Osmanabadi Goat Pair',
+    poultry: 'e.g. Kadaknath Breeding Stock - 50 Birds',
+    fish: 'e.g. Rohu Fingerlings - 10,000',
+    others: 'e.g. White Giant Rabbits - 10 Pairs',
+};
+
 export default function LivestockPage() {
     const { t } = useLanguage();
     const [activeTab, setActiveTab] = useState<TabType>('browse');
@@ -77,18 +144,30 @@ export default function LivestockPage() {
     const [sellFormErrors, setSellFormErrors] = useState<string[]>([]);
     const [sellForm, setSellForm] = useState({
         title: '',
-        breed: '',
-        age: '',
         price: '',
         location: '',
         district: '',
         state: '',
         description: '',
-        milkYield: '',
-        weight: '',
-        quantity: '1',
         imageFiles: [] as File[],
+        /** Category-specific answers, keyed by CATEGORY_FIELDS[category][].key */
+        specs: {} as Record<string, string>,
     });
+
+    /** Fields for the chosen category; empty until one is picked. */
+    const activeFields = CATEGORY_FIELDS[selectedSellCategory] ?? [];
+
+    // Switching category swaps the questions, so previous answers no longer apply
+    // (a poultry "Eggs/Day" must not survive into a Fish listing).
+    const handleSellCategoryChange = (categoryId: string) => {
+        if (categoryId === selectedSellCategory) return;
+        setSelectedSellCategory(categoryId);
+        setSellForm(p => ({ ...p, specs: {} }));
+        setSellFormErrors([]);
+    };
+
+    const setSpec = (key: string, value: string) =>
+        setSellForm(p => ({ ...p, specs: { ...p.specs, [key]: value } }));
 
     // Auth context
     const { user } = useAuth();
@@ -128,8 +207,12 @@ export default function LivestockPage() {
         const errs: string[] = [];
         if (!selectedSellCategory) errs.push('Please select a category');
         if (!sellForm.title.trim()) errs.push('Title is required');
-        if (!sellForm.breed.trim()) errs.push('Breed is required');
-        if (!sellForm.age.trim()) errs.push('Age is required');
+        // Required detail fields come from the category's own spec.
+        for (const field of activeFields) {
+            if (field.required && !(sellForm.specs[field.key] ?? '').trim()) {
+                errs.push(`${field.label} is required`);
+            }
+        }
         if (!sellForm.price.trim()) errs.push('Price is required');
         if (!sellForm.location.trim()) errs.push('Location is required');
         if (!sellForm.district.trim()) errs.push('District is required');
@@ -168,13 +251,12 @@ export default function LivestockPage() {
                 district: sellForm.district,
                 state: sellForm.state,
                 images: imageUrls,
-                specs: {
-                    breed: sellForm.breed,
-                    age: sellForm.age,
-                    milkYield: sellForm.milkYield,
-                    weight: sellForm.weight,
-                    quantity: sellForm.quantity,
-                },
+                // Only the fields this category actually asked for, blanks dropped.
+                specs: Object.fromEntries(
+                    activeFields
+                        .map(f => [f.key, (sellForm.specs[f.key] ?? '').trim()])
+                        .filter(([, value]) => value !== '')
+                ),
             });
 
             if (error) {
@@ -399,7 +481,7 @@ export default function LivestockPage() {
                                         <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Livestock Listed!</h2>
                                         <p className="text-sm text-gray-500 mb-6">Your listing is now active. Buyers can find it in the marketplace.</p>
                                         <div className="flex gap-3 justify-center">
-                                            <button onClick={() => { setSellSuccess(false); setSellForm({ title: '', breed: '', age: '', price: '', location: '', district: '', state: '', description: '', milkYield: '', weight: '', quantity: '1', imageFiles: [] }); setSelectedSellCategory(''); }}
+                                            <button onClick={() => { setSellSuccess(false); setSellForm({ title: '', price: '', location: '', district: '', state: '', description: '', imageFiles: [], specs: {} }); setSelectedSellCategory(''); }}
                                                 className="px-6 py-3 rounded-xl bg-primary text-white font-bold">{t('livestockPage.listAnother')}</button>
                                             <button onClick={() => setActiveTab('buy')}
                                                 className="px-6 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold">{t('livestockPage.browseMarket')}</button>
@@ -415,7 +497,7 @@ export default function LivestockPage() {
                                             <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 md:mb-4">Select Category *</label>
                                             <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 md:gap-3">
                                                 {sellCategories.map((cat) => (
-                                                    <button key={cat.id} onClick={() => setSelectedSellCategory(cat.id)}
+                                                    <button key={cat.id} onClick={() => handleSellCategoryChange(cat.id)}
                                                         className={`p-2 md:p-4 rounded-lg md:rounded-xl border-2 text-center transition-all ${selectedSellCategory === cat.id ? 'border-primary bg-primary/5' : 'border-gray-200 dark:border-gray-700 hover:border-primary/30'}`}>
                                                         <span className="text-xl md:text-2xl mb-0.5 md:mb-1 block">{cat.icon}</span>
                                                         <span className={`text-[10px] md:text-xs font-semibold line-clamp-2 ${selectedSellCategory === cat.id ? 'text-primary' : 'text-gray-600'}`}>{cat.name}</span>
@@ -429,33 +511,51 @@ export default function LivestockPage() {
                                             <div className="grid grid-cols-2 gap-2 md:gap-4">
                                                 <div>
                                                     <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Title *</label>
-                                                    <input type="text" placeholder="e.g. Pure Gir Cow" value={sellForm.title} onChange={(e) => setSellForm(p => ({ ...p, title: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Breed *</label>
-                                                    <input type="text" placeholder="e.g. Gir" value={sellForm.breed} onChange={(e) => setSellForm(p => ({ ...p, breed: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
-                                                </div>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2 md:gap-4">
-                                                <div>
-                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Age *</label>
-                                                    <input type="text" placeholder="e.g. 3 Years" value={sellForm.age} onChange={(e) => setSellForm(p => ({ ...p, age: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
+                                                    <input type="text" placeholder={TITLE_PLACEHOLDER[selectedSellCategory] || 'e.g. Pure Gir Cow'} value={sellForm.title} onChange={(e) => setSellForm(p => ({ ...p, title: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
                                                 </div>
                                                 <div>
                                                     <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Price (₹) *</label>
                                                     <input type="text" placeholder="e.g. 85000" value={sellForm.price} onChange={(e) => setSellForm(p => ({ ...p, price: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
                                                 </div>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-2 md:gap-4">
-                                                <div>
-                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Milk Yield (L/day)</label>
-                                                    <input type="text" placeholder="e.g. 12" value={sellForm.milkYield} onChange={(e) => setSellForm(p => ({ ...p, milkYield: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
+
+                                            {/* Category-specific details */}
+                                            {!selectedSellCategory ? (
+                                                <div className="flex items-center gap-2 px-3 md:px-4 py-3 rounded-lg md:rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900 text-amber-700 dark:text-amber-400 text-xs md:text-sm">
+                                                    <span className="material-symbols-outlined text-lg">info</span>
+                                                    Pick a category above to see the details we need for it.
                                                 </div>
-                                                <div>
-                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Weight (Kg)</label>
-                                                    <input type="text" placeholder="e.g. 450" value={sellForm.weight} onChange={(e) => setSellForm(p => ({ ...p, weight: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
+                                            ) : (
+                                                <div className="grid grid-cols-2 gap-2 md:gap-4">
+                                                    {activeFields.map(field => (
+                                                        <div key={field.key}>
+                                                            <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">
+                                                                {field.label}{field.required ? ' *' : ''}
+                                                            </label>
+                                                            {field.type === 'select' ? (
+                                                                <select
+                                                                    value={sellForm.specs[field.key] ?? ''}
+                                                                    onChange={(e) => setSpec(field.key, e.target.value)}
+                                                                    className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base appearance-none"
+                                                                >
+                                                                    <option value="">Select</option>
+                                                                    {(field.options ?? []).map(opt => (
+                                                                        <option key={opt} value={opt}>{opt}</option>
+                                                                    ))}
+                                                                </select>
+                                                            ) : (
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder={field.placeholder}
+                                                                    value={sellForm.specs[field.key] ?? ''}
+                                                                    onChange={(e) => setSpec(field.key, e.target.value)}
+                                                                    className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base"
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    ))}
                                                 </div>
-                                            </div>
+                                            )}
                                             <div className="grid grid-cols-3 gap-2 md:gap-4">
                                                 <div>
                                                     <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Location *</label>

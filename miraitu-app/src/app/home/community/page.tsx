@@ -27,7 +27,7 @@ import {
 } from '@/app/actions/community';
 import supabase from '@/lib/supabase';
 import StoriesBar from '@/components/community/StoriesBar';
-import CreatePostModal from '@/components/community/CreatePostModal';
+import CreatePostModal, { type CreatePostIntent } from '@/components/community/CreatePostModal';
 import CreateStoryModal from '@/components/community/CreateStoryModal';
 import StoryViewerModal from '../../../components/community/StoryViewerModal';
 import EditPostModal from '@/components/community/EditPostModal';
@@ -93,6 +93,9 @@ function CommunityFeedPage() {
         () => new Set<string>()
     );
     const [showCreateStory, setShowCreateStory] = useState(false);
+    /** Which composer the FAB menu asked for — decides what CreatePostModal opens with. */
+    const [createIntent, setCreateIntent] = useState<CreatePostIntent>('post');
+    const [showCreateMenu, setShowCreateMenu] = useState(false);
     const [viewingStoryIndex, setViewingStoryIndex] = useState<number | null>(null);
     const [socialListView, setSocialListView] = useState<'followers' | 'following' | null>(null);
     const [activeNav, setActiveNav] = useState('Feed');
@@ -850,23 +853,24 @@ function CommunityFeedPage() {
                             <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-3 sm:p-4 border border-gray-100 dark:border-gray-800 mb-4 sm:mb-5">
                                 <div className="flex gap-3">
                                     <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-[#22c33d]/10">
-                                        {user?.photoURL ? (
-                                            <button
-                                                onClick={() => router.push(`/home/community/user/${encodeURIComponent(normalizeUsername(user?.displayName || 'you'))}`)}
-                                                className="w-full h-full cursor-pointer"
-                                                aria-label="Open profile"
-                                            >
-                                                <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
-                                            </button>
-                                        ) : (
-                                            <button
-                                                onClick={() => router.push(`/home/community/user/${encodeURIComponent(normalizeUsername(user?.displayName || 'you'))}`)}
-                                                className="w-full h-full flex items-center justify-center cursor-pointer"
-                                                aria-label="Open profile"
-                                            >
-                                                <span className="material-symbols-outlined text-xl text-[#22c33d]/50">person</span>
-                                            </button>
-                                        )}
+                                        <button
+                                            onClick={() => router.push(`/home/community/user/${encodeURIComponent(normalizeUsername(user?.displayName || 'you'))}`)}
+                                            className="w-full h-full cursor-pointer"
+                                            aria-label="Open profile"
+                                        >
+                                            {/* Real photo when the account has one, else the same
+                                                generated initials avatar used across the feed. */}
+                                            <img
+                                                src={resolveAvatarSrc(user?.photoURL, user?.displayName || 'you')}
+                                                alt=""
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    const img = e.currentTarget;
+                                                    img.onerror = null;
+                                                    img.src = DEFAULT_COMMUNITY_AVATAR;
+                                                }}
+                                            />
+                                        </button>
                                     </div>
                                     <textarea
                                         value={inlineText}
@@ -1177,17 +1181,52 @@ function CommunityFeedPage() {
 
             <Footer />
 
-            {/* Mobile FAB - Create Post */}
-            <button
-                onClick={() => setShowCreatePost(true)}
-                className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-[#22c33d] text-white shadow-lg shadow-[#22c33d]/30 flex items-center justify-center hover:brightness-110 active:scale-95 transition-all z-40 md:hidden"
-            >
-                <span className="material-symbols-outlined text-2xl">add</span>
-            </button>
+            {/* Mobile FAB — opens a menu of everything you can create */}
+            {showCreateMenu && (
+                <div
+                    className="fixed inset-0 bg-black/40 z-40 md:hidden"
+                    onClick={() => setShowCreateMenu(false)}
+                />
+            )}
+            <div className="fixed bottom-24 right-5 z-40 md:hidden flex flex-col items-end gap-3">
+                {showCreateMenu && [
+                    { icon: 'videocam', label: 'Upload Short', color: '#f97316', onClick: () => { setCreateIntent('video'); setShowCreatePost(true); } },
+                    { icon: 'image', label: 'Photo Post', color: '#2563eb', onClick: () => { setCreateIntent('photo'); setShowCreatePost(true); } },
+                    { icon: 'poll', label: 'Poll', color: '#7e22ce', onClick: () => { setCreateIntent('poll'); setShowCreatePost(true); } },
+                    { icon: 'auto_stories', label: 'Add Story', color: '#0f766e', onClick: () => setShowCreateStory(true) },
+                    { icon: 'edit', label: 'Write Post', color: '#15803d', onClick: () => { setCreateIntent('post'); setShowCreatePost(true); } },
+                ].map(item => (
+                    <button
+                        key={item.label}
+                        onClick={() => { setShowCreateMenu(false); item.onClick(); }}
+                        className="flex items-center gap-3 animate-[fadeIn_150ms_ease-out]"
+                    >
+                        <span className="px-3 py-1.5 rounded-lg bg-white dark:bg-[#1a231a] text-gray-800 dark:text-gray-100 text-xs font-bold shadow-md whitespace-nowrap">
+                            {item.label}
+                        </span>
+                        <span
+                            className="w-11 h-11 rounded-full text-white shadow-lg flex items-center justify-center"
+                            style={{ backgroundColor: item.color }}
+                        >
+                            <span className="material-symbols-outlined text-xl">{item.icon}</span>
+                        </span>
+                    </button>
+                ))}
+                <button
+                    onClick={() => setShowCreateMenu(v => !v)}
+                    aria-label={showCreateMenu ? 'Close create menu' : 'Open create menu'}
+                    aria-expanded={showCreateMenu}
+                    className="w-14 h-14 rounded-full bg-[#22c33d] text-white shadow-lg shadow-[#22c33d]/30 flex items-center justify-center hover:brightness-110 active:scale-95 transition-all"
+                >
+                    <span className={`material-symbols-outlined text-2xl transition-transform duration-200 ${showCreateMenu ? 'rotate-45' : ''}`}>add</span>
+                </button>
+            </div>
 
-            {/* Create Post Modal */}
+            {/* Create Post Modal — keyed by intent so it remounts with the right panel open */}
             <CreatePostModal
+                key={`composer-${createIntent}`}
                 isOpen={showCreatePost}
+                intent={createIntent}
                 onClose={() => setShowCreatePost(false)}
                 onSubmit={handleCreatePost}
                 userAvatar={user?.photoURL}

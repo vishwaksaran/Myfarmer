@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { DEFAULT_COMMUNITY_AVATAR, resolveAvatarSrc } from './avatarUtils';
 
 /** Uploads a post image to the shared bucket and returns its public URL. */
 async function uploadCommunityImage(file: File): Promise<string | null> {
@@ -17,15 +18,20 @@ async function uploadCommunityImage(file: File): Promise<string | null> {
   }
 }
 
+/** Which composer the user picked from the create menu, so the modal can open ready for it. */
+export type CreatePostIntent = 'post' | 'photo' | 'video' | 'poll';
+
 interface CreatePostModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (post: { content: string; images: string[]; video: string | null; tags: string[] }) => void;
   userAvatar?: string | null;
   userName?: string | null;
+  /** Auto-opens the matching picker/panel when the modal opens. */
+  intent?: CreatePostIntent;
 }
 
-export default function CreatePostModal({ isOpen, onClose, onSubmit, userAvatar, userName }: CreatePostModalProps) {
+export default function CreatePostModal({ isOpen, onClose, onSubmit, userAvatar, userName, intent = 'post' }: CreatePostModalProps) {
   const [content, setContent] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -36,12 +42,22 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit, userAvatar,
   const [location, setLocation] = useState('');
   const [showLocationInput, setShowLocationInput] = useState(false);
   const [pollOptions, setPollOptions] = useState<string[]>([]);
-  const [showPollInput, setShowPollInput] = useState(false);
+  // Poll intent opens the panel straight away. The parent keys this component by
+  // intent, so a remount re-applies this initial value.
+  const [showPollInput, setShowPollInput] = useState(intent === 'poll');
   const [pollOptionInput, setPollOptionInput] = useState('');
   const [activeTab, setActiveTab] = useState<'post' | 'image' | 'video'>('post');
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+
+  // Jump straight to the picker the user chose in the create menu. Runs on open
+  // only — reopening with the same intent re-triggers because isOpen toggled.
+  useEffect(() => {
+    if (!isOpen) return;
+    if (intent === 'photo') fileInputRef.current?.click();
+    else if (intent === 'video') videoInputRef.current?.click();
+  }, [isOpen, intent]);
 
   if (!isOpen) return null;
 
@@ -154,11 +170,16 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit, userAvatar,
         {/* User Info */}
         <div className="flex items-center gap-3 px-4 pt-4">
           <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden ring-2 ring-primary/20">
-            {userAvatar ? (
-              <img src={userAvatar} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <span className="material-symbols-outlined text-xl text-primary/60">person</span>
-            )}
+            <img
+              src={resolveAvatarSrc(userAvatar, userName || 'you')}
+              alt=""
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                const img = e.currentTarget;
+                img.onerror = null;
+                img.src = DEFAULT_COMMUNITY_AVATAR;
+              }}
+            />
           </div>
           <div>
             <p className="font-bold text-gray-900 dark:text-white text-sm">{userName || 'Farmer'}</p>

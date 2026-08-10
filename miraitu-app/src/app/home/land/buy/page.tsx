@@ -8,6 +8,7 @@ import { fetchApprovedSellListings, type SellListingRecord } from '@/app/actions
 import { logListingContact, type ContactChannel } from '@/app/actions/listing-contact';
 import { useAuth } from '@/context/AuthContext';
 import LoginModal from '@/components/auth/LoginModal';
+import { Z } from '@/lib/z-layers';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop';
 
@@ -500,7 +501,7 @@ export default function BuyLandPage() {
 
                 return (
                     <div
-                        style={{ position: 'fixed', inset: 0, zIndex: 99997, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+                        style={{ position: 'fixed', inset: 0, zIndex: Z.MODAL, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
                         onClick={() => setContactListing(null)}
                     >
                         <div
@@ -655,7 +656,7 @@ export default function BuyLandPage() {
 
             {/* Share toast */}
             {shareToast && createPortal(
-                <div style={{ position: 'fixed', bottom: '80px', left: '50%', transform: 'translateX(-50%)', zIndex: 999999, background: '#111', color: 'white', padding: '10px 20px', borderRadius: '24px', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+                <div style={{ position: 'fixed', bottom: '80px', left: '50%', transform: 'translateX(-50%)', zIndex: Z.TOAST, background: '#111', color: 'white', padding: '10px 20px', borderRadius: '24px', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
                     <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#4ade80' }}>check_circle</span>
                     {shareToast}
                 </div>,
@@ -665,7 +666,7 @@ export default function BuyLandPage() {
             {/* Photo lightbox — every image the seller uploaded. Portaled at a
                 higher z-index than the detail modal so zooming from it works. */}
             {gallery && createPortal(
-                <div style={{ zIndex: 99999 }} className="fixed inset-0 flex items-center justify-center bg-black/90 p-4" onClick={() => setGallery(null)}>
+                <div style={{ zIndex: Z.LIGHTBOX }} className="fixed inset-0 flex items-center justify-center bg-black/90 p-4" onClick={() => setGallery(null)}>
                     <button
                         onClick={() => setGallery(null)}
                         className="absolute top-4 right-4 flex items-center justify-center size-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"

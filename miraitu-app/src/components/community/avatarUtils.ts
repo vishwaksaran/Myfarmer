@@ -5,8 +5,6 @@ export const isImageAvatar = (value?: string | null) => {
 
 const normalizeSeed = (seed: string) => seed.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-export const DEFAULT_COMMUNITY_AVATAR = '/images/community/farmers/rural-farmer-1.jpg';
-
 const hashToIndex = (seed: string, modulo: number) => {
     let hash = 0;
     for (let i = 0; i < seed.length; i += 1) {
@@ -15,52 +13,57 @@ const hashToIndex = (seed: string, modulo: number) => {
     return Math.abs(hash) % modulo;
 };
 
-const INDIAN_FARMER_AVATAR_POOL = [
-    '/images/community/farmers/rural-farmer-1.jpg',
-    '/images/community/farmers/rural-farmer-2.jpg',
-    '/images/community/farmers/rural-farmer-3.jpg',
-    '/images/community/farmers/rural-farmer-4.jpg',
-    '/images/community/farmers/rural-farmer-5.jpg',
-    '/images/community/farmers/rural-farmer-6.jpg',
-    '/images/community/farmers/rural-farmer-7.png',
-    '/images/community/farmers/rural-farmer-8.jpg',
-    '/images/community/farmers/rural-farmer-9.jpg',
-    '/images/community/farmers/rural-farmer-10.jpg',
+// Deep enough for white text to stay readable at 14px inside a 56px circle.
+const AVATAR_COLORS = [
+    '#15803d', // green
+    '#0f766e', // teal
+    '#b45309', // amber
+    '#c2410c', // orange
+    '#4d7c0f', // olive
+    '#1d4ed8', // blue
+    '#7e22ce', // purple
+    '#be123c', // rose
 ];
 
-const AVATAR_OVERRIDES: Record<string, string> = {
-    yourstory: '/images/community/farmers/rural-farmer-1.jpg',
-    rajeshk: '/images/community/farmers/rural-farmer-1.jpg',
-    rajeshkumar: '/images/community/farmers/rural-farmer-1.jpg',
-    rajeshorganic: '/images/community/farmers/rural-farmer-1.jpg',
-    priyas: '/images/community/farmers/rural-farmer-2.jpg',
-    priyasharma: '/images/community/farmers/rural-farmer-2.jpg',
-    priyaagri: '/images/community/farmers/rural-farmer-2.jpg',
-    amitp: '/images/community/farmers/rural-farmer-3.jpg',
-    amitpatel: '/images/community/farmers/rural-farmer-3.jpg',
-    amitsmartfarm: '/images/community/farmers/rural-farmer-3.jpg',
-    sunitad: '/images/community/farmers/rural-farmer-4.jpg',
-    sunitadevi: '/images/community/farmers/rural-farmer-4.jpg',
-    sunitacoop: '/images/community/farmers/rural-farmer-4.jpg',
-    karthikr: '/images/community/farmers/rural-farmer-5.jpg',
-    karthikreddy: '/images/community/farmers/rural-farmer-5.jpg',
-    karthikagritech: '/images/community/farmers/rural-farmer-5.jpg',
-    meenav: '/images/community/farmers/rural-farmer-6.jpg',
-    vikrams: '/images/community/farmers/rural-farmer-7.png',
-    vikramsingh: '/images/community/farmers/rural-farmer-7.png',
-    drswaminathan: '/images/community/farmers/rural-farmer-8.jpg',
-    drmangeshthakur: '/images/community/farmers/rural-farmer-9.jpg',
-    drmangeshagri: '/images/community/farmers/rural-farmer-9.jpg',
-    kavithafarms: '/images/community/farmers/rural-farmer-10.jpg',
-    kavithaorganic: '/images/community/farmers/rural-farmer-10.jpg',
-    agridroneindia: '/images/community/farmers/rural-farmer-8.jpg',
-    agridronein: '/images/community/farmers/rural-farmer-8.jpg',
-    kisaanunion: '/images/community/farmers/rural-farmer-9.jpg',
+/** "Rajesh K." → "RK", "you" → "Y". Falls back to a person glyph when there are no letters. */
+const initialsOf = (name: string): string => {
+    const words = (name || '')
+        .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+        .split(/\s+/)
+        .filter(Boolean);
+    if (words.length === 0) return '';
+    const letters = words.slice(0, 2).map(w => w[0]).join('');
+    return letters.toUpperCase();
 };
 
+/**
+ * A self-contained SVG avatar — coloured disc plus initials.
+ *
+ * Replaces the old photo pool: those files are wide documentary shots (a farmers'
+ * march, a threshing yard), so a 56px circular crop of them read as unrecognisable
+ * noise rather than a face. Initials stay legible at every size these render at,
+ * need no network request, and can never 404.
+ */
+const initialsAvatar = (seed: string): string => {
+    const key = normalizeSeed(seed) || 'farmer';
+    const bg = AVATAR_COLORS[hashToIndex(key, AVATAR_COLORS.length)];
+    const initials = initialsOf(seed);
+    const label = initials
+        ? `<text x="40" y="40" fill="#ffffff" font-family="Plus Jakarta Sans, Segoe UI, system-ui, sans-serif" font-size="32" font-weight="700" text-anchor="middle" dominant-baseline="central">${initials}</text>`
+        // No letters to work with (emoji-only or blank name) — draw a simple bust.
+        : `<g fill="#ffffff"><circle cx="40" cy="32" r="12"/><path d="M16 70c0-13 11-22 24-22s24 9 24 22z"/></g>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><rect width="80" height="80" rx="40" fill="${bg}"/>${label}</svg>`;
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+};
+
+/** Neutral avatar used as the onError fallback when a real photo URL fails to load. */
+export const DEFAULT_COMMUNITY_AVATAR = initialsAvatar('');
+
+/**
+ * A real uploaded photo when we have one, otherwise a generated initials avatar
+ * keyed off the display name (so the same person keeps the same colour).
+ */
 export const resolveAvatarSrc = (avatar: string | null | undefined, seed: string) => {
     if (isImageAvatar(avatar)) return avatar as string;
-    const key = normalizeSeed(seed || 'farmer');
-    if (AVATAR_OVERRIDES[key]) return AVATAR_OVERRIDES[key];
-    return INDIAN_FARMER_AVATAR_POOL[hashToIndex(key, INDIAN_FARMER_AVATAR_POOL.length)];
+    return initialsAvatar(seed || 'farmer');
 };
