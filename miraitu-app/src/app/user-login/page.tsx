@@ -62,9 +62,14 @@ export default function UserLoginPage() {
         router.replace(destination);
     }, [router]);
 
-    // Decide where to land after login based on role + onboarding status.
-    const resolveDestination = useCallback((role: string | null | undefined, onboarded: boolean): string => {
-        if (!onboarded) return '/onboarding';
+    // Decide where to land after login based on role.
+    //
+    // Onboarding is a SIGNUP step, not a login gate. It used to be forced here on
+    // `onboarding_completed !== true`, which trapped every account whose profile
+    // predates onboarding — the `handle_new_user` trigger never sets that column,
+    // so those rows sit at NULL and failed the strict `=== true` check on every
+    // single login. New accounts still get the flow from the register page.
+    const resolveDestination = useCallback((role: string | null | undefined): string => {
         if (redirectPath) return redirectPath;
         if (role === 'service_provider' || role === 'dealer') {
             try {
@@ -110,7 +115,7 @@ export default function UserLoginPage() {
     useEffect(() => {
         if (user && !loading && !isSigningIn && !successMessage) {
             if (redirectPath) { navigateAfterLogin(redirectPath); return; }
-            fetchProfile().then(p => navigateAfterLogin(resolveDestination(p?.role, true)));
+            fetchProfile().then(p => navigateAfterLogin(resolveDestination(p?.role)));
         }
     }, [user, loading, isSigningIn, successMessage, redirectPath, navigateAfterLogin, resolveDestination, fetchProfile]);
 
@@ -180,9 +185,7 @@ export default function UserLoginPage() {
 
                 setSuccessMessage(`✅ ${t('login.successLogin')}`);
 
-                // Use server-side onboarding check (not AuthContext which may have stale user)
-                const onboarded = data.onboarding_completed === true;
-                const destination = resolveDestination(role, onboarded);
+                const destination = resolveDestination(role);
                 setTimeout(() => navigateAfterLogin(destination), 1200);
             }
         } catch {
@@ -268,15 +271,14 @@ export default function UserLoginPage() {
             if (data.session) {
                 setSuccessMessage(`✅ ${t('login.successLogin')}`);
 
-                // Check onboarding status + role
+                // Role decides the landing page (provider/dealer → dashboard).
                 const { data: profile } = await supabase
                     .from('profiles')
-                    .select('onboarding_completed, role')
+                    .select('role')
                     .eq('id', data.user.id)
                     .single();
 
-                const onboarded = profile?.onboarding_completed === true;
-                const destination = resolveDestination(profile?.role, onboarded);
+                const destination = resolveDestination(profile?.role);
                 setTimeout(() => navigateAfterLogin(destination), 1200);
             }
         } catch {

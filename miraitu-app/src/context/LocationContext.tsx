@@ -19,18 +19,14 @@ interface LocationContextValue {
     location: AppLocation | null;
     loading: boolean;
     permission: PermissionState;
-    /** True until the app has decided whether to show the first-run prompt. */
+    /** True once the app has finished its first resolution attempt. */
     ready: boolean;
-    /** Whether the first-run location prompt should be shown. */
-    needsPrompt: boolean;
     /** Trigger the browser geolocation flow + reverse geocode, then persist. */
     requestLocation: () => Promise<AppLocation | null>;
     /** Set a location typed by the user (no coordinates). */
     setManualLocation: (address: string) => void;
     /** Forget the stored location. */
     clearLocation: () => void;
-    /** Dismiss the first-run prompt without choosing (won't nag again this session). */
-    dismissPrompt: () => void;
 }
 
 // ─── localStorage keys ───────────────────────────────────────────────
@@ -39,7 +35,6 @@ const K_LAT = 'miraitu.location.lat';
 const K_LNG = 'miraitu.location.lng';
 const K_DISTRICT = 'miraitu.location.district';
 const K_STATE = 'miraitu.location.state';
-const K_PROMPTED = 'miraitu.location.prompted'; // '1' once user has answered the gate
 
 const LocationContext = createContext<LocationContextValue | null>(null);
 
@@ -75,6 +70,37 @@ function readStored(): AppLocation | null {
     };
 }
 
+/**
+ * Coarse city-level position from the caller's IP — the last resort when GPS is
+ * denied or unavailable, so the app still has *some* location instead of none.
+ *
+ * Free and keyless. Accuracy is city-level at best and can be badly wrong on
+ * mobile carrier networks, so it is only ever used as a fallback and never
+ * overwrites a GPS fix.
+ */
+async function ipFallbackLocation(): Promise<AppLocation | null> {
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 4000);
+        const res = await fetch('https://ipwho.is/', { signal: controller.signal });
+        clearTimeout(timeout);
+        if (!res.ok) return null;
+
+        const data = await res.json();
+        if (!data?.success || !data.city) return null;
+
+        return {
+            address: [data.city, data.region].filter(Boolean).join(', '),
+            district: data.city,
+            state: data.region,
+            lat: Number(data.latitude) || 0,
+            lng: Number(data.longitude) || 0,
+        };
+    } catch {
+        return null;
+    }
+}
+
 function persist(loc: AppLocation) {
     if (typeof window === 'undefined') return;
     localStorage.setItem(K_ADDRESS, loc.address);
@@ -90,7 +116,6 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(false);
     const [permission, setPermission] = useState<PermissionState>('unknown');
     const [ready, setReady] = useState(false);
-    const [needsPrompt, setNeedsPrompt] = useState(false);
     const initialised = useRef(false);
 
     const requestLocation = useCallback(async (): Promise<AppLocation | null> => {
@@ -102,8 +127,6 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
             setLocation(loc);
             persist(loc);
             setPermission('granted');
-            localStorage.setItem(K_PROMPTED, '1');
-            setNeedsPrompt(false);
             return loc;
         } catch (err) {
             const msg = err instanceof Error ? err.message : '';
@@ -120,8 +143,6 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         const loc: AppLocation = { address: clean, lat: 0, lng: 0 };
         setLocation(loc);
         persist(loc);
-        localStorage.setItem(K_PROMPTED, '1');
-        setNeedsPrompt(false);
     }, []);
 
     const clearLocation = useCallback(() => {
@@ -131,12 +152,13 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         }
     }, []);
 
-    const dismissPrompt = useCallback(() => {
-        setNeedsPrompt(false);
-        if (typeof window !== 'undefined') localStorage.setItem(K_PROMPTED, '1');
-    }, []);
-
-    // On first mount: hydrate from storage, decide whether to prompt.
+    // On first mount, resolve the location without ever asking in-app. Order is
+    // most-accurate-first:
+    //   1. a previously stored fix (instant, already precise)
+    //   2. GPS when the browser permission is granted, or still undecided — the
+    //      browser shows its own native prompt; we no longer show one of ours
+    //   3. coarse IP lookup, only if GPS is denied or fails, so the app is never
+    //      left with no location at all
     useEffect(() => {
         if (initialised.current) return;
         initialised.current = true;
@@ -148,29 +170,38 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
             return;
         }
 
-        const alreadyPrompted = localStorage.getItem(K_PROMPTED) === '1';
-        // Check the Permissions API — if already granted, silently detect.
-        const decide = async () => {
+        const resolve = async () => {
+            let state: PermissionState = 'prompt';
             try {
                 const status = await navigator.permissions?.query({ name: 'geolocation' as PermissionName });
-                if (status?.state === 'granted') {
-                    await requestLocation();
+                if (status?.state) state = status.state as PermissionState;
+                setPermission(state);
+            } catch {
+                /* Permissions API unsupported — just try geolocation below. */
+            }
+
+            if (state !== 'denied') {
+                const fix = await requestLocation();
+                if (fix) {
                     setReady(true);
                     return;
                 }
-                setPermission(status?.state === 'denied' ? 'denied' : 'prompt');
-            } catch {
-                /* Permissions API unsupported — fall through to prompt */
             }
-            if (!alreadyPrompted) setNeedsPrompt(true);
+
+            // GPS denied, unavailable, or timed out — fall back to IP.
+            const coarse = await ipFallbackLocation();
+            if (coarse) {
+                setLocation(coarse);
+                persist(coarse);
+            }
             setReady(true);
         };
-        decide();
+        resolve();
     }, [requestLocation]);
 
     return (
         <LocationContext.Provider
-            value={{ location, loading, permission, ready, needsPrompt, requestLocation, setManualLocation, clearLocation, dismissPrompt }}
+            value={{ location, loading, permission, ready, requestLocation, setManualLocation, clearLocation }}
         >
             {children}
         </LocationContext.Provider>

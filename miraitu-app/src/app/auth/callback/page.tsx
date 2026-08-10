@@ -7,8 +7,15 @@ import supabase from '@/lib/supabase';
 import MiraituLoader from '@/components/v2/MiraituLoader';
 
 /**
- * Check if user has completed onboarding by querying their profile.
- * Returns the redirect path: '/onboarding' for new users, '/' for existing.
+ * Where to land after an OAuth / magic-link sign-in.
+ *
+ * Onboarding is for genuinely NEW accounts — ones with no profile row yet. It is
+ * deliberately NOT gated on `onboarding_completed`: that column is never set by
+ * the `handle_new_user` trigger, so every older account sits at NULL and would be
+ * pushed back through setup on each sign-in.
+ *
+ * A failed lookup returns '/' rather than '/onboarding': a transient query error
+ * must not trap an existing user in a flow they already finished.
  */
 async function getRedirectPath(userId: string): Promise<string> {
     try {
@@ -17,22 +24,18 @@ async function getRedirectPath(userId: string): Promise<string> {
 
         const { data, error } = await supabase
             .from('profiles')
-            .select('onboarding_completed')
+            .select('id')
             .eq('id', userId)
-            .single();
+            .maybeSingle();
 
         console.log('[Auth Callback] Profile check:', { data, error: error?.message });
 
-        if (error || !data) {
-            // Profile doesn't exist yet or query failed → send to onboarding
-            return '/onboarding';
-        }
-
-        return data.onboarding_completed ? '/' : '/onboarding';
+        if (error) return '/';
+        // No row at all → brand-new account → run setup.
+        return data ? '/' : '/onboarding';
     } catch (err) {
         console.error('[Auth Callback] Profile check error:', err);
-        // On any error, default to onboarding (safer than skipping it)
-        return '/onboarding';
+        return '/';
     }
 }
 
