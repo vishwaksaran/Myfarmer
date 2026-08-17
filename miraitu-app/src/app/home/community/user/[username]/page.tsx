@@ -28,16 +28,15 @@ export default function CommunityUserProfilePage() {
 
     // Am I looking at my own profile?
     //
-    // The id comparison is the reliable answer, but `profile` is null whenever the
-    // handle has no matching `profiles.username` row — which is exactly the common
-    // case, because every link to "my profile" is built as
-    // normalizeUsername(displayName || 'you'). So the handle check has to use the
-    // SAME 'you' fallback the links use; comparing against '' (the old behaviour)
-    // meant an account with no display name never recognised its own page.
-    const ownHandle = normalizeUsername(user?.displayName || 'you');
+    // The id comparison is the answer now that every "my profile" link carries
+    // a real `profiles.username`, so the lookup resolves and `profile.id` is
+    // there to compare. The handle fallback below only covers links saved
+    // before that — they point at normalizeUsername(displayName || 'you'),
+    // which matches no profile row, leaving `profile` null.
+    const legacySelfLink = !profile && normalizeUsername(user?.displayName || 'you') === normalizedRouteUsername;
     const isLoggedInUsersProfile = !!user
         && !user.isGuest
-        && ((!!profile?.id && profile.id === user.id) || ownHandle === normalizedRouteUsername);
+        && ((!!profile?.id && profile.id === user.id) || legacySelfLink);
     // Derived rather than a separate flag, so navigating between profiles shows
     // the loading state without a synchronous setState inside the effect.
     const profileLoading = loadedHandle !== routeUsername;

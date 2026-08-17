@@ -948,6 +948,32 @@ async function resolveUserId(handleOrId: string): Promise<string | null> {
     return data?.id ?? null;
 }
 
+/**
+ * The caller's own public handle.
+ *
+ * Links to "my profile" used to be built as `normalizeUsername(displayName)`,
+ * falling back to the literal word "you" — a handle no profile row has, so the
+ * page loaded empty. This returns the real `profiles.username`, matching what
+ * `handleFor` puts on every post.
+ */
+export async function fetchMyCommunityHandle(): Promise<{ username: string | null }> {
+    try {
+        const supabase = await createSupabaseServerClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { username: null };
+
+        const { data } = await createSupabaseAdminClient()
+            .from('profiles')
+            .select('id, full_name, username, avatar_url, farm_location, role')
+            .eq('id', user.id)
+            .maybeSingle();
+
+        return { username: handleFor((data ?? undefined) as AuthorRow | undefined, user.id) };
+    } catch {
+        return { username: null };
+    }
+}
+
 /** Handles the caller follows — the source of truth for every device. */
 export async function fetchFollowing(): Promise<{ data: string[]; error?: string }> {
     try {

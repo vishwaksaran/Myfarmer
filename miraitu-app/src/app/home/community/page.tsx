@@ -23,6 +23,7 @@ import {
     recordShare as recordShareAction,
     toggleFollow as toggleFollowAction,
     fetchFollowing,
+    fetchMyCommunityHandle,
     votePoll as votePollAction,
     createStories as createStoriesAction,
     fetchStories,
@@ -118,6 +119,8 @@ function CommunityFeedPage() {
 
     /** The name the rest of the feed already uses for this account. */
     const myDisplayName = user?.displayName?.trim() || COMMUNITY_FALLBACK_NAME;
+    /** My real public handle, for linking to my own community profile page. */
+    const [myHandle, setMyHandle] = useState<string | null>(null);
 
     /**
      * Typing shows the spinner immediately, before the debounce even fires —
@@ -179,6 +182,16 @@ function CommunityFeedPage() {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         void loadFeed();
     }, [loadFeed]);
+
+    // My own public handle — the link target for "my profile" everywhere on
+    // this page. Fetched once; it does not change while the page is open.
+    useEffect(() => {
+        let cancelled = false;
+        fetchMyCommunityHandle().then(res => {
+            if (!cancelled) setMyHandle(res.username);
+        });
+        return () => { cancelled = true; };
+    }, [user?.id]);
 
     // ── Stories ──────────────────────────────────────────────────────
     // Server-backed and shared: what you post is what every other farmer sees,
@@ -631,14 +644,23 @@ function CommunityFeedPage() {
         });
     }, [followedUsernames]);
 
+    /**
+     * Opens someone's community profile — including your own, which is the
+     * same page with photo controls instead of a Follow button.
+     *
+     * Handles now come from `profiles.username` on both sides, so there is no
+     * more redirecting your own clicks to the account settings screen: that
+     * only existed because the old link was built from your display name and
+     * pointed at a handle ("you") no profile ever had.
+     */
     const handleOpenUserProfile = (username: string) => {
         const normalized = normalizeUsername(username);
-        const myNormalizedDisplayName = normalizeUsername(user?.displayName || '');
-        if (!normalized || normalized === 'you' || (myNormalizedDisplayName && normalized === myNormalizedDisplayName)) {
-            router.push('/home/profile');
+        const target = !normalized || normalized === 'you' ? myHandle : normalized;
+        if (!target) {
+            router.push('/home/profile'); // handle not resolved yet
             return;
         }
-        router.push(`/home/community/user/${encodeURIComponent(normalized)}`);
+        router.push(`/home/community/user/${encodeURIComponent(target)}`);
     };
 
     // Follow/unfollow — written to the server, then reconciled with its answer.
@@ -982,12 +1004,13 @@ function CommunityFeedPage() {
                                 <div className="flex gap-3">
                                     <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-[#22c33d]/10">
                                         <button
-                                            // Straight to the account's own page. The old route built a
-                                            // handle out of the display name — for an account with no name
-                                            // that was literally "you", a profile that does not exist.
-                                            onClick={() => router.push('/home/profile')}
+                                            // Your community profile, by your real handle. The old route
+                                            // built one out of the display name — for an account with no
+                                            // name that was literally "you", which no profile row has, so
+                                            // the page loaded empty.
+                                            onClick={() => handleOpenUserProfile(myHandle || '')}
                                             className="w-full h-full cursor-pointer"
-                                            aria-label="Open profile"
+                                            aria-label="Open my community profile"
                                         >
                                             {/* Real photo when the account has one, else the same
                                                 generated initials avatar used across the feed. Seeded
