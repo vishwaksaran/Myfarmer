@@ -1,5 +1,15 @@
 // Community feature types
 
+/**
+ * Shown for anyone who has not set a name on their profile.
+ *
+ * Both the feed (server side) and the composer (client side) must use this one
+ * value: when they disagreed, a nameless user saw their own posts signed
+ * "Miraitu Farmer" (MF) while the composer above them showed a "Y" avatar
+ * seeded from the literal string "you", as if it belonged to someone else.
+ */
+export const COMMUNITY_FALLBACK_NAME = 'Miraitu Farmer';
+
 export type ReactionType = 'like' | 'love' | 'celebrate' | 'insightful' | 'funny' | 'growth';
 
 export const REACTION_EMOJIS: Record<ReactionType, { emoji: string; label: string }> = {
@@ -22,6 +32,21 @@ export interface Comment {
   replies?: Comment[];
 }
 
+/** One choice on a post's poll, with its live tally. */
+export interface PollOption {
+  /** Index into the post's stored option list — what a vote refers to. */
+  index: number;
+  text: string;
+  votes: number;
+}
+
+export interface Poll {
+  options: PollOption[];
+  totalVotes: number;
+  /** The option the signed-in user picked, or null if they have not voted. */
+  myVote: number | null;
+}
+
 export interface Post {
   id: string;
   author: string;
@@ -33,6 +58,7 @@ export interface Post {
   content: string;
   images?: string[];
   video?: string;
+  poll?: Poll;
   reactions: Record<ReactionType, number>;
   myReaction?: ReactionType | null;
   totalReactions: number;
@@ -52,6 +78,10 @@ export interface Story {
   image: string;
   seen: boolean;
   isOwn: boolean;
+  /** Handle of whoever posted it — used to group and to open their profile. */
+  username?: string;
+  /** How many people have watched it. Only populated for your own stories. */
+  viewCount?: number;
 }
 
 export interface NewsEvent {

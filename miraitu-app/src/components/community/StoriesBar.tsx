@@ -7,12 +7,14 @@ import { DEFAULT_COMMUNITY_AVATAR, resolveAvatarSrc } from './avatarUtils';
 interface StoriesBarProps {
   stories: Story[];
   userAvatar?: string | null;
+  /** Your display name — seeds the initials avatar on your own tile. */
+  userName?: string | null;
   hasOwnStory?: boolean;
   onAddStory: () => void;
   onViewStory: (story: Story) => void;
 }
 
-export default function StoriesBar({ stories, userAvatar, hasOwnStory = false, onAddStory, onViewStory }: StoriesBarProps) {
+export default function StoriesBar({ stories, userAvatar, userName, hasOwnStory = false, onAddStory, onViewStory }: StoriesBarProps) {
   const [viewedStories, setViewedStories] = useState<Set<string>>(new Set());
 
   const groupedStories = (() => {
@@ -20,7 +22,10 @@ export default function StoriesBar({ stories, userAvatar, hasOwnStory = false, o
     const groups = new Map<string, Story[]>();
 
     stories.forEach((story) => {
-      const key = story.isOwn ? 'own' : story.author;
+      // Group by handle, not display name: everyone who has not set a name
+      // shares the same fallback, so grouping by name merged strangers into a
+      // single ring.
+      const key = story.isOwn ? 'own' : (story.username || story.author);
       if (!groups.has(key)) {
         groups.set(key, []);
         order.push(key);
@@ -90,8 +95,13 @@ export default function StoriesBar({ stories, userAvatar, hasOwnStory = false, o
                 <div className="w-full h-full rounded-full bg-white dark:bg-[#1a231a] p-[2px]">
                   <div className="w-full h-full rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
                     <img
-                      src={resolveAvatarSrc(group.isOwn ? userAvatar || story?.avatar : story?.avatar, story?.author || group.key)}
-                      alt={story?.author || group.key}
+                      // Your own tile is seeded from your name, not the words
+                      // "Your Story" — that produced a "YS" disc that read like
+                      // some other user rather than your profile picture.
+                      src={group.isOwn
+                        ? resolveAvatarSrc(userAvatar || story?.avatar, userName || story?.author || 'farmer')
+                        : resolveAvatarSrc(story?.avatar, story?.author || group.key)}
+                      alt={group.isOwn ? (userName || 'Your story') : (story?.author || group.key)}
                       className="w-full h-full object-cover object-center"
                       onError={(e) => {
                         const img = e.currentTarget;

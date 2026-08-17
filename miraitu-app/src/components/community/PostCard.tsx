@@ -12,6 +12,7 @@ interface PostCardProps {
   onSave: (postId: string) => void;
   onTagClick: (tag: string) => void;
   onLikeComment: (postId: string, commentId: string) => void;
+  onVotePoll?: (postId: string, optionIndex: number) => void;
   onEdit?: (postId: string) => void;
   onDelete?: (postId: string) => void;
   isFollowingAuthor?: boolean;
@@ -126,7 +127,7 @@ function CommentItem({
   );
 }
 
-export default function PostCard({ post, onReact, onComment, onShare, onSave, onTagClick, onLikeComment, onEdit, onDelete, isFollowingAuthor = false, onToggleFollowAuthor, onAuthorClick, userAvatar, requireAuth }: PostCardProps) {
+export default function PostCard({ post, onReact, onComment, onShare, onSave, onTagClick, onLikeComment, onVotePoll, onEdit, onDelete, isFollowingAuthor = false, onToggleFollowAuthor, onAuthorClick, userAvatar, requireAuth }: PostCardProps) {
   const [showReactionPicker, setShowReactionPicker] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -436,6 +437,53 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
           </div>
         )}
       </div>
+
+      {/* Poll — results appear once the reader has voted, like every other feed */}
+      {post.poll && post.poll.options.length > 0 && (
+        <div className="px-3 sm:px-4 pb-3 space-y-2">
+          {post.poll.options.map(option => {
+            const voted = post.poll!.myVote === option.index;
+            const hasVoted = post.poll!.myVote !== null;
+            const share = post.poll!.totalVotes > 0
+              ? Math.round((option.votes / post.poll!.totalVotes) * 100)
+              : 0;
+
+            return (
+              <button
+                key={option.index}
+                onClick={() => requireAuth(() => onVotePoll?.(post.id, option.index))}
+                className={`relative w-full overflow-hidden rounded-xl border text-left transition-all ${voted
+                  ? 'border-[#22c33d] bg-[#22c33d]/5'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-[#22c33d]/50'
+                  }`}
+              >
+                {/* Result bar — only meaningful once a vote has been cast */}
+                {hasVoted && (
+                  <span
+                    className={`absolute inset-y-0 left-0 transition-[width] duration-500 ${voted ? 'bg-[#22c33d]/20' : 'bg-gray-100 dark:bg-gray-800'}`}
+                    style={{ width: `${share}%` }}
+                  />
+                )}
+                <span className="relative flex items-center gap-2 px-3.5 py-2.5">
+                  <span className={`material-symbols-outlined text-lg ${voted ? 'text-[#22c33d]' : 'text-gray-400'}`}>
+                    {voted ? 'check_circle' : 'radio_button_unchecked'}
+                  </span>
+                  <span className={`flex-1 text-sm break-words ${voted ? 'font-bold text-[#22c33d]' : 'text-gray-700 dark:text-gray-300'}`}>
+                    {option.text}
+                  </span>
+                  {hasVoted && (
+                    <span className="text-xs font-bold text-gray-500 shrink-0">{share}%</span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
+          <p className="text-xs text-gray-500">
+            {post.poll.totalVotes} {post.poll.totalVotes === 1 ? 'vote' : 'votes'}
+            {post.poll.myVote !== null && ' · tap your choice again to undo'}
+          </p>
+        </div>
+      )}
 
       {/* Media */}
       {post.images && post.images.length > 0 && (

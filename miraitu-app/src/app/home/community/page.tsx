@@ -9,8 +9,8 @@ import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import LoginModal from '@/components/auth/LoginModal';
 
-import { Post, ReactionType, Story } from '@/components/community/types';
-import { sampleStories, sampleNewsEvents, trendingTopics } from '@/components/community/sampleData';
+import { Post, ReactionType, Story, COMMUNITY_FALLBACK_NAME } from '@/components/community/types';
+import { sampleNewsEvents, trendingTopics } from '@/components/community/sampleData';
 import {
     fetchFeed,
     createPost as createPostAction,
@@ -23,11 +23,18 @@ import {
     recordShare as recordShareAction,
     toggleFollow as toggleFollowAction,
     fetchFollowing,
+    votePoll as votePollAction,
+    createStories as createStoriesAction,
+    fetchStories,
+    markStorySeen as markStorySeenAction,
+    updateStory as updateStoryAction,
+    deleteStory as deleteStoryAction,
     type CommunityUser,
 } from '@/app/actions/community';
 import supabase from '@/lib/supabase';
+import { discardCommunityMedia, uploadCommunityMedia } from '@/lib/community-media';
 import StoriesBar from '@/components/community/StoriesBar';
-import CreatePostModal, { type CreatePostIntent } from '@/components/community/CreatePostModal';
+import CreatePostModal, { type CreatePostIntent, type CreatePostPayload } from '@/components/community/CreatePostModal';
 import CreateStoryModal from '@/components/community/CreateStoryModal';
 import StoryViewerModal from '../../../components/community/StoryViewerModal';
 import EditPostModal from '@/components/community/EditPostModal';
@@ -35,26 +42,12 @@ import PostCard from '@/components/community/PostCard';
 import HashtagSearch from '@/components/community/HashtagSearch';
 import NewsEvents from '@/components/community/NewsEvents';
 import SuggestedUsers from '@/components/community/SuggestedUsers';
+import PeopleSearch from '@/components/community/PeopleSearch';
 import { normalizeUsername, saveFollowedUsernames } from '@/components/community/followStore';
 import { DEFAULT_COMMUNITY_AVATAR, resolveAvatarSrc } from '@/components/community/avatarUtils';
 
 const BASE_FOLLOWING_COUNT = 128;
 const POSTS_PER_PAGE = 20;
-
-/** Uploads a post image and returns its public URL, or null on failure. */
-async function uploadCommunityImage(file: File): Promise<string | null> {
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('folder', 'community');
-    try {
-        const res = await fetch('/api/upload/lease-photo', { method: 'POST', body: fd });
-        if (!res.ok) return null;
-        const { url } = await res.json();
-        return url ?? null;
-    } catch {
-        return null;
-    }
-}
 
 const getTrendingScore = (post: Post) => {
     return post.totalReactions + (post.commentCount * 2) + (post.shares * 3);
@@ -84,9 +77,10 @@ function CommunityFeedPage() {
     const [loadingMore, setLoadingMore] = useState(false);
     /** How many posts are currently loaded — the offset for the next page. */
     const loadedCountRef = useRef(0);
-    const [stories, setStories] = useState<Story[]>(sampleStories);
+    const [stories, setStories] = useState<Story[]>([]);
     const [users, setUsers] = useState<(CommunityUser & { following: boolean; followers: string })[]>([]);
     const [peopleQuery, setPeopleQuery] = useState('');
+    const [peopleLoading, setPeopleLoading] = useState(false);
     /** Bumped by realtime follow events to re-pull follower tallies. */
     const [peopleRefreshKey, setPeopleRefreshKey] = useState(0);
     const [followedUsernames, setFollowedUsernames] = useState<Set<string>>(
@@ -115,6 +109,36 @@ function CommunityFeedPage() {
     const resolvedShareRef = useRef<string | null>(null);
     const inlinePhotoRef = useRef<HTMLInputElement>(null);
     const inlineVideoRef = useRef<HTMLInputElement>(null);
+    /**
+     * Public URL → storage path for media the inline composer uploaded but has
+     * not published yet. A draft that is cleared or fails takes its blobs with
+     * it instead of leaving them stranded in the bucket.
+     */
+    const inlineMediaPathsRef = useRef<Map<string, string>>(new Map());
+
+    /** The name the rest of the feed already uses for this account. */
+    const myDisplayName = user?.displayName?.trim() || COMMUNITY_FALLBACK_NAME;
+
+    /**
+     * Typing shows the spinner immediately, before the debounce even fires —
+     * the effect only ever turns it off, so it never sets state synchronously.
+     */
+    const handlePeopleQueryChange = useCallback((value: string) => {
+        setPeopleQuery(value);
+        if (value.trim()) setPeopleLoading(true);
+    }, []);
+
+    const forgetInlineMedia = useCallback((urls: string[]) => {
+        const paths: string[] = [];
+        for (const url of urls) {
+            const path = inlineMediaPathsRef.current.get(url);
+            if (path) {
+                paths.push(path);
+                inlineMediaPathsRef.current.delete(url);
+            }
+        }
+        void discardCommunityMedia(paths);
+    }, []);
 
     // User is guaranteed logged in at this point (auth gate above)
     const requireAuth = useCallback((action: () => void) => {
@@ -156,6 +180,43 @@ function CommunityFeedPage() {
         void loadFeed();
     }, [loadFeed]);
 
+    // ── Stories ──────────────────────────────────────────────────────
+    // Server-backed and shared: what you post is what every other farmer sees,
+    // and it ages out after 24 hours. `placeholder` is the "Your Story" tile
+    // that opens the composer when you have nothing live.
+    const loadStories = useCallback(async () => {
+        const res = await fetchStories();
+        const placeholder: Story = {
+            id: 'own',
+            author: 'Your Story',
+            avatar: user?.photoURL || '',
+            image: '',
+            seen: false,
+            isOwn: true,
+        };
+        setStories([placeholder, ...res.data]);
+    }, [user?.photoURL]);
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void loadStories();
+
+        // Stories appear, vanish and change as they are posted, deleted or
+        // replaced; view rows land as people watch, which keeps the author's
+        // "seen by" tally live without a refresh.
+        const channel = supabase
+            .channel('community-stories')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'community_stories' }, () => {
+                void loadStories();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'community_story_views' }, () => {
+                void loadStories();
+            })
+            .subscribe();
+
+        return () => { void supabase.removeChannel(channel); };
+    }, [loadStories]);
+
     // Realtime: any insert/update/delete on posts, reactions or comments
     // re-pulls the feed, so likes and comments from other users land live.
     useEffect(() => {
@@ -174,6 +235,7 @@ function CommunityFeedPage() {
             .on('postgres_changes', { event: '*', schema: 'public', table: 'community_comments' }, refresh)
             .on('postgres_changes', { event: '*', schema: 'public', table: 'community_comment_likes' }, refresh)
             .on('postgres_changes', { event: '*', schema: 'public', table: 'community_shares' }, refresh)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'community_poll_votes' }, refresh)
             .subscribe();
 
         return () => {
@@ -232,6 +294,7 @@ function CommunityFeedPage() {
                 following: !!u.isFollowing,
                 followers: `${u.followerCount ?? 0} follower${(u.followerCount ?? 0) === 1 ? '' : 's'} · ${u.postCount} post${u.postCount === 1 ? '' : 's'}`,
             })));
+            setPeopleLoading(false);
         }, peopleQuery ? 350 : 0); // debounce typing, load immediately on mount
         return () => { cancelled = true; clearTimeout(timer); };
     }, [peopleQuery, peopleRefreshKey]);
@@ -276,7 +339,7 @@ function CommunityFeedPage() {
             if (p.id !== postId) return p;
             const newComment = {
                 id: 'c' + Date.now(),
-                author: user?.displayName || 'You',
+                author: myDisplayName,
                 avatar: user?.photoURL || '',
                 text,
                 time: 'Just now',
@@ -357,53 +420,94 @@ function CommunityFeedPage() {
         setPosts(prev => prev.map(p => p.id === postId ? { ...p, saved: !p.saved } : p));
     };
 
-    // Create new post — saved to the shared feed so every user sees it.
-    const handleCreatePost = async (data: { content: string; images: string[]; video: string | null; tags: string[] }) => {
+    /**
+     * Publishes a post. Text, media, tags, location and poll options go in one
+     * insert, so the post either exists complete or not at all — the feed only
+     * reloads once the server has confirmed the write.
+     */
+    const handleCreatePost = async (data: CreatePostPayload): Promise<{ success: boolean; error?: string }> => {
         const res = await createPostAction({
             content: data.content,
             images: data.images,
             video: data.video,
             tags: data.tags,
+            location: data.location,
+            pollOptions: data.pollOptions,
         });
         if (res.success) {
             await loadFeed();
-        } else {
-            setUploadError(res.error || 'Could not publish your post');
+            return { success: true };
         }
+        const error = res.error || 'Could not publish your post';
+        setUploadError(error);
+        return { success: false, error };
     };
 
-    // Create/update own stories
-    const handleCreateStory = (images: string[]) => {
-        if (images.length === 0) return;
-
-        const stamp = Date.now();
-        const newOwnStories: Story[] = images.map((image, index) => ({
-            id: `own-${stamp}-${index}`,
-            author: 'Your Story',
-            avatar: user?.photoURL || '',
-            image,
-            seen: false,
-            isOwn: true,
+    // Vote on a poll — optimistic, then reconciled with the server's answer.
+    const handleVotePoll = (postId: string, optionIndex: number) => {
+        setPosts(prev => prev.map(p => {
+            if (p.id !== postId || !p.poll) return p;
+            const previous = p.poll.myVote;
+            const nextVote = previous === optionIndex ? null : optionIndex;
+            const options = p.poll.options.map(o => {
+                let votes = o.votes;
+                if (previous === o.index) votes -= 1;
+                if (nextVote === o.index) votes += 1;
+                return { ...o, votes: Math.max(0, votes) };
+            });
+            return {
+                ...p,
+                poll: {
+                    options,
+                    totalVotes: options.reduce((sum, o) => sum + o.votes, 0),
+                    myVote: nextVote,
+                },
+            };
         }));
 
-        const placeholder: Story = {
-            id: 'own',
-            author: 'Your Story',
-            avatar: user?.photoURL || '',
-            image: '',
-            seen: false,
-            isOwn: true,
-        };
-
-        setStories(prev => {
-            const withoutPlaceholder = prev.filter(story => story.id !== 'own');
-            const ownStories = withoutPlaceholder.filter(story => story.isOwn);
-            const otherStories = withoutPlaceholder.filter(story => !story.isOwn);
-            return [placeholder, ...newOwnStories, ...ownStories, ...otherStories];
+        void votePollAction(postId, optionIndex).then(res => {
+            if (!res.success) void loadFeed(); // roll back to server truth
         });
+    };
 
+    /**
+     * Posts one or more stories. A multi-photo story is a single batch insert,
+     * so it cannot land half-published.
+     */
+    const handleCreateStory = async (images: string[]): Promise<{ success: boolean; error?: string }> => {
+        const res = await createStoriesAction(images);
+        if (!res.success) {
+            return { success: false, error: res.error || 'Could not post your story' };
+        }
+
+        await loadStories();
         setShowCreateStory(false);
+        // Open on the first of the newly posted stories (index 0 is the
+        // "Your Story" placeholder tile).
         setViewingStoryIndex(1);
+        return { success: true };
+    };
+
+    /** Swaps the photo on one of your own stories, keeping its place in the ring. */
+    const handleReplaceStory = async (storyId: string, image: string) => {
+        const res = await updateStoryAction(storyId, image);
+        if (res.success) await loadStories();
+        return res;
+    };
+
+    /** Deletes one of your own stories; it disappears for everyone at once. */
+    const handleDeleteStory = async (storyId: string) => {
+        const res = await deleteStoryAction(storyId);
+        if (!res.success) return res;
+
+        await loadStories();
+        // Keep the viewer pointed at something that still exists.
+        setViewingStoryIndex(prev => {
+            if (prev === null) return prev;
+            const remaining = stories.filter(s => s.id !== storyId && !!s.image).length;
+            return remaining === 0 ? null : Math.min(prev, remaining);
+        });
+        return res;
     };
 
     // Open story viewer
@@ -413,6 +517,7 @@ function CommunityFeedPage() {
 
         setViewingStoryIndex(idx);
         setStories(prev => prev.map((s, i) => (i === idx ? { ...s, seen: true } : s)));
+        void markStorySeenAction(story.id);
     };
 
     const hasOwnStory = stories.some(story => story.isOwn && !!story.image);
@@ -573,11 +678,18 @@ function CommunityFeedPage() {
         if (post) setEditingPost(post);
     };
 
-    // Save edited post. Only the text is persisted — the server rejects edits
-    // to posts the caller does not own.
+    // Save edited post. Text, media and tags are all persisted; the server
+    // rejects edits to posts the caller does not own.
     const handleEditSave = (postId: string, data: { content: string; images: string[]; video: string | null; tags: string[] }) => {
-        void updatePostAction(postId, data.content).then(res => {
-            if (res.success) void loadFeed();
+        void updatePostAction(postId, {
+            content: data.content,
+            images: data.images,
+            video: data.video,
+            tags: data.tags,
+        }).then(() => {
+            // Either way, reconcile with what the server actually stored — a
+            // rejected edit must not linger on screen as if it saved.
+            void loadFeed();
         });
         setPosts(prev => prev.map(p =>
             p.id === postId
@@ -732,11 +844,15 @@ function CommunityFeedPage() {
                                                     )}
                                                 </div>
                                             </div>
-                                            <h3 className="font-bold text-gray-900 dark:text-white">{user.displayName || 'Farmer'}</h3>
+                                            <h3 className="font-bold text-gray-900 dark:text-white">{myDisplayName}</h3>
                                             <p className="text-xs text-gray-500 mt-0.5 mb-3">{user.email || 'Community Member'}</p>
                                             <div className="flex items-center justify-center gap-6 py-3 border-t border-gray-100 dark:border-gray-800">
                                                 <div className="text-center">
-                                                    <p className="font-bold text-gray-900 dark:text-white">{posts.filter(p => p.author === (user.displayName || 'You')).length}</p>
+                                                    {/* `isOwn` comes from the server comparing user ids —
+                                                        matching on display name counted nothing for an
+                                                        account with no name, and over-counted everyone
+                                                        sharing the "Miraitu Farmer" fallback. */}
+                                                    <p className="font-bold text-gray-900 dark:text-white">{posts.filter(p => p.isOwn).length}</p>
                                                     <p className="text-[11px] text-gray-500">Posts</p>
                                                 </div>
                                                 <div className="text-center">
@@ -823,9 +939,21 @@ function CommunityFeedPage() {
                             <StoriesBar
                                 stories={stories}
                                 userAvatar={user?.photoURL}
+                                userName={myDisplayName}
                                 hasOwnStory={hasOwnStory}
                                 onAddStory={() => setShowCreateStory(true)}
                                 onViewStory={handleViewStory}
+                            />
+
+                            {/* Find people — the sidebar search is xl-only, so this
+                                is the only way to look someone up on a phone. */}
+                            <PeopleSearch
+                                query={peopleQuery}
+                                onQueryChange={handlePeopleQueryChange}
+                                results={users}
+                                loading={peopleLoading}
+                                onFollow={handleFollow}
+                                onOpenProfile={handleOpenUserProfile}
                             />
 
                             {/* Feed Tabs */}
@@ -854,14 +982,20 @@ function CommunityFeedPage() {
                                 <div className="flex gap-3">
                                     <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-[#22c33d]/10">
                                         <button
-                                            onClick={() => router.push(`/home/community/user/${encodeURIComponent(normalizeUsername(user?.displayName || 'you'))}`)}
+                                            // Straight to the account's own page. The old route built a
+                                            // handle out of the display name — for an account with no name
+                                            // that was literally "you", a profile that does not exist.
+                                            onClick={() => router.push('/home/profile')}
                                             className="w-full h-full cursor-pointer"
                                             aria-label="Open profile"
                                         >
                                             {/* Real photo when the account has one, else the same
-                                                generated initials avatar used across the feed. */}
+                                                generated initials avatar used across the feed. Seeded
+                                                from the same fallback name the feed signs posts with,
+                                                so this reads "MF" like your posts do — not a stray "Y"
+                                                from the placeholder word "you". */}
                                             <img
-                                                src={resolveAvatarSrc(user?.photoURL, user?.displayName || 'you')}
+                                                src={resolveAvatarSrc(user?.photoURL, myDisplayName)}
                                                 alt=""
                                                 className="w-full h-full object-cover"
                                                 onError={(e) => {
@@ -888,7 +1022,10 @@ function CommunityFeedPage() {
                                             <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
                                                 <img src={src} alt="" className="w-full h-full object-cover" />
                                                 <button
-                                                    onClick={() => setInlineImages(prev => prev.filter((_, idx) => idx !== i))}
+                                                    onClick={() => {
+                                                        setInlineImages(prev => prev.filter((_, idx) => idx !== i));
+                                                        forgetInlineMedia([src]);
+                                                    }}
                                                     className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center"
                                                 >
                                                     <span className="material-symbols-outlined text-white text-xs">close</span>
@@ -900,7 +1037,10 @@ function CommunityFeedPage() {
                                                 <video src={inlineVideo} className="w-full h-full object-cover" />
                                                 <span className="absolute material-symbols-outlined text-white text-2xl">play_circle</span>
                                                 <button
-                                                    onClick={() => setInlineVideo(null)}
+                                                    onClick={() => {
+                                                        forgetInlineMedia([inlineVideo]);
+                                                        setInlineVideo(null);
+                                                    }}
                                                     className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center"
                                                 >
                                                     <span className="material-symbols-outlined text-white text-xs">close</span>
@@ -919,20 +1059,23 @@ function CommunityFeedPage() {
                                     className="hidden"
                                     onChange={async (e) => {
                                         const files = e.target.files;
-                                        if (!files) return;
+                                        if (!files || files.length === 0) return;
+                                        const picked = Array.from(files);
+                                        e.target.value = ''; // allow re-picking the same file after a failure
                                         setUploadError(null);
                                         // Upload straight away so the composer holds real public URLs.
                                         // Data URLs could never be shared with other users.
                                         setInlineUploading(true);
-                                        for (const file of Array.from(files)) {
-                                            if (file.size > 5 * 1024 * 1024) { setUploadError('Image must be under 5MB'); continue; }
-                                            if (!file.type.startsWith('image/')) { setUploadError('Only image files are allowed'); continue; }
-                                            const url = await uploadCommunityImage(file);
-                                            if (url) setInlineImages(prev => [...prev, url]);
-                                            else setUploadError('Upload failed. Please try again.');
+                                        for (const file of picked) {
+                                            const { media, error } = await uploadCommunityMedia(file, 'image');
+                                            if (media) {
+                                                inlineMediaPathsRef.current.set(media.url, media.path);
+                                                setInlineImages(prev => [...prev, media.url]);
+                                            } else {
+                                                setUploadError(error || 'Upload failed. Please try again.');
+                                            }
                                         }
                                         setInlineUploading(false);
-                                        e.target.value = '';
                                     }}
                                 />
                                 <input
@@ -942,25 +1085,26 @@ function CommunityFeedPage() {
                                     className="hidden"
                                     onChange={(e) => {
                                         const file = e.target.files?.[0];
+                                        e.target.value = '';
                                         setUploadError(null);
                                         if (!file) return;
-                                        if (!file.type.startsWith('video/')) {
-                                            setUploadError('Only video files are allowed');
-                                            e.target.value = '';
-                                            return;
-                                        }
-                                        if (file.size > 50 * 1024 * 1024) {
-                                            setUploadError(`Video too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Max size is 50MB.`);
-                                            e.target.value = '';
-                                            return;
-                                        }
-                                        const reader = new FileReader();
-                                        reader.onload = (ev) => {
-                                            if (ev.target?.result) setInlineVideo(ev.target.result as string);
-                                        };
-                                        reader.onerror = () => setUploadError('Failed to process video. Please try a different file.');
-                                        reader.readAsDataURL(file);
-                                        e.target.value = '';
+                                        // Uploaded to storage, not read into a data URL: a base64 video
+                                        // exceeds the 1MB Server Action body cap, so the post that
+                                        // carried it could never be saved.
+                                        void (async () => {
+                                            setInlineUploading(true);
+                                            const { media, error } = await uploadCommunityMedia(file, 'video');
+                                            if (media) {
+                                                setInlineVideo(prev => {
+                                                    if (prev) forgetInlineMedia([prev]);
+                                                    return media.url;
+                                                });
+                                                inlineMediaPathsRef.current.set(media.url, media.path);
+                                            } else {
+                                                setUploadError(error || 'Upload failed. Please try again.');
+                                            }
+                                            setInlineUploading(false);
+                                        })();
                                     }}
                                 />
 
@@ -1002,18 +1146,28 @@ function CommunityFeedPage() {
                                             disabled={inlineUploading || inlinePosting}
                                             onClick={async () => {
                                                 if (!inlineText.trim() && inlineImages.length === 0 && !inlineVideo) return;
+                                                if (inlineUploading || inlinePosting) return;
                                                 const tags = inlineText.match(/#\w+/g)?.map(t => t.slice(1)) || [];
                                                 setInlinePosting(true);
-                                                await handleCreatePost({
+                                                const result = await handleCreatePost({
                                                     content: inlineText,
                                                     images: inlineImages,
                                                     video: inlineVideo,
                                                     tags,
+                                                    location: '',
+                                                    pollOptions: [],
                                                 });
                                                 setInlinePosting(false);
+                                                // Only clear once the post is actually saved. Wiping the
+                                                // box unconditionally threw the draft away whenever the
+                                                // write failed, with the error shown above an empty form.
+                                                if (!result.success) return;
+                                                // The post row owns this media now, so it must survive.
+                                                inlineMediaPathsRef.current.clear();
                                                 setInlineText('');
                                                 setInlineImages([]);
                                                 setInlineVideo(null);
+                                                setUploadError(null);
                                             }}
                                             className="px-5 py-2 rounded-xl bg-[#22c33d] text-white text-sm font-semibold hover:bg-[#1ba332] transition-colors disabled:opacity-50"
                                         >
@@ -1071,6 +1225,7 @@ function CommunityFeedPage() {
                                         onSave={handleSave}
                                         onTagClick={handleTagClick}
                                         onLikeComment={handleLikeComment}
+                                        onVotePoll={handleVotePoll}
                                         onEdit={handleEdit}
                                         onDelete={handleDelete}
                                         isFollowingAuthor={followedUsernames.has(normalizeUsername(post.username))}
@@ -1145,12 +1300,14 @@ function CommunityFeedPage() {
                                 />
 
                                 {/* Suggested Users */}
+                                {/* No search box here any more — PeopleSearch in the
+                                    main column owns it at every breakpoint, and two
+                                    inputs bound to the same query mirrored each
+                                    other on wide screens. */}
                                 <SuggestedUsers
                                     users={users}
                                     onFollow={handleFollow}
                                     onOpenProfile={handleOpenUserProfile}
-                                    query={peopleQuery}
-                                    onQueryChange={setPeopleQuery}
                                 />
 
                                 {/* News & Events */}
@@ -1230,7 +1387,7 @@ function CommunityFeedPage() {
                 onClose={() => setShowCreatePost(false)}
                 onSubmit={handleCreatePost}
                 userAvatar={user?.photoURL}
-                userName={user?.displayName}
+                userName={myDisplayName}
             />
 
             <CreateStoryModal
@@ -1251,7 +1408,12 @@ function CommunityFeedPage() {
                             if (alreadySeen) return prev;
                             return prev.map(story => story.id === storyId ? { ...story, seen: true } : story);
                         });
+                        // Persisted too, so the grey ring follows the user to
+                        // their other devices instead of resetting on refresh.
+                        void markStorySeenAction(storyId);
                     }}
+                    onReplaceStory={handleReplaceStory}
+                    onDeleteStory={handleDeleteStory}
                 />
             )}
 
@@ -1328,7 +1490,7 @@ function CommunityFeedPage() {
                 onClose={() => setEditingPost(null)}
                 onSave={handleEditSave}
                 userAvatar={user?.photoURL}
-                userName={user?.displayName}
+                userName={myDisplayName}
             />
 
             {/* Login Modal */}

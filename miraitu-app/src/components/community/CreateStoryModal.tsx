@@ -1,61 +1,87 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { discardCommunityMedia, uploadCommunityMedia } from '@/lib/community-media';
 
 interface CreateStoryModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (images: string[]) => void;
+    /** Resolves once the stories are saved. The draft survives a failure. */
+    onSubmit: (images: string[]) => Promise<{ success: boolean; error?: string }>;
 }
 
 export default function CreateStoryModal({ isOpen, onClose, onSubmit }: CreateStoryModalProps) {
     const [images, setImages] = useState<string[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [uploading, setUploading] = useState(false);
+    const [posting, setPosting] = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
+    /** Public URL → storage path, so an abandoned draft cleans up after itself. */
+    const mediaPathsRef = useRef<Map<string, string>>(new Map());
 
     if (!isOpen) return null;
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
+        e.target.value = '';
         setError(null);
         if (files.length === 0) return;
 
-        files.forEach((file) => {
-            if (!file.type.startsWith('image/')) {
-                setError('Only image files are allowed for stories.');
-                return;
-            }
-
-            if (file.size > 10 * 1024 * 1024) {
-                setError('Each story image must be under 10MB.');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                if (ev.target?.result) {
-                    setImages(prev => [...prev, ev.target!.result as string]);
+        // Uploaded to storage up front. The old FileReader path produced base64
+        // data URLs that lived only in this browser — nobody else could ever see
+        // the story, and it disappeared on refresh.
+        void (async () => {
+            setUploading(true);
+            for (const file of files) {
+                const { media, error: uploadError } = await uploadCommunityMedia(file, 'image');
+                if (media) {
+                    mediaPathsRef.current.set(media.url, media.path);
+                    setImages(prev => [...prev, media.url]);
+                } else {
+                    setError(uploadError || 'Failed to upload one of the images. Please try again.');
                 }
-            };
-            reader.onerror = () => setError('Failed to read one of the images. Please try again.');
-            reader.readAsDataURL(file);
-        });
-
-        e.target.value = '';
+            }
+            setUploading(false);
+        })();
     };
 
-    const handlePostStory = () => {
+    const handleRemoveImage = (index: number) => {
+        const url = images[index];
+        setImages(prev => prev.filter((_, i) => i !== index));
+        const path = mediaPathsRef.current.get(url);
+        if (path) {
+            mediaPathsRef.current.delete(url);
+            void discardCommunityMedia([path]);
+        }
+    };
+
+    const handlePostStory = async () => {
+        if (uploading || posting) return;
         if (images.length === 0) {
             setError('Please choose at least one image to post your story.');
             return;
         }
 
-        onSubmit(images);
+        setPosting(true);
+        const result = await onSubmit(images);
+        setPosting(false);
+
+        if (!result.success) {
+            setError(result.error || 'Could not post your story. Please try again.');
+            return;
+        }
+
+        // Saved: the story rows own this media now.
+        mediaPathsRef.current.clear();
         setImages([]);
         setError(null);
     };
 
     const handleClose = () => {
+        if (posting) return;
+        const orphans = [...mediaPathsRef.current.values()];
+        mediaPathsRef.current.clear();
+        void discardCommunityMedia(orphans);
         setImages([]);
         setError(null);
         onClose();
@@ -91,7 +117,7 @@ export default function CreateStoryModal({ isOpen, onClose, onSubmit }: CreateSt
                                     <div key={`${idx}-${image.slice(0, 24)}`} className="relative rounded-xl overflow-hidden bg-black aspect-[3/4]">
                                         <img src={image} alt={`Story preview ${idx + 1}`} className="w-full h-full object-cover" />
                                         <button
-                                            onClick={() => setImages(prev => prev.filter((_, i) => i !== idx))}
+                                            onClick={() => handleRemoveImage(idx)}
                                             className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80"
                                         >
                                             <span className="material-symbols-outlined text-xs">close</span>
@@ -111,16 +137,17 @@ export default function CreateStoryModal({ isOpen, onClose, onSubmit }: CreateSt
                     <div className="mt-4 flex gap-2">
                         <button
                             onClick={() => fileRef.current?.click()}
-                            className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                            disabled={uploading || posting}
+                            className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
                         >
-                            {images.length > 0 ? 'Add More Photos' : 'Select Photo'}
+                            {uploading ? 'Uploading…' : images.length > 0 ? 'Add More Photos' : 'Select Photo'}
                         </button>
                         <button
-                            onClick={handlePostStory}
+                            onClick={() => { void handlePostStory(); }}
                             className="flex-1 py-2.5 rounded-xl bg-[#22c33d] text-white text-sm font-bold hover:brightness-110 disabled:opacity-50"
-                            disabled={images.length === 0}
+                            disabled={images.length === 0 || uploading || posting}
                         >
-                            Post {images.length > 1 ? `${images.length} Stories` : 'Story'}
+                            {posting ? 'Posting…' : `Post ${images.length > 1 ? `${images.length} Stories` : 'Story'}`}
                         </button>
                     </div>
                 </div>
