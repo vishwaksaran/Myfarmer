@@ -7,6 +7,8 @@ import MiraituLogo from '@/components/MiraituLogo';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { LangCode } from '@/i18n/translations';
 import { useCart } from '@/context/CartContext';
+import { useServiceCartCount } from '@/context/ServiceBookingCart';
+import { useMachineryCartCount } from '@/context/MachineryBookingCart';
 import { useAuth } from '@/context/AuthContext';
 import { useViewMode } from '@/hooks/useViewMode';
 import { useProviderTab } from '@/hooks/useProviderTab';
@@ -112,6 +114,17 @@ export default function Header() {
     const router = useRouter();
     const { lang, setLang, t } = useLanguage();
     const { totalItems } = useCart();
+    // The booking carts are mounted per section (/home/services, /home/machinery),
+    // so these read 0 everywhere else rather than throwing.
+    const serviceCartCount = useServiceCartCount();
+    const machineryCartCount = useMachineryCartCount();
+    const bookingCartCount = serviceCartCount + machineryCartCount;
+    /** Where the header cart should go, based on which cart actually has items. */
+    const cartHref = serviceCartCount > 0
+        ? '/home/services/cart'
+        : machineryCartCount > 0
+            ? '/home/machinery/cart'
+            : '/home/shop/checkout';
     const { user, loading: authLoading, fetchProfile, signOut } = useAuth();
     const [viewMode, setViewMode] = useViewMode();
     const [, setProviderTab] = useProviderTab();
@@ -500,13 +513,20 @@ export default function Header() {
                                 </button>
                             )}
 
-                            {/* Cart Button — hidden in provider view (no shopping there) */}
-                            {!isProviderView && SHOW_CART && (
-                                <Link href="/home/shop/checkout" className="relative flex items-center justify-center size-9 sm:size-10 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-black/5 dark:border-white/10 hover:bg-primary/5 hover:text-primary transition-colors skeuo-card shrink-0">
+            {/* Cart Button — hidden in provider view (no shopping there).
+                            Shown when the shop cart is enabled OR a booking cart has
+                            items, so adding a service/machinery booking always puts a
+                            count in the header instead of only a bar at the bottom. */}
+                            {!isProviderView && (SHOW_CART || bookingCartCount > 0) && (
+                                <Link
+                                    href={cartHref}
+                                    aria-label={`Cart, ${totalItems + bookingCartCount} item${totalItems + bookingCartCount === 1 ? '' : 's'}`}
+                                    className="relative flex items-center justify-center size-9 sm:size-10 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-black/5 dark:border-white/10 hover:bg-primary/5 hover:text-primary transition-colors skeuo-card shrink-0"
+                                >
                                     <span className="material-symbols-outlined text-xl">shopping_cart</span>
-                                    {totalItems > 0 && (
-                                        <span className="absolute -top-1.5 -right-1.5 size-5 flex items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm animate-in zoom-in duration-300">
-                                            {totalItems}
+                                    {totalItems + bookingCartCount > 0 && (
+                                        <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 flex items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm animate-in zoom-in duration-300">
+                                            {totalItems + bookingCartCount > 99 ? '99+' : totalItems + bookingCartCount}
                                         </span>
                                     )}
                                 </Link>

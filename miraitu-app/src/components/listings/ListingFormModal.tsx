@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import {
-    LISTING_CATEGORIES,
+    CATEGORIES_BY_MODE,
+    SUBCATEGORIES,
     RENT_PRICE_UNITS,
     SALE_PRICE_UNITS,
     type Listing,
@@ -37,7 +38,9 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
     const { location } = useAppLocation();
     const priceUnits = mode === 'rent' ? RENT_PRICE_UNITS : SALE_PRICE_UNITS;
 
+    const categories = CATEGORIES_BY_MODE[mode];
     const [category, setCategory] = useState<ListingCategory>('machinery');
+    const [subcategory, setSubcategory] = useState('');
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [brand, setBrand] = useState('');
@@ -60,6 +63,9 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
     /** Switching category re-points the hints and, unless overridden, the unit. */
     const chooseCategory = (next: ListingCategory) => {
         setCategory(next);
+        // The old sub-category belongs to the old category, so it cannot carry
+        // over — the server rejects a mismatched pair.
+        setSubcategory('');
         if (!unitTouched) setPriceUnit(defaultPriceUnit(mode, next));
     };
 
@@ -68,6 +74,7 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
         if (!isOpen) return;
         if (editing) {
             setCategory(editing.category);
+            setSubcategory(editing.subcategory || '');
             setTitle(editing.title);
             setDescription(editing.description);
             setBrand(editing.brand);
@@ -83,6 +90,7 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
             setUnitTouched(true);
         } else {
             setCategory('machinery');
+            setSubcategory('');
             setTitle('');
             setDescription('');
             setBrand('');
@@ -156,6 +164,7 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
         const result = await onSubmit({
             mode,
             category,
+            subcategory,
             title,
             description,
             brand,
@@ -223,7 +232,7 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
                     <div>
                         <label className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-2">Category</label>
                         <div className="flex flex-wrap gap-2">
-                            {LISTING_CATEGORIES.map(c => (
+                            {categories.map(c => (
                                 <button
                                     key={c}
                                     onClick={() => chooseCategory(c)}
@@ -238,6 +247,37 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
                             ))}
                         </div>
                     </div>
+
+                    {/* Sub-category — appears once a category is picked, because
+                        "Machinery" alone covers everything from a tractor to a
+                        borewell rig. Optional, so it never blocks publishing. */}
+                    {SUBCATEGORIES[category]?.length > 0 && (
+                        <div>
+                            <label className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-2">
+                                {CATEGORY_META[category].label} type
+                                <span className="ml-1 font-normal text-gray-400">(optional)</span>
+                            </label>
+                            <div className="flex flex-wrap gap-2">
+                                {SUBCATEGORIES[category].map(sub => {
+                                    const active = subcategory === sub;
+                                    return (
+                                        <button
+                                            key={sub}
+                                            // Tapping the active chip clears it, so a
+                                            // mis-tap is undoable without reloading.
+                                            onClick={() => setSubcategory(active ? '' : sub)}
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${active
+                                                ? 'bg-[#1f8c30] text-white shadow-sm'
+                                                : 'bg-gray-50 dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-[#22c33d]/50'
+                                                }`}
+                                        >
+                                            {sub}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Title */}
                     <div>

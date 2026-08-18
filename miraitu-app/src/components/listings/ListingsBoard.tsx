@@ -20,7 +20,8 @@ import type { Listing, ListingCategory, ListingInput, ListingMode } from './list
 import ListingCard from './ListingCard';
 import ListingFormModal from './ListingFormModal';
 import ListingDetailModal from './ListingDetailModal';
-import { BOARD_CATEGORIES, CATEGORY_META, boardTitle, postCta, searchPlaceholder } from './listingFormat';
+import { boardCategories, CATEGORY_META, boardTitle, postCta, searchPlaceholder } from './listingFormat';
+import { SUBCATEGORIES } from './listingTypes';
 
 const PAGE_SIZE = 20;
 
@@ -53,6 +54,7 @@ function Board({ mode }: { mode: ListingMode }) {
     const [hasMore, setHasMore] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
     const [category, setCategory] = useState<ListingCategory | 'all'>('all');
+    const [subcategory, setSubcategory] = useState('');
     const [query, setQuery] = useState('');
     const [debouncedQuery, setDebouncedQuery] = useState('');
     const [mineOnly, setMineOnly] = useState(wantsMine);
@@ -79,6 +81,7 @@ function Board({ mode }: { mode: ListingMode }) {
         const res = await fetchListings({
             mode,
             category,
+            subcategory,
             query: debouncedQuery,
             near,
             mineOnly,
@@ -90,7 +93,7 @@ function Board({ mode }: { mode: ListingMode }) {
         setLoading(false);
         // `near` is an object rebuilt each render; nearKey is its stable identity.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [mode, category, debouncedQuery, mineOnly, nearKey]);
+    }, [mode, category, subcategory, debouncedQuery, mineOnly, nearKey]);
 
     useEffect(() => {
         // A filter change starts a fresh page, so reset the cursor first.
@@ -123,6 +126,7 @@ function Board({ mode }: { mode: ListingMode }) {
         const res = await fetchListings({
             mode,
             category,
+            subcategory,
             query: debouncedQuery,
             near,
             mineOnly,
@@ -234,15 +238,20 @@ function Board({ mode }: { mode: ListingMode }) {
                     </div>
 
                     {/* Category chips */}
-                    <div className="flex gap-2 overflow-x-auto pb-2 mb-3 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
-                        {BOARD_CATEGORIES.map(c => {
+                    <div className="flex gap-2 overflow-x-auto pb-2 mb-2 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+                        {boardCategories(mode).map(c => {
                             const active = category === c;
                             const label = c === 'all' ? 'All' : CATEGORY_META[c].label;
                             const emoji = c === 'all' ? '📋' : CATEGORY_META[c].emoji;
                             return (
                                 <button
                                     key={c}
-                                    onClick={() => setCategory(c)}
+                                    onClick={() => {
+                                        setCategory(c);
+                                        // The sub-filter belongs to the previous
+                                        // category, so it cannot carry over.
+                                        setSubcategory('');
+                                    }}
                                     className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-bold transition-all ${active
                                         ? 'bg-[#22c33d] text-white shadow-sm'
                                         : 'bg-white dark:bg-[#1a231a] text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-gray-800'
@@ -254,6 +263,34 @@ function Board({ mode }: { mode: ListingMode }) {
                             );
                         })}
                     </div>
+
+                    {/* Sub-category chips — only once a category narrows the board,
+                        so the default view stays a single row. */}
+                    {category !== 'all' && SUBCATEGORIES[category]?.length > 0 && (
+                        <div className="flex gap-2 overflow-x-auto pb-2 mb-3 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+                            <button
+                                onClick={() => setSubcategory('')}
+                                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${!subcategory
+                                    ? 'bg-[#1f8c30] text-white'
+                                    : 'bg-white dark:bg-[#1a231a] text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-gray-800'
+                                    }`}
+                            >
+                                All {CATEGORY_META[category].label}
+                            </button>
+                            {SUBCATEGORIES[category].map(sub => (
+                                <button
+                                    key={sub}
+                                    onClick={() => setSubcategory(subcategory === sub ? '' : sub)}
+                                    className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${subcategory === sub
+                                        ? 'bg-[#1f8c30] text-white'
+                                        : 'bg-white dark:bg-[#1a231a] text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-gray-800'
+                                        }`}
+                                >
+                                    {sub}
+                                </button>
+                            ))}
+                        </div>
+                    )}
 
                     {/* My ads toggle */}
                     {user && (

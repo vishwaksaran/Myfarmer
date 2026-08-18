@@ -3,7 +3,7 @@
  * same on a card, in the detail view and in "My Ads".
  */
 
-import type { Listing, ListingCategory, ListingMode } from './listingTypes';
+import { CATEGORIES_BY_MODE, type Listing, type ListingCategory, type ListingMode } from './listingTypes';
 
 export const CATEGORY_META: Record<ListingCategory, { label: string; icon: string; emoji: string }> = {
     machinery: { label: 'Machinery', icon: 'agriculture', emoji: '🚜' },
@@ -15,10 +15,14 @@ export const CATEGORY_META: Record<ListingCategory, { label: string; icon: strin
     other: { label: 'Other', icon: 'category', emoji: '📦' },
 };
 
-/** Chip order on the boards — "All" first, then the reference app's order. */
-export const BOARD_CATEGORIES: (ListingCategory | 'all')[] = [
-    'all', 'machinery', 'vehicles', 'animals', 'land', 'crops', 'labour', 'other',
-];
+/**
+ * Chip order on a board — "All" first, then that board's categories.
+ *
+ * Per-mode because Rent offers no animals or labour, and Buy & Sell no labour.
+ */
+export function boardCategories(mode: ListingMode): (ListingCategory | 'all')[] {
+    return ['all', ...CATEGORIES_BY_MODE[mode]];
+}
 
 /** Indian digit grouping: 1,75,000 rather than 175,000. */
 export function formatRupees(amount: number): string {

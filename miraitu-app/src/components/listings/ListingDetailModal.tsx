@@ -92,12 +92,19 @@ export default function ListingDetailModal({ listing, onClose, onEdit, onDelete 
 
                 {/* Details */}
                 <div className="flex-1 overflow-y-auto p-4">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#22c33d]/10 text-[#1f8c30] dark:text-[#6abf62] text-[11px] font-bold">
-                        <span aria-hidden>{meta.emoji}</span>
-                        {meta.label}
-                        <span className="text-gray-400 mx-0.5">·</span>
-                        {listing.mode === 'rent' ? 'For rent' : 'For sale'}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#22c33d]/10 text-[#1f8c30] dark:text-[#6abf62] text-[11px] font-bold">
+                            <span aria-hidden>{meta.emoji}</span>
+                            {meta.label}
+                            <span className="text-gray-400 mx-0.5">·</span>
+                            {listing.mode === 'rent' ? 'For rent' : 'For sale'}
+                        </span>
+                        {listing.subcategory && (
+                            <span className="px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[11px] font-semibold">
+                                {listing.subcategory}
+                            </span>
+                        )}
+                    </div>
 
                     <h2 className="mt-2 text-xl font-extrabold text-gray-900 dark:text-white break-words">{listing.title}</h2>
 

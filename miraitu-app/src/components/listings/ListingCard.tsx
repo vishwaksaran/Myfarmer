@@ -36,9 +36,16 @@ export default function ListingCard({ listing, onOpen, onEdit, onDelete, onToggl
                 </div>
 
                 <div className="flex-1 min-w-0 py-0.5">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#22c33d]/10 text-[#1f8c30] dark:text-[#6abf62] text-[11px] font-bold">
-                        <span aria-hidden>{meta.emoji}</span>
-                        {meta.label}
+                    <span className="flex items-center gap-1.5 flex-wrap">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#22c33d]/10 text-[#1f8c30] dark:text-[#6abf62] text-[11px] font-bold">
+                            <span aria-hidden>{meta.emoji}</span>
+                            {meta.label}
+                        </span>
+                        {listing.subcategory && (
+                            <span className="px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[11px] font-semibold">
+                                {listing.subcategory}
+                            </span>
+                        )}
                     </span>
 
                     <h3 className="mt-1 text-[15px] font-bold text-gray-900 dark:text-white truncate">

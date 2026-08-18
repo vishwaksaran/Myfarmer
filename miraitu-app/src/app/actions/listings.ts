@@ -22,7 +22,9 @@ import { createSupabaseAdminClient } from '@/lib/supabase-admin';
  */
 
 import {
+    CATEGORIES_BY_MODE,
     LISTING_CATEGORIES,
+    SUBCATEGORIES,
     type FetchListingsOptions,
     type Listing,
     type ListingCategory,
@@ -34,6 +36,7 @@ interface ListingRow {
     id: string;
     user_id: string;
     listing_mode: string | null;
+    subcategory: string | null;
     category: string | null;
     listing_type: string | null;
     title: string;
@@ -56,7 +59,7 @@ interface ListingRow {
 }
 
 const COLUMNS =
-    'id, user_id, listing_mode, category, listing_type, title, brand, model, description, price, price_unit, negotiable, unit, location, district, state, latitude, longitude, images, status, contact_phone, created_at';
+    'id, user_id, listing_mode, category, subcategory, listing_type, title, brand, model, description, price, price_unit, negotiable, unit, location, district, state, latitude, longitude, images, status, contact_phone, created_at';
 
 /** Great-circle distance in km — what the "6.0 km away" line is built from. */
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -82,6 +85,7 @@ function toListing(row: ListingRow, userId: string | null, near?: { lat: number;
         // `category` is the taxonomy; `listing_type` is the pre-030 column kept
         // for legacy readers, used here only as a fallback for old rows.
         category: ((row.category || row.listing_type || 'other') as ListingCategory),
+        subcategory: row.subcategory || '',
         title: row.title,
         description: row.description || '',
         brand: row.brand || '',
@@ -132,6 +136,10 @@ export async function fetchListings(
 
         if (options.category && options.category !== 'all') {
             query = query.eq('category', options.category);
+        }
+
+        if (options.subcategory) {
+            query = query.eq('subcategory', options.subcategory);
         }
 
         const term = options.query?.trim();
@@ -252,6 +260,20 @@ function validate(input: ListingInput): string | null {
     if (!LISTING_CATEGORIES.includes(input.category)) return 'Pick a category';
     if (input.mode !== 'sale' && input.mode !== 'rent') return 'Unknown listing type';
 
+    // Each board offers its own subset — Rent has no animals or labour, Buy &
+    // Sell has no labour. Enforced here so the rule holds even if a client
+    // posts a category its own chips no longer show.
+    if (!CATEGORIES_BY_MODE[input.mode].includes(input.category)) {
+        return 'That category is not available on this board';
+    }
+
+    // Sub-category is optional, but if given it must belong to the category —
+    // otherwise the board's second-level filter could never match it again.
+    const sub = input.subcategory?.trim();
+    if (sub && !SUBCATEGORIES[input.category].includes(sub)) {
+        return 'Pick a sub-category from the list';
+    }
+
     const hasPrice = input.price !== null && input.price !== undefined && Number.isFinite(input.price);
     if (!hasPrice && !input.negotiable) return 'Add a price, or mark it negotiable';
     if (hasPrice && (input.price as number) < 0) return 'Price cannot be negative';
@@ -285,6 +307,7 @@ export async function createListing(
                 user_id: user.id,
                 listing_mode: input.mode,
                 category,
+                subcategory: input.subcategory?.trim() || null,
                 // Kept in step for anything still reading the pre-030 column.
                 listing_type: category === 'animals' ? 'livestock' : category === 'crops' ? 'crops' : 'machinery',
                 title: input.title.trim(),
@@ -335,6 +358,7 @@ export async function updateListing(
             .update({
                 listing_mode: input.mode,
                 category: input.category,
+                subcategory: input.subcategory?.trim() || null,
                 title: input.title.trim(),
                 description: input.description?.trim() || null,
                 brand: input.brand?.trim() || null,

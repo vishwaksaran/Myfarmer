@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { requestBrowserCoords } from '@/lib/weather-location';
 import { reverseGeocodeDetailed } from '@/lib/geolocation';
+import supabase from '@/lib/supabase';
 
 // ─── Types ───────────────────────────────────────────────────────────
 export interface AppLocation {
@@ -51,6 +52,12 @@ const K_LNG = 'miraitu.location.lng';
 const K_DISTRICT = 'miraitu.location.district';
 const K_STATE = 'miraitu.location.state';
 const K_SOURCE = 'miraitu.location.source';
+/**
+ * sessionStorage, not localStorage: it clears when the tab/app closes, which is
+ * exactly the "reopened the app" boundary at which the location should be
+ * re-checked. Within a session it stops every navigation re-running GPS.
+ */
+const K_REFRESHED = 'miraitu.location.refreshedThisSession';
 
 const LocationContext = createContext<LocationContextValue | null>(null);
 
@@ -183,7 +190,59 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         if (typeof window !== 'undefined') {
             [K_ADDRESS, K_LAT, K_LNG, K_DISTRICT, K_STATE, K_SOURCE].forEach(k => localStorage.removeItem(k));
         }
+        try { sessionStorage.removeItem(K_REFRESHED); } catch { /* ignore */ }
     }, []);
+
+    /**
+     * Brings a stored location up to date with where the device is now.
+     *
+     * Runs when the app is opened and again when someone signs in, because a
+     * farmer who travels would otherwise keep seeing the town they were in
+     * when the location was first saved — localStorage outlives the trip.
+     *
+     * Two rules keep it from being a nuisance:
+     *   • Only when the browser permission is ALREADY granted. If it is merely
+     *     'prompt' we leave the saved value alone rather than throwing a native
+     *     permission dialog at the user on every visit.
+     *   • Only once per browser session (sessionStorage), so moving between
+     *     pages does not re-run GPS over and over.
+     *
+     * A location the user typed themselves is never overwritten — they chose it.
+     * Failure is silent here: the last saved location simply stays.
+     */
+    const refreshFromDevice = useCallback(async (stored: AppLocation | null) => {
+        if (typeof window === 'undefined') return;
+        if (stored?.source === 'manual') return;
+
+        try {
+            if (sessionStorage.getItem(K_REFRESHED) === '1') return;
+        } catch {
+            /* sessionStorage unavailable (private mode) — carry on, once is fine. */
+        }
+
+        let state: PermissionState = 'unknown';
+        try {
+            const status = await navigator.permissions?.query({ name: 'geolocation' as PermissionName });
+            if (status?.state) {
+                state = status.state as PermissionState;
+                setPermission(state);
+            }
+        } catch {
+            /* Permissions API unsupported — fall through to the checks below. */
+        }
+
+        if (state === 'denied') return; // keep whatever was saved
+
+        // 'granted' means the user already allowed us, so re-detecting is
+        // silent. An unverified stored value (IP guess or pre-`source` data) is
+        // worth upgrading even when the permission state is unknown.
+        // 'manual' already returned above, so anything not from GPS is a guess.
+        const unverified = stored ? stored.source !== 'gps' : true;
+        if (state !== 'granted' && !unverified) return;
+
+        try { sessionStorage.setItem(K_REFRESHED, '1'); } catch { /* ignore */ }
+        await requestLocation();
+    }, [requestLocation]);
 
     // On first mount, resolve the location without ever asking in-app. Order is
     // most-accurate-first:
@@ -201,28 +260,8 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
             // Paint the stored value immediately so the UI is never empty…
             setLocation(stored);
             setReady(true);
-
-            // …but a location that never came from GPS is only a guess. The IP
-            // lookup is city-level and routinely lands in the wrong city on
-            // mobile networks, and the old code returned here unconditionally —
-            // so one bad guess was cached forever and the app appeared stuck in
-            // a city the user had never been to. Quietly upgrade it.
-            //
-            // A location the user typed themselves is left alone: they chose it.
-            if (stored.source !== 'gps' && stored.source !== 'manual') {
-                void (async () => {
-                    try {
-                        const status = await navigator.permissions?.query({ name: 'geolocation' as PermissionName });
-                        if (status?.state === 'denied') {
-                            setPermission('denied');
-                            return; // nothing to upgrade with
-                        }
-                    } catch {
-                        /* Permissions API unsupported — just try below. */
-                    }
-                    await requestLocation();
-                })();
-            }
+            // …then bring it up to date for wherever the user actually is now.
+            void refreshFromDevice(stored);
             return;
         }
 
@@ -253,7 +292,22 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
             setReady(true);
         };
         resolve();
-    }, [requestLocation]);
+    }, [requestLocation, refreshFromDevice]);
+
+    // Signing in re-checks the location: the person at the keyboard may have
+    // changed, or the same farmer may be logging in from a different place than
+    // the one cached on this device.
+    useEffect(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+            if (event !== 'SIGNED_IN') return;
+            // Clear the once-per-session guard so this login gets a fresh fix
+            // even if the app already refreshed earlier in the same session.
+            try { sessionStorage.removeItem(K_REFRESHED); } catch { /* ignore */ }
+            void refreshFromDevice(readStored());
+        });
+
+        return () => subscription.unsubscribe();
+    }, [refreshFromDevice]);
 
     return (
         <LocationContext.Provider
