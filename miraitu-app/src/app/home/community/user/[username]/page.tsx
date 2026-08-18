@@ -8,7 +8,8 @@ import Footer from '@/components/v2/Footer';
 import { normalizeUsername } from '@/components/community/followStore';
 import { DEFAULT_COMMUNITY_AVATAR, resolveAvatarSrc } from '@/components/community/avatarUtils';
 import { useAuth } from '@/context/AuthContext';
-import { fetchUserProfileByHandle, fetchFollowStats, toggleFollow as toggleFollowAction, type CommunityUser } from '@/app/actions/community';
+import { fetchUserProfileByHandle, fetchFollowStats, fetchFollowList, toggleFollow as toggleFollowAction, type CommunityUser } from '@/app/actions/community';
+import { Z } from '@/lib/z-layers';
 import { compressImage } from '@/lib/image-compress';
 import type { Post } from '@/components/community/types';
 
@@ -107,6 +108,21 @@ export default function CommunityUserProfilePage() {
     const [isFollowing, setIsFollowing] = useState(false);
     const [followerCount, setFollowerCount] = useState(0);
     const [followingCount, setFollowingCount] = useState(0);
+
+    // Follower / following lists, opened from the tallies.
+    const [listView, setListView] = useState<'followers' | 'following' | null>(null);
+    const [listPeople, setListPeople] = useState<CommunityUser[]>([]);
+    const [listLoading, setListLoading] = useState(false);
+
+    const openList = (kind: 'followers' | 'following') => {
+        setListView(kind);
+        setListLoading(true);
+        setListPeople([]);
+        void fetchFollowList(routeUsername, kind).then(res => {
+            setListPeople(res.data);
+            setListLoading(false);
+        });
+    };
 
     useEffect(() => {
         let cancelled = false;
@@ -260,14 +276,28 @@ export default function CommunityUserProfilePage() {
                                     <p className="font-extrabold text-gray-900 dark:text-white text-lg leading-none">{authorPosts.length}</p>
                                     <p className="text-gray-500 mt-1">Posts</p>
                                 </div>
-                                <div className="rounded-xl bg-gray-50 dark:bg-gray-800/40 px-3 py-2.5">
-                                    <p className="font-extrabold text-gray-900 dark:text-white text-lg leading-none">{followerCount}</p>
-                                    <p className="text-gray-500 mt-1">Followers</p>
-                                </div>
-                                <div className="rounded-xl bg-gray-50 dark:bg-gray-800/40 px-3 py-2.5">
-                                    <p className="font-extrabold text-gray-900 dark:text-white text-lg leading-none">{followingCount}</p>
-                                    <p className="text-gray-500 mt-1">Following</p>
-                                </div>
+                                {/* Tallies open the actual lists — they were plain
+                                    divs, so tapping a follower count did nothing. */}
+                                <button
+                                    onClick={() => openList('followers')}
+                                    className="rounded-xl bg-gray-50 dark:bg-gray-800/40 px-3 py-2.5 text-left hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group"
+                                >
+                                    <p className="font-extrabold text-gray-900 dark:text-white text-lg leading-none group-hover:text-[#22c33d] transition-colors">{followerCount}</p>
+                                    <p className="text-gray-500 mt-1 flex items-center gap-0.5">
+                                        Followers
+                                        <span className="material-symbols-outlined text-[14px] opacity-60">chevron_right</span>
+                                    </p>
+                                </button>
+                                <button
+                                    onClick={() => openList('following')}
+                                    className="rounded-xl bg-gray-50 dark:bg-gray-800/40 px-3 py-2.5 text-left hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group"
+                                >
+                                    <p className="font-extrabold text-gray-900 dark:text-white text-lg leading-none group-hover:text-[#22c33d] transition-colors">{followingCount}</p>
+                                    <p className="text-gray-500 mt-1 flex items-center gap-0.5">
+                                        Following
+                                        <span className="material-symbols-outlined text-[14px] opacity-60">chevron_right</span>
+                                    </p>
+                                </button>
                                 <div className="rounded-xl bg-gray-50 dark:bg-gray-800/40 px-3 py-2.5">
                                     <p className="font-extrabold text-gray-900 dark:text-white text-lg leading-none">Community</p>
                                     <p className="text-gray-500 mt-1">Member</p>
@@ -324,6 +354,82 @@ export default function CommunityUserProfilePage() {
                     </section>
                 </div>
             </main>
+
+            {/* Followers / following list */}
+            {listView && (
+                <div className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4" style={{ zIndex: Z.MODAL }}>
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setListView(null)} />
+
+                    <div className="relative w-full sm:max-w-md max-h-[80vh] flex flex-col rounded-t-3xl sm:rounded-3xl bg-white dark:bg-[#1a231a] shadow-2xl overflow-hidden">
+                        <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+                            <h3 className="text-base font-bold text-gray-900 dark:text-white capitalize">
+                                {listView}
+                                {!listLoading && listPeople.length > 0 && (
+                                    <span className="ml-1.5 text-sm font-semibold text-gray-400">{listPeople.length}</span>
+                                )}
+                            </h3>
+                            <button
+                                onClick={() => setListView(null)}
+                                aria-label="Close"
+                                className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                            >
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+
+                        <div className="flex-1 min-h-0 overflow-y-auto p-3">
+                            {listLoading ? (
+                                <p className="py-10 text-center text-sm text-gray-400">
+                                    <span className="material-symbols-outlined animate-spin align-middle mr-1.5">progress_activity</span>
+                                    Loading…
+                                </p>
+                            ) : listPeople.length === 0 ? (
+                                <p className="py-10 text-center text-sm text-gray-500">
+                                    {listView === 'followers'
+                                        ? 'Nobody follows this profile yet.'
+                                        : 'This profile is not following anyone yet.'}
+                                </p>
+                            ) : (
+                                <div className="space-y-1">
+                                    {listPeople.map(person => (
+                                        <button
+                                            key={person.id}
+                                            onClick={() => {
+                                                setListView(null);
+                                                router.push(`/home/community/user/${encodeURIComponent(person.username)}`);
+                                            }}
+                                            className="w-full flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+                                        >
+                                            <span className="w-10 h-10 rounded-full overflow-hidden shrink-0 bg-primary/10">
+                                                <img
+                                                    src={resolveAvatarSrc(person.avatar, person.name)}
+                                                    alt=""
+                                                    className="w-full h-full object-cover"
+                                                    onError={(event) => {
+                                                        const img = event.currentTarget;
+                                                        if (img.src.endsWith(DEFAULT_COMMUNITY_AVATAR)) return;
+                                                        img.src = DEFAULT_COMMUNITY_AVATAR;
+                                                    }}
+                                                />
+                                            </span>
+                                            <span className="flex-1 min-w-0">
+                                                <span className="block text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                                    {person.name}
+                                                </span>
+                                                <span className="block text-xs text-gray-500 truncate">
+                                                    @{person.username}
+                                                    {person.location && ` · ${person.location}`}
+                                                </span>
+                                            </span>
+                                            <span className="material-symbols-outlined text-gray-300 shrink-0">chevron_right</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <Footer />
         </div>

@@ -11,6 +11,15 @@ export interface AppLocation {
     state?: string;
     lat: number;
     lng: number;
+    /**
+     * How this location was obtained. Only 'gps' is trustworthy to street
+     * level: 'ip' is a city-level guess that carrier networks routinely place
+     * in the wrong city, and 'manual' is whatever the user typed.
+     *
+     * Stored so a coarse guess can be upgraded on a later visit instead of
+     * being cached forever.
+     */
+    source?: 'gps' | 'ip' | 'manual';
 }
 
 type PermissionState = 'unknown' | 'granted' | 'denied' | 'prompt';
@@ -21,6 +30,12 @@ interface LocationContextValue {
     permission: PermissionState;
     /** True once the app has finished its first resolution attempt. */
     ready: boolean;
+    /**
+     * Why the last detection attempt failed, in words a user can act on.
+     * Null when the location is fine — without this a blocked permission looked
+     * identical to nothing happening at all.
+     */
+    error: string | null;
     /** Trigger the browser geolocation flow + reverse geocode, then persist. */
     requestLocation: () => Promise<AppLocation | null>;
     /** Set a location typed by the user (no coordinates). */
@@ -35,6 +50,7 @@ const K_LAT = 'miraitu.location.lat';
 const K_LNG = 'miraitu.location.lng';
 const K_DISTRICT = 'miraitu.location.district';
 const K_STATE = 'miraitu.location.state';
+const K_SOURCE = 'miraitu.location.source';
 
 const LocationContext = createContext<LocationContextValue | null>(null);
 
@@ -61,12 +77,16 @@ function readStored(): AppLocation | null {
     const lat = Number(localStorage.getItem(K_LAT));
     const lng = Number(localStorage.getItem(K_LNG));
     if (!address) return null;
+    const source = localStorage.getItem(K_SOURCE);
     return {
         address,
         district: localStorage.getItem(K_DISTRICT) || undefined,
         state: localStorage.getItem(K_STATE) || undefined,
         lat: Number.isFinite(lat) ? lat : 0,
         lng: Number.isFinite(lng) ? lng : 0,
+        // Locations stored before `source` existed are treated as unverified,
+        // so they get a GPS upgrade on the next visit rather than sticking.
+        source: source === 'gps' || source === 'ip' || source === 'manual' ? source : undefined,
     };
 }
 
@@ -95,6 +115,7 @@ async function ipFallbackLocation(): Promise<AppLocation | null> {
             state: data.region,
             lat: Number(data.latitude) || 0,
             lng: Number(data.longitude) || 0,
+            source: 'ip',
         };
     } catch {
         return null;
@@ -108,6 +129,7 @@ function persist(loc: AppLocation) {
     localStorage.setItem(K_LNG, String(loc.lng));
     if (loc.district) localStorage.setItem(K_DISTRICT, loc.district); else localStorage.removeItem(K_DISTRICT);
     if (loc.state) localStorage.setItem(K_STATE, loc.state); else localStorage.removeItem(K_STATE);
+    if (loc.source) localStorage.setItem(K_SOURCE, loc.source); else localStorage.removeItem(K_SOURCE);
 }
 
 // ─── Provider ────────────────────────────────────────────────────────
@@ -116,6 +138,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(false);
     const [permission, setPermission] = useState<PermissionState>('unknown');
     const [ready, setReady] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const initialised = useRef(false);
 
     const requestLocation = useCallback(async (): Promise<AppLocation | null> => {
@@ -123,14 +146,22 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         try {
             const coords = await requestBrowserCoords();
             const geo = await reverseGeocode(coords.lat, coords.lon);
-            const loc: AppLocation = { ...geo, lat: coords.lat, lng: coords.lon };
+            const loc: AppLocation = { ...geo, lat: coords.lat, lng: coords.lon, source: 'gps' };
             setLocation(loc);
             persist(loc);
             setPermission('granted');
+            setError(null);
             return loc;
         } catch (err) {
             const msg = err instanceof Error ? err.message : '';
-            if (msg === 'PERMISSION_DENIED') setPermission('denied');
+            if (msg === 'PERMISSION_DENIED') {
+                setPermission('denied');
+                setError('Location is blocked. Allow it for this site in your browser settings, then try again.');
+            } else if (msg === 'TIMEOUT') {
+                setError('Could not get a GPS fix. Move somewhere with a clearer view of the sky and try again.');
+            } else {
+                setError('Location is unavailable on this device or connection.');
+            }
             return null;
         } finally {
             setLoading(false);
@@ -140,15 +171,17 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     const setManualLocation = useCallback((address: string) => {
         const clean = address.trim();
         if (!clean) return;
-        const loc: AppLocation = { address: clean, lat: 0, lng: 0 };
+        const loc: AppLocation = { address: clean, lat: 0, lng: 0, source: 'manual' };
         setLocation(loc);
         persist(loc);
+        setError(null);
     }, []);
 
     const clearLocation = useCallback(() => {
         setLocation(null);
+        setError(null);
         if (typeof window !== 'undefined') {
-            [K_ADDRESS, K_LAT, K_LNG, K_DISTRICT, K_STATE].forEach(k => localStorage.removeItem(k));
+            [K_ADDRESS, K_LAT, K_LNG, K_DISTRICT, K_STATE, K_SOURCE].forEach(k => localStorage.removeItem(k));
         }
     }, []);
 
@@ -165,8 +198,31 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
 
         const stored = readStored();
         if (stored) {
+            // Paint the stored value immediately so the UI is never empty…
             setLocation(stored);
             setReady(true);
+
+            // …but a location that never came from GPS is only a guess. The IP
+            // lookup is city-level and routinely lands in the wrong city on
+            // mobile networks, and the old code returned here unconditionally —
+            // so one bad guess was cached forever and the app appeared stuck in
+            // a city the user had never been to. Quietly upgrade it.
+            //
+            // A location the user typed themselves is left alone: they chose it.
+            if (stored.source !== 'gps' && stored.source !== 'manual') {
+                void (async () => {
+                    try {
+                        const status = await navigator.permissions?.query({ name: 'geolocation' as PermissionName });
+                        if (status?.state === 'denied') {
+                            setPermission('denied');
+                            return; // nothing to upgrade with
+                        }
+                    } catch {
+                        /* Permissions API unsupported — just try below. */
+                    }
+                    await requestLocation();
+                })();
+            }
             return;
         }
 
@@ -201,7 +257,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <LocationContext.Provider
-            value={{ location, loading, permission, ready, requestLocation, setManualLocation, clearLocation }}
+            value={{ location, loading, permission, ready, error, requestLocation, setManualLocation, clearLocation }}
         >
             {children}
         </LocationContext.Provider>

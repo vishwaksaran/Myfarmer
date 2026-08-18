@@ -1070,6 +1070,66 @@ export async function toggleFollow(handle: string): Promise<{ success: boolean; 
     }
 }
 
+/**
+ * The people who follow a profile, or the people it follows.
+ *
+ * Public on purpose — follower lists are visible on every social product, and
+ * the tallies were already public via `fetchFollowStats`.
+ */
+export async function fetchFollowList(
+    handle: string,
+    kind: 'followers' | 'following'
+): Promise<{ data: CommunityUser[]; error?: string }> {
+    try {
+        const targetId = await resolveUserId(handle);
+        if (!targetId) return { data: [], error: 'That profile no longer exists' };
+
+        const supabase = await createSupabaseServerClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        const admin = createSupabaseAdminClient();
+
+        // followers → rows pointing AT the target; following → rows FROM it.
+        const { data: rows, error } = kind === 'followers'
+            ? await admin.from('community_follows').select('follower_id').eq('following_id', targetId)
+            : await admin.from('community_follows').select('following_id').eq('follower_id', targetId);
+
+        if (error) return { data: [], error: error.message };
+
+        const ids = ((rows ?? []) as Record<string, string>[])
+            .map(r => (kind === 'followers' ? r.follower_id : r.following_id))
+            .filter(Boolean);
+        if (ids.length === 0) return { data: [] };
+
+        const [profilesRes, mineRes] = await Promise.all([
+            admin.from('profiles')
+                .select('id, full_name, username, avatar_url, farm_location, role')
+                .in('id', ids),
+            user
+                ? admin.from('community_follows').select('following_id').eq('follower_id', user.id)
+                : Promise.resolve({ data: [] as { following_id: string }[] }),
+        ]);
+
+        const iFollow = new Set(((mineRes.data ?? []) as { following_id: string }[]).map(f => f.following_id));
+
+        return {
+            data: ((profilesRes.data ?? []) as AuthorRow[]).map(r => ({
+                id: r.id,
+                name: displayName(r),
+                username: handleFor(r, r.id),
+                avatar: r.avatar_url || '',
+                bio: r.role === 'service_provider' ? 'Service Provider' : r.role === 'dealer' ? 'Dealer' : 'Farmer',
+                location: r.farm_location || '',
+                role: r.role || 'farmer',
+                postCount: 0,
+                isFollowing: iFollow.has(r.id),
+            })),
+        };
+    } catch (err) {
+        console.error('[fetchFollowList] unexpected:', err);
+        return { data: [], error: 'Failed to load that list' };
+    }
+}
+
 /** Follower/following tallies for a profile, plus whether the caller follows it. */
 export async function fetchFollowStats(handle: string): Promise<{
     followers: number;

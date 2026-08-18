@@ -238,12 +238,18 @@ export default function ReelsPage() {
                         />
 
                         {/* Author + caption */}
-                        <div className="absolute inset-x-0 bottom-0 z-20 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pr-20 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+                        {/* Lifted clear of the bottom nav on mobile — the author
+                            row and caption were rendering underneath it, so there
+                            was no visible name to tap through to a profile. */}
+                        <div className="absolute inset-x-0 bottom-0 z-20 p-4 pb-[calc(env(safe-area-inset-bottom)+5.75rem)] md:pb-4 pr-20 bg-gradient-to-t from-black/85 via-black/45 to-transparent">
+                            {/* Whole row is the link to the poster's profile, with a
+                                chevron so it reads as tappable rather than a label. */}
                             <button
                                 onClick={() => router.push(`/home/community/user/${encodeURIComponent(reel.username)}`)}
-                                className="flex items-center gap-2 mb-2"
+                                className="flex items-center gap-2 mb-2 max-w-full active:opacity-80"
+                                aria-label={`Open ${reel.author}'s profile`}
                             >
-                                <span className="w-9 h-9 rounded-full overflow-hidden border border-white/40 shrink-0">
+                                <span className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/70 shrink-0">
                                     <img
                                         src={resolveAvatarSrc(reel.avatar, reel.author)}
                                         alt=""
@@ -255,9 +261,14 @@ export default function ReelsPage() {
                                         }}
                                     />
                                 </span>
-                                <span className="text-left">
-                                    <span className="block text-sm font-bold text-white">{reel.author}</span>
-                                    <span className="block text-[11px] text-white/70">@{reel.username}</span>
+                                <span className="text-left min-w-0">
+                                    <span className="block text-sm font-bold text-white truncate drop-shadow">
+                                        {reel.author}
+                                    </span>
+                                    <span className="block text-[11px] text-white/80 truncate">@{reel.username}</span>
+                                </span>
+                                <span className="material-symbols-outlined text-white/70 text-base shrink-0">
+                                    chevron_right
                                 </span>
                             </button>
                             {reel.content && (
@@ -271,7 +282,7 @@ export default function ReelsPage() {
                         </div>
 
                         {/* Action rail */}
-                        <div className="absolute right-3 bottom-28 z-20 flex flex-col items-center gap-5">
+                        <div className="absolute right-3 bottom-[calc(env(safe-area-inset-bottom)+11rem)] md:bottom-28 z-20 flex flex-col items-center gap-5">
                             <button onClick={() => handleLike(reel)} className="flex flex-col items-center gap-0.5">
                                 <span
                                     className={`material-symbols-outlined text-3xl ${reel.myReaction ? 'text-[#22c33d]' : 'text-white'}`}

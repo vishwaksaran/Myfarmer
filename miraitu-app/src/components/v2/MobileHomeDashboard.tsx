@@ -101,7 +101,7 @@ function Tile({ href, label, caption, icon, count, className, accent, tall, wide
 
 export default function MobileHomeDashboard() {
     const { user } = useAuth();
-    const { location, requestLocation, loading: locationLoading } = useAppLocation();
+    const { location, requestLocation, loading: locationLoading, error: locationError } = useAppLocation();
     const [weather, setWeather] = useState<WeatherPayload | null>(null);
     const [weatherError, setWeatherError] = useState(false);
     const [counts, setCounts] = useState({ rent: 0, sale: 0, labour: 0, mine: 0 });
@@ -131,7 +131,6 @@ export default function MobileHomeDashboard() {
     }, [coordsKey, locationLabel]);
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         void loadWeather();
     }, [loadWeather]);
 
@@ -231,23 +230,36 @@ export default function MobileHomeDashboard() {
             </div>
 
             {/* Location chip — tapping re-detects, which also re-points the weather */}
-            <button
-                onClick={() => { void requestLocation(); }}
-                disabled={locationLoading}
-                className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#22c33d]/10 text-[#1f8c30] dark:text-[#6abf62] text-xs font-bold disabled:opacity-60"
-            >
-                <span className="material-symbols-outlined text-[15px] text-red-500">
-                    {locationLoading ? 'progress_activity' : 'location_on'}
-                </span>
-                <span className="truncate max-w-[10rem]">
-                    {locationLoading
-                        ? 'Locating…'
-                        // Falls back to whatever the weather lookup resolved, so the
-                        // chip is never empty once the card has loaded.
-                        : shortPlace(locationLabel) || shortPlace(weather?.location.name || '') || 'Set your location'}
-                </span>
-                <span aria-hidden>›</span>
-            </button>
+            <div className="mt-3">
+                <button
+                    onClick={() => { void requestLocation(); }}
+                    disabled={locationLoading}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#22c33d]/10 text-[#1f8c30] dark:text-[#6abf62] text-xs font-bold disabled:opacity-60"
+                >
+                    <span className={`material-symbols-outlined text-[15px] text-red-500 ${locationLoading ? 'animate-spin' : ''}`}>
+                        {locationLoading ? 'progress_activity' : 'location_on'}
+                    </span>
+                    <span className="truncate max-w-[10rem]">
+                        {locationLoading
+                            ? 'Locating…'
+                            // Falls back to whatever the weather lookup resolved, so the
+                            // chip is never empty once the card has loaded.
+                            : shortPlace(locationLabel) || shortPlace(weather?.location.name || '') || 'Set your location'}
+                    </span>
+                    <span className="material-symbols-outlined text-[15px]">
+                        {locationLoading ? '' : 'my_location'}
+                    </span>
+                </button>
+
+                {/* A blocked permission used to fail silently: the spinner stopped
+                    and the same wrong city stayed on screen. */}
+                {locationError && !locationLoading && (
+                    <p className="mt-1.5 flex items-start gap-1 text-[11px] text-amber-600 dark:text-amber-400">
+                        <span className="material-symbols-outlined text-[14px] shrink-0">info</span>
+                        {locationError}
+                    </p>
+                )}
+            </div>
 
             {/* Quick actions — a bento grid rather than six identical squares, so
                 the two marketplaces read as the primary destinations and the rest
