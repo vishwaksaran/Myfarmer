@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useAppLocation } from '@/context/LocationContext';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 import { buildWeatherApiQuery } from '@/lib/weather-location';
 import type { WeatherPayload } from '@/lib/weather-types';
 import { fetchListingCounts } from '@/app/actions/listings';
@@ -22,6 +24,28 @@ function greeting(): string {
     if (hour < 12) return 'Good morning';
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
+}
+
+/**
+ * Compact count for the tile badges, in the Indian number system the audience
+ * reads: 1–999 in full, then 1.2K, 12K, 1.2L (lakh), 1.2Cr (crore).
+ *
+ * A raw count would blow the badge apart the moment the marketplace grows —
+ * "1,24,500" is nine glyphs wide inside a pill sized for one or two.
+ */
+function compactCount(n: number): string {
+    if (n < 1_000) return String(n);
+
+    const fmt = (value: number, suffix: string) => {
+        // One decimal only below 10 ("1.2K"), none above ("12K") — keeps every
+        // badge to at most four characters.
+        const rounded = value < 10 ? Math.round(value * 10) / 10 : Math.round(value);
+        return `${rounded}${suffix}`;
+    };
+
+    if (n < 100_000) return fmt(n / 1_000, 'K');        // 1K – 99K
+    if (n < 10_000_000) return fmt(n / 100_000, 'L');   // 1L – 99L
+    return fmt(n / 10_000_000, 'Cr');                   // 1Cr +
 }
 
 /**
@@ -59,6 +83,9 @@ interface TileProps {
  * count badge and the press animation stay identical across them.
  */
 function Tile({ href, label, caption, icon, count, className, accent, tall, wide }: TileProps) {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
+
     // A "0" pill reads as broken rather than informative, so the badge only
     // appears once there is something to count.
     const badge = typeof count === 'number' && count > 0 ? count : null;
@@ -74,8 +101,14 @@ function Tile({ href, label, caption, icon, count, className, accent, tall, wide
             <span aria-hidden className="pointer-events-none absolute -top-6 -right-6 w-20 h-20 rounded-full bg-white/40 dark:bg-white/5" />
 
             {badge !== null && (
-                <span className="absolute top-2.5 right-2.5 z-10 min-w-[22px] px-1.5 py-0.5 rounded-full bg-white/90 dark:bg-black/40 text-[11px] font-extrabold text-center text-gray-700 dark:text-gray-200 shadow-sm">
-                    {badge}
+                // Pill grows with its content instead of being a fixed circle, and
+                // the value is abbreviated, so 7 listings and 1.2Cr listings both
+                // fit without pushing the tile around.
+                <span
+                    title={`${badge.toLocaleString('en-IN')} listings`}
+                    className="absolute top-2.5 right-2.5 z-10 min-w-[22px] max-w-[calc(100%-1.25rem)] px-1.5 py-0.5 rounded-full bg-white/90 dark:bg-black/40 text-[11px] font-extrabold text-center text-gray-700 dark:text-gray-200 shadow-sm tabular-nums truncate"
+                >
+                    {compactCount(badge)}
                 </span>
             )}
 
@@ -86,9 +119,9 @@ function Tile({ href, label, caption, icon, count, className, accent, tall, wide
             </span>
 
             <span className={`relative min-w-0 ${wide ? 'flex-1' : ''}`}>
-                <span className={`block text-[15px] font-extrabold leading-tight ${accent}`}>{label}</span>
+                <span className={`block text-[15px] font-extrabold leading-tight ${accent}`}>{tp(label)}</span>
                 <span className="block text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">
-                    {caption}
+                    {tp(caption)}
                 </span>
             </span>
 
@@ -101,6 +134,8 @@ function Tile({ href, label, caption, icon, count, className, accent, tall, wide
 
 export default function MobileHomeDashboard() {
     const { user } = useAuth();
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const { location, requestLocation, loading: locationLoading, error: locationError } = useAppLocation();
     const [weather, setWeather] = useState<WeatherPayload | null>(null);
     const [weatherError, setWeatherError] = useState(false);
@@ -145,7 +180,7 @@ export default function MobileHomeDashboard() {
     return (
         <section className="md:hidden px-4 pt-4 pb-2">
             <h1 className="text-xl font-extrabold text-gray-900 dark:text-white mb-3">
-                {greeting()} <span aria-hidden>👋</span>
+                {tp(greeting())} <span aria-hidden>👋</span>
             </h1>
 
             {/* Weather */}
@@ -158,14 +193,12 @@ export default function MobileHomeDashboard() {
                     <div className="relative flex items-center justify-between gap-3">
                         <span className="flex items-center gap-2 text-sm text-white/90">
                             <span className="material-symbols-outlined">cloud_off</span>
-                            Weather unavailable
+                            {tp('Weather unavailable')}
                         </span>
                         <button
                             onClick={() => { void loadWeather(); }}
                             className="rounded-full bg-white/20 px-3 py-1.5 text-xs font-bold hover:bg-white/30"
-                        >
-                            Retry
-                        </button>
+                        >{tp('Retry')}</button>
                     </div>
                 ) : !weather ? (
                     <div className="relative animate-pulse space-y-3">
@@ -221,7 +254,7 @@ export default function MobileHomeDashboard() {
                                 href="/home/toolbox/weather-alerts"
                                 className="flex items-center gap-0.5 font-bold text-white whitespace-nowrap hover:underline"
                             >
-                                Show more
+                                {tp('Show more')}
                                 <span className="material-symbols-outlined text-[15px]">chevron_right</span>
                             </Link>
                         </div>
@@ -241,10 +274,10 @@ export default function MobileHomeDashboard() {
                     </span>
                     <span className="truncate max-w-[10rem]">
                         {locationLoading
-                            ? 'Locating…'
+                            ? tp('Locating…')
                             // Falls back to whatever the weather lookup resolved, so the
                             // chip is never empty once the card has loaded.
-                            : shortPlace(locationLabel) || shortPlace(weather?.location.name || '') || 'Set your location'}
+                            : shortPlace(locationLabel) || shortPlace(weather?.location.name || '') || tp('Set your location')}
                     </span>
                     <span className="material-symbols-outlined text-[15px]">
                         {locationLoading ? '' : 'my_location'}

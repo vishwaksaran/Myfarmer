@@ -10,6 +10,7 @@ import { DEFAULT_COMMUNITY_AVATAR, resolveAvatarSrc } from '@/components/communi
 import { useAuth } from '@/context/AuthContext';
 import { fetchUserProfileByHandle, fetchFollowStats, fetchFollowList, toggleFollow as toggleFollowAction, type CommunityUser } from '@/app/actions/community';
 import { Z } from '@/lib/z-layers';
+import LoginModal from '@/components/auth/LoginModal';
 import { compressImage } from '@/lib/image-compress';
 import type { Post } from '@/components/community/types';
 
@@ -109,6 +110,8 @@ export default function CommunityUserProfilePage() {
     const [followerCount, setFollowerCount] = useState(0);
     const [followingCount, setFollowingCount] = useState(0);
 
+    const [showLoginModal, setShowLoginModal] = useState(false);
+
     // Follower / following lists, opened from the tallies.
     const [listView, setListView] = useState<'followers' | 'following' | null>(null);
     const [listPeople, setListPeople] = useState<CommunityUser[]>([]);
@@ -136,6 +139,14 @@ export default function CommunityUserProfilePage() {
     }, [routeUsername]);
 
     const handleToggleFollow = () => {
+        // Signed-out visitors get the login modal. Without this the optimistic
+        // flip happened, the server rejected it with "Please sign in to follow",
+        // and the button silently snapped back with no explanation.
+        if (!user || user.isGuest) {
+            setShowLoginModal(true);
+            return;
+        }
+
         // Optimistic, then reconciled with what the server actually stored.
         const next = !isFollowing;
         setIsFollowing(next);
@@ -327,27 +338,119 @@ export default function CommunityUserProfilePage() {
                                 No public posts available for this user yet.
                             </div>
                         ) : (
+                            // Renders every kind of post, not just text + one photo.
+                            // Previously a video-only or poll-only post produced a card
+                            // showing nothing but its timestamp.
                             authorPosts.map(post => (
-                                <article key={post.id} className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
-                                    <div className="p-4 sm:p-5">
+                                <article
+                                    key={post.id}
+                                    onClick={() => router.push(`/home/community?post=${post.id}`)}
+                                    className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                                >
+                                    <div className="p-4 sm:p-5 pb-3">
                                         <div className="flex items-center justify-between mb-2.5">
                                             <p className="text-xs text-gray-500">{post.time}</p>
-                                            <span className="text-[11px] font-semibold text-gray-400">{post.commentCount} comments</span>
+                                            {post.location && (
+                                                <span className="text-[11px] text-gray-400 flex items-center gap-0.5 truncate max-w-[50%]">
+                                                    <span className="material-symbols-outlined text-[13px]">location_on</span>
+                                                    {post.location}
+                                                </span>
+                                            )}
                                         </div>
 
-                                        <p className="text-sm sm:text-[15px] text-gray-800 dark:text-gray-200 whitespace-pre-line leading-relaxed">{post.content}</p>
+                                        {post.content && (
+                                            <p className="text-sm sm:text-[15px] text-gray-800 dark:text-gray-200 whitespace-pre-line leading-relaxed break-words">
+                                                {post.content}
+                                            </p>
+                                        )}
 
                                         {post.tags.length > 0 && (
                                             <div className="mt-3 flex flex-wrap gap-1.5">
                                                 {post.tags.map(tag => (
-                                                    <span key={tag} className="text-xs font-semibold text-[#22c33d] bg-[#22c33d]/10 rounded-full px-2.5 py-1">{tag}</span>
+                                                    <span key={tag} className="text-xs font-semibold text-[#22c33d] bg-[#22c33d]/10 rounded-full px-2.5 py-1">
+                                                        {tag.startsWith('#') ? tag : `#${tag}`}
+                                                    </span>
                                                 ))}
                                             </div>
                                         )}
+
+                                        {/* Poll — shown as its options and total, read-only here */}
+                                        {post.poll && post.poll.options.length > 0 && (
+                                            <div className="mt-3 space-y-1.5">
+                                                {post.poll.options.map(option => (
+                                                    <div
+                                                        key={option.index}
+                                                        className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+                                                    >
+                                                        <span className="material-symbols-outlined text-base text-gray-400">radio_button_unchecked</span>
+                                                        <span className="flex-1 break-words">{option.text}</span>
+                                                    </div>
+                                                ))}
+                                                <p className="text-[11px] text-gray-500">
+                                                    {post.poll.totalVotes} {post.poll.totalVotes === 1 ? 'vote' : 'votes'}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {/* A post with no text and no media still says something */}
+                                        {!post.content && !post.images?.length && !post.video && !post.poll && (
+                                            <p className="text-sm text-gray-400 italic">No content</p>
+                                        )}
                                     </div>
-                                    {post.images?.[0] && (
-                                        <img src={post.images[0]} alt={post.author} className="w-full h-56 object-cover" />
-                                    )}
+
+                                    {/* Media */}
+                                    {post.video ? (
+                                        <div className="relative bg-black">
+                                            <video
+                                                src={post.video}
+                                                className="w-full max-h-72 object-contain"
+                                                preload="metadata"
+                                                playsInline
+                                                controls
+                                                onClick={(event) => event.stopPropagation()}
+                                            />
+                                            <span className="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-black/50 text-white text-[11px] font-medium flex items-center gap-1 pointer-events-none">
+                                                <span className="material-symbols-outlined text-[13px]">videocam</span>
+                                                Video
+                                            </span>
+                                        </div>
+                                    ) : post.images && post.images.length > 0 ? (
+                                        <div className="relative">
+                                            <img
+                                                src={post.images[0]}
+                                                alt=""
+                                                loading="lazy"
+                                                className="w-full h-56 object-cover"
+                                            />
+                                            {/* The old card silently dropped every photo after the first */}
+                                            {post.images.length > 1 && (
+                                                <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/50 text-white text-[11px] font-semibold flex items-center gap-1">
+                                                    <span className="material-symbols-outlined text-[13px]">photo_library</span>
+                                                    {post.images.length}
+                                                </span>
+                                            )}
+                                        </div>
+                                    ) : null}
+
+                                    {/* Engagement */}
+                                    <div className="flex items-center gap-4 px-4 sm:px-5 py-2.5 border-t border-gray-100 dark:border-gray-800 text-[11px] font-semibold text-gray-500">
+                                        <span className="flex items-center gap-1">
+                                            <span className="material-symbols-outlined text-[15px]">favorite</span>
+                                            {post.totalReactions}
+                                        </span>
+                                        <span className="flex items-center gap-1">
+                                            <span className="material-symbols-outlined text-[15px]">chat_bubble</span>
+                                            {post.commentCount}
+                                        </span>
+                                        <span className="flex items-center gap-1">
+                                            <span className="material-symbols-outlined text-[15px]">share</span>
+                                            {post.shares}
+                                        </span>
+                                        <span className="ml-auto text-[#22c33d] flex items-center gap-0.5">
+                                            View
+                                            <span className="material-symbols-outlined text-[15px]">chevron_right</span>
+                                        </span>
+                                    </div>
                                 </article>
                             ))
                         )}
@@ -430,6 +533,8 @@ export default function CommunityUserProfilePage() {
                     </div>
                 </div>
             )}
+
+            <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
 
             <Footer />
         </div>
