@@ -18,14 +18,18 @@ interface NavItem {
     tab?: string;
 }
 
-// The Shop slot is temporarily occupied by Community. To restore Shop, swap the
-// entry back to: { label: 'Shop', tKey: 'bottomNav.shop', icon: 'shopping_bag', path: '/home/shop' }
+// The five things a farmer opens the app for. Services and Dashboard moved to
+// the header menu when Rent, Buy & Sell and Reels took their place here —
+// nothing was removed, only relocated.
+//
+// Buy & Sell sits in the centre slot because posting an ad is the action this
+// nav most needs to invite; the slot renders as the raised green button.
 const baseNavItems: NavItem[] = [
     { label: 'Home', tKey: 'bottomNav.home', icon: 'home', path: '/home' },
-    { label: 'Services', tKey: 'bottomNav.services', icon: 'home_repair_service', path: '/home/services' },
-    { label: 'Sell', tKey: 'bottomNav.sell', icon: 'add', path: '/home/become-seller', isCenterAction: true },
+    { label: 'Rent', tKey: 'bottomNav.rent', icon: 'agriculture', path: '/home/rent' },
+    { label: 'Buy & Sell', tKey: 'bottomNav.buySell', icon: 'storefront', path: '/home/buy-sell', isCenterAction: true },
     { label: 'Community', tKey: 'nav.community', icon: 'groups', path: '/home/community' },
-    { label: 'Dashboard', tKey: 'bottomNav.dashboard', icon: 'dashboard', path: '/home/dashboard' },
+    { label: 'Reels', tKey: 'bottomNav.reels', icon: 'movie', path: '/home/reels' },
 ];
 
 // Provider-mode bottom nav — stays inside the provider dashboard (screens are
@@ -96,9 +100,16 @@ export default function BottomNav() {
                                     href={item.path}
                                     className="flex-1 min-w-0 relative -mt-4 flex flex-col items-center group"
                                 >
-                                    {/* Main FAB button */}
+                                    {/* Main FAB button — carries the item's own icon, so the
+                                        centre slot reads as a destination rather than always
+                                        being a generic "+". */}
                                     <div className="relative flex items-center justify-center size-12 shrink-0 rounded-full bg-gradient-to-b from-[#34a832] to-[#2c5926] shadow-[0_3px_0_#1b3817,_0_6px_12px_rgba(44,89,38,0.35)] group-active:shadow-[0_1px_0_#1b3817,_0_3px_6px_rgba(44,89,38,0.25)] group-active:translate-y-[2px] transition-all">
-                                        <span className="material-symbols-outlined text-white text-xl font-bold">add</span>
+                                        <span
+                                            className="material-symbols-outlined text-white text-xl"
+                                            style={active ? { fontVariationSettings: "'FILL' 1" } : {}}
+                                        >
+                                            {item.icon}
+                                        </span>
                                     </div>
                                     <span className="whitespace-nowrap text-[9px] min-[360px]:text-[10px] font-bold mt-1 text-[#2c5926] dark:text-[#6abf62]">{t(item.tKey)}</span>
                                 </Link>

@@ -5,6 +5,7 @@ import { Story } from './types';
 import { DEFAULT_COMMUNITY_AVATAR, resolveAvatarSrc } from './avatarUtils';
 import { fetchStoryViewers, type StoryViewer } from '@/app/actions/community';
 import { discardCommunityMedia, uploadCommunityMedia } from '@/lib/community-media';
+import { Z } from '@/lib/z-layers';
 
 interface StoryViewerModalProps {
     stories: Story[];
@@ -181,7 +182,7 @@ export default function StoryViewerModal({
 
     return (
         <div
-            className="fixed inset-0 z-[70] flex items-center justify-center bg-black/90 p-3 sm:p-6"
+            className="fixed inset-0 flex items-center justify-center bg-black/90 p-3 sm:p-6" style={{ zIndex: Z.LIGHTBOX }}
             onClick={onClose}
         >
             <div

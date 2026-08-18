@@ -13,6 +13,9 @@ export default function FloatingActionButtons() {
     const pathname = usePathname();
     const hideWhatsAppOnThisPage = pathname?.startsWith('/home/community');
     const showCropAssistant = pathname?.startsWith('/home/crops') && !!user;
+    // Reels is a full-screen player with its own controls down the right edge;
+    // a floating button on top of it is in the way whichever side it sits on.
+    const hideFloatingActions = pathname?.startsWith('/home/reels');
 
     // Listen for custom event to open crop assistant from other components
     const handleOpenCropChat = useCallback(() => {
@@ -24,9 +27,15 @@ export default function FloatingActionButtons() {
         return () => window.removeEventListener('open-crop-assistant', handleOpenCropChat);
     }, [handleOpenCropChat]);
 
+    if (hideFloatingActions) return null;
+
     return (
         <>
-            <div data-floating-actions className="fixed z-50 flex flex-col items-end gap-4 bottom-24 md:bottom-6 right-4 lg:bottom-10 lg:right-10">
+            {/* Anchored bottom-LEFT on mobile: the Rent and Buy & Sell boards put
+                their "Post an Ad" / "List for Rent" button at bottom-right, and the
+                two used to sit on top of each other. Desktop keeps the right-hand
+                position, where nothing competes for the corner. */}
+            <div data-floating-actions className="fixed z-50 flex flex-col items-start md:items-end gap-4 bottom-24 md:bottom-6 left-4 md:left-auto md:right-4 lg:bottom-10 lg:right-10">
                 {/* Crop Assistant Button — Only on crops pages */}
                 {showCropAssistant && (
                     <button

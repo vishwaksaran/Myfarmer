@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { DEFAULT_COMMUNITY_AVATAR, resolveAvatarSrc } from './avatarUtils';
 import { COMMUNITY_FALLBACK_NAME } from './types';
 import { discardCommunityMedia, uploadCommunityMedia } from '@/lib/community-media';
+import { Z } from '@/lib/z-layers';
 
 /** Which composer the user picked from the create menu, so the modal can open ready for it. */
 export type CreatePostIntent = 'post' | 'photo' | 'video' | 'poll';
@@ -242,7 +243,7 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit, userAvatar,
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: Z.MODAL }}>
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
 

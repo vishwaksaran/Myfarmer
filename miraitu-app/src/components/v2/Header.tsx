@@ -74,6 +74,10 @@ const searchableItems = [
     { name: 'Mandi Rates', path: '/home/crops/mandi/prices', icon: 'trending_up', keywords: ['mandi rates', 'live prices', 'market rates', 'crop prices', 'apmc prices'] },
     { name: 'Buy Crops', path: '/home/crops/buy', icon: 'shopping_cart', keywords: ['buy crops', 'purchase crops', 'buy grain', 'buy vegetables'] },
     { name: 'Sell Crops', path: '/home/crops/sell', icon: 'sell', keywords: ['sell crops', 'sell harvest', 'list produce', 'sell grain'] },
+    { name: 'Buy & Sell', path: '/home/buy-sell', icon: 'storefront', keywords: ['buy', 'sell', 'buy and sell', 'marketplace', 'classifieds', 'post an ad', 'second hand', 'used tractor', 'used vehicle'] },
+    { name: 'Rent', path: '/home/rent', icon: 'agriculture', keywords: ['rent', 'rental', 'hire', 'list for rent', 'rent tractor', 'rent land', 'rent equipment', 'labour hire'] },
+    { name: 'Reels', path: '/home/reels', icon: 'movie', keywords: ['reels', 'videos', 'shorts', 'watch', 'farming videos'] },
+    { name: 'My Ads', path: '/home/buy-sell', icon: 'list_alt', keywords: ['my ads', 'my listings', 'my posts', 'manage ads', 'edit ad', 'delete ad'] },
 ];
 
 // Drives both the desktop nav bar and the mobile hamburger menu.
@@ -87,10 +91,18 @@ const primaryNavItems = [
     { tKey: 'nav.livestock', path: '/home/livestock', icon: 'pets' },
 ];
 
+// Services and Dashboard live here now: the bottom nav gave their slots to
+// Rent, Buy & Sell and Reels, so this menu is how they stay reachable on a
+// phone. Rent and Buy & Sell are listed too, since the bottom nav is
+// mobile-only and desktop needs a way in.
 const moreNavItems = [
+    { tKey: 'bottomNav.rent', path: '/home/rent', icon: 'agriculture' },
+    { tKey: 'bottomNav.buySell', path: '/home/buy-sell', icon: 'storefront' },
+    { tKey: 'bottomNav.reels', path: '/home/reels', icon: 'movie' },
+    { tKey: 'nav.services', path: '/home/services', icon: 'home_repair_service' },
+    { tKey: 'bottomNav.dashboard', path: '/home/dashboard', icon: 'dashboard' },
     { tKey: 'nav.veterinary', path: '/home/veterinary', icon: 'vaccines' },
     { tKey: 'nav.land', path: '/home/land', icon: 'landscape' },
-    { tKey: 'nav.services', path: '/home/services', icon: 'home_repair_service' },
     { tKey: 'nav.toolbox', path: '/home/toolbox', icon: 'calculate' },
     { tKey: 'nav.community', path: '/home/community', icon: 'groups' },
 ];

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { discardCommunityMedia, uploadCommunityMedia } from '@/lib/community-media';
+import { Z } from '@/lib/z-layers';
 
 interface CreateStoryModalProps {
     isOpen: boolean;
@@ -88,18 +89,23 @@ export default function CreateStoryModal({ isOpen, onClose, onSubmit }: CreateSt
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        // Z.MODAL rather than a Tailwind z-50: the bottom nav is also z-50, so
+        // with enough photos the action row slid underneath it.
+        <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: Z.MODAL }}>
             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={handleClose} />
 
-            <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-[#1a231a] border border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden">
-                <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+            {/* Capped height with a scrolling middle: the photo grid grows with
+                every picked image, and without this the Add More / Post buttons
+                were pushed off the bottom of the screen once past ~6 photos. */}
+            <div className="relative w-full max-w-md max-h-[88vh] flex flex-col rounded-3xl bg-white dark:bg-[#1a231a] border border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden">
+                <div className="shrink-0 flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white">Create Story</h3>
                     <button onClick={handleClose} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>
 
-                <div className="p-4">
+                <div className="flex-1 min-h-0 overflow-y-auto p-4">
                     {images.length === 0 ? (
                         <button
                             onClick={() => fileRef.current?.click()}
@@ -112,7 +118,9 @@ export default function CreateStoryModal({ isOpen, onClose, onSubmit }: CreateSt
                     ) : (
                         <div className="space-y-3">
                             <p className="text-xs font-semibold text-gray-600 dark:text-gray-300">Selected stories: {images.length}</p>
-                            <div className="grid grid-cols-3 gap-2 max-h-[420px] overflow-y-auto">
+                            {/* No nested scroller — the modal body scrolls, so the
+                                grid just grows inside it. */}
+                            <div className="grid grid-cols-3 gap-2">
                                 {images.map((image, idx) => (
                                     <div key={`${idx}-${image.slice(0, 24)}`} className="relative rounded-xl overflow-hidden bg-black aspect-[3/4]">
                                         <img src={image} alt={`Story preview ${idx + 1}`} className="w-full h-full object-cover" />
@@ -133,23 +141,25 @@ export default function CreateStoryModal({ isOpen, onClose, onSubmit }: CreateSt
                             {error}
                         </div>
                     )}
+                </div>
 
-                    <div className="mt-4 flex gap-2">
-                        <button
-                            onClick={() => fileRef.current?.click()}
-                            disabled={uploading || posting}
-                            className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
-                        >
-                            {uploading ? 'Uploading…' : images.length > 0 ? 'Add More Photos' : 'Select Photo'}
-                        </button>
-                        <button
-                            onClick={() => { void handlePostStory(); }}
-                            className="flex-1 py-2.5 rounded-xl bg-[#22c33d] text-white text-sm font-bold hover:brightness-110 disabled:opacity-50"
-                            disabled={images.length === 0 || uploading || posting}
-                        >
-                            {posting ? 'Posting…' : `Post ${images.length > 1 ? `${images.length} Stories` : 'Story'}`}
-                        </button>
-                    </div>
+                {/* Pinned outside the scroll area, so the buttons are reachable
+                    no matter how many photos are queued. */}
+                <div className="shrink-0 flex gap-2 p-4 border-t border-gray-100 dark:border-gray-800">
+                    <button
+                        onClick={() => fileRef.current?.click()}
+                        disabled={uploading || posting}
+                        className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                    >
+                        {uploading ? 'Uploading…' : images.length > 0 ? 'Add More Photos' : 'Select Photo'}
+                    </button>
+                    <button
+                        onClick={() => { void handlePostStory(); }}
+                        className="flex-1 py-2.5 rounded-xl bg-[#22c33d] text-white text-sm font-bold hover:brightness-110 disabled:opacity-50"
+                        disabled={images.length === 0 || uploading || posting}
+                    >
+                        {posting ? 'Posting…' : `Post ${images.length > 1 ? `${images.length} Stories` : 'Story'}`}
+                    </button>
                 </div>
 
                 <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />

@@ -101,6 +101,8 @@ export interface FetchFeedOptions {
     authorId?: string;
     /** Fetch exactly one post — used to resolve a shared ?post= link. */
     postId?: string;
+    /** Only posts carrying a playable video — the Reels feed. */
+    videoOnly?: boolean;
 }
 
 /**
@@ -130,6 +132,9 @@ export async function fetchFeed(
 
             if (options.authorId) query = query.eq('user_id', options.authorId);
             if (options.postId) query = query.eq('id', options.postId);
+            // A stored URL only — a legacy base64 data URL would be megabytes
+            // of payload per reel and cannot stream.
+            if (options.videoOnly) query = query.like('video', 'http%');
             return query;
         };
 
@@ -315,6 +320,31 @@ export async function fetchFeed(
         console.error('[fetchFeed] unexpected:', err);
         return { data: [], hasMore: false, error: 'Failed to load the feed' };
     }
+}
+
+// ─── Reels ───────────────────────────────────────────────────────────
+
+/**
+ * The vertical video feed: every community post that carries a video, newest
+ * first.
+ *
+ * Reels are not a separate content type — a video posted through "Upload
+ * Short" is the same row the feed renders, so a like or comment left in Reels
+ * is the same one that shows on the post. Only rows with a stored URL are
+ * returned; a legacy row holding a base64 data URL would be megabytes of
+ * payload per reel.
+ */
+export async function fetchReels(
+    options: { limit?: number; offset?: number } = {}
+): Promise<{ data: Post[]; hasMore: boolean; error?: string }> {
+    // One `fetchFeed` call with the video filter, so authors, reactions,
+    // comments and share counts still come back in the same batched queries
+    // the feed uses rather than one round trip per reel.
+    return fetchFeed({
+        limit: options.limit ?? 10,
+        offset: options.offset ?? 0,
+        videoOnly: true,
+    });
 }
 
 // ─── Create / edit / delete ──────────────────────────────────────────

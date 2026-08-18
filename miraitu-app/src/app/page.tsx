@@ -5,6 +5,7 @@ import TopCategories from '@/components/v2/TopCategories';
 import BuySell from '@/components/v2/BuySell';
 import AgriCalculators from '@/components/v2/AgriCalculators';
 import ProviderDashboardBanner from '@/components/v2/ProviderDashboardBanner';
+import MobileHomeDashboard from '@/components/v2/MobileHomeDashboard';
 import { CartProvider } from '@/context/CartContext';
 
 // Below-the-fold sections loaded lazily — reduces initial compile & JS bundle
@@ -37,7 +38,13 @@ export default function HomePage() {
         <Header />
         <main className="flex-1 w-full flex flex-col overflow-x-hidden">
           <ProviderDashboardBanner />
-          <HeroSection />
+          {/* Phones get a working dashboard — greeting, live weather, quick
+              actions — instead of the full-viewport marketing hero, which
+              pushed everything useful below the fold on a small screen. */}
+          <MobileHomeDashboard />
+          <div className="hidden md:block">
+            <HeroSection />
+          </div>
           <TopCategories />
           <BuySell />
           <AgriCalculators />
