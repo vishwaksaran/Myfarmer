@@ -7,6 +7,8 @@ import { LocationProvider } from "@/context/LocationContext";
 import LanguageFirstRunGate from "@/components/language/LanguageFirstRunGate";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import SplashScreen from "@/components/SplashScreen";
+import AdSenseLoader from "@/components/ads/AdSenseLoader";
+import AdConsentBanner from "@/components/ads/AdConsentBanner";
 import "./globals.css";
 
 // Fonts are self-hosted from ./fonts rather than fetched via next/font/google.
@@ -187,6 +189,26 @@ export default function RootLayout({ children }: RootLayoutProps) {
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         />
         <meta name="color-scheme" content="light" />
+        {/*
+          AdSense site verification.
+
+          This is the verification method to use here, NOT the "paste the
+          AdSense code snippet in <head>" option. The snippet method expects the
+          adsbygoogle library on every page, but AdSenseLoader deliberately
+          injects it only on ad-eligible routes after a consent choice — and the
+          homepage is not ad-eligible. A reviewer or crawler landing on "/" would
+          find no tag and verification would fail.
+
+          A meta tag verifies the account without loading any JavaScript, so it
+          costs nothing on any Core Web Vital. Renders only once the publisher
+          ID is set.
+        */}
+        {process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID ? (
+          <meta
+            name="google-adsense-account"
+            content={process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID}
+          />
+        ) : null}
         {/* Brand identity meta tags — help Google recognise 'Miraitu' as a brand name */}
         <meta name="application-name" content="Miraitu" />
         <meta name="apple-mobile-web-app-title" content="Miraitu" />
@@ -354,6 +376,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 {/* Mobile-only, once per device: pick a language before the app. */}
                 <LanguageFirstRunGate />
                 <ServiceWorkerRegistration />
+                {/* Both no-op unless ADS_ENABLED is on, the publisher ID is set,
+                    and the current route is ad-eligible — see lib/ads-config.ts.
+                    Inside LanguageProvider because both render translated copy. */}
+                <AdSenseLoader />
+                <AdConsentBanner />
               </LocationProvider>
             </LanguageProvider>
           </LoginPromptProvider>

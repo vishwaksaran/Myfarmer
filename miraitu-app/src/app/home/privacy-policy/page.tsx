@@ -110,6 +110,53 @@ export default function PrivacyPolicyPage() {
                         </ul>
                         <p className="mt-2">You may disable cookies through your browser settings, but some features may not function properly.</p>
 
+                        <h4 className="font-semibold mt-4 mb-2">(e) Advertising Cookies</h4>
+                        <p>
+                            We display advertisements supplied by Google AdSense on some parts of Miraitu, such as
+                            marketplace and category pages. We do not show advertisements on login, registration,
+                            listing creation, cart, checkout, dashboard or administrative screens.
+                        </p>
+                        <p className="mt-2">
+                            Google and its partners use cookies and similar technologies to serve and measure these
+                            advertisements. Where you have given consent, these may be used to show advertisements
+                            based on your prior visits to Miraitu or other websites. Google&apos;s use of advertising
+                            cookies is described in its own policies.
+                        </p>
+                        <p className="mt-2">
+                            We ask for your consent before advertising cookies are used. If you decline, or have not
+                            yet responded, you will still see advertisements, but they will be non-personalised —
+                            based on general context rather than your activity. You may change or withdraw your choice
+                            at any time from Settings, and withdrawal is as straightforward as giving consent.
+                        </p>
+                        <ul className="list-disc pl-6 space-y-1 mt-2">
+                            <li>
+                                Manage Google ad personalisation:{' '}
+                                <a
+                                    href="https://myadcenter.google.com/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[#2c5926] underline"
+                                >
+                                    myadcenter.google.com
+                                </a>
+                            </li>
+                            <li>
+                                How Google uses data from sites that use its services:{' '}
+                                <a
+                                    href="https://policies.google.com/technologies/partner-sites"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[#2c5926] underline"
+                                >
+                                    policies.google.com/technologies/partner-sites
+                                </a>
+                            </li>
+                        </ul>
+                        <p className="mt-2">
+                            Advertising is not personalised for users we know to be children, and we do not use
+                            sensitive personal data for advertising purposes.
+                        </p>
+
                         <h3 className="text-lg font-semibold text-[#2c5926] mt-6 mb-3">2.3 Third-Party Sources</h3>
                         <p>We may receive information from:</p>
                         <ul className="list-disc pl-6 space-y-1">

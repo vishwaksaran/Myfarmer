@@ -5,6 +5,7 @@ import ProfileSettings from '@/components/settings/ProfileSettings';
 import LanguageSettings from '@/components/settings/LanguageSettings';
 import NotificationSettings from '@/components/settings/NotificationSettings';
 import SecuritySettings from '@/components/settings/SecuritySettings';
+import AdPreferencesSettings from '@/components/settings/AdPreferencesSettings';
 import { useAuth } from '@/context/AuthContext';
 import MiraituLogo from '@/components/MiraituLogo';
 
@@ -54,6 +55,8 @@ export default function SettingsPage() {
                         <LanguageSettings />
                         <NotificationSettings />
                         <SecuritySettings />
+                        {/* Renders only when the ads layer is live — see ads-config.ts */}
+                        <AdPreferencesSettings />
                     </div>
 
                     <div className="mt-12 flex justify-center animate-fade-in-up delay-200">

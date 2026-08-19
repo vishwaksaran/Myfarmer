@@ -9,6 +9,8 @@ import generatedTranslations from '../../generated-translations-complete.json';
 import { homeSectionTranslations } from './homeSectionTranslations';
 // Service-booking cart / checkout screen chrome
 import { cartTranslations } from './cartTranslations';
+// Ad label and advertising-consent notice copy
+import { adsTranslations } from './adsTranslations';
 
 interface LanguageContextType {
     lang: LangCode;
@@ -35,12 +37,13 @@ for (const lang of LANGS_WITH_PREGENERATED) {
         ...(generatedTranslations[lang as keyof typeof generatedTranslations] || {}),
     };
 }
-// Layer home-page V2 section labels and cart chrome on top for every language.
+// Layer home-page V2 section labels, cart chrome and ad copy on top for every language.
 for (const lang of VALID_LANGS) {
     mergedTranslations[lang] = {
         ...(mergedTranslations[lang] || {}),
         ...(homeSectionTranslations[lang] || {}),
         ...(cartTranslations[lang] || {}),
+        ...(adsTranslations[lang] || {}),
     };
 }
 
