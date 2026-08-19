@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { getAllBrands, getAllModels } from '@/lib/machinery-db';
+import { articles } from '@/content/articles';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://www.miraitu.in';
@@ -125,6 +126,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: route.priority,
     }));
 
+    // Guides. Derived from the content module so a new article is indexed
+    // without touching this file. lastModified is the article's own updatedAt
+    // rather than the build time — a build should not tell search engines that
+    // unchanged content changed.
+    const articleEntries: MetadataRoute.Sitemap = [
+        {
+            url: `${baseUrl}/articles`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly' as const,
+            priority: 0.9,
+        },
+        ...articles.map((article) => ({
+            url: `${baseUrl}/articles/${article.slug}`,
+            lastModified: new Date(article.updatedAt),
+            changeFrequency: 'monthly' as const,
+            priority: 0.8,
+        })),
+    ];
+
     // Dynamic tractor brand and model pages
     let dynamicEntries: MetadataRoute.Sitemap = [];
     try {
@@ -152,5 +172,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         // If DB is unavailable, return only static entries
     }
 
-    return [...staticEntries, ...dynamicEntries];
+    return [...staticEntries, ...articleEntries, ...dynamicEntries];
 }
