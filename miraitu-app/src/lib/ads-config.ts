@@ -38,11 +38,14 @@ export const adsConfigured = (): boolean => ADS_ENABLED && ADSENSE_CLIENT_ID.sta
  * Both are listed. If one tree is retired, delete its prefixes here rather
  * than leaving a dead entry that silently covers nothing.
  *
- * There is deliberately no /articles entry: that section does not exist yet.
- * Add it here when it ships — content pages are the intended high-density
- * surface, and the marketplace prefixes below should stay low-density.
+ * /articles is the intended high-density surface — long-form original content,
+ * where a reader is scrolling and an inline ad is neither surprising nor in the
+ * way. The marketplace prefixes below stay low-density: someone comparing
+ * tractor listings is close to a purchase decision, and ads there cost trust
+ * for little return.
  */
 export const AD_ALLOWED_PREFIXES: readonly string[] = [
+    '/articles',
     '/marketplace',
     '/home/livestock',
     '/home/machinery',
