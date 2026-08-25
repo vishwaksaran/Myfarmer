@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
-import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
+import { useSubmissionCopy } from '@/lib/service-availability';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 
 // Uploads to the shared `listing-images` bucket and returns the public URL.
@@ -56,6 +56,7 @@ export default function SellLandPage() {
         contactPhone: '',
     });
     const { submit, submitting } = useBookingSubmit();
+    const submission = useSubmissionCopy();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -397,8 +398,8 @@ export default function SellLandPage() {
                             <div className="w-16 md:w-20 h-16 md:h-20 mx-auto mb-4 md:mb-6 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
                                 <span className="material-symbols-outlined text-3xl md:text-4xl text-white">check</span>
                             </div>
-                            <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">{SUBMISSION_HEADING}</h2>
-                            <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mb-4">{SUBMISSION_MESSAGE}</p>
+                            <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">{submission.heading}</h2>
+                            <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mb-4">{submission.message}</p>
                             <button onClick={() => setShowSuccessModal(false)} className="w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors">
                                 Done
                             </button>

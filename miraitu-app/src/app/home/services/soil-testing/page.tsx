@@ -7,11 +7,12 @@ import { normalizeIndianPhone } from '@/lib/phone';
 import { usePrefillLocation } from '@/context/LocationContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { translatePage } from '@/i18n/pageContent';
-import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
+import { useSubmissionCopy } from '@/lib/service-availability';
 
 export default function SoilTestingPage() {
     const { lang } = useLanguage();
     const tp = (s?: string) => translatePage(lang, s);
+    const submission = useSubmissionCopy();
     const [headerVisible, setHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -363,8 +364,8 @@ export default function SoilTestingPage() {
                                 <span className="material-symbols-outlined text-4xl md:text-5xl text-white">check_circle</span>
                             </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-primary-dark dark:text-white mb-2 md:mb-3">{tp(SUBMISSION_HEADING)}</h2>
-                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-6">{tp(SUBMISSION_MESSAGE)}</p>
+                        <h2 className="text-2xl md:text-3xl font-black text-primary-dark dark:text-white mb-2 md:mb-3">{submission.heading}</h2>
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-6">{submission.message}</p>
                         <button
                             onClick={() => {
                                 setShowSuccessModal(false);

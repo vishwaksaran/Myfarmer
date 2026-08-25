@@ -8,13 +8,14 @@ import { useAuth } from '@/context/AuthContext';
 import { unitLabel } from '@/lib/machinery-rental-catalog';
 import { createRentalBooking } from '@/app/actions/rental-bookings';
 import { normalizeIndianPhone } from '@/lib/phone';
-import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
+import { useSubmissionCopy } from '@/lib/service-availability';
 
 const inr = (n: number) => '₹' + n.toLocaleString('en-IN');
 
 export default function MachineryCartPage() {
     const { lines, updateQuantity, removeLine, clear, subtotal, totalItems, ready } = useMachineryCart();
     const { user } = useAuth();
+    const submission = useSubmissionCopy();
     const router = useRouter();
 
     const [form, setForm] = useState({
@@ -116,8 +117,8 @@ export default function MachineryCartPage() {
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary mb-4">
                         <span className="material-symbols-outlined text-white text-4xl">check_circle</span>
                     </div>
-                    <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{SUBMISSION_HEADING}</h1>
-                    <p className="text-gray-500 mb-6">{SUBMISSION_MESSAGE}</p>
+                    <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{submission.heading}</h1>
+                    <p className="text-gray-500 mb-6">{submission.message}</p>
                     <div className="flex flex-col gap-2">
                         <Link href="/home/machinery/bookings" className="w-full py-3 rounded-xl bg-primary text-white font-bold">View My Bookings</Link>
                         <Link href="/home/machinery" className="w-full py-3 rounded-xl border border-gray-200 dark:border-gray-700 font-semibold text-gray-600 dark:text-gray-300">Back to Machinery</Link>

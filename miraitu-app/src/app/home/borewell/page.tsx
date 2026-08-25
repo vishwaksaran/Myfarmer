@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
-import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
+import { useSubmissionCopy } from '@/lib/service-availability';
 import { normalizeIndianPhone } from '@/lib/phone';
 import { usePrefillLocation } from '@/context/LocationContext';
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -11,6 +11,7 @@ import { translatePage } from '@/i18n/pageContent';
 export default function BorewellServicesPage() {
     const { lang } = useLanguage();
     const tp = (s?: string) => translatePage(lang, s);
+    const submission = useSubmissionCopy();
     const [headerVisible, setHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
     const consultationFormRef = useRef<HTMLDivElement>(null);
@@ -246,9 +247,9 @@ export default function BorewellServicesPage() {
                                 <span className="material-symbols-outlined text-white text-5xl">check_circle</span>
                             </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-center text-gray-900 dark:text-white mb-3">{tp(SUBMISSION_HEADING)}</h2>
+                        <h2 className="text-2xl md:text-3xl font-black text-center text-gray-900 dark:text-white mb-3">{submission.heading}</h2>
                         <p className="text-center text-gray-600 dark:text-gray-300 mb-6 text-sm md:text-base">
-                            {tp(SUBMISSION_MESSAGE)}
+                            {submission.message}
                         </p>
                         <button onClick={() => { setShowSuccessModal(false); setFormData({ depth: '', diameter: '', location: '', soilType: 'clay', name: '', phone: '', preferredDate: '', preferredTime: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">{tp('Done')}</button>
                     </div>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
+import { useSubmissionCopy } from '@/lib/service-availability';
 
 const loanTypes = [
     { id: 'vehicle', name: 'Vehicle Loan', icon: 'agriculture', rate: '7.5%', max: '₹25 Lakh' },
@@ -14,6 +14,7 @@ const loanTypes = [
 ];
 
 export default function LoanPage() {
+    const submission = useSubmissionCopy();
     const [selectedLoan, setSelectedLoan] = useState<string | null>(null);
     const [step, setStep] = useState(0);
     const [form, setForm] = useState({ amount: '', purpose: '', name: '', phone: '', aadhar: '', pan: '' });
@@ -75,8 +76,8 @@ export default function LoanPage() {
                             <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <span className="material-symbols-outlined text-primary text-4xl">check_circle</span>
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{SUBMISSION_HEADING}</h3>
-                            <p className="text-gray-500">{SUBMISSION_MESSAGE}</p>
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{submission.heading}</h3>
+                            <p className="text-gray-500">{submission.message}</p>
                         </div>
                     )}
 

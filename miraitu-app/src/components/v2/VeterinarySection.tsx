@@ -6,7 +6,7 @@ import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { normalizeIndianPhone } from '@/lib/phone';
 import { useLoginPrompt } from '@/context/LoginPromptContext';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
+import { useSubmissionCopy } from '@/lib/service-availability';
 
 const serviceKeys = [
     { tName: 'vet.treatment', icon: 'medical_services', tDesc: 'vet.treatmentDesc', color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20' },
@@ -17,6 +17,7 @@ const serviceKeys = [
 
 export default function VeterinarySection() {
     const { t } = useLanguage();
+    const submission = useSubmissionCopy();
     const { requireLogin } = useLoginPrompt();
     const [selectedService, setSelectedService] = useState<string | null>(null);
     const [formData, setFormData] = useState({
@@ -186,9 +187,9 @@ export default function VeterinarySection() {
                                 <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600 dark:text-green-400">
                                     <span className="material-symbols-outlined text-4xl">check_circle</span>
                                 </div>
-                                <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{SUBMISSION_HEADING}</h3>
+                                <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{submission.heading}</h3>
                                 <p className="text-gray-600 dark:text-gray-300 mb-6">
-                                    {SUBMISSION_MESSAGE}
+                                    {submission.message}
                                 </p>
                                 <button
                                     onClick={() => { setSelectedService(null); setShowSuccess(false); setFormData({ name: '', mobile: '', location: '' }); }}

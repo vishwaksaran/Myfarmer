@@ -9,7 +9,7 @@ import { normalizeIndianPhone } from '@/lib/phone';
 import { usePrefillLocation } from '@/context/LocationContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { translatePage } from '@/i18n/pageContent';
-import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
+import { useSubmissionCopy } from '@/lib/service-availability';
 
 const serviceData: Record<string, any> = {
     'harvester': {
@@ -124,6 +124,7 @@ export default function GenericServicePage() {
     const params = useParams();
     const { lang } = useLanguage();
     const tp = (s?: string) => translatePage(lang, s);
+    const submission = useSubmissionCopy();
     const slug = params.slug as string;
     const service = serviceData[slug];
     const [headerVisible, setHeaderVisible] = useState(true);
@@ -371,8 +372,8 @@ export default function GenericServicePage() {
                                 <span className="material-symbols-outlined text-4xl md:text-5xl text-white">check_circle</span>
                             </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">{tp(SUBMISSION_HEADING)}</h2>
-                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-6">{tp(SUBMISSION_MESSAGE)}</p>
+                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">{submission.heading}</h2>
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-6">{submission.message}</p>
                         <button onClick={() => { setShowSuccessModal(false); setFormData({ name: '', phone: '', location: '', date: '', time: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">{tp('Done')}</button>
                     </div>
                     <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>

@@ -7,7 +7,7 @@ import { normalizeIndianPhone } from '@/lib/phone';
 import { usePrefillLocation } from '@/context/LocationContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { translatePage } from '@/i18n/pageContent';
-import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
+import { useSubmissionCopy } from '@/lib/service-availability';
 
 // ─── Storage types catalogue ───────────────────────────────────────────────
 const storageServices = [
@@ -53,6 +53,7 @@ function BookingModal({
     const { submit, submitting } = useBookingSubmit();
     const { lang } = useLanguage();
     const tp = (s?: string) => translatePage(lang, s);
+    const submission = useSubmissionCopy();
     const firstFocusRef = useRef<HTMLInputElement>(null);
 
     const [form, setForm] = useState({
@@ -140,9 +141,9 @@ function BookingModal({
                     <div className="w-20 h-20 mx-auto mb-5 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-xl shadow-green-500/30">
                         <span className="material-symbols-outlined text-4xl text-white" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                     </div>
-                    <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{tp(SUBMISSION_HEADING)}</h2>
+                    <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{submission.heading}</h2>
                     <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
-                        {tp(SUBMISSION_MESSAGE)}
+                        {submission.message}
                     </p>
                     <button
                         onClick={onClose}

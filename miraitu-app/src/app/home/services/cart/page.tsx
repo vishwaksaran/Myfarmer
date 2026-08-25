@@ -10,7 +10,7 @@ import { createServiceCatalogBooking } from '@/app/actions/service-catalog-booki
 import { normalizeIndianPhone } from '@/lib/phone';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { translateCatalog } from '@/i18n/serviceCatalogContent';
-import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
+import { useSubmissionCopy } from '@/lib/service-availability';
 
 const inr = (n: number) => '₹' + n.toLocaleString('en-IN');
 
@@ -27,6 +27,7 @@ export default function ServiceCartPage() {
     const { user } = useAuth();
     const { location: appLocation, loading: appLocating, requestLocation } = useAppLocation();
     const { t, lang } = useLanguage();
+    const submission = useSubmissionCopy();
     // Translate stored catalog content (item name, unit, saved answers) on render.
     const tc = (s?: string) => translateCatalog(lang, s);
 
@@ -134,8 +135,8 @@ export default function ServiceCartPage() {
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary mb-4">
                         <span className="material-symbols-outlined text-white text-4xl">check_circle</span>
                     </div>
-                    <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{SUBMISSION_HEADING}</h1>
-                    <p className="text-gray-500 mb-6">{SUBMISSION_MESSAGE}</p>
+                    <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{submission.heading}</h1>
+                    <p className="text-gray-500 mb-6">{submission.message}</p>
                     <Link href="/home/services" className="inline-block w-full py-3 rounded-xl bg-primary text-white font-bold">{t('catalog.backToServices')}</Link>
                 </div>
             </div>

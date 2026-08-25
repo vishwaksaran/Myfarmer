@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
-import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
+import { useSubmissionCopy } from '@/lib/service-availability';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { usePrefillLocation } from '@/context/LocationContext';
 
@@ -127,6 +127,7 @@ export default function CCTVSurveillancePage() {
         }
     };
     const { submit, submitting } = useBookingSubmit();
+    const submission = useSubmissionCopy();
 
     return (
         <div className="min-h-screen bg-background-light dark:bg-background-dark">
@@ -339,9 +340,9 @@ export default function CCTVSurveillancePage() {
                                 <span className="material-symbols-outlined text-white text-5xl">check_circle</span>
                             </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-center text-gray-900 dark:text-white mb-3">{SUBMISSION_HEADING}</h2>
+                        <h2 className="text-2xl md:text-3xl font-black text-center text-gray-900 dark:text-white mb-3">{submission.heading}</h2>
                         <p className="text-center text-gray-600 dark:text-gray-300 mb-2 text-sm md:text-base">
-                            {SUBMISSION_MESSAGE}
+                            {submission.message}
                         </p>
                     </div>
                 </div>

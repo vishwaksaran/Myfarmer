@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { normalizeIndianPhone } from '@/lib/phone';
-import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
+import { useSubmissionCopy } from '@/lib/service-availability';
 
 const leftServices = [
     {
@@ -45,6 +45,7 @@ const rightServices = [
 
 export default function ToolboxSection() {
     const { t } = useLanguage();
+    const submission = useSubmissionCopy();
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [village, setVillage] = useState('');
@@ -147,8 +148,8 @@ export default function ToolboxSection() {
                                     <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary to-green-400 flex items-center justify-center mb-5 shadow-xl shadow-primary/30 animate-bounce">
                                         <span className="material-symbols-outlined text-white text-4xl">check</span>
                                     </div>
-                                    <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{SUBMISSION_HEADING}</h3>
-                                    <p className="text-gray-500 text-sm text-center max-w-sm">{SUBMISSION_MESSAGE}</p>
+                                    <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{submission.heading}</h3>
+                                    <p className="text-gray-500 text-sm text-center max-w-sm">{submission.message}</p>
                                 </div>
                             )}
 
