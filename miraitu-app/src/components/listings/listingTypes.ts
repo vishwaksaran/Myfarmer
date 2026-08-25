@@ -63,6 +63,15 @@ export const SUBCATEGORIES: Record<ListingCategory, string[]> = {
     other: ['Other'],
 };
 
+/**
+ * The sub-types a seller actually picks from. "Other" is the catch-all itself,
+ * so there is nothing left to narrow it down to — the form skips the field
+ * entirely rather than offering a one-option dropdown.
+ */
+export function subcategoryOptions(category: ListingCategory): string[] {
+    return category === 'other' ? [] : SUBCATEGORIES[category] ?? [];
+}
+
 /** Price units offered per board. Sales are a lump sum; rentals are per period. */
 export const SALE_PRICE_UNITS = ['Total', 'Per acre', 'Per quintal', 'Per unit'] as const;
 export const RENT_PRICE_UNITS = ['One day', 'Per hour', 'Per acre', 'per KM', 'Per month', 'Per season'] as const;

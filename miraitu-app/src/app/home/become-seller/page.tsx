@@ -9,6 +9,7 @@ import Footer from '@/components/v2/Footer';
 import { useAuth } from '@/context/AuthContext';
 import { createSeller, uploadImages } from '@/lib/supabase-db';
 import supabase from '@/lib/supabase';
+import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
 
 const sellerTypes = [
     {
@@ -624,9 +625,8 @@ export default function BecomeSellerPage() {
                                 <span className="material-symbols-outlined text-white text-4xl md:text-5xl animate-check-bounce">check_circle</span>
                             </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2">Application Submitted! 🎉</h2>
-                        <p className="text-sm md:text-base text-gray-500 mb-2 leading-relaxed">Congratulations! Your <span className="font-bold text-primary">{sellerLabel}</span> application has been received.</p>
-                        <p className="text-xs md:text-sm text-gray-400 mb-6">Miraitu team will verify your details and contact you within <span className="font-bold text-orange-500">24 hours</span>. 📞</p>
+                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2">{SUBMISSION_HEADING}</h2>
+                        <p className="text-sm md:text-base text-gray-500 mb-6 leading-relaxed">{SUBMISSION_MESSAGE}</p>
                         <div className="grid grid-cols-2 gap-2 mb-6">
                             <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-3 text-center">
                                 <span className="material-symbols-outlined text-green-500 text-xl mb-1">verified</span>

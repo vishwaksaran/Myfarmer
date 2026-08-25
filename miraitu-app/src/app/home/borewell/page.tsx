@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
+import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
 import { normalizeIndianPhone } from '@/lib/phone';
 import { usePrefillLocation } from '@/context/LocationContext';
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -245,13 +246,10 @@ export default function BorewellServicesPage() {
                                 <span className="material-symbols-outlined text-white text-5xl">check_circle</span>
                             </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-center text-gray-900 dark:text-white mb-3">{tp('Consultation Booked!')}</h2>
-                        <p className="text-center text-gray-600 dark:text-gray-300 mb-4 text-sm md:text-base">
-                            {tp('Your borewell consultation request has been submitted successfully.')}
+                        <h2 className="text-2xl md:text-3xl font-black text-center text-gray-900 dark:text-white mb-3">{tp(SUBMISSION_HEADING)}</h2>
+                        <p className="text-center text-gray-600 dark:text-gray-300 mb-6 text-sm md:text-base">
+                            {tp(SUBMISSION_MESSAGE)}
                         </p>
-                        <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
-                            <p className="text-sm font-bold text-green-700 dark:text-green-400 text-center">{tp('📞 Our team will contact you soon to schedule your visit')}</p>
-                        </div>
                         <button onClick={() => { setShowSuccessModal(false); setFormData({ depth: '', diameter: '', location: '', soilType: 'clay', name: '', phone: '', preferredDate: '', preferredTime: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">{tp('Done')}</button>
                     </div>
                     <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>

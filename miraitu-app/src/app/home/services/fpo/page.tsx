@@ -6,6 +6,7 @@ import { translatePage } from '@/i18n/pageContent';
 import Image from 'next/image';
 import Link from 'next/link';
 import { normalizeIndianPhone } from '@/lib/phone';
+import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
 
 const STEPS = [
     { icon: 'app_registration', number: '01', titleKey: 'fpo.step1Title', descKey: 'fpo.step1Desc' },
@@ -204,8 +205,8 @@ export default function FPOPage() {
                                 <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-gradient-to-br from-green-600 to-green-400 flex items-center justify-center mb-4 sm:mb-5 shadow-xl shadow-green-600/30 animate-bounce">
                                     <span className="material-symbols-outlined text-white text-3xl sm:text-4xl">check</span>
                                 </div>
-                                <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2 text-center">{t('fpo.consultationBooked')}</h3>
-                                <p className="text-gray-500 text-sm text-center max-w-xs">{t('fpo.consultationDesc')}</p>
+                                <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2 text-center">{SUBMISSION_HEADING}</h3>
+                                <p className="text-gray-500 text-sm text-center max-w-xs">{SUBMISSION_MESSAGE}</p>
                             </div>
                         )}
 

@@ -6,6 +6,7 @@ import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { usePrefillLocation } from '@/context/LocationContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { translatePage } from '@/i18n/pageContent';
+import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
 
 // ─── Machinery catalogue ─────────────────────────────────────────────────────
 
@@ -196,14 +197,10 @@ function BookingModal({
                     <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-xl shadow-green-500/30">
                         <span className="material-symbols-outlined text-4xl text-white" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2">{tp('Booking Request Sent!')}</h2>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base mb-5">
-                        {tp('Thank you')}, <strong className="text-gray-700 dark:text-gray-200">{form.full_name}</strong>! {tp('Your rental request for {item} has been received.').replace('{item}', tp(machine.title))}
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2">{tp(SUBMISSION_HEADING)}</h2>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base mb-6">
+                        {tp(SUBMISSION_MESSAGE)}
                     </p>
-                    <div className="flex items-center gap-3 bg-green-50 dark:bg-green-900/25 border border-green-200 dark:border-green-800 rounded-2xl px-4 py-3 mb-6 text-left">
-                        <span className="material-symbols-outlined text-green-600 text-2xl flex-shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>support_agent</span>
-                        <p className="text-sm text-green-700 dark:text-green-300 font-semibold">{tp('Our team will reach you within 24 hours at {phone}.').replace('{phone}', form.phone)}</p>
-                    </div>
                     <button
                         onClick={onClose}
                         className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-all active:scale-[0.98]"

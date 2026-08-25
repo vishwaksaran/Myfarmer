@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
+import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
 import { normalizeIndianPhone } from '@/lib/phone';
 import { usePrefillLocation } from '@/context/LocationContext';
 
@@ -398,11 +399,8 @@ export default function ProtectionServicesPage() {
                                 <span className="material-symbols-outlined text-4xl md:text-5xl text-white">check_circle</span>
                             </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">Quote Requested!</h2>
-                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4">Your protection sheet quotation request has been submitted successfully.</p>
-                        <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
-                            <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will contact you soon with customized solutions</p>
-                        </div>
+                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">{SUBMISSION_HEADING}</h2>
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-6">{SUBMISSION_MESSAGE}</p>
                         <button onClick={() => { setShowSuccessModal(false); setFormData({ full_name: '', phone: '', location: '', pond_area: '', pond_depth: '', preferred_date: '', preferred_time: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">Done</button>
                     </div>
                     <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>

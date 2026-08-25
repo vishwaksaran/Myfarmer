@@ -6,6 +6,7 @@ import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { normalizeIndianPhone } from '@/lib/phone';
 import { useLoginPrompt } from '@/context/LoginPromptContext';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
 
 const serviceKeys = [
     { tName: 'vet.treatment', icon: 'medical_services', tDesc: 'vet.treatmentDesc', color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20' },
@@ -185,13 +186,10 @@ export default function VeterinarySection() {
                                 <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600 dark:text-green-400">
                                     <span className="material-symbols-outlined text-4xl">check_circle</span>
                                 </div>
-                                <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{t('vet.bookingConfirmed')}</h3>
-                                <p className="text-gray-600 dark:text-gray-300 mb-4">
-                                    {t('vet.bookingDesc')}
+                                <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{SUBMISSION_HEADING}</h3>
+                                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                                    {SUBMISSION_MESSAGE}
                                 </p>
-                                <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
-                                    <p className="text-sm font-bold text-green-700 dark:text-green-400">{t('vet.teamContact')}</p>
-                                </div>
                                 <button
                                     onClick={() => { setSelectedService(null); setShowSuccess(false); setFormData({ name: '', mobile: '', location: '' }); }}
                                     className="w-full py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-all"

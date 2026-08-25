@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
+import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { usePrefillLocation } from '@/context/LocationContext';
 
@@ -338,12 +339,9 @@ export default function CCTVSurveillancePage() {
                                 <span className="material-symbols-outlined text-white text-5xl">check_circle</span>
                             </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-center text-gray-900 dark:text-white mb-3">Thanks for Applying!</h2>
+                        <h2 className="text-2xl md:text-3xl font-black text-center text-gray-900 dark:text-white mb-3">{SUBMISSION_HEADING}</h2>
                         <p className="text-center text-gray-600 dark:text-gray-300 mb-2 text-sm md:text-base">
-                            Your CCTV installation request has been submitted successfully.
-                        </p>
-                        <p className="text-center text-gray-500 dark:text-gray-400 text-xs md:text-sm">
-                            Our team will contact you within <span className="font-bold text-primary">48 hours</span> to finalize your installation.
+                            {SUBMISSION_MESSAGE}
                         </p>
                     </div>
                 </div>

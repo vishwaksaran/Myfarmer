@@ -7,6 +7,7 @@ import { translatePage } from '@/i18n/pageContent';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { uploadListingImages, createListing } from '@/lib/supabase-db';
 import supabase from '@/lib/supabase';
+import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
 
 const cropCategories = [
     { id: 'grains', name: 'Grains & Cereals', icon: 'grain', examples: 'Wheat, Rice, Maize, Jowar' },
@@ -452,8 +453,8 @@ export default function SellCropsListPage() {
                                 <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
                                     <span className="material-symbols-outlined text-3xl text-white">check</span>
                                 </div>
-                                <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{tp('Crop Listed!')}</h2>
-                                <p className="text-sm text-gray-500 mb-4">{tp('Your produce has been listed successfully. Buyers can now find it in the marketplace.')}</p>
+                                <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{tp(SUBMISSION_HEADING)}</h2>
+                                <p className="text-sm text-gray-500 mb-4">{tp(SUBMISSION_MESSAGE)}</p>
                                 <div className="flex gap-3">
                                     <Link href="/home/crops/sell" className="flex-1 py-3 rounded-xl bg-primary text-white font-bold text-center">
                                         {tp('Done')}

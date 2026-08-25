@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { uploadListingImages, createListing } from '@/lib/supabase-db';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import supabase from '@/lib/supabase';
+import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
 
 const steps = ['Basic Details', 'Condition & Specs', 'Photos & Price'];
 
@@ -700,12 +701,8 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                             <div className="w-16 md:w-20 h-16 md:h-20 mx-auto mb-4 md:mb-6 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
                                 <span className="material-symbols-outlined text-3xl md:text-4xl text-white">check</span>
                             </div>
-                            <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">Machinery Listed Successfully!</h2>
-                            <p className="text-base md:text-lg text-gray-600 dark:text-gray-300 font-bold mb-1">Great job! 🚜</p>
-                            <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mb-4">Your machinery listing has been submitted for review. Our team will verify the details and connect you with interested buyers.</p>
-                            <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-4">
-                                <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will contact you soon</p>
-                            </div>
+                            <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">{SUBMISSION_HEADING}</h2>
+                            <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mb-4">{SUBMISSION_MESSAGE}</p>
                             <button onClick={() => setShowSuccess(false)} className="w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors">
                                 Done
                             </button>

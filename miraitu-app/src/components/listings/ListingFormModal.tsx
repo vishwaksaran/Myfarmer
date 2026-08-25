@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
     CATEGORIES_BY_MODE,
-    SUBCATEGORIES,
+    subcategoryOptions,
     RENT_PRICE_UNITS,
     SALE_PRICE_UNITS,
     type Listing,
@@ -74,7 +74,11 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
         if (!isOpen) return;
         if (editing) {
             setCategory(editing.category);
-            setSubcategory(editing.subcategory || '');
+            // An ad posted before the type became mandatory — or one under
+            // "Other", which no longer offers types — has nothing to preselect.
+            setSubcategory(
+                subcategoryOptions(editing.category).includes(editing.subcategory) ? editing.subcategory : ''
+            );
             setTitle(editing.title);
             setDescription(editing.description);
             setBrand(editing.brand);
@@ -114,6 +118,10 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
     // Hints follow the chosen category, so the examples always match what the
     // farmer is actually listing.
     const hints = listingPlaceholders(mode, category);
+
+    // Empty for "Other", which is the catch-all itself — that category shows no
+    // type field at all.
+    const typeOptions = subcategoryOptions(category);
 
     const handlePhotos = (e: React.ChangeEvent<HTMLInputElement>) => {
         const picked = Array.from(e.target.files || []);
@@ -203,7 +211,11 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
         onClose();
     };
 
-    const canSubmit = title.trim().length >= 3 && locationText.trim().length > 0 && (price.trim() !== '' || negotiable);
+    const canSubmit =
+        title.trim().length >= 3 &&
+        locationText.trim().length > 0 &&
+        (price.trim() !== '' || negotiable) &&
+        (typeOptions.length === 0 || subcategory !== '');
 
     return (
         <div className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4" style={{ zIndex: Z.MODAL }}>
@@ -248,34 +260,25 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
                         </div>
                     </div>
 
-                    {/* Sub-category — appears once a category is picked, because
-                        "Machinery" alone covers everything from a tractor to a
-                        borewell rig. Optional, so it never blocks publishing. */}
-                    {SUBCATEGORIES[category]?.length > 0 && (
+                    {/* Sub-category — required, because "Machinery" alone covers
+                        everything from a tractor to a borewell rig, and a buyer
+                        filtering the board would never find an untyped ad. A
+                        dropdown rather than chips: eleven machinery types cost
+                        four rows of the form before the title is even reached. */}
+                    {typeOptions.length > 0 && (
                         <div>
-                            <label className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-2">
-                                {CATEGORY_META[category].label} type
-                                <span className="ml-1 font-normal text-gray-400">(optional)</span>
+                            <label htmlFor="listing-subcategory" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">
+                                {CATEGORY_META[category].label} type <span className="text-red-500">*</span>
                             </label>
-                            <div className="flex flex-wrap gap-2">
-                                {SUBCATEGORIES[category].map(sub => {
-                                    const active = subcategory === sub;
-                                    return (
-                                        <button
-                                            key={sub}
-                                            // Tapping the active chip clears it, so a
-                                            // mis-tap is undoable without reloading.
-                                            onClick={() => setSubcategory(active ? '' : sub)}
-                                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${active
-                                                ? 'bg-[#1f8c30] text-white shadow-sm'
-                                                : 'bg-gray-50 dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-[#22c33d]/50'
-                                                }`}
-                                        >
-                                            {sub}
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                            <select
+                                id="listing-subcategory"
+                                value={subcategory}
+                                onChange={(e) => setSubcategory(e.target.value)}
+                                className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#22c33d]/30"
+                            >
+                                <option value="">Select {CATEGORY_META[category].label.toLowerCase()} type</option>
+                                {typeOptions.map(sub => <option key={sub} value={sub}>{sub}</option>)}
+                            </select>
                         </div>
                     )}
 

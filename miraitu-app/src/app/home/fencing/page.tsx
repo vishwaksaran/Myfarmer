@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
+import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { normalizeIndianPhone } from '@/lib/phone';
 import { usePrefillLocation } from '@/context/LocationContext';
@@ -392,11 +393,8 @@ export default function FencingInfrastructurePage() {
                                 <span className="material-symbols-outlined text-4xl md:text-5xl text-white">check_circle</span>
                             </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-primary-dark dark:text-white mb-2 md:mb-3">{tp('Quote Requested!')}</h2>
-                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4">{tp('Your fencing quote request has been submitted successfully.')}</p>
-                        <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
-                            <p className="text-sm font-bold text-green-700 dark:text-green-400">{tp('📞 Our team will contact you soon to finalize your fencing installation')}</p>
-                        </div>
+                        <h2 className="text-2xl md:text-3xl font-black text-primary-dark dark:text-white mb-2 md:mb-3">{tp(SUBMISSION_HEADING)}</h2>
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-6">{tp(SUBMISSION_MESSAGE)}</p>
                         <button onClick={() => { setShowSuccessModal(false); setFormData({ full_name: '', phone: '', location: '', fencing_length: '', preferred_timeline: 'Within 1 week', preferred_date: '', preferred_time: '' }); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">{tp('Done')}</button>
                     </div>
                     <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>

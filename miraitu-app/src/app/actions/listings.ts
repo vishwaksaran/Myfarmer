@@ -25,6 +25,7 @@ import {
     CATEGORIES_BY_MODE,
     LISTING_CATEGORIES,
     SUBCATEGORIES,
+    subcategoryOptions,
     type FetchListingsOptions,
     type Listing,
     type ListingCategory,
@@ -267,9 +268,15 @@ function validate(input: ListingInput): string | null {
         return 'That category is not available on this board';
     }
 
-    // Sub-category is optional, but if given it must belong to the category —
-    // otherwise the board's second-level filter could never match it again.
+    // Sub-category is required wherever the category offers one, so every ad
+    // lands under the board's second-level filter. "Other" offers none — it is
+    // the catch-all itself — so it is exempt.
     const sub = input.subcategory?.trim();
+    if (subcategoryOptions(input.category).length > 0 && !sub) {
+        return 'Pick a type for this category';
+    }
+    // Checked against the full list rather than the offered one, so an older ad
+    // that still carries "Other" can be saved instead of being rejected.
     if (sub && !SUBCATEGORIES[input.category].includes(sub)) {
         return 'Pick a sub-category from the list';
     }

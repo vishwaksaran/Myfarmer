@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
+import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 
 type TabType = 'browse' | 'list';
@@ -473,12 +474,8 @@ export default function RentFarmLandPage() {
                                 <div className="w-16 md:w-20 h-16 md:h-20 mx-auto mb-4 md:mb-6 bg-gradient-to-br from-orange-400 to-amber-600 rounded-full flex items-center justify-center shadow-lg">
                                     <span className="material-symbols-outlined text-3xl md:text-4xl text-white">check</span>
                                 </div>
-                                <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">Rental Listing Created!</h2>
-                                <p className="text-base md:text-lg text-gray-600 dark:text-gray-300 font-bold mb-1">Awesome! 🎉</p>
-                                <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mb-4">Your land rental listing has been submitted successfully. Our team will connect you with interested farmers looking for land to rent.</p>
-                                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl px-4 py-3 mb-4">
-                                    <p className="text-sm font-bold text-amber-700 dark:text-amber-400">📞 Our team will contact you shortly</p>
-                                </div>
+                                <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">{SUBMISSION_HEADING}</h2>
+                                <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mb-4">{SUBMISSION_MESSAGE}</p>
                                 <button onClick={() => setShowSuccessModal(false)} className="w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors">
                                     Done
                                 </button>

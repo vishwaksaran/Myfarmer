@@ -7,6 +7,7 @@ import { normalizeIndianPhone } from '@/lib/phone';
 import { usePrefillLocation } from '@/context/LocationContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { translatePage } from '@/i18n/pageContent';
+import { SUBMISSION_HEADING, SUBMISSION_MESSAGE } from '@/lib/service-availability';
 
 export default function SoilTestingPage() {
     const { lang } = useLanguage();
@@ -362,11 +363,8 @@ export default function SoilTestingPage() {
                                 <span className="material-symbols-outlined text-4xl md:text-5xl text-white">check_circle</span>
                             </div>
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-primary-dark dark:text-white mb-2 md:mb-3">{tp('Visit Scheduled!')}</h2>
-                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4">{tp('Your soil testing request has been submitted successfully.')}</p>
-                        <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
-                            <p className="text-sm font-bold text-green-700 dark:text-green-400">{tp('📞 Our team will contact you soon to schedule the soil sample collection')}</p>
-                        </div>
+                        <h2 className="text-2xl md:text-3xl font-black text-primary-dark dark:text-white mb-2 md:mb-3">{tp(SUBMISSION_HEADING)}</h2>
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-6">{tp(SUBMISSION_MESSAGE)}</p>
                         <button
                             onClick={() => {
                                 setShowSuccessModal(false);
