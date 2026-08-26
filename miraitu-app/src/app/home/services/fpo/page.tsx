@@ -6,7 +6,7 @@ import { translatePage } from '@/i18n/pageContent';
 import Image from 'next/image';
 import Link from 'next/link';
 import { normalizeIndianPhone } from '@/lib/phone';
-import { useSubmissionCopy } from '@/lib/service-availability';
+import { useSubmissionCopy, SUBMISSION_ACCENT, SUBMISSION_ICON } from '@/lib/service-availability';
 
 const STEPS = [
     { icon: 'app_registration', number: '01', titleKey: 'fpo.step1Title', descKey: 'fpo.step1Desc' },
@@ -24,7 +24,7 @@ const BENEFITS = [
 export default function FPOPage() {
     const { t, lang } = useLanguage();
     const tp = (s?: string) => translatePage(lang, s);
-    const submission = useSubmissionCopy();
+    const submission = useSubmissionCopy('request');
     const formRef = useRef<HTMLDivElement>(null);
 
     // Form state (moved from FPOBanner modal)
@@ -203,10 +203,11 @@ export default function FPOPage() {
                         {/* Success Overlay */}
                         {submitted && (
                             <div className="absolute inset-0 z-20 bg-white dark:bg-gray-900 flex flex-col items-center justify-center rounded-2xl sm:rounded-[2rem] p-6 sm:p-8">
-                                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-gradient-to-br from-green-600 to-green-400 flex items-center justify-center mb-4 sm:mb-5 shadow-xl shadow-green-600/30 animate-bounce">
-                                    <span className="material-symbols-outlined text-white text-3xl sm:text-4xl">check</span>
+                                <div className={`h-16 w-16 sm:h-20 sm:w-20 rounded-full ${SUBMISSION_ACCENT.circle} flex items-center justify-center mb-4 sm:mb-5`}>
+                                    <span className={`material-symbols-outlined ${SUBMISSION_ACCENT.icon} text-3xl sm:text-4xl`}>{SUBMISSION_ICON}</span>
                                 </div>
                                 <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2 text-center">{submission.heading}</h3>
+                                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 text-xs font-bold ${SUBMISSION_ACCENT.badge}`}><span className="material-symbols-outlined text-sm leading-none">location_off</span>{submission.badge}</span>
                                 <p className="text-gray-500 text-sm text-center max-w-xs">{submission.message}</p>
                             </div>
                         )}

@@ -7,12 +7,12 @@ import { normalizeIndianPhone } from '@/lib/phone';
 import { usePrefillLocation } from '@/context/LocationContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { translatePage } from '@/i18n/pageContent';
-import { useSubmissionCopy } from '@/lib/service-availability';
+import { useSubmissionCopy, SUBMISSION_ACCENT, SUBMISSION_ICON } from '@/lib/service-availability';
 
 export default function SoilTestingPage() {
     const { lang } = useLanguage();
     const tp = (s?: string) => translatePage(lang, s);
-    const submission = useSubmissionCopy();
+    const submission = useSubmissionCopy('booking');
     const [headerVisible, setHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -360,11 +360,12 @@ export default function SoilTestingPage() {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowSuccessModal(false)}>
                     <div className="mx-4 max-w-md rounded-3xl bg-white dark:bg-gray-800 p-6 md:p-8 text-center shadow-2xl" onClick={e => e.stopPropagation()} style={{ animation: 'successPop 0.5s ease-out' }}>
                         <div className="flex justify-center mb-4 md:mb-6">
-                            <div className="inline-flex items-center justify-center size-16 md:size-20 rounded-full bg-gradient-to-br from-green-400 to-primary">
-                                <span className="material-symbols-outlined text-4xl md:text-5xl text-white">check_circle</span>
+                            <div className={`inline-flex items-center justify-center size-16 md:size-20 rounded-full ${SUBMISSION_ACCENT.circle}`}>
+                                <span className={`material-symbols-outlined text-4xl md:text-5xl ${SUBMISSION_ACCENT.icon}`}>{SUBMISSION_ICON}</span>
                             </div>
                         </div>
                         <h2 className="text-2xl md:text-3xl font-black text-primary-dark dark:text-white mb-2 md:mb-3">{submission.heading}</h2>
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 text-xs font-bold ${SUBMISSION_ACCENT.badge}`}><span className="material-symbols-outlined text-sm leading-none">location_off</span>{submission.badge}</span>
                         <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-6">{submission.message}</p>
                         <button
                             onClick={() => {

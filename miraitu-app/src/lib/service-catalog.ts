@@ -50,6 +50,13 @@ export interface ServiceCategory {
     /** Category thumbnail used in the "All Categories" chip row. */
     image: string;
     blurb: string;
+    /**
+     * i18n key for the stepper's label. "Quantity" is meaningless next to a
+     * price like ₹1,300/day — what the farmer is actually counting differs per
+     * category (operators, acres, workers, samples). Falls back to
+     * 'catalog.quantity' when a category has nothing better to say.
+     */
+    quantityLabelKey?: string;
     maxQuantity?: number;
     questions: ServiceQuestion[];
     items: ServiceItem[];
@@ -64,6 +71,7 @@ export const serviceCatalog: Record<string, ServiceCategory> = {
         icon: 'engineering',
         image: '/images/services/categories/Driveroperator.png',
         blurb: 'Hire experienced machine operators and drivers on demand.',
+        quantityLabelKey: 'catalog.numberOfOperators',
         maxQuantity: 5,
         questions: [
             { id: 'duration', label: 'How many days?', type: 'select', options: ['1 day', '2–3 days', 'Weekly', 'Monthly'], required: true },
@@ -83,6 +91,7 @@ export const serviceCatalog: Record<string, ServiceCategory> = {
         icon: 'flight',
         image: '/images/services/categories/Dronespray.png',
         blurb: 'Precision aerial spraying for pesticides and liquid fertilizers.',
+        quantityLabelKey: 'catalog.numberOfAcres',
         maxQuantity: 50,
         questions: [
             { id: 'spray', label: 'What to spray?', type: 'select', options: ['Pesticide', 'Fungicide', 'Liquid fertilizer', 'Herbicide'], required: true },
@@ -101,6 +110,7 @@ export const serviceCatalog: Record<string, ServiceCategory> = {
         icon: 'groups',
         image: '/images/services/categories/Labour.png',
         blurb: 'Reliable workers for general tasks and skilled farm operations.',
+        quantityLabelKey: 'catalog.numberOfWorkers',
         maxQuantity: 50,
         questions: [
             { id: 'workers', label: 'How many workers?', type: 'number', placeholder: 'e.g. 4', required: true },
@@ -123,6 +133,7 @@ export const serviceCatalog: Record<string, ServiceCategory> = {
         icon: 'science',
         image: '/images/services/categories/SoilTtesting.png',
         blurb: 'Accurate soil health reports and fertilizer recommendations.',
+        quantityLabelKey: 'catalog.numberOfSamples',
         maxQuantity: 20,
         questions: [
             { id: 'area', label: 'Approx. area (acres)', type: 'number', placeholder: 'e.g. 5', required: true },
@@ -142,6 +153,7 @@ export const serviceCatalog: Record<string, ServiceCategory> = {
         icon: 'grass',
         image: '/images/services/categories/Transplanting.png',
         blurb: 'Paddy and vegetable transplanting by crew or machine.',
+        quantityLabelKey: 'catalog.numberOfAcres',
         maxQuantity: 50,
         questions: [
             { id: 'crop', label: 'Which crop?', type: 'select', options: ['Paddy / Rice', 'Vegetables', 'Sugarcane', 'Other'], required: true },
@@ -160,6 +172,7 @@ export const serviceCatalog: Record<string, ServiceCategory> = {
         icon: 'agriculture',
         image: 'https://images.unsplash.com/photo-1530267981375-f0de937f5f13?w=200&h=200&fit=crop',
         blurb: 'Rent farm machines and tools with or without an operator.',
+        quantityLabelKey: 'catalog.numberOfMachines',
         maxQuantity: 5,
         questions: [
             { id: 'operator', label: 'Operator needed?', type: 'select', options: ['With operator', 'Without operator'], required: true },

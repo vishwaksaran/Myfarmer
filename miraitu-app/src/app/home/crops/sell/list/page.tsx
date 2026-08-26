@@ -7,7 +7,7 @@ import { translatePage } from '@/i18n/pageContent';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { uploadListingImages, createListing } from '@/lib/supabase-db';
 import supabase from '@/lib/supabase';
-import { useSubmissionCopy } from '@/lib/service-availability';
+import { useSubmissionCopy, SUBMISSION_ACCENT, SUBMISSION_ICON } from '@/lib/service-availability';
 
 const cropCategories = [
     { id: 'grains', name: 'Grains & Cereals', icon: 'grain', examples: 'Wheat, Rice, Maize, Jowar' },
@@ -23,7 +23,7 @@ const cropCategories = [
 export default function SellCropsListPage() {
     const { lang } = useLanguage();
     const tp = (s?: string) => translatePage(lang, s);
-    const submission = useSubmissionCopy();
+    const submission = useSubmissionCopy('request');
     const [step, setStep] = useState(1);
     const [selectedCategory, setSelectedCategory] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -451,10 +451,11 @@ export default function SellCropsListPage() {
                     {showSuccess && (
                         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50">
                             <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 md:p-10 shadow-2xl max-w-sm w-full text-center">
-                                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-                                    <span className="material-symbols-outlined text-3xl text-white">check</span>
+                                <div className={`w-16 h-16 mx-auto mb-4 ${SUBMISSION_ACCENT.circle} rounded-full flex items-center justify-center shadow-lg`}>
+                                    <span className={`material-symbols-outlined text-3xl ${SUBMISSION_ACCENT.icon}`}>{SUBMISSION_ICON}</span>
                                 </div>
                                 <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{submission.heading}</h2>
+                                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 text-xs font-bold ${SUBMISSION_ACCENT.badge}`}><span className="material-symbols-outlined text-sm leading-none">location_off</span>{submission.badge}</span>
                                 <p className="text-sm text-gray-500 mb-4">{submission.message}</p>
                                 <div className="flex gap-3">
                                     <Link href="/home/crops/sell" className="flex-1 py-3 rounded-xl bg-primary text-white font-bold text-center">

@@ -8,14 +8,14 @@ import { useAuth } from '@/context/AuthContext';
 import { unitLabel } from '@/lib/machinery-rental-catalog';
 import { createRentalBooking } from '@/app/actions/rental-bookings';
 import { normalizeIndianPhone } from '@/lib/phone';
-import { useSubmissionCopy } from '@/lib/service-availability';
+import { useSubmissionCopy, SUBMISSION_ACCENT, SUBMISSION_ICON } from '@/lib/service-availability';
 
 const inr = (n: number) => '₹' + n.toLocaleString('en-IN');
 
 export default function MachineryCartPage() {
     const { lines, updateQuantity, removeLine, clear, subtotal, totalItems, ready } = useMachineryCart();
     const { user } = useAuth();
-    const submission = useSubmissionCopy();
+    const submission = useSubmissionCopy('booking');
     const router = useRouter();
 
     const [form, setForm] = useState({
@@ -114,10 +114,11 @@ export default function MachineryCartPage() {
         return (
             <div className="px-4 md:px-6 py-16">
                 <div className="mx-auto max-w-md text-center bg-white dark:bg-[#1a231a] rounded-3xl p-8 shadow-xl border border-gray-100 dark:border-gray-800">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary mb-4">
-                        <span className="material-symbols-outlined text-white text-4xl">check_circle</span>
+                    <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${SUBMISSION_ACCENT.circle} mb-4`}>
+                        <span className={`material-symbols-outlined ${SUBMISSION_ACCENT.icon} text-4xl`}>{SUBMISSION_ICON}</span>
                     </div>
                     <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{submission.heading}</h1>
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 text-xs font-bold ${SUBMISSION_ACCENT.badge}`}><span className="material-symbols-outlined text-sm leading-none">location_off</span>{submission.badge}</span>
                     <p className="text-gray-500 mb-6">{submission.message}</p>
                     <div className="flex flex-col gap-2">
                         <Link href="/home/machinery/bookings" className="w-full py-3 rounded-xl bg-primary text-white font-bold">View My Bookings</Link>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { normalizeIndianPhone } from '@/lib/phone';
-import { useSubmissionCopy } from '@/lib/service-availability';
+import { useSubmissionCopy, SUBMISSION_ACCENT, SUBMISSION_ICON } from '@/lib/service-availability';
 
 const leftServices = [
     {
@@ -45,7 +45,7 @@ const rightServices = [
 
 export default function ToolboxSection() {
     const { t } = useLanguage();
-    const submission = useSubmissionCopy();
+    const submission = useSubmissionCopy('request');
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [village, setVillage] = useState('');
@@ -145,10 +145,11 @@ export default function ToolboxSection() {
                             {/* Success Overlay */}
                             {submitted && (
                                 <div className="absolute inset-0 bg-white/95 dark:bg-gray-900/95 z-20 flex flex-col items-center justify-center rounded-[2rem] animate-fade-in-up">
-                                    <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary to-green-400 flex items-center justify-center mb-5 shadow-xl shadow-primary/30 animate-bounce">
-                                        <span className="material-symbols-outlined text-white text-4xl">check</span>
+                                    <div className={`h-20 w-20 rounded-full ${SUBMISSION_ACCENT.circle} flex items-center justify-center mb-5`}>
+                                        <span className={`material-symbols-outlined ${SUBMISSION_ACCENT.icon} text-4xl`}>{SUBMISSION_ICON}</span>
                                     </div>
                                     <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{submission.heading}</h3>
+                                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 text-xs font-bold ${SUBMISSION_ACCENT.badge}`}><span className="material-symbols-outlined text-sm leading-none">location_off</span>{submission.badge}</span>
                                     <p className="text-gray-500 text-sm text-center max-w-sm">{submission.message}</p>
                                 </div>
                             )}

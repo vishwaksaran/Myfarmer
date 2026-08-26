@@ -182,6 +182,7 @@ export default function ServiceCatalog({ category }: { category: string }) {
                     category={category}
                     icon={config.icon}
                     questions={config.questions}
+                    quantityLabelKey={config.quantityLabelKey}
                     maxQuantity={config.maxQuantity ?? 10}
                     onClose={() => setSelected(null)}
                     onAdd={(line) => { addLine(line); setSelected(null); }}
@@ -212,12 +213,13 @@ export default function ServiceCatalog({ category }: { category: string }) {
 
 // ─── Item detail sheet ───────────────────────────────────────────────
 function ItemDetailSheet({
-    item, category, icon, questions, maxQuantity, onClose, onAdd,
+    item, category, icon, questions, quantityLabelKey, maxQuantity, onClose, onAdd,
 }: {
     item: ServiceItem;
     category: string;
     icon: string;
     questions: ServiceQuestion[];
+    quantityLabelKey?: string;
     maxQuantity: number;
     onClose: () => void;
     onAdd: (line: { category: string; itemId: string; name: string; price: number; unit: ServiceItem['unit']; image: string; quantity: number; answers: Record<string, string> }) => void;
@@ -286,7 +288,7 @@ function ItemDetailSheet({
 
                     {/* Quantity */}
                     <div className="mt-5">
-                        <p className="font-bold text-gray-900 dark:text-white mb-2">{t('catalog.quantity')}</p>
+                        <p className="font-bold text-gray-900 dark:text-white mb-2">{t(quantityLabelKey ?? 'catalog.quantity')}</p>
                         <div className="flex items-center gap-3">
                             <button
                                 type="button"

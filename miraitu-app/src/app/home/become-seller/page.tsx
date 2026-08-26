@@ -9,7 +9,7 @@ import Footer from '@/components/v2/Footer';
 import { useAuth } from '@/context/AuthContext';
 import { createSeller, uploadImages } from '@/lib/supabase-db';
 import supabase from '@/lib/supabase';
-import { useSubmissionCopy } from '@/lib/service-availability';
+import { useSubmissionCopy, SUBMISSION_ACCENT, SUBMISSION_ICON } from '@/lib/service-availability';
 
 const sellerTypes = [
     {
@@ -162,7 +162,7 @@ const formStepsConfig: Record<string, { title: string; fields: { name: string; l
 export default function BecomeSellerPage() {
     const router = useRouter();
     const { user } = useAuth();
-    const submission = useSubmissionCopy();
+    const submission = useSubmissionCopy('request');
     const [selectedType, setSelectedType] = useState('farmer-seller');
     const [openFaq, setOpenFaq] = useState<number | null>(null);
     const [currentStep, setCurrentStep] = useState(0);
@@ -621,12 +621,12 @@ export default function BecomeSellerPage() {
                     </div>
                     <div className="relative bg-white dark:bg-[#1a251a] rounded-[2rem] p-6 md:p-10 max-w-md w-full shadow-2xl animate-success-pop text-center">
                         <div className="relative mx-auto w-20 h-20 md:w-24 md:h-24 mb-5 md:mb-6">
-                            <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${sellerGradient} animate-pulse-ring`}></div>
-                            <div className={`relative w-full h-full rounded-full bg-gradient-to-br ${sellerGradient} flex items-center justify-center`}>
-                                <span className="material-symbols-outlined text-white text-4xl md:text-5xl animate-check-bounce">check_circle</span>
+                            <div className={`relative w-full h-full rounded-full ${SUBMISSION_ACCENT.circle} flex items-center justify-center`}>
+                                <span className={`material-symbols-outlined ${SUBMISSION_ACCENT.icon} text-4xl md:text-5xl`}>{SUBMISSION_ICON}</span>
                             </div>
                         </div>
                         <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2">{submission.heading}</h2>
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 text-xs font-bold ${SUBMISSION_ACCENT.badge}`}><span className="material-symbols-outlined text-sm leading-none">location_off</span>{submission.badge}</span>
                         <p className="text-sm md:text-base text-gray-500 mb-6 leading-relaxed">{submission.message}</p>
                         <div className="grid grid-cols-2 gap-2 mb-6">
                             <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-3 text-center">

@@ -13,13 +13,21 @@ export const COMMUNITY_FALLBACK_NAME = 'Miraitu Farmer';
 export type ReactionType = 'like' | 'love' | 'celebrate' | 'insightful' | 'funny' | 'growth';
 
 export const REACTION_EMOJIS: Record<ReactionType, { emoji: string; label: string }> = {
-  like: { emoji: '👍', label: 'Like' },
+  // 'like' is legacy only: it is what rows saved before the feed moved to a
+  // heart carry, and what actions/community.ts falls back to for a reaction
+  // type it does not recognise. Nothing writes it any more — the heart button
+  // and the double-tap both write 'love' — so it renders as a heart to match
+  // and is kept out of PICKER_REACTIONS to avoid offering two of them.
+  like: { emoji: '❤️', label: 'Like' },
   love: { emoji: '❤️', label: 'Love' },
   celebrate: { emoji: '👏', label: 'Celebrate' },
   insightful: { emoji: '💡', label: 'Insightful' },
   funny: { emoji: '😂', label: 'Funny' },
   growth: { emoji: '🌱', label: 'Growth' },
 };
+
+/** What the long-press picker offers, in order. Excludes the legacy 'like'. */
+export const PICKER_REACTIONS: ReactionType[] = ['love', 'celebrate', 'insightful', 'funny', 'growth'];
 
 export interface Comment {
   id: string;

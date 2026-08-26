@@ -158,15 +158,33 @@ export default function ServicesPage() {
     const { t, lang } = useLanguage();
     const tp = (s?: string) => translatePage(lang, s);
 
-    // "Our Services" = the Top Categories first, then the remaining services.
-    // Drop services that duplicate a top category (by concept) to avoid repeats.
+    // "Our Services" draws from two lists — the Top Categories and the standalone
+    // service pages. Drop services that duplicate a top category (by concept) to
+    // avoid repeats, then order the result explicitly: the grid's reading order
+    // is an editorial decision, not whichever array happened to be concatenated
+    // first. Anything not named in serviceOrder keeps its natural position at
+    // the end, so adding a service still shows it without touching this list.
     const topCategoryLabels = new Set(['Soil Testing', 'Drone Spray']);
+    const serviceOrder = [
+        'Drone Spray',
+        'Machinery & Tools',
+        'Manual Labour',
+        'Soil Testing & Analysis',
+        'Transplanting',
+        'Borewell Services',
+        'Veterinary Care',
+        'Drivers / Operators',
+    ];
+    const rank = (label: string) => {
+        const i = serviceOrder.indexOf(label);
+        return i === -1 ? serviceOrder.length : i;
+    };
     const ourServices = [
         ...topCategories.map((c) => ({ label: c.label, tKey: c.tKey, image: c.image, icon: c.icon, link: c.link })),
         ...services
             .filter((s) => !topCategoryLabels.has(s.name) && !hiddenServices.has(s.name))
             .map((s) => ({ label: s.name, tKey: undefined as string | undefined, image: s.image, icon: s.icon, link: s.href })),
-    ];
+    ].sort((a, b) => rank(a.label) - rank(b.label));
 
     return (
         <div className="px-3 md:px-6">

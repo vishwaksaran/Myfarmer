@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
-import { useSubmissionCopy } from '@/lib/service-availability';
+import { useSubmissionCopy, SUBMISSION_ACCENT, SUBMISSION_ICON } from '@/lib/service-availability';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 
 type TabType = 'browse' | 'list';
@@ -108,7 +108,7 @@ export default function RentFarmLandPage() {
         contactPhone: '',
     });
     const { submit, submitting } = useBookingSubmit();
-    const submission = useSubmissionCopy();
+    const submission = useSubmissionCopy('request');
 
     const filteredListings = activePeriod === 'All'
         ? rentalListings
@@ -472,10 +472,11 @@ export default function RentFarmLandPage() {
                     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50" onClick={() => setShowSuccessModal(false)}>
                         <div className="bg-white dark:bg-[#1a231a] rounded-2xl md:rounded-3xl p-6 md:p-10 shadow-2xl max-w-sm w-full" onClick={e => e.stopPropagation()} style={{ animation: 'successPop 0.5s ease-out' }}>
                             <div className="text-center">
-                                <div className="w-16 md:w-20 h-16 md:h-20 mx-auto mb-4 md:mb-6 bg-gradient-to-br from-orange-400 to-amber-600 rounded-full flex items-center justify-center shadow-lg">
-                                    <span className="material-symbols-outlined text-3xl md:text-4xl text-white">check</span>
+                                <div className={`w-16 md:w-20 h-16 md:h-20 mx-auto mb-4 md:mb-6 ${SUBMISSION_ACCENT.circle} rounded-full flex items-center justify-center shadow-lg`}>
+                                    <span className={`material-symbols-outlined text-3xl md:text-4xl ${SUBMISSION_ACCENT.icon}`}>{SUBMISSION_ICON}</span>
                                 </div>
                                 <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">{submission.heading}</h2>
+                                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 text-xs font-bold ${SUBMISSION_ACCENT.badge}`}><span className="material-symbols-outlined text-sm leading-none">location_off</span>{submission.badge}</span>
                                 <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mb-4">{submission.message}</p>
                                 <button onClick={() => setShowSuccessModal(false)} className="w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors">
                                     Done

@@ -6,7 +6,7 @@ import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { normalizeIndianPhone } from '@/lib/phone';
 import { useLoginPrompt } from '@/context/LoginPromptContext';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { useSubmissionCopy } from '@/lib/service-availability';
+import { useSubmissionCopy, SUBMISSION_ACCENT, SUBMISSION_ICON } from '@/lib/service-availability';
 
 const serviceKeys = [
     { tName: 'vet.treatment', icon: 'medical_services', tDesc: 'vet.treatmentDesc', color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20' },
@@ -17,7 +17,7 @@ const serviceKeys = [
 
 export default function VeterinarySection() {
     const { t } = useLanguage();
-    const submission = useSubmissionCopy();
+    const submission = useSubmissionCopy('booking');
     const { requireLogin } = useLoginPrompt();
     const [selectedService, setSelectedService] = useState<string | null>(null);
     const [formData, setFormData] = useState({
@@ -184,10 +184,11 @@ export default function VeterinarySection() {
                             </div>
                         ) : (
                             <div className="p-8 text-center py-12">
-                                <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600 dark:text-green-400">
-                                    <span className="material-symbols-outlined text-4xl">check_circle</span>
+                                <div className={`w-20 h-20 ${SUBMISSION_ACCENT.circle} rounded-full flex items-center justify-center mx-auto mb-6`}>
+                                    <span className={`material-symbols-outlined text-4xl ${SUBMISSION_ACCENT.icon}`}>{SUBMISSION_ICON}</span>
                                 </div>
                                 <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{submission.heading}</h3>
+                                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 text-xs font-bold ${SUBMISSION_ACCENT.badge}`}><span className="material-symbols-outlined text-sm leading-none">location_off</span>{submission.badge}</span>
                                 <p className="text-gray-600 dark:text-gray-300 mb-6">
                                     {submission.message}
                                 </p>

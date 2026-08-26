@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
-import { useSubmissionCopy } from '@/lib/service-availability';
+import { useSubmissionCopy, SUBMISSION_ACCENT, SUBMISSION_ICON } from '@/lib/service-availability';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { usePrefillLocation } from '@/context/LocationContext';
 
@@ -127,7 +127,7 @@ export default function CCTVSurveillancePage() {
         }
     };
     const { submit, submitting } = useBookingSubmit();
-    const submission = useSubmissionCopy();
+    const submission = useSubmissionCopy('booking');
 
     return (
         <div className="min-h-screen bg-background-light dark:bg-background-dark">
@@ -336,11 +336,12 @@ export default function CCTVSurveillancePage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-300">
                         <div className="flex justify-center mb-6">
-                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center animate-bounce">
-                                <span className="material-symbols-outlined text-white text-5xl">check_circle</span>
+                            <div className={`w-20 h-20 rounded-full ${SUBMISSION_ACCENT.circle} flex items-center justify-center`}>
+                                <span className={`material-symbols-outlined ${SUBMISSION_ACCENT.icon} text-5xl`}>{SUBMISSION_ICON}</span>
                             </div>
                         </div>
                         <h2 className="text-2xl md:text-3xl font-black text-center text-gray-900 dark:text-white mb-3">{submission.heading}</h2>
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 text-xs font-bold ${SUBMISSION_ACCENT.badge}`}><span className="material-symbols-outlined text-sm leading-none">location_off</span>{submission.badge}</span>
                         <p className="text-center text-gray-600 dark:text-gray-300 mb-2 text-sm md:text-base">
                             {submission.message}
                         </p>

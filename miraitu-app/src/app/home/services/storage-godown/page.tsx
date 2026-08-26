@@ -7,7 +7,7 @@ import { normalizeIndianPhone } from '@/lib/phone';
 import { usePrefillLocation } from '@/context/LocationContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { translatePage } from '@/i18n/pageContent';
-import { useSubmissionCopy } from '@/lib/service-availability';
+import { useSubmissionCopy, SUBMISSION_ACCENT, SUBMISSION_ICON } from '@/lib/service-availability';
 
 // ─── Storage types catalogue ───────────────────────────────────────────────
 const storageServices = [
@@ -53,7 +53,7 @@ function BookingModal({
     const { submit, submitting } = useBookingSubmit();
     const { lang } = useLanguage();
     const tp = (s?: string) => translatePage(lang, s);
-    const submission = useSubmissionCopy();
+    const submission = useSubmissionCopy('booking');
     const firstFocusRef = useRef<HTMLInputElement>(null);
 
     const [form, setForm] = useState({
@@ -138,10 +138,11 @@ function BookingModal({
                     style={{ animation: 'successPop 0.45s cubic-bezier(.22,1.2,.36,1) both' }}
                     onClick={e => e.stopPropagation()}
                 >
-                    <div className="w-20 h-20 mx-auto mb-5 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-xl shadow-green-500/30">
-                        <span className="material-symbols-outlined text-4xl text-white" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                    <div className={`w-20 h-20 mx-auto mb-5 rounded-full ${SUBMISSION_ACCENT.circle} flex items-center justify-center`}>
+                        <span className={`material-symbols-outlined text-4xl ${SUBMISSION_ACCENT.icon}`} style={{ fontVariationSettings: "'FILL' 1" }}>{SUBMISSION_ICON}</span>
                     </div>
                     <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{submission.heading}</h2>
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 text-xs font-bold ${SUBMISSION_ACCENT.badge}`}><span className="material-symbols-outlined text-sm leading-none">location_off</span>{submission.badge}</span>
                     <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
                         {submission.message}
                     </p>

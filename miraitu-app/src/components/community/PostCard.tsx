@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Post, Comment, ReactionType, REACTION_EMOJIS } from './types';
+import { Post, Comment, ReactionType, REACTION_EMOJIS, PICKER_REACTIONS } from './types';
 import { DEFAULT_COMMUNITY_AVATAR, resolveAvatarSrc } from './avatarUtils';
 
 interface PostCardProps {
@@ -31,17 +31,20 @@ function formatCount(n: number): string {
 function ReactionPicker({ onSelect, currentReaction }: { onSelect: (r: ReactionType) => void; currentReaction: ReactionType | null | undefined }) {
   return (
     <div className="flex items-center gap-0.5 sm:gap-1 p-1.5 sm:p-2 bg-white dark:bg-[#222c22] rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-bottom-2 duration-200">
-      {(Object.entries(REACTION_EMOJIS) as [ReactionType, { emoji: string; label: string }][]).map(([key, { emoji, label }]) => (
-        <button
-          key={key}
-          onClick={() => onSelect(key)}
-          className={`flex flex-col items-center gap-0.5 p-1 sm:p-1.5 rounded-xl transition-all hover:scale-125 hover:bg-gray-100 dark:hover:bg-gray-700 ${currentReaction === key ? 'scale-110 bg-[#22c33d]/10' : ''}`}
-          title={label}
-        >
-          <span className="text-xl sm:text-2xl leading-none">{emoji}</span>
-          <span className="text-[8px] sm:text-[9px] font-medium text-gray-500">{label}</span>
-        </button>
-      ))}
+      {PICKER_REACTIONS.map((key) => {
+        const { emoji, label } = REACTION_EMOJIS[key];
+        return (
+          <button
+            key={key}
+            onClick={() => onSelect(key)}
+            className={`flex flex-col items-center gap-0.5 p-1 sm:p-1.5 rounded-xl transition-all hover:scale-125 hover:bg-gray-100 dark:hover:bg-gray-700 ${currentReaction === key ? 'scale-110 bg-[#22c33d]/10' : ''}`}
+            title={label}
+          >
+            <span className="text-xl sm:text-2xl leading-none">{emoji}</span>
+            <span className="text-[8px] sm:text-[9px] font-medium text-gray-500">{label}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -85,9 +88,17 @@ function CommentItem({
             <span className="text-[11px] text-gray-400">{comment.time}</span>
             <button
               onClick={() => onLikeComment(postId, comment.id)}
-              className={`text-[11px] font-bold transition-colors ${comment.liked ? 'text-[#22c33d]' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+              className={`flex items-center gap-1 text-[11px] font-bold transition-colors ${comment.liked ? 'text-[#ed4956]' : 'text-gray-500 hover:text-[#ed4956]'}`}
+              aria-pressed={comment.liked}
+              aria-label={comment.liked ? 'Unlike this comment' : 'Like this comment'}
             >
-              {comment.liked ? 'Liked' : 'Like'} {comment.likes > 0 && `· ${comment.likes}`}
+              <span
+                className="material-symbols-outlined text-[13px] leading-none"
+                style={comment.liked ? { fontVariationSettings: "'FILL' 1" } : undefined}
+              >
+                favorite
+              </span>
+              {comment.likes > 0 && <span>{comment.likes}</span>}
             </button>
             <button
               onClick={() => onReply(comment.id, comment.author)}
@@ -134,6 +145,7 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
   const [replyTo, setReplyTo] = useState<{ id: string; author: string } | null>(null);
   const [imageIndex, setImageIndex] = useState(0);
   const [doubleTapReaction, setDoubleTapReaction] = useState(false);
+  const [heartPop, setHeartPop] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [videoPlaying, setVideoPlaying] = useState(false);
@@ -189,7 +201,13 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
 
   const handleQuickLike = () => {
     requireAuth(() => {
-      onReact(post.id, post.myReaction ? post.myReaction : 'like');
+      // Instagram semantics: the heart is a love, not a thumbs-up. Passing the
+      // existing reaction back toggles it off, exactly as before.
+      onReact(post.id, post.myReaction ? post.myReaction : 'love');
+      if (!post.myReaction) {
+        setHeartPop(true);
+        setTimeout(() => setHeartPop(false), 320);
+      }
     });
   };
 
@@ -210,12 +228,19 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
     });
   };
 
-  // Top reaction emojis to display
-  const topReactions = Object.entries(post.reactions)
-    .filter(([, count]) => count > 0)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 3)
-    .map(([key]) => REACTION_EMOJIS[key as ReactionType].emoji);
+  // The heart reads as "liked" for 'love' — what the heart button and the
+  // double-tap write — and for the legacy 'like' it replaced, so an older
+  // reaction of yours still shows as filled rather than silently unliked.
+  const hearted = post.myReaction === 'love' || post.myReaction === 'like';
+
+  // Top reaction emojis to display. Deduped, because 'like' and 'love' now
+  // share the heart and a post carrying both would otherwise show it twice.
+  const topReactions = [...new Set(
+    Object.entries(post.reactions)
+      .filter(([, count]) => count > 0)
+      .sort(([, a], [, b]) => b - a)
+      .map(([key]) => REACTION_EMOJIS[key as ReactionType].emoji)
+  )].slice(0, 3);
 
   useEffect(() => {
     const handleClick = () => setShowReactionPicker(false);
@@ -602,7 +627,12 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
           </div>
           {doubleTapReaction && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <span className="text-7xl animate-ping">❤️</span>
+              <span
+                className="material-symbols-outlined text-white animate-heart-burst"
+                style={{ fontSize: '6rem', fontVariationSettings: "'FILL' 1", textShadow: '0 2px 12px rgba(0,0,0,0.35)' }}
+              >
+                favorite
+              </span>
             </div>
           )}
         </div>
@@ -644,17 +674,31 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
           onMouseLeave={handleReactionMouseUp}
           onTouchStart={handleReactionMouseDown}
           onTouchEnd={handleReactionMouseUp}
-          className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2.5 rounded-xl transition-all ${post.myReaction
-            ? 'text-[#22c33d] bg-[#22c33d]/5 font-bold'
-            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+          className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2.5 rounded-xl transition-all ${hearted
+            ? 'text-[#ed4956] bg-[#ed4956]/5 font-bold'
+            : post.myReaction
+              ? 'text-[#22c33d] bg-[#22c33d]/5 font-bold'
+              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-[#ed4956]'
             }`}
+          aria-pressed={!!post.myReaction}
+          aria-label={hearted ? 'Unlike this post' : 'Like this post'}
         >
-          {post.myReaction ? (
+          {/* An Instagram heart: outline until you tap it, then it fills red and
+              pops. A reaction picked from the long-press picker still shows its
+              own emoji so that feature keeps working. */}
+          {post.myReaction && !hearted ? (
             <span className="text-lg sm:text-xl leading-none">{REACTION_EMOJIS[post.myReaction].emoji}</span>
           ) : (
-            <span className="material-symbols-outlined text-lg sm:text-xl">thumb_up</span>
+            <span
+              className={`material-symbols-outlined text-lg sm:text-xl ${heartPop ? 'animate-heart-pop' : ''}`}
+              style={hearted ? { fontVariationSettings: "'FILL' 1" } : undefined}
+            >
+              favorite
+            </span>
           )}
-          <span className="text-xs sm:text-sm font-medium">{post.myReaction ? REACTION_EMOJIS[post.myReaction].label : 'Like'}</span>
+          <span className="text-xs sm:text-sm font-medium">
+            {hearted ? 'Liked' : post.myReaction ? REACTION_EMOJIS[post.myReaction].label : 'Like'}
+          </span>
         </button>
 
         <button

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useSubmissionCopy } from '@/lib/service-availability';
+import { useSubmissionCopy, SUBMISSION_ACCENT, SUBMISSION_ICON } from '@/lib/service-availability';
 
 const loanTypes = [
     { id: 'vehicle', name: 'Vehicle Loan', icon: 'agriculture', rate: '7.5%', max: '₹25 Lakh' },
@@ -14,7 +14,7 @@ const loanTypes = [
 ];
 
 export default function LoanPage() {
-    const submission = useSubmissionCopy();
+    const submission = useSubmissionCopy('request');
     const [selectedLoan, setSelectedLoan] = useState<string | null>(null);
     const [step, setStep] = useState(0);
     const [form, setForm] = useState({ amount: '', purpose: '', name: '', phone: '', aadhar: '', pan: '' });
@@ -73,10 +73,11 @@ export default function LoanPage() {
 
                     {step === 3 && (
                         <div className="text-center py-8">
-                            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <span className="material-symbols-outlined text-primary text-4xl">check_circle</span>
+                            <div className={`w-20 h-20 ${SUBMISSION_ACCENT.circle} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                                <span className={`material-symbols-outlined ${SUBMISSION_ACCENT.icon} text-4xl`}>{SUBMISSION_ICON}</span>
                             </div>
                             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{submission.heading}</h3>
+                            <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 text-xs font-bold ${SUBMISSION_ACCENT.badge}`}><span className="material-symbols-outlined text-sm leading-none">location_off</span>{submission.badge}</span>
                             <p className="text-gray-500">{submission.message}</p>
                         </div>
                     )}

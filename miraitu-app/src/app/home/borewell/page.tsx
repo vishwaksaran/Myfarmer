@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
-import { useSubmissionCopy } from '@/lib/service-availability';
+import { useSubmissionCopy, SUBMISSION_ACCENT, SUBMISSION_ICON } from '@/lib/service-availability';
 import { normalizeIndianPhone } from '@/lib/phone';
 import { usePrefillLocation } from '@/context/LocationContext';
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -11,7 +11,7 @@ import { translatePage } from '@/i18n/pageContent';
 export default function BorewellServicesPage() {
     const { lang } = useLanguage();
     const tp = (s?: string) => translatePage(lang, s);
-    const submission = useSubmissionCopy();
+    const submission = useSubmissionCopy('booking');
     const [headerVisible, setHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
     const consultationFormRef = useRef<HTMLDivElement>(null);
@@ -243,11 +243,12 @@ export default function BorewellServicesPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowSuccessModal(false)}>
                     <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()} style={{ animation: 'successPop 0.5s ease-out' }}>
                         <div className="flex justify-center mb-6">
-                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-cyan-600 flex items-center justify-center">
-                                <span className="material-symbols-outlined text-white text-5xl">check_circle</span>
+                            <div className={`w-20 h-20 rounded-full ${SUBMISSION_ACCENT.circle} flex items-center justify-center`}>
+                                <span className={`material-symbols-outlined ${SUBMISSION_ACCENT.icon} text-5xl`}>{SUBMISSION_ICON}</span>
                             </div>
                         </div>
                         <h2 className="text-2xl md:text-3xl font-black text-center text-gray-900 dark:text-white mb-3">{submission.heading}</h2>
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 text-xs font-bold ${SUBMISSION_ACCENT.badge}`}><span className="material-symbols-outlined text-sm leading-none">location_off</span>{submission.badge}</span>
                         <p className="text-center text-gray-600 dark:text-gray-300 mb-6 text-sm md:text-base">
                             {submission.message}
                         </p>

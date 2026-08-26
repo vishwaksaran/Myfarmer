@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { topCategories as categories } from '@/lib/top-categories';
+import { homeTopCategories as categories } from '@/lib/top-categories';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 export default function TopCategories() {

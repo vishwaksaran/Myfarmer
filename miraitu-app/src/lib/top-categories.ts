@@ -1,5 +1,15 @@
-// Shared "Top Categories" data — used by the home page grid (TopCategories)
-// and the "View all" services page so the two never drift apart.
+// Shared service-category data.
+//
+// `topCategories` is the bookable catalog — every category that has entries in
+// service-catalog.ts. The "View all" services page builds its grid from this.
+//
+// `homeTopCategories` is what the home page row actually shows, in the order it
+// shows them. The two are deliberately not the same list: the home row is a
+// six-tile shopfront, so it leads with Drone Spray and ends with Borewell (which
+// has its own page rather than a catalog entry), while Drivers / Operators is
+// left to the full services page. Keeping them separate means reordering the
+// shopfront never silently drops a category from the catalog.
+//
 // Images are real, topically-relevant photos with a Material icon fallback.
 
 export interface TopCategory {
@@ -54,4 +64,23 @@ export const topCategories: TopCategory[] = [
         image: '/images/services/categories/Transplanting.png',
         link: '/home/services/book/transplanting',
     },
+];
+
+const borewell: TopCategory = {
+    label: 'Borewell Services',
+    tKey: 'cat.borewell',
+    icon: 'water_drop',
+    image: '/images/services/other/Borewell.png',
+    link: '/home/borewell',
+};
+
+/** The home page row, in display order. */
+export const homeTopCategories: TopCategory[] = [
+    ...['Drone Spray', 'Machinery & Tools', 'Manual Labour', 'Soil Testing & Analysis', 'Transplanting']
+        .map((label) => {
+            const c = topCategories.find((x) => x.label === label);
+            if (!c) throw new Error('Unknown top category: ' + label);
+            return c;
+        }),
+    borewell,
 ];

@@ -621,3 +621,64 @@ nav,
     opacity: 1;
   }
 }
+
+/* ── Instagram-style heart like ──────────────────────────────────────
+   heartPop: the small pop the action-bar heart makes when it fills.
+   heartBurst: the big overlay heart thrown up by a double-tap on media. */
+@keyframes heartPop {
+  0% {
+    transform: scale(1);
+  }
+
+  35% {
+    transform: scale(0.82);
+  }
+
+  70% {
+    transform: scale(1.18);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-heart-pop {
+  animation: heartPop 0.32s ease-out;
+}
+
+@keyframes heartBurst {
+  0% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+
+  15% {
+    transform: scale(1.25);
+    opacity: 0.95;
+  }
+
+  30% {
+    transform: scale(0.92);
+    opacity: 0.95;
+  }
+
+  45% {
+    transform: scale(1);
+    opacity: 0.95;
+  }
+
+  80% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: scale(1.1);
+    opacity: 0;
+  }
+}
+
+.animate-heart-burst {
+  animation: heartBurst 1s ease-out forwards;
+}
