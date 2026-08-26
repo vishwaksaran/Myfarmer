@@ -2,6 +2,7 @@
 
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { createSupabaseAdminClient } from '@/lib/supabase-admin';
+import { fetchApprovedLeaseListings, type LeaseListingRecord } from './bookings';
 
 /**
  * The Rent and Buy & Sell boards.
@@ -108,6 +109,88 @@ function toListing(row: ListingRow, userId: string | null, near?: { lat: number;
     };
 }
 
+/**
+ * Land offered for rent does not live in `marketplace_listings`.
+ *
+ * It is posted through /home/land/lease, which writes a `service_bookings` row
+ * (module 'land', category 'lease') carrying `extra_data.service_type` of
+ * either 'lease' or 'rent', and only becomes public once an admin confirms or
+ * publishes it. That made the Rent board's Land tab read "No rentals here yet"
+ * while the land board one page over was showing rentals — two boards, two
+ * tables, one concept.
+ *
+ * Rather than migrate those rows or double-write them, the Rent board folds
+ * them in at read time. `fetchApprovedLeaseListings` is reused verbatim so both
+ * boards agree on exactly which rows count as published.
+ */
+function landRentToListing(rec: LeaseListingRecord): Listing {
+    const ed = rec.extra_data ?? {};
+
+    // Prices are entered free-hand ("60,000", "₹60000", "60000 per acre"), so
+    // take the digits and nothing else.
+    const digits = (ed.lease_price ?? '').replace(/[^\d.]/g, '');
+    const price = digits ? Number(digits) : NaN;
+
+    const place = [ed.village, ed.hobli, ed.taluk, ed.district].filter(Boolean).join(', ');
+
+    // Listing has no acreage field, and area is the first thing a renter looks
+    // for, so it leads the description rather than being dropped.
+    const description = [ed.area ? `${ed.area} acres` : '', ed.description ?? '']
+        .filter(Boolean)
+        .join(' · ');
+
+    return {
+        // Prefixed so it can never collide with a marketplace_listings UUID.
+        id: `land-lease:${rec.id}`,
+        mode: 'rent',
+        category: 'land',
+        // These rows carry no sub-category, so they surface under "All Land".
+        subcategory: '',
+        title: ed.title || 'Land for rent',
+        description,
+        brand: '',
+        model: '',
+        price: Number.isFinite(price) ? price : null,
+        // The land form fixes rent at ₹/acre/month; it is not one of
+        // RENT_PRICE_UNITS because nothing posts it through that form.
+        priceUnit: 'Per acre / month',
+        negotiable: false,
+        location: place || rec.location || '',
+        district: ed.district ?? '',
+        state: '',
+        // service_bookings stores no coordinates, so these sort last under
+        // "nearest first" rather than pretending to be nearby.
+        latitude: null,
+        longitude: null,
+        images: ed.photos ?? [],
+        status: 'active',
+        contactPhone: rec.phone ?? '',
+        createdAt: rec.created_at,
+        // Editing and deleting belong to the land board, not this one.
+        isOwn: false,
+        distanceKm: null,
+    };
+}
+
+async function fetchLandRentListings(term?: string): Promise<Listing[]> {
+    const { data } = await fetchApprovedLeaseListings();
+    let rows = data
+        .filter(rec => rec.extra_data?.service_type === 'rent')
+        .map(landRentToListing);
+
+    // The marketplace query filters in SQL; these are filtered here so the
+    // search box behaves the same across both sources.
+    const q = term?.trim().toLowerCase();
+    if (q) {
+        rows = rows.filter(l =>
+            l.title.toLowerCase().includes(q) ||
+            l.description.toLowerCase().includes(q) ||
+            l.location.toLowerCase().includes(q)
+        );
+    }
+    return rows;
+}
+
 export async function fetchListings(
     options: FetchListingsOptions
 ): Promise<{ data: Listing[]; hasMore: boolean; error?: string }> {
@@ -164,6 +247,22 @@ export async function fetchListings(
         const page = hasMore ? rows.slice(0, limit) : rows;
 
         const listings = page.map(row => toListing(row, user?.id ?? null, options.near));
+
+        // Land-for-rent rows come from the land board (see landRentToListing).
+        // Only on the first page — they are a small admin-curated set, so
+        // paging them alongside a second table would risk gaps and repeats.
+        // Skipped for "My Ads" (the viewer does not own them) and whenever a
+        // land sub-category is selected (they carry none).
+        const wantsLand = !options.category || options.category === 'all' || options.category === 'land';
+        if (options.mode === 'rent' && wantsLand && !options.mineOnly && !options.subcategory && offset === 0) {
+            const landRentals = await fetchLandRentListings(options.query);
+            if (landRentals.length) {
+                listings.push(...landRentals);
+                // Restore newest-first across the merged set; the distance sort
+                // below overrides this when the viewer's position is known.
+                listings.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+            }
+        }
 
         // Nearest first when we know where the viewer is; otherwise newest
         // first, which the query already ordered by.

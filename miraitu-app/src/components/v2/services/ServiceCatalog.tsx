@@ -20,7 +20,7 @@ const inr = (n: number) => '₹' + n.toLocaleString('en-IN');
 
 export default function ServiceCatalog({ category }: { category: string }) {
     const config = getServiceCategory(category);
-    const { addLine, totalItems, subtotal } = useServiceCart();
+    const { addLine } = useServiceCart();
     const router = useRouter();
     const { t, lang } = useLanguage();
     // Translate catalog content (item names, descriptions, tags) by source text.
@@ -185,27 +185,8 @@ export default function ServiceCatalog({ category }: { category: string }) {
                     quantityLabelKey={config.quantityLabelKey}
                     maxQuantity={config.maxQuantity ?? 10}
                     onClose={() => setSelected(null)}
-                    onAdd={(line) => { addLine(line); setSelected(null); }}
+                    onAdd={(line) => { addLine(line); setSelected(null); router.push('/home/services/cart'); }}
                 />
-            )}
-
-            {/* Floating cart bar */}
-            {totalItems > 0 && (
-                <div className="fixed bottom-20 md:bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-md">
-                    <button
-                        onClick={() => router.push('/home/services/cart')}
-                        className="w-full flex items-center justify-between gap-3 px-5 py-3.5 rounded-2xl bg-primary text-white shadow-xl shadow-primary/30 active:scale-[0.99] transition-transform"
-                    >
-                        <span className="flex items-center gap-2 font-bold">
-                            <span className="material-symbols-outlined">shopping_cart</span>
-                            {totalItems} {t('catalog.itemsWord')}
-                        </span>
-                        <span className="flex items-center gap-2 font-bold">
-                            {inr(subtotal)}
-                            <span className="material-symbols-outlined">arrow_forward</span>
-                        </span>
-                    </button>
-                </div>
             )}
         </div>
     );
