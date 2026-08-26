@@ -10,21 +10,22 @@
  * them next to the constants they describe means one import for consumers.
  */
 
-export type ListingMode = 'sale' | 'rent';
+export type ListingMode = 'sale' | 'rent' | 'labour';
 
-export const LISTING_CATEGORIES = ['machinery', 'vehicles', 'animals', 'land', 'crops', 'labour', 'other'] as const;
+export const LISTING_CATEGORIES = ['machinery', 'vehicles', 'animals', 'land', 'crops', 'labour', 'services', 'other'] as const;
 export type ListingCategory = (typeof LISTING_CATEGORIES)[number];
 
 /**
  * Which categories each board offers.
  *
- * Rent drops `animals` and `labour`; Buy & Sell drops `labour`. `labour` stays
- * in `LISTING_CATEGORIES` so listings posted under it before this change still
- * read back correctly — it is simply no longer offered when posting.
+ * Rent and Buy & Sell both drop `labour` and `services` — those two are the
+ * whole of the Labour & Services board, which is why it exists. Keeping the
+ * lists disjoint is what stops a harvest crew turning up among the tractors.
  */
 export const CATEGORIES_BY_MODE: Record<ListingMode, ListingCategory[]> = {
     rent: ['machinery', 'vehicles', 'land', 'crops', 'other'],
     sale: ['machinery', 'vehicles', 'animals', 'land', 'crops', 'other'],
+    labour: ['labour', 'services'],
 };
 
 /**
@@ -60,6 +61,11 @@ export const SUBCATEGORIES: Record<ListingCategory, string[]> = {
         'Harvest Workers', 'Sowing & Weeding', 'Machine Operator',
         'Livestock Handler', 'General Farm Help',
     ],
+    services: [
+        'Borewell Drilling', 'Fencing', 'Drone Spraying', 'Soil Testing',
+        'Land Levelling', 'Transport & Haulage', 'Veterinary', 'Repair & Maintenance',
+        'Other Service',
+    ],
     other: ['Other'],
 };
 
@@ -75,6 +81,8 @@ export function subcategoryOptions(category: ListingCategory): string[] {
 /** Price units offered per board. Sales are a lump sum; rentals are per period. */
 export const SALE_PRICE_UNITS = ['Total', 'Per acre', 'Per quintal', 'Per unit'] as const;
 export const RENT_PRICE_UNITS = ['One day', 'Per hour', 'Per acre', 'per KM', 'Per month', 'Per season'] as const;
+/** Labour and services are quoted by time or by the job, never by the kilometre. */
+export const LABOUR_PRICE_UNITS = ['Per hour', 'One day', 'Per acre', 'Per month', 'Per job'] as const;
 
 export interface Listing {
     id: string;
@@ -99,6 +107,13 @@ export interface Listing {
     status: string;
     contactPhone: string;
     createdAt: string;
+    /**
+     * Labour & Services extras, stored in the `specs` JSONB column rather than
+     * columns of their own. Empty / null for every other board.
+     */
+    workType: string;
+    workerCount: number | null;
+    contactName: string;
     /** Posted by the signed-in user. */
     isOwn: boolean;
     /** Km from the coordinates passed to `fetchListings`, when both are known. */
@@ -123,6 +138,10 @@ export interface ListingInput {
     longitude?: number | null;
     images?: string[];
     contactPhone?: string;
+    /** Labour & Services only — see `Listing`. */
+    workType?: string;
+    workerCount?: number | null;
+    contactName?: string;
 }
 
 export interface FetchListingsOptions {

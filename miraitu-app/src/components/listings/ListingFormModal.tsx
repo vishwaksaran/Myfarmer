@@ -6,6 +6,7 @@ import {
     subcategoryOptions,
     RENT_PRICE_UNITS,
     SALE_PRICE_UNITS,
+    LABOUR_PRICE_UNITS,
     type Listing,
     type ListingCategory,
     type ListingInput,
@@ -36,10 +37,14 @@ const MAX_PHOTOS = 6;
  */
 export default function ListingFormModal({ isOpen, mode, editing, onClose, onSubmit }: ListingFormModalProps) {
     const { location } = useAppLocation();
-    const priceUnits = mode === 'rent' ? RENT_PRICE_UNITS : SALE_PRICE_UNITS;
+    const priceUnits =
+        mode === 'labour' ? LABOUR_PRICE_UNITS : mode === 'rent' ? RENT_PRICE_UNITS : SALE_PRICE_UNITS;
 
     const categories = CATEGORIES_BY_MODE[mode];
-    const [category, setCategory] = useState<ListingCategory>('machinery');
+    // Each board opens on its own first category; 'machinery' is not one of
+    // the Labour & Services board's two.
+    const firstCategory = categories[0];
+    const [category, setCategory] = useState<ListingCategory>(firstCategory);
     const [subcategory, setSubcategory] = useState('');
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -51,6 +56,10 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
     const [locationText, setLocationText] = useState('');
     const [contactPhone, setContactPhone] = useState('');
     const [images, setImages] = useState<string[]>([]);
+    // Labour & Services only — stored in specs, see migration 032.
+    const [workType, setWorkType] = useState('');
+    const [workerCount, setWorkerCount] = useState('');
+    const [contactName, setContactName] = useState('');
     const [uploading, setUploading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -89,18 +98,24 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
             setLocationText(editing.location);
             setContactPhone(editing.contactPhone);
             setImages(editing.images);
+            setWorkType(editing.workType);
+            setWorkerCount(editing.workerCount === null ? '' : String(editing.workerCount));
+            setContactName(editing.contactName);
             // An existing ad already has the unit its owner chose — do not let a
             // category change overwrite it.
             setUnitTouched(true);
         } else {
-            setCategory('machinery');
+            setCategory(firstCategory);
             setSubcategory('');
             setTitle('');
             setDescription('');
             setBrand('');
             setModel('');
             setPrice('');
-            setPriceUnit(defaultPriceUnit(mode, 'machinery'));
+            setWorkType('');
+            setWorkerCount('');
+            setContactName('');
+            setPriceUnit(defaultPriceUnit(mode, firstCategory));
             setNegotiable(false);
             setLocationText(location?.address || '');
             setContactPhone('');
@@ -111,7 +126,7 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
         mediaPathsRef.current.clear();
         // priceUnits is derived from `mode` and is stable for a given board.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isOpen, editing, location?.address]);
+    }, [isOpen, editing, location?.address, firstCategory]);
 
     if (!isOpen) return null;
 
@@ -168,6 +183,13 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
             return;
         }
 
+        const trimmedCount = workerCount.trim();
+        const numericCount = trimmedCount === '' ? null : Number(trimmedCount);
+        if (numericCount !== null && (!Number.isInteger(numericCount) || numericCount < 1)) {
+            setError('Number of workers must be a whole number');
+            return;
+        }
+
         setSaving(true);
         const result = await onSubmit({
             mode,
@@ -189,6 +211,9 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
             longitude: editing?.longitude ?? location?.lng ?? null,
             images,
             contactPhone,
+            workType,
+            workerCount: numericCount,
+            contactName,
         });
         setSaving(false);
 
@@ -343,6 +368,40 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
                         </span>
                     </label>
 
+                    {/* Work type / crew size — the Labour & Services equivalent
+                        of brand and model. Both optional: a one-person service
+                        has no crew size worth stating. */}
+                    {mode === 'labour' && (
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label htmlFor="listing-work-type" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">Work type</label>
+                                <input
+                                    id="listing-work-type"
+                                    type="text"
+                                    value={workType}
+                                    onChange={(e) => setWorkType(e.target.value)}
+                                    placeholder={category === 'labour' ? 'Harvesting' : 'Borewell drilling'}
+                                    className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#22c33d]/30"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="listing-worker-count" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">Number of workers</label>
+                                <input
+                                    id="listing-worker-count"
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={workerCount}
+                                    onChange={(e) => {
+                                        const v = e.target.value;
+                                        if (v === '' || /^d+$/.test(v)) setWorkerCount(v);
+                                    }}
+                                    placeholder="5"
+                                    className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#22c33d]/30"
+                                />
+                            </div>
+                        </div>
+                    )}
+
                     {/* Brand / model — useful for machinery and vehicles */}
                     {(category === 'machinery' || category === 'vehicles') && (
                         <div className="grid grid-cols-2 gap-3">
@@ -368,6 +427,22 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
                                     className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#22c33d]/30"
                                 />
                             </div>
+                        </div>
+                    )}
+
+                    {/* Who to ask for. The phone below is already required; a
+                        name makes the call less awkward, so it is optional. */}
+                    {mode === 'labour' && (
+                        <div>
+                            <label htmlFor="listing-contact-name" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">Your Name</label>
+                            <input
+                                id="listing-contact-name"
+                                type="text"
+                                value={contactName}
+                                onChange={(e) => setContactName(e.target.value)}
+                                placeholder="e.g. Ramesh"
+                                className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#22c33d]/30"
+                            />
                         </div>
                     )}
 

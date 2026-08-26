@@ -199,7 +199,7 @@ function Board({ mode }: { mode: ListingMode }) {
                         <div>
                             <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
                                 <span className="material-symbols-outlined text-[#22c33d] text-2xl">
-                                    {mode === 'rent' ? 'agriculture' : 'storefront'}
+                                    {mode === 'labour' ? 'engineering' : mode === 'rent' ? 'agriculture' : 'storefront'}
                                 </span>
                                 {boardTitle(mode)}
                             </h1>
@@ -335,7 +335,7 @@ function Board({ mode }: { mode: ListingMode }) {
                                     ? `Nothing matches “${debouncedQuery}”`
                                     : mineOnly
                                         ? 'You have not posted anything here yet.'
-                                        : `No ${mode === 'rent' ? 'rentals' : 'ads'} here yet — be the first to post one.`}
+                                        : `No ${mode === 'labour' ? 'listings' : mode === 'rent' ? 'rentals' : 'ads'} here yet — be the first to post one.`}
                             </p>
                             <button
                                 onClick={openNew}

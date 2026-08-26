@@ -321,13 +321,11 @@ export default function MobileHomeDashboard() {
                 />
 
                 {/* Row 2 — one wide banner, visually distinct from the squares */}
-                {/* No count: neither board offers a `labour` category any more,
-                    so the tally would always be 0. This tile points at the
-                    services catalogue, which is a different system. */}
                 <Tile
-                    href="/home/services"
+                    href="/home/labour-services"
                     label="Labour & Services"
                     caption="Borewell, fencing, drone spray, workers"
+                    count={counts.labour}
                     icon="engineering"
                     className="col-span-2 bg-gradient-to-r from-[#f3e5f5] to-[#ede0f7] dark:from-[#2a1a2e] dark:to-[#221528]"
                     accent="text-[#7b1fa2] dark:text-[#ce93d8]"

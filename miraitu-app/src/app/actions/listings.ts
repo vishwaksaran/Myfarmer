@@ -57,11 +57,12 @@ interface ListingRow {
     images: string[] | null;
     status: string | null;
     contact_phone: string | null;
+    specs: Record<string, unknown> | null;
     created_at: string;
 }
 
 const COLUMNS =
-    'id, user_id, listing_mode, category, subcategory, listing_type, title, brand, model, description, price, price_unit, negotiable, unit, location, district, state, latitude, longitude, images, status, contact_phone, created_at';
+    'id, user_id, listing_mode, category, subcategory, listing_type, title, brand, model, description, price, price_unit, negotiable, unit, location, district, state, latitude, longitude, images, status, contact_phone, specs, created_at';
 
 /** Great-circle distance in km — what the "6.0 km away" line is built from. */
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -81,9 +82,13 @@ function toListing(row: ListingRow, userId: string | null, near?: { lat: number;
             ? haversineKm(near.lat, near.lng, row.latitude, row.longitude)
             : null;
 
+    const specs = (row.specs ?? {}) as Record<string, unknown>;
+
     return {
         id: row.id,
-        mode: (row.listing_mode === 'rent' ? 'rent' : 'sale') as ListingMode,
+        mode: ((row.listing_mode === 'rent' || row.listing_mode === 'labour')
+            ? row.listing_mode
+            : 'sale') as ListingMode,
         // `category` is the taxonomy; `listing_type` is the pre-030 column kept
         // for legacy readers, used here only as a fallback for old rows.
         category: ((row.category || row.listing_type || 'other') as ListingCategory),
@@ -103,6 +108,13 @@ function toListing(row: ListingRow, userId: string | null, near?: { lat: number;
         images: (row.images ?? []).filter(Boolean),
         status: row.status || 'active',
         contactPhone: row.contact_phone || '',
+        // Labour & Services extras live in specs (migration 032) rather than
+        // columns of their own; they read back empty for every other board.
+        workType: typeof specs.work_type === 'string' ? specs.work_type : '',
+        workerCount: Number.isFinite(Number(specs.worker_count)) && specs.worker_count !== null && specs.worker_count !== ''
+            ? Number(specs.worker_count)
+            : null,
+        contactName: typeof specs.contact_name === 'string' ? specs.contact_name : '',
         createdAt: row.created_at,
         isOwn: !!userId && userId === row.user_id,
         distanceKm,
@@ -166,6 +178,10 @@ function landRentToListing(rec: LeaseListingRecord): Listing {
         status: 'active',
         contactPhone: rec.phone ?? '',
         createdAt: rec.created_at,
+        // Not a Labour & Services listing, so these stay empty.
+        workType: '',
+        workerCount: null,
+        contactName: rec.full_name ?? '',
         // Editing and deleting belong to the land board, not this one.
         isOwn: false,
         distanceKm: null,
@@ -306,7 +322,10 @@ export async function fetchListingCounts(): Promise<{
         const [rent, sale, labour, mine] = await Promise.all([
             active().eq('listing_mode', 'rent'),
             active().eq('listing_mode', 'sale'),
-            active().eq('category', 'labour'),
+            // The whole Labour & Services board, not just its 'labour' half —
+            // 'services' is the other category on it. Counting by category
+            // would also have swept in legacy labour rows left on Rent.
+            active().eq('listing_mode', 'labour'),
             user
                 ? admin.from('marketplace_listings')
                     .select('id', { count: 'exact', head: true })
@@ -358,7 +377,9 @@ function validate(input: ListingInput): string | null {
     if (input.title.trim().length < 3) return 'That title is too short';
     if (!input.location?.trim()) return 'Add where it is';
     if (!LISTING_CATEGORIES.includes(input.category)) return 'Pick a category';
-    if (input.mode !== 'sale' && input.mode !== 'rent') return 'Unknown listing type';
+    if (input.mode !== 'sale' && input.mode !== 'rent' && input.mode !== 'labour') {
+        return 'Unknown listing type';
+    }
 
     // Each board offers its own subset — Rent has no animals or labour, Buy &
     // Sell has no labour. Enforced here so the rule holds even if a client
@@ -395,6 +416,24 @@ function validate(input: ListingInput): string | null {
  * Publishes an ad. Everything the form collected lands in one INSERT, so a
  * listing can never appear without its photos or its price.
  */
+/**
+ * The Labour & Services extras, shaped for the `specs` JSONB column.
+ *
+ * Only the keys that carry a value are written, so a machinery ad's specs stay
+ * `{}` rather than filling with three nulls.
+ */
+function buildSpecs(input: ListingInput): Record<string, unknown> {
+    const specs: Record<string, unknown> = {};
+    const workType = input.workType?.trim();
+    const contactName = input.contactName?.trim();
+    if (workType) specs.work_type = workType;
+    if (contactName) specs.contact_name = contactName;
+    if (input.workerCount !== null && input.workerCount !== undefined && Number.isFinite(input.workerCount)) {
+        specs.worker_count = input.workerCount;
+    }
+    return specs;
+}
+
 export async function createListing(
     input: ListingInput
 ): Promise<{ success: boolean; id?: string; error?: string }> {
@@ -430,6 +469,7 @@ export async function createListing(
                 longitude: input.longitude ?? null,
                 images: (input.images ?? []).filter(Boolean),
                 contact_phone: input.contactPhone?.trim() || null,
+                specs: buildSpecs(input),
                 status: 'active',
             })
             .select('id')
@@ -479,6 +519,7 @@ export async function updateListing(
                 longitude: input.longitude ?? null,
                 images: (input.images ?? []).filter(Boolean),
                 contact_phone: input.contactPhone?.trim() || null,
+                specs: buildSpecs(input),
                 updated_at: new Date().toISOString(),
             })
             .eq('id', id)

@@ -12,6 +12,7 @@ export const CATEGORY_META: Record<ListingCategory, { label: string; icon: strin
     land: { label: 'Land', icon: 'landscape', emoji: '🌱' },
     crops: { label: 'Crops', icon: 'grass', emoji: '🌾' },
     labour: { label: 'Labour', icon: 'engineering', emoji: '👷' },
+    services: { label: 'Services', icon: 'handyman', emoji: '🛠️' },
     other: { label: 'Other', icon: 'category', emoji: '📦' },
 };
 
@@ -56,14 +57,17 @@ export function formatDistance(km: number | null | undefined): string | null {
 }
 
 export function boardTitle(mode: ListingMode): string {
+    if (mode === 'labour') return 'Labour & Services';
     return mode === 'rent' ? 'Rent' : 'Buy & Sell';
 }
 
 export function postCta(mode: ListingMode): string {
+    if (mode === 'labour') return 'Offer Your Service';
     return mode === 'rent' ? 'List for Rent' : 'Post an Ad';
 }
 
 export function searchPlaceholder(mode: ListingMode): string {
+    if (mode === 'labour') return 'Search workers, borewell, fencing…';
     return mode === 'rent' ? 'Search equipment, labor…' : 'Search vehicles, animals…';
 }
 
@@ -73,6 +77,8 @@ export function searchPlaceholder(mode: ListingMode): string {
  * They can still change it; this only sets the starting point.
  */
 export function defaultPriceUnit(mode: ListingMode, category: ListingCategory): string {
+    // Labour is hired by the day, a service quoted by the hour it takes.
+    if (mode === 'labour') return category === 'labour' ? 'One day' : 'Per hour';
     if (mode === 'rent') {
         switch (category) {
             case 'land': return 'Per acre';
@@ -147,11 +153,15 @@ export function listingPlaceholders(
             };
         case 'labour':
             return {
-                title: rent ? 'e.g. 5 harvest workers available' : 'e.g. Team for sugarcane cutting',
-                price: rent ? '600' : '600',
-                details: rent
-                    ? 'How many workers, what work they do, hours per day, area covered…'
-                    : 'Team size, skills, work they take on, area covered…',
+                title: 'e.g. 5 harvest workers available',
+                price: '600',
+                details: 'How many workers, what work they do, hours per day, area covered…',
+            };
+        case 'services':
+            return {
+                title: 'e.g. Borewell drilling with rig',
+                price: '900',
+                details: 'What the service covers, equipment you bring, how long a job takes…',
             };
         default:
             return {
