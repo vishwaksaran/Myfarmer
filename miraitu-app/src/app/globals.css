@@ -682,3 +682,158 @@ nav,
 .animate-heart-burst {
   animation: heartBurst 1s ease-out forwards;
 }
+
+
+/* ── Animated weather scene (home weather card) ──────────────────────
+   One layer of drifting cloud, falling rain/snow, haze or sun-glow sits
+   between the green gradient and the readings. Every element is a plain
+   div moved by transform/opacity only, so the whole scene composites on
+   the GPU and never triggers layout. See components/v2/WeatherScene. */
+
+/* Clouds and haze cross the card horizontally. The card clips overflow,
+   so they enter and leave off-frame. */
+@keyframes wxDrift {
+  from {
+    transform: translate3d(-40%, 0, 0);
+  }
+
+  to {
+    transform: translate3d(140%, 0, 0);
+  }
+}
+
+.animate-wx-drift {
+  animation: wxDrift linear infinite;
+}
+
+/* Rain and drizzle: straight down, slightly raked by the translateX. */
+@keyframes wxFall {
+  from {
+    transform: translate3d(0, -30%, 0);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  to {
+    transform: translate3d(-8px, 130%, 0);
+    opacity: 0;
+  }
+}
+
+.animate-wx-fall {
+  animation: wxFall linear infinite;
+}
+
+/* Snow drifts sideways as it falls, and turns over as it goes. */
+@keyframes wxFlake {
+  from {
+    transform: translate3d(0, -30%, 0) rotate(0deg);
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 0.9;
+  }
+
+  85% {
+    opacity: 0.9;
+  }
+
+  to {
+    transform: translate3d(14px, 130%, 0) rotate(180deg);
+    opacity: 0;
+  }
+}
+
+.animate-wx-flake {
+  animation: wxFlake linear infinite;
+}
+
+/* Two quick strikes then a long wait — a storm you can read a
+   temperature through, rather than a strobe. */
+@keyframes wxFlash {
+
+  0%,
+  88%,
+  100% {
+    opacity: 0;
+  }
+
+  89% {
+    opacity: 0.5;
+  }
+
+  91% {
+    opacity: 0.08;
+  }
+
+  93% {
+    opacity: 0.42;
+  }
+
+  96% {
+    opacity: 0;
+  }
+}
+
+.animate-wx-flash {
+  animation: wxFlash 7s ease-out infinite;
+}
+
+/* Clear sky: a slow warm breath rather than a spinning sun. */
+@keyframes wxGlow {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+
+  50% {
+    transform: scale(1.18);
+    opacity: 0.55;
+  }
+}
+
+.animate-wx-glow {
+  animation: wxGlow 6s ease-in-out infinite;
+}
+
+/* Fog sways instead of crossing — it should feel settled, not blown. */
+@keyframes wxHaze {
+
+  0%,
+  100% {
+    transform: translate3d(-12%, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(12%, 0, 0);
+  }
+}
+
+.animate-wx-haze {
+  animation: wxHaze ease-in-out infinite;
+}
+
+/* Decoration only — anyone who has asked for less motion gets the card
+   with its gradient and nothing moving on it. */
+@media (prefers-reduced-motion: reduce) {
+
+  .animate-wx-drift,
+  .animate-wx-fall,
+  .animate-wx-flake,
+  .animate-wx-flash,
+  .animate-wx-glow,
+  .animate-wx-haze {
+    animation: none;
+  }
+}
+

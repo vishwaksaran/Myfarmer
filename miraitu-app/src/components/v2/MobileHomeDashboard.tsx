@@ -7,6 +7,7 @@ import { useAppLocation } from '@/context/LocationContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { translatePage } from '@/i18n/pageContent';
 import { buildWeatherApiQuery } from '@/lib/weather-location';
+import WeatherScene from '@/components/v2/WeatherScene';
 import type { WeatherPayload } from '@/lib/weather-types';
 import { fetchListingCounts } from '@/app/actions/listings';
 
@@ -188,6 +189,13 @@ export default function MobileHomeDashboard() {
                 {/* Soft light blooms, purely decorative */}
                 <span aria-hidden className="pointer-events-none absolute -top-10 -right-8 w-32 h-32 rounded-full bg-white/10 blur-2xl" />
                 <span aria-hidden className="pointer-events-none absolute -bottom-12 -left-6 w-28 h-28 rounded-full bg-black/10 blur-xl" />
+
+                {/* The sky, moving. Only once the forecast has landed — there is
+                    nothing to animate before that, and the skeleton below reads
+                    better on the plain gradient. */}
+                {weather && !weatherError && (
+                    <WeatherScene code={weather.current.weatherCode} isDay={weather.current.isDay} />
+                )}
 
                 {weatherError ? (
                     <div className="relative flex items-center justify-between gap-3">

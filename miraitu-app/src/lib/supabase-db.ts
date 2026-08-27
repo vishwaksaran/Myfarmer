@@ -298,6 +298,8 @@ export interface ListingRecord {
     location: string;
     district?: string;
     state?: string;
+    /** Added by migration 030 — how a buyer reaches the seller. */
+    contact_phone?: string;
     images?: string[];
     specs?: Record<string, unknown>;
     status?: string;

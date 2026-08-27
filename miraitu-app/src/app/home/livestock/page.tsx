@@ -21,29 +21,51 @@ const categories = [
     { id: 'others', nameKey: 'livestock.others', image: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=200&h=200&fit=crop', count: 78, path: '/home/livestock/others' },
 ];
 
+/**
+ * The chips across the top. 'sell' is deliberately absent: the "Post a
+ * Livestock" button in the empty state is the way into the sell form now, so a
+ * chip beside it would be a second door to the same room. The 'sell' TabType
+ * and its form are untouched — only the chip is gone.
+ */
 const tabs = [
     { id: 'browse' as TabType, titleKey: 'livestockPage.browse', icon: 'category', bgColor: 'bg-blue-500' },
     { id: 'buy' as TabType, titleKey: 'livestockPage.buy', icon: 'shopping_cart', bgColor: 'bg-emerald-500' },
-    { id: 'sell' as TabType, titleKey: 'livestockPage.sell', icon: 'sell', bgColor: 'bg-orange-500' },
 ];
 
 // Featured listings
-const featuredListings = [
-    { id: 101, name: 'Premium Gir Cow', category: 'Cattle', breed: 'Gir', age: '3 Years', milkYield: '14 L/day', price: '₹95,000', location: 'Rajkot, Gujarat', image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=400&h=300&fit=crop', verified: true, seller: 'Shyam Patel', phone: '+91 99887 76655', featured: true },
-    { id: 102, name: 'Murrah Buffalo Pair', category: 'Cattle', breed: 'Murrah', age: '4 Years', milkYield: '18 L/day', price: '₹2,40,000', location: 'Karnal, Haryana', image: 'https://images.unsplash.com/photo-1619452104266-0d23df2119ac?w=400&h=300&fit=crop', verified: true, seller: 'Hardev Singh', phone: '+91 88776 65544', featured: true },
-    { id: 103, name: 'Kadaknath Breeding Stock', category: 'Poultry', breed: 'Kadaknath', age: '1 Year', milkYield: '-', price: '₹12,000', location: 'Jhabua, MP', image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=400&h=300&fit=crop', verified: true, seller: 'Mohan Bhil', phone: '+91 77665 54433', featured: true },
-];
+/**
+ * The livestock shown on this page.
+ *
+ * Both arrays are empty on purpose. They used to hold seeded demo animals —
+ * a Gir cow at Rs 85,000 from "Ramesh Patel" in Rajkot, Murrah buffalo, layer
+ * hens — complete with invented seller names and phone numbers. To a farmer
+ * those read as real animals for sale from real people, and the numbers went
+ * nowhere.
+ *
+ * Real livestock is posted by farmers on the Buy & Sell board under Animals,
+ * so until this page reads from there it shows an empty state and a way to
+ * post. Category chips, filters and the sell form are untouched and work the
+ * moment these arrays have entries again.
+ */
+interface LivestockListing {
+    id: number;
+    name: string;
+    category: string;
+    breed: string;
+    age: string;
+    milkYield: string;
+    price: string;
+    location: string;
+    image: string;
+    verified: boolean;
+    seller: string;
+    phone: string;
+    featured?: boolean;
+}
 
-const allListings = [
-    { id: 1, name: 'Pure Gir Cow', category: 'Cattle', breed: 'Gir', age: '4 Years', milkYield: '12 L/day', price: '₹85,000', location: 'Rajkot, Gujarat', image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=400&h=300&fit=crop', verified: true, seller: 'Ramesh Patel', phone: '+91 98765 43210' },
-    { id: 2, name: 'Murrah Buffalo', category: 'Cattle', breed: 'Murrah', age: '5 Years', milkYield: '15 L/day', price: '₹1,20,000', location: 'Karnal, Haryana', image: 'https://images.unsplash.com/photo-1619452104266-0d23df2119ac?w=400&h=300&fit=crop', verified: true, seller: 'Sukhdev Singh', phone: '+91 87654 32109' },
-    { id: 3, name: 'Osmanabadi Goat Pair', category: 'Goats & Sheep', breed: 'Osmanabadi', age: '2 Years', milkYield: '-', price: '₹25,000', location: 'Osmanabad, Maharashtra', image: 'https://images.unsplash.com/photo-1524024973431-2ad916746881?w=400&h=300&fit=crop', verified: false, seller: 'Vijay Jadhav', phone: '+91 76543 21098' },
-    { id: 4, name: 'Country Chicken - 50 Birds', category: 'Poultry', breed: 'Country', age: '6 Months', milkYield: '-', price: '₹15,000', location: 'Coimbatore, TN', image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=400&h=300&fit=crop', verified: true, seller: 'Murugan K', phone: '+91 65432 10987' },
-    { id: 5, name: 'Rabbits - 10 Pairs', category: 'Others', breed: 'White Giant', age: '6 Months', milkYield: '-', price: '₹8,000', location: 'Pune, Maharashtra', image: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=400&h=300&fit=crop', verified: true, seller: 'Amit Kulkarni', phone: '+91 54321 09876' },
-    { id: 6, name: 'Rohu Fingerlings - 10000', category: 'Fish', breed: 'Rohu', age: 'Fresh', milkYield: '-', price: '₹25,000', location: 'Kolkata, WB', image: 'https://images.unsplash.com/photo-1731552466988-26d1dbeff4ee?w=400&h=300&fit=crop', verified: false, seller: 'Pranab Das', phone: '+91 43210 98765' },
-    { id: 7, name: 'Sahiwal Cow', category: 'Cattle', breed: 'Sahiwal', age: '3 Years', milkYield: '10 L/day', price: '₹75,000', location: 'Amritsar, Punjab', image: 'https://images.unsplash.com/photo-1527153857715-3908f2bae5e8?w=400&h=300&fit=crop', verified: true, seller: 'Gurpreet Kaur', phone: '+91 32109 87654' },
-    { id: 8, name: 'Layer Hens - 100 Birds', category: 'Poultry', breed: 'Layer', age: '8 Months', milkYield: '-', price: '₹35,000', location: 'Namakkal, TN', image: 'https://images.unsplash.com/photo-1612170153139-6f881ff067e0?w=400&h=300&fit=crop', verified: true, seller: 'Selvam R', phone: '+91 21098 76543' },
-];
+const featuredListings: LivestockListing[] = [];
+
+const allListings: LivestockListing[] = [];
 
 const categoryFilters = [
     { value: 'All', key: 'common.all' },
@@ -131,13 +153,15 @@ const TITLE_PLACEHOLDER: Record<string, string> = {
 
 export default function LivestockPage() {
     const { t } = useLanguage();
-    const [activeTab, setActiveTab] = useState<TabType>('browse');
+    // Opens on the listings, not the category grid: with the welcome modal
+    // gone this is the first thing a farmer sees, and "what is for sale" is
+    // the question they came with.
+    const [activeTab, setActiveTab] = useState<TabType>('buy');
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [selectedSellCategory, setSelectedSellCategory] = useState('');
     const [contactModal, setContactModal] = useState<{ open: boolean; seller: string; phone: string } | null>(null);
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [pendingContact, setPendingContact] = useState<{ seller: string; phone: string } | null>(null);
-    const [showWelcomeModal, setShowWelcomeModal] = useState(true);
     const [sellSubmitting, setSellSubmitting] = useState(false);
     const [sellError, setSellError] = useState('');
     const [sellSuccess, setSellSuccess] = useState(false);
@@ -145,6 +169,7 @@ export default function LivestockPage() {
     const [sellForm, setSellForm] = useState({
         title: '',
         price: '',
+        phone: '',
         location: '',
         district: '',
         state: '',
@@ -214,6 +239,9 @@ export default function LivestockPage() {
             }
         }
         if (!sellForm.price.trim()) errs.push('Price is required');
+        if (sellForm.phone.replace(/D/g, '').length !== 10) {
+            errs.push('Enter a valid 10-digit phone number');
+        }
         if (!sellForm.location.trim()) errs.push('Location is required');
         if (!sellForm.district.trim()) errs.push('District is required');
         if (!sellForm.state) errs.push('State is required');
@@ -247,6 +275,7 @@ export default function LivestockPage() {
                 title: sellForm.title,
                 description: sellForm.description,
                 price: priceNum,
+                contact_phone: sellForm.phone.replace(/D/g, ''),
                 location: sellForm.location,
                 district: sellForm.district,
                 state: sellForm.state,
@@ -375,7 +404,9 @@ export default function LivestockPage() {
                                     ))}
                                 </div>
 
-                                {/* {t('livestockPage.featured')} */}
+                                {/* Featured — hidden while empty; a starred heading
+                                    over an empty grid reads as a loading failure. */}
+                                {featuredListings.length > 0 && (
                                 <div className="mb-8 md:mb-10">
                                     <div className="flex items-center gap-2 mb-3 md:mb-6">
                                         <span className="material-symbols-outlined text-amber-500 text-lg md:text-xl">star</span>
@@ -387,47 +418,23 @@ export default function LivestockPage() {
                                         ))}
                                     </div>
                                 </div>
+                                )}
 
-                                {/* Stats */}
-                                <div className="bg-white dark:bg-[#1a231a] rounded-lg md:rounded-2xl p-4 md:p-8 border border-gray-100 dark:border-gray-800">
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 text-center">
-                                        <div>
-                                            <div className="w-10 md:w-14 h-10 md:h-14 mx-auto mb-2 md:mb-3 rounded-lg md:rounded-2xl bg-primary/10 flex items-center justify-center">
-                                                <span className="material-symbols-outlined text-primary text-lg md:text-2xl">verified_user</span>
-                                            </div>
-                                            <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">5,000+</p>
-                                            <p className="text-xs md:text-sm text-gray-500">{t('livestockPage.verifiedSellers')}</p>
-                                        </div>
-                                        <div>
-                                            <div className="w-10 md:w-14 h-10 md:h-14 mx-auto mb-2 md:mb-3 rounded-lg md:rounded-2xl bg-primary/10 flex items-center justify-center">
-                                                <span className="material-symbols-outlined text-primary text-lg md:text-2xl">pets</span>
-                                            </div>
-                                            <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">25,000+</p>
-                                            <p className="text-xs md:text-sm text-gray-500">{t('livestockPage.animalsListed')}</p>
-                                        </div>
-                                        <div>
-                                            <div className="w-10 md:w-14 h-10 md:h-14 mx-auto mb-2 md:mb-3 rounded-lg md:rounded-2xl bg-primary/10 flex items-center justify-center">
-                                                <span className="material-symbols-outlined text-primary text-lg md:text-2xl">handshake</span>
-                                            </div>
-                                            <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">10,000+</p>
-                                            <p className="text-xs md:text-sm text-gray-500">{t('livestockPage.successfulTrades')}</p>
-                                        </div>
-                                        <div>
-                                            <div className="w-10 md:w-14 h-10 md:h-14 mx-auto mb-2 md:mb-3 rounded-lg md:rounded-2xl bg-primary/10 flex items-center justify-center">
-                                                <span className="material-symbols-outlined text-primary text-lg md:text-2xl">location_on</span>
-                                            </div>
-                                            <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">500+</p>
-                                            <p className="text-xs md:text-sm text-gray-500">{t('livestockPage.districtsCovered')}</p>
-                                        </div>
-                                    </div>
-                                </div>
+                                {/* The stats bar was removed: "5,000+ verified sellers",
+                                    "25,000+ animals listed", "10,000+ successful trades",
+                                    "500+ districts covered" were hardcoded marketing figures, not
+                                    anything measured — and with the seeded listings gone they sat
+                                    directly above an empty marketplace. The services page dropped
+                                    its equivalent block for the same reason. Recover from git
+                                    history if these ever become real numbers. */}
                             </div>
                         )}
 
                         {/* Buy Tab */}
                         {activeTab === 'buy' && (
                             <div className="animate-fadeIn">
-                                {/* Featured Section */}
+                                {/* Featured Section — hidden while empty. */}
+                                {featuredListings.length > 0 && (
                                 <div className="mb-6 md:mb-8">
                                     <div className="flex items-center gap-2 mb-3 md:mb-4">
                                         <span className="material-symbols-outlined text-amber-500 text-lg md:text-xl">star</span>
@@ -439,6 +446,7 @@ export default function LivestockPage() {
                                         ))}
                                     </div>
                                 </div>
+                                )}
 
                                 {/* All Listings */}
                                 <div className="pt-4 md:pt-6 border-t border-gray-200 dark:border-gray-700">
@@ -460,12 +468,30 @@ export default function LivestockPage() {
                                         </p>
                                     </div>
 
-                                    {/* Listings Grid */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
-                                        {filteredListings.map((listing) => (
-                                            <ListingCard key={listing.id} listing={listing} />
-                                        ))}
-                                    </div>
+                                    {/* Listings Grid, or the same empty state the
+                                        Buy & Sell board shows — that is where the
+                                        button lands, so the two should match. */}
+                                    {filteredListings.length === 0 ? (
+                                        <div className="text-center py-16 bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800">
+                                            <span className="material-symbols-outlined text-5xl text-gray-300 mb-3">pets</span>
+                                            <p className="text-gray-500 font-medium px-6">
+                                                No livestock here yet — be the first to post one.
+                                            </p>
+                                            <button
+                                                onClick={() => setActiveTab('sell')}
+                                                className="mt-4 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#22c33d] text-white text-sm font-bold hover:brightness-110"
+                                            >
+                                                <span className="material-symbols-outlined text-lg">add</span>
+                                                Post a Livestock
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
+                                            {filteredListings.map((listing) => (
+                                                <ListingCard key={listing.id} listing={listing} />
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -481,7 +507,7 @@ export default function LivestockPage() {
                                         <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Livestock Listed!</h2>
                                         <p className="text-sm text-gray-500 mb-6">Your listing is now active. Buyers can find it in the marketplace.</p>
                                         <div className="flex gap-3 justify-center">
-                                            <button onClick={() => { setSellSuccess(false); setSellForm({ title: '', price: '', location: '', district: '', state: '', description: '', imageFiles: [], specs: {} }); setSelectedSellCategory(''); }}
+                                            <button onClick={() => { setSellSuccess(false); setSellForm({ title: '', price: '', phone: '', location: '', district: '', state: '', description: '', imageFiles: [], specs: {} }); setSelectedSellCategory(''); }}
                                                 className="px-6 py-3 rounded-xl bg-primary text-white font-bold">{t('livestockPage.listAnother')}</button>
                                             <button onClick={() => setActiveTab('buy')}
                                                 className="px-6 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold">{t('livestockPage.browseMarket')}</button>
@@ -489,26 +515,43 @@ export default function LivestockPage() {
                                     </div>
                                 ) : (
                                     <div className="bg-white dark:bg-[#1a231a] rounded-lg md:rounded-2xl p-4 md:p-8 border border-gray-100 dark:border-gray-800">
+                                        {/* The Sell chip used to double as the way back
+                                            out of this form. With it gone, the form needs
+                                            its own exit. */}
+                                        <button
+                                            onClick={() => setActiveTab('buy')}
+                                            className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-gray-500 hover:text-primary transition-colors"
+                                        >
+                                            <span className="material-symbols-outlined text-lg">arrow_back</span>
+                                            {t('livestockPage.browseMarket')}
+                                        </button>
                                         <h2 className="text-xl md:text-2xl font-bold text-primary text-center mb-2">{t('livestockPage.sellYourLivestock')}</h2>
                                         <p className="text-sm md:text-base text-gray-500 text-center mb-6 md:mb-8">{t('livestockPage.sellYourLivestockDesc')}</p>
 
-                                        {/* Category Selection */}
-                                        <div className="mb-6 md:mb-8">
-                                            <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 md:mb-4">Select Category *</label>
-                                            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 md:gap-3">
-                                                {sellCategories.map((cat) => (
-                                                    <button key={cat.id} onClick={() => handleSellCategoryChange(cat.id)}
-                                                        className={`p-2 md:p-4 rounded-lg md:rounded-xl border-2 text-center transition-all ${selectedSellCategory === cat.id ? 'border-primary bg-primary/5' : 'border-gray-200 dark:border-gray-700 hover:border-primary/30'}`}>
-                                                        <span className="text-xl md:text-2xl mb-0.5 md:mb-1 block">{cat.icon}</span>
-                                                        <span className={`text-[10px] md:text-xs font-semibold line-clamp-2 ${selectedSellCategory === cat.id ? 'text-primary' : 'text-gray-600'}`}>{cat.name}</span>
-                                                    </button>
-                                                ))}
+                                        {/* Category — a dropdown rather than the five icon
+                                            tiles it used to be, so it reads as one field in
+                                            a column of fields instead of a separate widget. */}
+                                        <div className="mb-5 md:mb-6">
+                                            <label htmlFor="livestock-category" className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Select Category *</label>
+                                            <div className="relative">
+                                                <select
+                                                    id="livestock-category"
+                                                    value={selectedSellCategory}
+                                                    onChange={(e) => handleSellCategoryChange(e.target.value)}
+                                                    className="w-full px-3 md:px-4 py-2 md:py-3 pr-9 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base appearance-none"
+                                                >
+                                                    <option value="">Select</option>
+                                                    {sellCategories.map((cat) => (
+                                                        <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
+                                                    ))}
+                                                </select>
+                                                    <span className="material-symbols-outlined pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xl">expand_more</span>
                                             </div>
                                         </div>
 
                                         {/* Form Fields */}
                                         <div className="space-y-4 md:space-y-5">
-                                            <div className="grid grid-cols-2 gap-2 md:gap-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div>
                                                     <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Title *</label>
                                                     <input type="text" placeholder={TITLE_PLACEHOLDER[selectedSellCategory] || 'e.g. Pure Gir Cow'} value={sellForm.title} onChange={(e) => setSellForm(p => ({ ...p, title: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
@@ -526,23 +569,26 @@ export default function LivestockPage() {
                                                     Pick a category above to see the details we need for it.
                                                 </div>
                                             ) : (
-                                                <div className="grid grid-cols-2 gap-2 md:gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     {activeFields.map(field => (
                                                         <div key={field.key}>
                                                             <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">
                                                                 {field.label}{field.required ? ' *' : ''}
                                                             </label>
                                                             {field.type === 'select' ? (
-                                                                <select
-                                                                    value={sellForm.specs[field.key] ?? ''}
-                                                                    onChange={(e) => setSpec(field.key, e.target.value)}
-                                                                    className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base appearance-none"
-                                                                >
-                                                                    <option value="">Select</option>
-                                                                    {(field.options ?? []).map(opt => (
-                                                                        <option key={opt} value={opt}>{opt}</option>
-                                                                    ))}
-                                                                </select>
+                                                                <div className="relative">
+                                                                    <select
+                                                                        value={sellForm.specs[field.key] ?? ''}
+                                                                        onChange={(e) => setSpec(field.key, e.target.value)}
+                                                                        className="w-full px-3 md:px-4 py-2 md:py-3 pr-9 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base appearance-none"
+                                                                    >
+                                                                        <option value="">Select</option>
+                                                                        {(field.options ?? []).map(opt => (
+                                                                            <option key={opt} value={opt}>{opt}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                    <span className="material-symbols-outlined pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xl">expand_more</span>
+                                                                </div>
                                                             ) : (
                                                                 <input
                                                                     type="text"
@@ -556,7 +602,21 @@ export default function LivestockPage() {
                                                     ))}
                                                 </div>
                                             )}
-                                            <div className="grid grid-cols-3 gap-2 md:gap-4">
+                                            <div>
+                                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Phone Number *</label>
+                                                <input
+                                                    type="tel"
+                                                    inputMode="numeric"
+                                                    maxLength={10}
+                                                    placeholder="10-digit number"
+                                                    value={sellForm.phone}
+                                                    onChange={(e) => setSellForm(p => ({ ...p, phone: e.target.value.replace(/D/g, '').slice(0, 10) }))}
+                                                    className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base"
+                                                />
+                                                <p className="mt-1 text-[11px] text-gray-400">Buyers will call this number.</p>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                 <div>
                                                     <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Location *</label>
                                                     <input type="text" placeholder="e.g. Rajkot" value={sellForm.location} onChange={(e) => setSellForm(p => ({ ...p, location: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
@@ -567,13 +627,16 @@ export default function LivestockPage() {
                                                 </div>
                                                 <div>
                                                     <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">State *</label>
-                                                    <select value={sellForm.state} onChange={(e) => setSellForm(p => ({ ...p, state: e.target.value }))}
-                                                        className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base appearance-none">
-                                                        <option value="">Select</option>
-                                                        {['Maharashtra', 'Madhya Pradesh', 'Punjab', 'Haryana', 'Uttar Pradesh', 'Karnataka', 'Rajasthan', 'Gujarat', 'Tamil Nadu', 'Andhra Pradesh', 'Telangana', 'Bihar', 'West Bengal', 'Odisha', 'Kerala'].map(s => (
-                                                            <option key={s} value={s}>{s}</option>
-                                                        ))}
-                                                    </select>
+                                                    <div className="relative">
+                                                        <select value={sellForm.state} onChange={(e) => setSellForm(p => ({ ...p, state: e.target.value }))}
+                                                            className="w-full px-3 md:px-4 py-2 md:py-3 pr-9 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base appearance-none">
+                                                            <option value="">Select</option>
+                                                            {['Maharashtra', 'Madhya Pradesh', 'Punjab', 'Haryana', 'Uttar Pradesh', 'Karnataka', 'Rajasthan', 'Gujarat', 'Tamil Nadu', 'Andhra Pradesh', 'Telangana', 'Bihar', 'West Bengal', 'Odisha', 'Kerala'].map(s => (
+                                                                <option key={s} value={s}>{s}</option>
+                                                            ))}
+                                                        </select>
+                                                        <span className="material-symbols-outlined pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xl">expand_more</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div>
@@ -665,81 +728,12 @@ export default function LivestockPage() {
                     {/* New "Welcome Back" Login Modal */}
                     <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
 
-                    {/* Livestock Welcome Modal - shows on page load */}
-                    {showWelcomeModal && (
-                        <div
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                            onClick={() => setShowWelcomeModal(false)}
-                            style={{ animation: 'fadeIn 0.2s ease-out' }}
-                        >
-                            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-                            <div
-                                className="relative bg-white dark:bg-[#1a231a] rounded-3xl p-0 max-w-md w-full shadow-2xl overflow-hidden"
-                                onClick={(e) => e.stopPropagation()}
-                                style={{ animation: 'zoomIn95 0.3s ease-out' }}
-                            >
-                                {/* Modal Header */}
-                                <div className="relative h-44 overflow-hidden">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=600&h=300&fit=crop"
-                                        alt="Livestock"
-                                        className="w-full h-full object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-                                    <button
-                                        onClick={() => setShowWelcomeModal(false)}
-                                        className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/30 rounded-full p-1.5 transition-colors"
-                                    >
-                                        <span className="material-symbols-outlined text-xl">close</span>
-                                    </button>
-                                    <div className="absolute bottom-4 left-6">
-                                        <h3 className="text-2xl font-black text-white">{t('livestockPage.title')} {t('livestockPage.titleHighlight')}</h3>
-                                        <p className="text-white/70 text-sm">{t('livestockPage.modalSubtitle')}</p>
-                                    </div>
-                                </div>
-
-                                {/* Action Options */}
-                                <div className="p-6 space-y-3">
-                                    <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">{t('livestockPage.whatToDo')}</p>
-
-                                    <button
-                                        onClick={() => { setActiveTab('buy'); setShowWelcomeModal(false); }}
-                                        className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary hover:bg-primary/5 transition-all group/opt text-left"
-                                    >
-                                        <div className="w-14 h-14 rounded-xl bg-emerald-500 flex items-center justify-center shrink-0">
-                                            <span className="material-symbols-outlined text-white text-3xl">shopping_cart</span>
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="font-bold text-gray-900 dark:text-white text-lg">{t('livestockPage.buy')}</p>
-                                            <p className="text-xs text-gray-500">{t('livestockPage.buyDesc')}</p>
-                                        </div>
-                                        <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-primary group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
-                                    </button>
-
-                                    <button
-                                        onClick={() => { setActiveTab('sell'); setShowWelcomeModal(false); }}
-                                        className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary hover:bg-primary/5 transition-all group/opt text-left"
-                                    >
-                                        <div className="w-14 h-14 rounded-xl bg-orange-500 flex items-center justify-center shrink-0">
-                                            <span className="material-symbols-outlined text-white text-3xl">sell</span>
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="font-bold text-gray-900 dark:text-white text-lg">{t('livestockPage.sell')}</p>
-                                            <p className="text-xs text-gray-500">{t('livestockPage.sellModalDesc')}</p>
-                                        </div>
-                                        <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-primary group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
-                                    </button>
-
-                                    <button
-                                        onClick={() => setShowWelcomeModal(false)}
-                                        className="w-full text-center text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 pt-2 transition-colors"
-                                    >
-                                        {t('livestockPage.skipBrowse')}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    {/* The "What would you like to do?" welcome modal was removed.
+                        It interrupted every visit with a Buy/Sell/Skip choice before the
+                        farmer had seen a single animal — and two of its three buttons only
+                        switched a tab that is visible anyway. The page now opens straight
+                        on the listings, with the empty state carrying the Post button when
+                        there is nothing to show. */}
                 </div>
 
                 <style jsx>{`

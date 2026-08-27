@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import MachineryListing from '@/components/v2/machinery/MachineryListing';
+import SellMachineryForm from '@/components/v2/machinery/SellMachineryForm';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { MACHINERY_NEW_ENABLED, MACHINERY_RENT_ENABLED } from '@/lib/feature-flags';
@@ -71,73 +72,34 @@ const categories = [
     },
 ];
 
-const featuredMachinery = [
-    {
-        id: 1,
-        name: 'Mahindra Yuvo 575 DI',
-        category: 'Tractor',
-        specs: '45 HP • 4 Cylinder • 4WD',
-        price: '₹7,20,000',
-        image: '/images/machinery/tractorr-1.png',
-        brand: 'Mahindra',
-        hp: '45',
-        type: 'new'
-    },
-    {
-        id: 2,
-        name: 'JCB 3DX Super',
-        category: 'JCB',
-        specs: '76 HP • Backhoe Loader',
-        price: '₹28,50,000',
-        image: '/images/machinery/featured-jcb.jpg',
-        brand: 'JCB',
-        hp: '76',
-        type: 'new'
-    },
-    {
-        id: 3,
-        name: 'Swaraj 744 FE',
-        category: 'Tractor',
-        specs: '48 HP • 3 Cylinder • 2WD',
-        price: '₹6,80,000',
-        image: '/images/machinery/banners/swaraj-target.jpg',
-        brand: 'Swaraj',
-        hp: '48',
-        type: 'new'
-    },
-    {
-        id: 4,
-        name: 'VST Shakti Power Tiller',
-        category: 'Small Machinery',
-        specs: '9.5 HP • Diesel • Rotary Tiller',
-        price: '₹1,45,000',
-        image: '/images/machinery/featured-power-tiller.jpg',
-        brand: 'VST Shakti',
-        hp: '9.5',
-        type: 'new'
-    },
-    {
-        id: 5,
-        name: 'Kubota DC-70G Plus',
-        category: 'Harvester',
-        specs: '70 HP • 4-Row • Grain Tank 1200L',
-        price: '₹14,50,000',
-        image: '/images/machinery/featured-harvester.jpg',
-        brand: 'Kubota',
-        hp: '70',
-        type: 'new'
-    },
-    {
-        id: 6,
-        name: 'Fieldstar Disc Harrow',
-        category: 'Implement',
-        specs: '16 Discs • Heavy Duty • Mounted',
-        price: '₹55,000',
-        image: '/images/machinery/harrow.png',
-        brand: 'Fieldstar',
-        type: 'new'
-    }
-];
+/**
+ * The machinery shown on this page.
+ *
+ * Empty on purpose. This used to hold seeded demo tractors — a Mahindra Yuvo, a
+ * JCB 3DX, a Kubota harvester — with invented prices, which read to a farmer as
+ * real stock Miraitu was offering. Real machinery is posted by farmers on the
+ * Buy & Sell board, so until this page reads from there it shows an empty state
+ * and a way to post, rather than a showroom that does not exist.
+ *
+ * The filters, the category cards and the grid/list toggle are all untouched
+ * and will work the moment this array has entries again.
+ */
+interface FeaturedMachinery {
+    id: number;
+    name: string;
+    category: string;
+    specs: string;
+    price: string;
+    image: string;
+    brand: string;
+    hp: string;
+    type: string;
+    /** MachineryListing's own item type is open-ended; match it so entries
+     *  added here stay assignable to the component. */
+    [key: string]: string | number | boolean | string[] | Record<string, unknown> | undefined;
+}
+
+const featuredMachinery: FeaturedMachinery[] = [];
 
 
 export default function MachineryPage() {
@@ -147,6 +109,14 @@ export default function MachineryPage() {
     const [selectedBrand, setSelectedBrand] = useState('All Brands');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [modalCategory, setModalCategory] = useState<typeof categories[0] | null>(null);
+    /**
+     * "Post a Machinery" opens the sell form on this page rather than sending
+     * the seller to another board. SellMachineryForm fixes its category at
+     * render — every other caller is a /home/machinery/<category>/sell page —
+     * so this page asks for the category first and keys the form on it.
+     */
+    const [showSellForm, setShowSellForm] = useState(false);
+    const [sellCategory, setSellCategory] = useState('');
     const [showFilterModal, setShowFilterModal] = useState(false);
 
     // Extract unique brands from data
@@ -435,6 +405,48 @@ export default function MachineryPage() {
                     )}
 
 
+                    {/* Sell form, in place of the browse grid. */}
+                    {showSellForm ? (
+                    <div className="max-w-3xl mx-auto">
+                        <button
+                            onClick={() => { setShowSellForm(false); setSellCategory(''); }}
+                            className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-gray-500 hover:text-primary transition-colors"
+                        >
+                            <span className="material-symbols-outlined text-lg">arrow_back</span>
+                            Back to machinery
+                        </button>
+
+                        <div className="mb-5 bg-white dark:bg-[#1a231a] rounded-lg md:rounded-2xl p-4 md:p-6 border border-gray-100 dark:border-gray-800">
+                            <label htmlFor="machinery-sell-category" className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">
+                                Select Category *
+                            </label>
+                            <div className="relative">
+                                <select
+                                    id="machinery-sell-category"
+                                    value={sellCategory}
+                                    onChange={(e) => setSellCategory(e.target.value)}
+                                    className="w-full px-3 md:px-4 py-2 md:py-3 pr-9 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base appearance-none"
+                                >
+                                    <option value="">Select</option>
+                                    {categories.map((c) => (
+                                        <option key={c.id} value={c.id}>{c.name}</option>
+                                    ))}
+                                </select>
+                                <span className="material-symbols-outlined pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xl">expand_more</span>
+                            </div>
+                            {!sellCategory && (
+                                <p className="mt-2 text-xs text-gray-400">
+                                    Pick what you are selling — the form asks for different details per category.
+                                </p>
+                            )}
+                        </div>
+
+                        {/* key: the form reads its category once, at mount, so it has
+                            to be rebuilt when the seller changes their mind. */}
+                        {sellCategory && <SellMachineryForm key={sellCategory} category={sellCategory} />}
+                    </div>
+                    ) : (
+                    <>
                     {/* Main Content Grid */}
                     <div className="flex gap-6 md:gap-8">
                         {/* Filters Sidebar - Hidden on Mobile */}
@@ -537,13 +549,34 @@ export default function MachineryPage() {
                                 </div>
                             </div>
 
-                            <MachineryListing
-                                items={filteredMachinery}
-                                type="new"
-                                viewMode={viewMode}
-                            />
+                            {filteredMachinery.length === 0 ? (
+                                /* Matches the Buy & Sell board's empty state, because
+                                   that is where the button sends you — same shape, so
+                                   arriving there does not feel like a different app. */
+                                <div className="text-center py-16 bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800">
+                                    <span className="material-symbols-outlined text-5xl text-gray-300 mb-3">agriculture</span>
+                                    <p className="text-gray-500 font-medium px-6">
+                                        No machinery here yet — be the first to post one.
+                                    </p>
+                                    <button
+                                        onClick={() => setShowSellForm(true)}
+                                        className="mt-4 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#22c33d] text-white text-sm font-bold hover:brightness-110"
+                                    >
+                                        <span className="material-symbols-outlined text-lg">add</span>
+                                        Post a Machinery
+                                    </button>
+                                </div>
+                            ) : (
+                                <MachineryListing
+                                    items={filteredMachinery}
+                                    type="new"
+                                    viewMode={viewMode}
+                                />
+                            )}
                         </div>
                     </div>
+                    </>
+                    )}
 
                     {/* Filter Modal - Mobile Only */}
                     {showFilterModal && (

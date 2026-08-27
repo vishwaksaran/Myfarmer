@@ -16,6 +16,7 @@ import {
     setListingStatus,
     updateListing,
 } from '@/app/actions/listings';
+import { CATEGORIES_BY_MODE } from './listingTypes';
 import type { Listing, ListingCategory, ListingInput, ListingMode } from './listingTypes';
 import ListingCard from './ListingCard';
 import ListingFormModal from './ListingFormModal';
@@ -47,13 +48,26 @@ function Board({ mode }: { mode: ListingMode }) {
     const searchParams = useSearchParams();
     /** `?mine=1` opens straight into My Ads — what the home screen's tile links to. */
     const wantsMine = searchParams.get('mine') === '1';
+    /**
+     * `?category=machinery&post=1` — how the Machinery and Livestock pages hand
+     * someone straight to the right form. An unknown or wrong-board category is
+     * ignored rather than rejected: a stale link should land on the full board,
+     * not an error.
+     */
+    const wantsCategory = (() => {
+        const c = searchParams.get('category');
+        return c && (CATEGORIES_BY_MODE[mode] as string[]).includes(c)
+            ? (c as ListingCategory)
+            : 'all';
+    })();
+    const wantsPost = searchParams.get('post') === '1';
     const { location } = useAppLocation();
 
     const [listings, setListings] = useState<Listing[]>([]);
     const [loading, setLoading] = useState(true);
     const [hasMore, setHasMore] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
-    const [category, setCategory] = useState<ListingCategory | 'all'>('all');
+    const [category, setCategory] = useState<ListingCategory | 'all'>(wantsCategory);
     const [subcategory, setSubcategory] = useState('');
     const [query, setQuery] = useState('');
     const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -143,11 +157,12 @@ function Board({ mode }: { mode: ListingMode }) {
         setLoadingMore(false);
     };
 
-    /** Posting needs an account — everything else on the board is public. */
-    const requireAuth = (action: () => void) => {
+    /** Posting needs an account — everything else on the board is public.
+     *  Memoised so `openNew` below keeps a stable identity for its effect. */
+    const requireAuth = useCallback((action: () => void) => {
         if (!user) { setShowLogin(true); return; }
         action();
-    };
+    }, [user]);
 
     const handleSubmit = async (input: ListingInput): Promise<{ success: boolean; error?: string }> => {
         const res = editing ? await updateListing(editing.id, input) : await createListing(input);
@@ -185,7 +200,20 @@ function Board({ mode }: { mode: ListingMode }) {
         await load();
     };
 
-    const openNew = () => requireAuth(() => { setEditing(null); setShowForm(true); });
+    const openNew = useCallback(() => {
+        requireAuth(() => { setEditing(null); setShowForm(true); });
+    }, [requireAuth]);
+
+    /**
+     * `?post=1` opens the form on arrival. Fires once: without the guard any
+     * re-render would re-open a form the user had just dismissed.
+     */
+    const autoPosted = useRef(false);
+    useEffect(() => {
+        if (!wantsPost || autoPosted.current) return;
+        autoPosted.current = true;
+        openNew();
+    }, [wantsPost, openNew]);
     const openEdit = (listing: Listing) => { setViewing(null); setEditing(listing); setShowForm(true); };
 
     return (

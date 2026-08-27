@@ -160,6 +160,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
         location: '',
         district: '',
         state: '',
+        phone: '',
     });
 
     const estimatedValue = formData.hp && formData.year
@@ -187,6 +188,9 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
             if (!formData.location.trim()) errs.push('Please enter your location');
             if (!formData.district.trim()) errs.push('Please enter your district');
             if (!formData.state.trim()) errs.push('Please select your state');
+            if (formData.phone.replace(/D/g, '').length !== 10) {
+                errs.push('Enter a valid 10-digit phone number');
+            }
         } else if (step === 3) {
             if (!formData.price.trim()) errs.push('Please enter your asking price');
             else if (isNaN(Number(formData.price.replace(/,/g, '')))) errs.push('Enter a valid price');
@@ -228,6 +232,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                 location: formData.location,
                 district: formData.district,
                 state: formData.state,
+                contact_phone: formData.phone.replace(/D/g, ''),
                 images: imageUrls,
                 specs: {
                     year: formData.year,
@@ -308,7 +313,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                         </div>
 
                         {/* Brand and Model */}
-                        <div className="grid grid-cols-2 gap-6 mb-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Brand</label>
                                 <div className="relative">
@@ -338,7 +343,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Year of Purchase</label>
                                 <div className="relative">
@@ -383,10 +388,10 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                         <h2 className="text-2xl font-bold text-primary mb-2">Condition & Specs</h2>
                         <p className="text-gray-500 mb-8">Step 2 of 3: Technical details of your {config.singular.toLowerCase()}</p>
 
-                        <div className="grid grid-cols-3 gap-6 mb-8">
-                            <div className="col-span-2">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div className="md:col-span-2">
                                 <div className="skeuo-card rounded-2xl p-6">
-                                    <div className="grid grid-cols-2 gap-6 mb-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
                                         <div>
                                             <label className="block text-sm text-gray-600 mb-2">Year of Purchase</label>
                                             <div className="relative">
@@ -418,7 +423,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-6 mb-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
                                         <div>
                                             <label className="block text-sm text-gray-600 mb-2">{config.specDetailLabel}</label>
                                             <div className="relative">
@@ -490,7 +495,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                     </div>
 
                                     {/* Location Fields */}
-                                    <div className="grid grid-cols-2 gap-6 mt-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-6">
                                         <div>
                                             <label className="block text-sm text-gray-600 mb-2">Location / Village *</label>
                                             <div className="relative">
@@ -527,6 +532,22 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                                 <option key={s} value={s}>{s}</option>
                                             ))}
                                         </select>
+                                    </div>
+                                    <div className="mt-6">
+                                        <label className="block text-sm text-gray-600 mb-2">Phone Number *</label>
+                                        <div className="relative">
+                                            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">call</span>
+                                            <input
+                                                type="tel"
+                                                inputMode="numeric"
+                                                maxLength={10}
+                                                value={formData.phone}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value.replace(/D/g, '').slice(0, 10) }))}
+                                                placeholder="10-digit number"
+                                                className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border-2 border-transparent focus:border-primary outline-none"
+                                            />
+                                        </div>
+                                        <p className="mt-1 text-xs text-gray-400">Buyers will call this number.</p>
                                     </div>
                                 </div>
                             </div>
