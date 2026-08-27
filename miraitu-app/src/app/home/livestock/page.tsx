@@ -76,6 +76,23 @@ const categoryFilters = [
     { value: 'Others', key: 'livestock.others' },
 ];
 
+/**
+ * These ids drive the form; they are not what the database stores.
+ *
+ * `marketplace_listings.category` only accepts the buckets in migration 030,
+ * of which 'animals' is the livestock one — 'cattle' and 'poultry' were being
+ * rejected outright (23514). The bucket goes in `category`, the animal in
+ * `subcategory` using listingTypes.SUBCATEGORIES.animals so the Buy & Sell
+ * filters match, and the raw id survives in `specs`.
+ */
+const DB_SUBCATEGORY: Record<string, string> = {
+    cattle: 'Cow',
+    goats: 'Goat & Sheep',
+    poultry: 'Poultry',
+    fish: 'Fish & Aqua',
+    others: 'Other Livestock',
+};
+
 const sellCategories = [
     { id: 'cattle', name: 'Cattle', icon: '🐄' },
     { id: 'goats', name: 'Goats & Sheep', icon: '🐐' },
@@ -271,7 +288,9 @@ export default function LivestockPage() {
             const { error } = await createListing({
                 user_id: authUser.id,
                 listing_type: 'livestock',
-                category: selectedSellCategory,
+                // See DB_SUBCATEGORY — 'cattle' is not a value this column accepts.
+                category: 'animals',
+                subcategory: DB_SUBCATEGORY[selectedSellCategory] ?? 'Other Livestock',
                 title: sellForm.title,
                 description: sellForm.description,
                 price: priceNum,
@@ -281,11 +300,16 @@ export default function LivestockPage() {
                 state: sellForm.state,
                 images: imageUrls,
                 // Only the fields this category actually asked for, blanks dropped.
-                specs: Object.fromEntries(
-                    activeFields
-                        .map(f => [f.key, (sellForm.specs[f.key] ?? '').trim()])
-                        .filter(([, value]) => value !== '')
-                ),
+                specs: {
+                    // The page's own category id, kept because DB_SUBCATEGORY
+                    // is lossy: 'cattle' covers both cows and buffalo.
+                    livestock_type: selectedSellCategory,
+                    ...Object.fromEntries(
+                        activeFields
+                            .map(f => [f.key, (sellForm.specs[f.key] ?? '').trim()])
+                            .filter(([, value]) => value !== '')
+                    ),
+                },
             });
 
             if (error) {

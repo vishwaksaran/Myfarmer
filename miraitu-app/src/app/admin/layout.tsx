@@ -60,6 +60,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { href: '/admin', icon: 'dashboard', label: 'Dashboard' },
         { href: '/admin/shop-orders', icon: 'orders', label: 'Shop Orders', badge: unreadPaymentAlerts > 0 ? String(unreadPaymentAlerts) : '' },
         { href: '/admin/bookings', icon: 'assignment', label: 'Bookings' },
+        // Everything farmers post for sale or hire — the marketplace_listings
+        // table, which had no admin screen at all before this.
+        { href: '/admin/listings', icon: 'sell', label: 'Listings' },
         { href: '/admin/users', icon: 'group', label: 'Users' },
         { href: '/admin/crm/members', icon: 'badge', label: 'CRM Members' },
         { href: '/admin/crm/shops', icon: 'storefront', label: 'CRM Vendors' },

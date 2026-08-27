@@ -119,6 +119,29 @@ const CATEGORY_CONFIG: Record<string, CategoryConfig> = {
 
 const FALLBACK_CONFIG = CATEGORY_CONFIG.tractors;
 
+/**
+ * The page's category id is not what the database stores.
+ *
+ * `marketplace_listings.category` is constrained to one of
+ * machinery / vehicles / animals / land / crops / labour / services / other
+ * (migration 030). This form's ids — 'tractors', 'jcb', 'drones' — are none of
+ * those, so every submission was being rejected with a check-constraint
+ * violation (23514) after the photos had already uploaded.
+ *
+ * The bucket goes in `category`, the specific kind in `subcategory` using the
+ * vocabulary in listingTypes.SUBCATEGORIES.machinery so the Buy & Sell board's
+ * filters recognise it, and the raw page id is kept in `specs` so nothing is
+ * lost in translation.
+ */
+const DB_SUBCATEGORY: Record<string, string> = {
+    tractors: 'Tractor',
+    jcb: 'JCB & Excavation',
+    'small-machineries': 'Power Tools',
+    implements: 'Tiller & Plough',
+    harvesters: 'Harvester',
+    drones: 'Sprayers & Drones',
+};
+
 const brands: Record<string, string[]> = {
     tractors: ['Mahindra', 'John Deere', 'Swaraj', 'Sonalika', 'New Holland', 'Kubota', 'TAFE', 'Eicher'],
     jcb: ['JCB', 'L&T Komatsu', 'Caterpillar', 'Volvo', 'Tata Hitachi', 'CASE', 'Hyundai'],
@@ -223,7 +246,9 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
             const { error } = await createListing({
                 user_id: user.id,
                 listing_type: 'machinery',
-                category: selectedCategory,
+                // See DB_SUBCATEGORY — 'tractors' is not a value this column accepts.
+                category: 'machinery',
+                subcategory: DB_SUBCATEGORY[selectedCategory] ?? 'Other Machinery',
                 title: `${formData.brand} ${formData.model}`,
                 brand: formData.brand,
                 model: formData.model,
@@ -235,6 +260,10 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                 contact_phone: formData.phone.replace(/D/g, ''),
                 images: imageUrls,
                 specs: {
+                    // The page's own category id, kept because DB_SUBCATEGORY
+                    // is lossy in one direction: several ids can map onto the
+                    // same subcategory label.
+                    machinery_type: selectedCategory,
                     year: formData.year,
                     hp: formData.hp,
                     hoursUsed: formData.hoursUsed,

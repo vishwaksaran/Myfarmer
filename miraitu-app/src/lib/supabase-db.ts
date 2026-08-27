@@ -289,6 +289,8 @@ export interface ListingRecord {
     user_id: string;
     listing_type: 'machinery' | 'crops' | 'livestock';
     category: string;
+    /** Second level under category — added by migration 031. */
+    subcategory?: string;
     title: string;
     brand?: string;
     model?: string;
