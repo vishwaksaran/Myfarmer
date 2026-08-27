@@ -183,6 +183,19 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
             return;
         }
 
+        // On this board the submission is a lead for the team to follow up, so
+        // a name and a working number are the two things that must be there.
+        if (mode === 'labour') {
+            if (!contactName.trim()) {
+                setError('Add your name so we know who to ask for');
+                return;
+            }
+            if (contactPhone.replace(/D/g, '').length !== 10) {
+                setError('Enter a valid 10-digit contact number');
+                return;
+            }
+        }
+
         const trimmedCount = workerCount.trim();
         const numericCount = trimmedCount === '' ? null : Number(trimmedCount);
         if (numericCount !== null && (!Number.isInteger(numericCount) || numericCount < 1)) {
@@ -434,7 +447,9 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
                         name makes the call less awkward, so it is optional. */}
                     {mode === 'labour' && (
                         <div>
-                            <label htmlFor="listing-contact-name" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">Your Name</label>
+                            <label htmlFor="listing-contact-name" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">
+                                Your Name <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 id="listing-contact-name"
                                 type="text"
@@ -464,7 +479,7 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
                     {/* Contact */}
                     <div>
                         <label htmlFor="listing-phone" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">
-                            Contact number
+                            Contact number {mode === 'labour' && <span className="text-red-500">*</span>}
                         </label>
                         <input
                             id="listing-phone"

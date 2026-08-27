@@ -1,6 +1,20 @@
 -- ================================================
 -- LABOUR & SERVICES BOARD
 -- ------------------------------------------------
+-- SUPERSEDED, BUT KEPT ON PURPOSE.
+--
+-- Labour & Services was built as a third public board, then changed to a
+-- lead form before it shipped: /home/labour-services now writes to
+-- service_bookings (module 'farm-labour') and publishes nothing back to the
+-- app, so marketplace_listings never sees a 'labour' mode or a 'services'
+-- category row.
+--
+-- This file stays because it may already have been applied. Both statements
+-- only WIDEN what is permitted and nothing depends on them, so a database
+-- that ran it and one that did not behave identically. Do not "revert" it —
+-- dropping the wider constraint on a database where it was applied would be
+-- the only way to create real drift.
+-- ------------------------------------------------
 -- Adds a third listing board alongside Rent and Buy & Sell, for people
 -- offering their labour or a service (borewell drilling, fencing, drone
 -- spraying, harvest crews).

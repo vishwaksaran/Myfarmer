@@ -20,6 +20,9 @@ const MODULE_OPTIONS = [
     { value: 'fencing', label: 'Fencing' },
     { value: 'cctv', label: 'CCTV' },
     { value: 'protection', label: 'Protection' },
+    // Offers of work from /home/labour-services — people looking to be hired,
+    // not farmers booking something. Same table, opposite direction.
+    { value: 'farm-labour', label: 'Farm Labours' },
 ];
 
 const STATUS_OPTIONS = [

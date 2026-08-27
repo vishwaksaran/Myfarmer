@@ -321,11 +321,13 @@ export default function MobileHomeDashboard() {
                 />
 
                 {/* Row 2 — one wide banner, visually distinct from the squares */}
+                {/* No count: this tile opens a form, not a board. Nothing it
+                    collects is published back to the app, so there is no public
+                    tally to show. */}
                 <Tile
                     href="/home/labour-services"
                     label="Labour & Services"
                     caption="Borewell, fencing, drone spray, workers"
-                    count={counts.labour}
                     icon="engineering"
                     className="col-span-2 bg-gradient-to-r from-[#f3e5f5] to-[#ede0f7] dark:from-[#2a1a2e] dark:to-[#221528]"
                     accent="text-[#7b1fa2] dark:text-[#ce93d8]"

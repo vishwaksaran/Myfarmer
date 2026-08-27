@@ -42,7 +42,7 @@ export default function LandPage() {
     const { t, lang } = useLanguage();
     const tp = (s?: string) => translatePage(lang, s);
     return (
-        <div className="px-6 py-8">
+        <div className="px-4 md:px-6 py-8">
             <div className="mx-auto max-w-[1280px]">
                 {/* Hero Section */}
                 <div className="mb-12 text-center md:text-left">
@@ -60,35 +60,41 @@ export default function LandPage() {
                     </p>
                 </div>
 
-                {/* Service Cards */}
-                <div className="grid md:grid-cols-3 gap-6 mb-16">
+{/* Service Cards — three across at every width.
+                    Below md these were one full-width card each, roughly a
+                    screen tall, so reaching "Lease / Rent" meant scrolling past
+                    the other two. Three tiles fit on one row instead; the
+                    marketing badge, the blurb and the "Explore Options" row are
+                    desktop-only because at ~120px wide none of them are
+                    legible, and the whole tile is the link regardless. */}
+                <div className="grid grid-cols-3 gap-2.5 md:gap-6 mb-10 md:mb-16">
                     {landServices.map((service) => (
                         <Link
                             key={service.nameKey}
                             href={service.href}
-                            className={`group p-8 rounded-[2rem] bg-gradient-to-br ${service.bgGradient} border border-black/5 dark:border-white/10 hover:shadow-xl transition-all hover:-translate-y-1 relative overflow-hidden`}
+                            className={`group flex flex-col items-center text-center md:block md:text-left p-3 md:p-8 rounded-2xl md:rounded-[2rem] bg-gradient-to-br ${service.bgGradient} border border-black/5 dark:border-white/10 hover:shadow-xl transition-all md:hover:-translate-y-1 relative overflow-hidden`}
                         >
-                            <div className="absolute top-0 right-0 p-32 bg-white/40 dark:bg-black/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                            <div className="hidden md:block absolute top-0 right-0 p-32 bg-white/40 dark:bg-black/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 
-                            <div className="flex items-start justify-between mb-6 relative z-10">
-                                <div className={`w-16 h-16 ${service.iconBg} rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300`}>
-                                    <span className="material-symbols-outlined text-3xl">{service.icon}</span>
+                            <div className="flex flex-col items-center md:flex-row md:items-start md:justify-between mb-2 md:mb-6 relative z-10 w-full">
+                                <div className={`w-11 h-11 md:w-16 md:h-16 ${service.iconBg} rounded-xl md:rounded-2xl flex items-center justify-center shadow-sm md:group-hover:scale-110 transition-transform duration-300`}>
+                                    <span className="material-symbols-outlined text-2xl md:text-3xl">{service.icon}</span>
                                 </div>
                                 {service.badge && (
-                                    <span className={`px-3 py-1 rounded-full text-white text-xs font-bold uppercase tracking-wider shadow-md ${service.badgeColor}`}>
+                                    <span className={`hidden md:inline-block px-3 py-1 rounded-full text-white text-xs font-bold uppercase tracking-wider shadow-md ${service.badgeColor}`}>
                                         {tp(service.badge)}
                                     </span>
                                 )}
                             </div>
 
-                            <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-3 group-hover:text-primary transition-colors">
+                            <h3 className="text-xs md:text-2xl font-bold md:font-black text-gray-900 dark:text-white leading-tight md:mb-3 group-hover:text-primary transition-colors">
                                 {t(service.nameKey)}
                             </h3>
-                            <p className="text-gray-600 dark:text-gray-300 font-medium leading-relaxed mb-6">
+                            <p className="hidden md:block text-gray-600 dark:text-gray-300 font-medium leading-relaxed mb-6">
                                 {tp(service.description)}
                             </p>
 
-                            <div className="flex items-center text-primary font-bold tracking-wide text-sm uppercase group-hover:gap-2 transition-all">
+                            <div className="hidden md:flex items-center text-primary font-bold tracking-wide text-sm uppercase group-hover:gap-2 transition-all">
                                 {tp('Explore Options')}
                                 <span className="material-symbols-outlined text-lg ml-1">arrow_forward</span>
                             </div>
