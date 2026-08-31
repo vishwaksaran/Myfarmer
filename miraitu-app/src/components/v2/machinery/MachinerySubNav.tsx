@@ -22,8 +22,12 @@ export default function MachinerySubNav({ category, currentAction }: MachinerySu
     const categoryLabel = categoryLabels[category] || category;
     const basePath = `/home/machinery/${category}`;
 
-    // New and Rent are gated by the same flags as the machinery category modal,
-    // so the tab strip can never offer an action the modal has hidden.
+    // Selling is not a tab any more — it is the floating "Post an Ad" button,
+    // which posts to the Buy & Sell marketplace rather than to this section's
+    // own sell form. The /sell routes still work by direct URL.
+    //
+    // New and Rent stay behind their feature flags, so the strip can never
+    // offer an action the rest of the section has hidden.
     const navItems = ([
         {
             key: 'new' as const,
@@ -48,18 +52,6 @@ export default function MachinerySubNav({ category, currentAction }: MachinerySu
             activeRing: 'ring-emerald-500',
             activeBg: 'bg-emerald-50 dark:bg-emerald-900/30',
             activeText: 'text-emerald-700 dark:text-emerald-300',
-        },
-        {
-            key: 'sell' as const,
-            label: `Sell Used ${categoryLabel}`,
-            shortLabel: 'Sell Used',
-            href: `${basePath}/sell`,
-            icon: 'sell',
-            color: 'bg-orange-500',
-            hoverBg: 'hover:bg-orange-50 dark:hover:bg-orange-900/20',
-            activeRing: 'ring-orange-500',
-            activeBg: 'bg-orange-50 dark:bg-orange-900/30',
-            activeText: 'text-orange-700 dark:text-orange-300',
         },
         {
             key: 'rent' as const,
@@ -94,7 +86,10 @@ export default function MachinerySubNav({ category, currentAction }: MachinerySu
                 <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{categoryLabel}</span>
             </div>
 
-            {/* Navigation Tabs */}
+            {/* Navigation Tabs. With New and Rent flagged off only Buy Used is
+                left, and a strip of one tab is a label pretending to be a
+                choice — the heading below it already says where you are. */}
+            {navItems.length > 1 && (
             <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 bg-gray-100 dark:bg-gray-800/60 rounded-2xl overflow-x-auto">
                 {navItems.map((item) => {
                     const isActive = item.key === currentAction;
@@ -122,6 +117,7 @@ export default function MachinerySubNav({ category, currentAction }: MachinerySu
                     );
                 })}
             </div>
+            )}
         </div>
     );
 }

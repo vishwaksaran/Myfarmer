@@ -22,6 +22,14 @@ interface ListingFormModalProps {
     mode: ListingMode;
     /** Pass a listing to edit it; omit to post a new one. */
     editing?: Listing | null;
+    /**
+     * Where a new ad should open. The machinery and livestock pages send people
+     * here already knowing what they are selling, so the form starts on that
+     * category and type instead of making them pick it a second time. Ignored
+     * when editing, and ignored if the value is not one this board offers.
+     */
+    initialCategory?: ListingCategory | null;
+    initialSubcategory?: string | null;
     onClose: () => void;
     onSubmit: (input: ListingInput) => Promise<{ success: boolean; error?: string }>;
 }
@@ -35,7 +43,7 @@ const MAX_PHOTOS = 6;
  * request rather than megabytes of base64 — and anything uploaded for an ad
  * that is never published gets deleted instead of orphaned.
  */
-export default function ListingFormModal({ isOpen, mode, editing, onClose, onSubmit }: ListingFormModalProps) {
+export default function ListingFormModal({ isOpen, mode, editing, initialCategory, initialSubcategory, onClose, onSubmit }: ListingFormModalProps) {
     const { location } = useAppLocation();
     const priceUnits =
         mode === 'labour' ? LABOUR_PRICE_UNITS : mode === 'rent' ? RENT_PRICE_UNITS : SALE_PRICE_UNITS;
@@ -44,6 +52,14 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
     // Each board opens on its own first category; 'machinery' is not one of
     // the Labour & Services board's two.
     const firstCategory = categories[0];
+    /** Where a new ad starts — the caller's category when this board has it. */
+    const startCategory =
+        initialCategory && categories.includes(initialCategory) ? initialCategory : firstCategory;
+    /** Only a type that actually belongs to that category; anything else is dropped. */
+    const startSubcategory =
+        initialSubcategory && subcategoryOptions(startCategory).includes(initialSubcategory)
+            ? initialSubcategory
+            : '';
     const [category, setCategory] = useState<ListingCategory>(firstCategory);
     const [subcategory, setSubcategory] = useState('');
     const [title, setTitle] = useState('');
@@ -105,8 +121,8 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
             // category change overwrite it.
             setUnitTouched(true);
         } else {
-            setCategory(firstCategory);
-            setSubcategory('');
+            setCategory(startCategory);
+            setSubcategory(startSubcategory);
             setTitle('');
             setDescription('');
             setBrand('');
@@ -115,7 +131,7 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
             setWorkType('');
             setWorkerCount('');
             setContactName('');
-            setPriceUnit(defaultPriceUnit(mode, firstCategory));
+            setPriceUnit(defaultPriceUnit(mode, startCategory));
             setNegotiable(false);
             setLocationText(location?.address || '');
             setContactPhone('');
@@ -126,7 +142,7 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
         mediaPathsRef.current.clear();
         // priceUnits is derived from `mode` and is stable for a given board.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isOpen, editing, location?.address, firstCategory]);
+    }, [isOpen, editing, location?.address, startCategory, startSubcategory]);
 
     if (!isOpen) return null;
 

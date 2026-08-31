@@ -1,12 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import MachineryListing from '@/components/v2/machinery/MachineryListing';
-import SellMachineryForm from '@/components/v2/machinery/SellMachineryForm';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { MACHINERY_NEW_ENABLED, MACHINERY_RENT_ENABLED } from '@/lib/feature-flags';
 
 // Category data with real images
 const categories = [
@@ -73,74 +69,20 @@ const categories = [
 ];
 
 /**
- * The machinery shown on this page.
+ * This page is the category picker, and only that.
  *
- * Empty on purpose. This used to hold seeded demo tractors — a Mahindra Yuvo, a
- * JCB 3DX, a Kubota harvester — with invented prices, which read to a farmer as
- * real stock Miraitu was offering. Real machinery is posted by farmers on the
- * Buy & Sell board, so until this page reads from there it shows an empty state
- * and a way to post, rather than a showroom that does not exist.
+ * It used to carry an "Available Machinery" panel below the cards — a filter
+ * sidebar, a grid/list toggle, a results count and an inline sell form — all
+ * driven by a `featuredMachinery` array that was deliberately left empty once
+ * its seeded demo tractors were removed. So it permanently read "(0 results)"
+ * with filters that filtered nothing and a toggle over an empty grid.
  *
- * The filters, the category cards and the grid/list toggle are all untouched
- * and will work the moment this array has entries again.
+ * The real listings live one tap away, per category, at
+ * /home/machinery/<category>/buy, which has its own filters and its own
+ * "Post an Ad" button.
  */
-interface FeaturedMachinery {
-    id: number;
-    name: string;
-    category: string;
-    specs: string;
-    price: string;
-    image: string;
-    brand: string;
-    hp: string;
-    type: string;
-    /** MachineryListing's own item type is open-ended; match it so entries
-     *  added here stay assignable to the component. */
-    [key: string]: string | number | boolean | string[] | Record<string, unknown> | undefined;
-}
-
-const featuredMachinery: FeaturedMachinery[] = [];
-
-
 export default function MachineryPage() {
     const { t } = useLanguage();
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-    const [hpRange, setHpRange] = useState([0, 1000]);
-    const [selectedBrand, setSelectedBrand] = useState('All Brands');
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-    const [modalCategory, setModalCategory] = useState<typeof categories[0] | null>(null);
-    /**
-     * "Post a Machinery" opens the sell form on this page rather than sending
-     * the seller to another board. SellMachineryForm fixes its category at
-     * render — every other caller is a /home/machinery/<category>/sell page —
-     * so this page asks for the category first and keys the form on it.
-     */
-    const [showSellForm, setShowSellForm] = useState(false);
-    const [sellCategory, setSellCategory] = useState('');
-    const [showFilterModal, setShowFilterModal] = useState(false);
-
-    // Extract unique brands from data
-    const allBrands = Array.from(new Set(featuredMachinery.map((m) => m.brand))).sort();
-
-    // Internal English keys used for filter logic; translated only at render time
-    const categoryMap: Record<string, string[]> = {
-        Tractors: ['Tractor'],
-        Harvesters: ['Harvester'],
-        JCB: ['JCB'],
-        'Small Machineries': ['Small Machinery'],
-        Implements: ['Implement'],
-        Drones: ['Drone'],
-    };
-
-    // Translated labels for each filter key
-    const filterCategoryLabel: Record<string, string> = {
-        Tractors: t('machineryPage.filter.tractors'),
-        Harvesters: t('machineryPage.filter.harvesters'),
-        JCB: t('machineryPage.filter.jcb'),
-        'Small Machineries': t('machineryPage.filter.smallMachineries'),
-        Implements: t('machineryPage.filter.implements'),
-        Drones: t('machineryPage.filter.drones'),
-    };
 
     // Translated category card titles/subtitles keyed by category id
     const catTitle: Record<string, string> = {
@@ -160,79 +102,6 @@ export default function MachineryPage() {
         drones: t('machineryPage.cat.agriDronesSub'),
     };
 
-    const filterCategories = Object.keys(categoryMap);
-
-    const toggleCategory = (cat: string) => {
-        setSelectedCategories((prev) =>
-            prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
-        );
-    };
-
-    // Apply filters
-    const filteredMachinery = featuredMachinery.filter((item) => {
-        // Category filter
-        if (selectedCategories.length > 0) {
-            const allowedCategories = selectedCategories.flatMap((c) => categoryMap[c] || []);
-            if (!allowedCategories.includes(item.category)) return false;
-        }
-        // HP filter
-        if (item.hp) {
-            const hp = parseFloat(item.hp);
-            if (!isNaN(hp) && (hp < hpRange[0] || hp > hpRange[1])) return false;
-        }
-        // Brand filter
-        if (selectedBrand !== 'All Brands' && item.brand !== selectedBrand) return false;
-        return true;
-    });
-
-    // Manage overflow and hide other elements when modal is open
-    useEffect(() => {
-        if (showFilterModal) {
-            document.documentElement.style.overflow = 'hidden';
-            document.body.style.overflow = 'hidden';
-            // Hide header
-            const header = document.querySelector('header');
-            if (header) header.style.display = 'none';
-            // Hide bottom nav
-            const bottomNav = document.querySelector('nav');
-            if (bottomNav) bottomNav.style.display = 'none';
-
-            // Hide WhatsApp icon with specific z-50 class
-            const whatsappIcon = document.querySelector('.fixed.z-50.flex.flex-col.items-end.gap-4');
-            if (whatsappIcon) {
-                (whatsappIcon as any).style.zIndex = '-1';
-                (whatsappIcon as any).style.pointerEvents = 'none';
-            }
-            // Also target by data attribute if available
-            const whatsappByHref = document.querySelector('a[href*="wa.me"]');
-            if (whatsappByHref) {
-                (whatsappByHref as any).style.zIndex = '-1';
-                (whatsappByHref as any).style.pointerEvents = 'none';
-            }
-        } else {
-            document.documentElement.style.overflow = '';
-            document.body.style.overflow = '';
-            // Show header
-            const header = document.querySelector('header');
-            if (header) header.style.display = '';
-            // Show bottom nav
-            const bottomNav = document.querySelector('nav');
-            if (bottomNav) bottomNav.style.display = '';
-
-            // Restore WhatsApp icon z-index
-            const whatsappIcon = document.querySelector('.fixed.z-50.flex.flex-col.items-end.gap-4');
-            if (whatsappIcon) {
-                (whatsappIcon as any).style.zIndex = '';
-                (whatsappIcon as any).style.pointerEvents = '';
-            }
-            // Restore by data attribute if available
-            const whatsappByHref = document.querySelector('a[href*="wa.me"]');
-            if (whatsappByHref) {
-                (whatsappByHref as any).style.zIndex = '';
-                (whatsappByHref as any).style.pointerEvents = '';
-            }
-        }
-    }, [showFilterModal]);
 
     return (
         <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-[#121811] dark:text-[#f9fbf9] transition-colors duration-300">
@@ -250,13 +119,6 @@ export default function MachineryPage() {
                                 </p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 min-w-0">
-                                <Link
-                                    href="/home/machinery/compare"
-                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors shrink-0"
-                                >
-                                    <span className="material-symbols-outlined text-lg">compare_arrows</span>
-                                    {t('machineryPage.compare')}
-                                </Link>
                                 <NearbyLocation />
                             </div>
                         </div>
@@ -264,15 +126,21 @@ export default function MachineryPage() {
                         {/* Category Cards */}
                         <div className="pb-2">
                             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-                                {/* Every category opens the action modal. Tractors used to link
-                                    straight to /home/machinery/tractors — that landing page is
-                                    temporarily bypassed, so it behaves like JCBs now. */}
+                                {/* Every category goes straight to its used listings.
+                                    This used to open a modal asking "what would you like
+                                    to do?", but with New and Rent behind flags it only
+                                    ever offered Buy and Sell — a whole extra tap to pick
+                                    between browsing (what people came for) and posting
+                                    (now the floating button on the listings page).
+                                    Tractors used to link to /home/machinery/tractors;
+                                    that landing page is bypassed, so it behaves like the
+                                    rest. */}
                                 {categories.map((category) => {
                                     return (
-                                        <button
+                                        <Link
                                             key={category.id}
-                                            onClick={() => setModalCategory(category)}
-                                            className="group relative aspect-[4/3] md:aspect-[4/5] w-full overflow-hidden rounded-2xl border border-black/15 bg-gray-200 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                                            href={`${category.path}/buy`}
+                                            className="group relative aspect-[4/3] md:aspect-[4/5] w-full overflow-hidden rounded-2xl border border-black/15 bg-gray-200 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl block"
                                         >
                                             <img
                                                 src={category.image}
@@ -289,386 +157,13 @@ export default function MachineryPage() {
                                                     {catSubtitle[category.id] ?? `${category.count}+ units available`}
                                                 </p>
                                             </div>
-                                        </button>
+                                        </Link>
                                     );
                                 })}
                             </div>
                         </div>
                     </div>
 
-                    {/* Category Action Modal */}
-                    {modalCategory && (
-                        <div
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                            onClick={() => setModalCategory(null)}
-                            style={{ animation: 'fadeIn 0.2s ease-out' }}
-                        >
-                            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-                            <div
-                                className="relative bg-white dark:bg-[#1a231a] rounded-3xl max-w-md w-full shadow-2xl flex flex-col"
-                                style={{ maxHeight: '90vh', animation: 'zoomIn95 0.3s ease-out' }}
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                {/* Modal Header with Image - fixed height */}
-                                <div className="relative h-32 overflow-hidden rounded-t-3xl shrink-0">
-                                    <img
-                                        src={modalCategory.image}
-                                        alt={modalCategory.name}
-                                        className="w-full h-full object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-                                    <button
-                                        onClick={() => setModalCategory(null)}
-                                        className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/30 rounded-full p-1.5 transition-colors"
-                                    >
-                                        <span className="material-symbols-outlined text-xl">close</span>
-                                    </button>
-                                    <div className="absolute bottom-4 left-6">
-                                        <h3 className="text-2xl font-black text-white">{modalCategory.name}</h3>
-                                        <p className="text-white/70 text-sm">{modalCategory.count} listings available</p>
-                                    </div>
-                                </div>
-
-                                {/* Action Options - scrollable */}
-                                <div className="overflow-y-auto p-4 pb-6">
-                                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">{t('machineryPage.whatToDo')}</p>
-                                    <div className="space-y-2">
-
-                                        {MACHINERY_NEW_ENABLED && (
-                                        <Link
-                                            href={`${modalCategory.path}/new`}
-                                            onClick={() => setModalCategory(null)}
-                                            className="flex items-center gap-3 p-3 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group/opt"
-                                        >
-                                            <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center shrink-0">
-                                                <span className="material-symbols-outlined text-white text-xl">add_circle</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="font-bold text-gray-900 dark:text-white text-sm">{t('machineryPage.modal.new')} {catTitle[modalCategory.id] ?? modalCategory.name}</p>
-                                                <p className="text-xs text-gray-500">{t('machineryPage.browseNew')}</p>
-                                            </div>
-                                            <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-blue-500 group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
-                                        </Link>
-                                        )}
-
-                                        <Link
-                                            href={`${modalCategory.path}/buy`}
-                                            onClick={() => setModalCategory(null)}
-                                            className="flex items-center gap-3 p-3 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all group/opt"
-                                        >
-                                            <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shrink-0">
-                                                <span className="material-symbols-outlined text-white text-xl">shopping_cart</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="font-bold text-gray-900 dark:text-white text-sm">{t('machineryPage.modal.buyUsed')} {catTitle[modalCategory.id] ?? modalCategory.name}</p>
-                                                <p className="text-xs text-gray-500">{t('machineryPage.findPreowned')}</p>
-                                            </div>
-                                            <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-emerald-500 group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
-                                        </Link>
-
-                                        <Link
-                                            href={`${modalCategory.path}/sell`}
-                                            onClick={() => setModalCategory(null)}
-                                            className="flex items-center gap-3 p-3 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all group/opt"
-                                        >
-                                            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center shrink-0">
-                                                <span className="material-symbols-outlined text-white text-xl">sell</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="font-bold text-gray-900 dark:text-white text-sm">{t('machineryPage.modal.sellUsed')} {catTitle[modalCategory.id] ?? modalCategory.name}</p>
-                                                <p className="text-xs text-gray-500">{t('machineryPage.listEquip')}</p>
-                                            </div>
-                                            <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-orange-500 group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
-                                        </Link>
-
-                                        {MACHINERY_RENT_ENABLED && (
-                                        <Link
-                                            href={`${modalCategory.path}/rent`}
-                                            onClick={() => setModalCategory(null)}
-                                            className="flex items-center gap-3 p-3 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary hover:bg-primary/5 dark:hover:bg-primary/10 transition-all group/opt"
-                                        >
-                                            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shrink-0">
-                                                <span className="material-symbols-outlined text-white text-xl">handshake</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="font-bold text-gray-900 dark:text-white text-sm">{t('machineryPage.modal.rent')} {catTitle[modalCategory.id] ?? modalCategory.name}</p>
-                                                <p className="text-xs text-gray-500">{t('machineryPage.hire')}</p>
-                                            </div>
-                                            <span className="material-symbols-outlined text-gray-400 group-hover/opt:text-gray-500 group-hover/opt:translate-x-1 transition-all">arrow_forward</span>
-                                        </Link>
-                                        )}
-
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-
-                    {/* Sell form, in place of the browse grid. */}
-                    {showSellForm ? (
-                    <div className="max-w-3xl mx-auto">
-                        <button
-                            onClick={() => { setShowSellForm(false); setSellCategory(''); }}
-                            className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-gray-500 hover:text-primary transition-colors"
-                        >
-                            <span className="material-symbols-outlined text-lg">arrow_back</span>
-                            Back to machinery
-                        </button>
-
-                        <div className="mb-5 bg-white dark:bg-[#1a231a] rounded-lg md:rounded-2xl p-4 md:p-6 border border-gray-100 dark:border-gray-800">
-                            <label htmlFor="machinery-sell-category" className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">
-                                Select Category *
-                            </label>
-                            <div className="relative">
-                                <select
-                                    id="machinery-sell-category"
-                                    value={sellCategory}
-                                    onChange={(e) => setSellCategory(e.target.value)}
-                                    className="w-full px-3 md:px-4 py-2 md:py-3 pr-9 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base appearance-none"
-                                >
-                                    <option value="">Select</option>
-                                    {categories.map((c) => (
-                                        <option key={c.id} value={c.id}>{c.name}</option>
-                                    ))}
-                                </select>
-                                <span className="material-symbols-outlined pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xl">expand_more</span>
-                            </div>
-                            {!sellCategory && (
-                                <p className="mt-2 text-xs text-gray-400">
-                                    Pick what you are selling — the form asks for different details per category.
-                                </p>
-                            )}
-                        </div>
-
-                        {/* key: the form reads its category once, at mount, so it has
-                            to be rebuilt when the seller changes their mind. */}
-                        {sellCategory && <SellMachineryForm key={sellCategory} category={sellCategory} />}
-                    </div>
-                    ) : (
-                    <>
-                    {/* Main Content Grid */}
-                    <div className="flex gap-6 md:gap-8">
-                        {/* Filters Sidebar - Hidden on Mobile */}
-                        <div className="hidden md:block md:w-64 shrink-0">
-                            <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 sticky top-32">
-                                <h3 className="font-bold text-gray-900 dark:text-white mb-4">{t('machineryPage.refineSearch')}</h3>
-
-                                {/* Category Filter */}
-                                <div className="mb-6">
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">{t('machineryPage.category')}</label>
-                                    <div className="space-y-2">
-                                        {filterCategories.map((cat) => (
-                                            <label key={cat} className="flex items-center gap-2 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedCategories.includes(cat)}
-                                                    onChange={() => toggleCategory(cat)}
-                                                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                                />
-                                                <span className="text-sm text-gray-700 dark:text-gray-300">{filterCategoryLabel[cat] ?? cat}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* HP Range Filter */}
-                                <div className="mb-6">
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">{t('machineryPage.hpRange')}</label>
-                                    <input
-                                        type="range"
-                                        min="0"
-                                        max="1000"
-                                        value={hpRange[1]}
-                                        onChange={(e) => setHpRange([0, Number(e.target.value)])}
-                                        className="w-full accent-primary"
-                                    />
-                                    <div className="flex justify-between text-xs text-gray-500 mt-1">
-                                        <span>{hpRange[0]} HP</span>
-                                        <span>{hpRange[1]} HP</span>
-                                    </div>
-                                </div>
-
-                                {/* Brand Filter */}
-                                <div className="mb-6">
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">{t('machineryPage.brand')}</label>
-                                    <select
-                                        value={selectedBrand}
-                                        onChange={(e) => setSelectedBrand(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm"
-                                    >
-                                        <option>{t('machineryPage.allBrands')}</option>
-                                        {allBrands.map((b) => <option key={b} value={b}>{b}</option>)}
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Machinery Listings */}
-                        <div className="flex-1 min-w-0">
-                            {/* Header */}
-                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-4 md:mb-6">
-                                <div className="min-w-0">
-                                    <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">
-                                        {t('machineryPage.availableMachinery')}
-                                    </h2>
-                                    <p className="text-xs md:text-sm text-gray-500">({t('machineryPage.results').replace('{count}', String(filteredMachinery.length))})</p>
-                                </div>
-
-                                <div className="flex items-center gap-2 md:gap-4 shrink-0">
-                                    {/* Filter Button - Mobile Only */}
-                                    <button
-                                        onClick={() => setShowFilterModal(true)}
-                                        className="md:hidden flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
-                                    >
-                                        <span className="material-symbols-outlined text-base md:text-lg">tune</span>
-                                        <span className="text-xs md:text-sm">{t('machineryPage.filter')}</span>
-                                    </button>
-
-                                    {/* View Toggle */}
-                                    <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-                                        <button
-                                            onClick={() => setViewMode('grid')}
-                                            className={`p-2 rounded-md transition-colors ${viewMode === 'grid'
-                                                ? 'bg-white dark:bg-gray-700 shadow-sm'
-                                                : 'text-gray-500 hover:text-gray-700'
-                                                }`}
-                                        >
-                                            <span className="material-symbols-outlined text-lg">grid_view</span>
-                                        </button>
-                                        <button
-                                            onClick={() => setViewMode('list')}
-                                            className={`p-2 rounded-md transition-colors ${viewMode === 'list'
-                                                ? 'bg-white dark:bg-gray-700 shadow-sm'
-                                                : 'text-gray-500 hover:text-gray-700'
-                                                }`}
-                                        >
-                                            <span className="material-symbols-outlined text-lg">view_list</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {filteredMachinery.length === 0 ? (
-                                /* Matches the Buy & Sell board's empty state, because
-                                   that is where the button sends you — same shape, so
-                                   arriving there does not feel like a different app. */
-                                <div className="text-center py-16 bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800">
-                                    <span className="material-symbols-outlined text-5xl text-gray-300 mb-3">agriculture</span>
-                                    <p className="text-gray-500 font-medium px-6">
-                                        No machinery here yet — be the first to post one.
-                                    </p>
-                                    <button
-                                        onClick={() => setShowSellForm(true)}
-                                        className="mt-4 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#22c33d] text-white text-sm font-bold hover:brightness-110"
-                                    >
-                                        <span className="material-symbols-outlined text-lg">add</span>
-                                        Post a Machinery
-                                    </button>
-                                </div>
-                            ) : (
-                                <MachineryListing
-                                    items={filteredMachinery}
-                                    type="new"
-                                    viewMode={viewMode}
-                                />
-                            )}
-                        </div>
-                    </div>
-                    </>
-                    )}
-
-                    {/* Filter Modal - Mobile Only */}
-                    {showFilterModal && (
-                        <div
-                            className="fixed inset-0 z-[9999] flex items-start justify-center pt-[2rem] p-4 md:hidden bg-black/40 backdrop-blur-sm overflow-y-auto"
-                            onClick={() => setShowFilterModal(false)}
-                        >
-                            <div
-                                className="relative w-full max-w-md bg-white dark:bg-[#1a231a] rounded-3xl p-6 shadow-2xl"
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                {/* Modal Header */}
-                                <div className="flex items-center justify-between mb-6">
-                                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t('machineryPage.refineSearch')}</h2>
-                                    <button
-                                        onClick={() => setShowFilterModal(false)}
-                                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                                    >
-                                        <span className="material-symbols-outlined">close</span>
-                                    </button>
-                                </div>
-
-                                {/* Category Filter */}
-                                <div className="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">{t('machineryPage.category')}</label>
-                                    <div className="space-y-3">
-                                        {filterCategories.map((cat) => (
-                                            <label key={cat} className="flex items-center gap-3 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedCategories.includes(cat)}
-                                                    onChange={() => toggleCategory(cat)}
-                                                    className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
-                                                />
-                                                <span className="text-sm text-gray-700 dark:text-gray-300">{filterCategoryLabel[cat] ?? cat}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* HP Range Filter */}
-                                <div className="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">{t('machineryPage.hpRange')}</label>
-                                    <input
-                                        type="range"
-                                        min="0"
-                                        max="1000"
-                                        value={hpRange[1]}
-                                        onChange={(e) => setHpRange([0, Number(e.target.value)])}
-                                        className="w-full accent-primary"
-                                    />
-                                    <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-3">
-                                        <span className="font-semibold">{hpRange[0]} HP</span>
-                                        <span className="font-semibold">{hpRange[1]} HP</span>
-                                    </div>
-                                </div>
-
-                                {/* Brand Filter */}
-                                <div className="mb-8">
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">{t('machineryPage.brand')}</label>
-                                    <select
-                                        value={selectedBrand}
-                                        onChange={(e) => setSelectedBrand(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm"
-                                    >
-                                        <option>{t('machineryPage.allBrands')}</option>
-                                        {allBrands.map((b) => <option key={b} value={b}>{b}</option>)}
-                                    </select>
-                                </div>
-
-                                {/* Action Buttons */}
-                                <div className="flex gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-                                    <button
-                                        onClick={() => {
-                                            setSelectedCategories([]);
-                                            setHpRange([0, 1000]);
-                                            setSelectedBrand('All Brands');
-                                        }}
-                                        className="flex-1 px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                                    >
-                                        {t('machineryPage.reset')}
-                                    </button>
-                                    <button
-                                        onClick={() => setShowFilterModal(false)}
-                                        className="flex-1 px-4 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-colors"
-                                    >
-                                        {t('machineryPage.applyFilters')}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
 
             </div>

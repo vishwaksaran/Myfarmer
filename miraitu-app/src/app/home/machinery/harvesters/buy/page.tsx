@@ -1,69 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import CompareModal from '@/components/v2/machinery/CompareModal';
 import CompareSection from '@/components/v2/machinery/CompareSection';
 import MachinerySubNav from '@/components/v2/machinery/MachinerySubNav';
-
-const usedHarvesters = [
-    {
-        id: 1,
-        name: 'Preet 949',
-        category: 'Harvester',
-        specs: '91 HP • Self-Propelled • Excellent Condition',
-        price: '₹8,50,000',
-        image: 'https://images.unsplash.com/photo-1635174815612-fd9636f70146?w=400&h=300&fit=crop',
-        brand: 'Preet',
-        hp: '91',
-        year: '2021',
-        location: 'Ludhiana, Punjab',
-        condition: 'Excellent',
-    },
-    {
-        id: 2,
-        name: 'Dashmesh 9100',
-        category: 'Harvester',
-        specs: '75 HP • Low Hours • Single Owner',
-        price: '₹7,25,000',
-        image: 'https://images.unsplash.com/photo-1602867741746-6df80f40b3f6?w=400&h=300&fit=crop',
-        brand: 'Dashmesh',
-        hp: '75',
-        year: '2020',
-        location: 'Karnal, Haryana',
-        condition: 'Good',
-    },
-    {
-        id: 3,
-        name: 'Kubota DC-68G',
-        category: 'Harvester',
-        specs: '68 HP • 4-Row • Well Maintained',
-        price: '₹9,80,000',
-        image: 'https://images.unsplash.com/photo-1635174815612-fd9636f70146?w=400&h=300&fit=crop',
-        brand: 'Kubota',
-        hp: '68',
-        year: '2022',
-        location: 'Bathinda, Punjab',
-        condition: 'Excellent',
-    },
-    {
-        id: 4,
-        name: 'New Holland CSX 7060',
-        category: 'Harvester',
-        specs: '90 HP • Multi-Threshing • Fair Condition',
-        price: '₹6,50,000',
-        image: 'https://images.unsplash.com/photo-1602867741746-6df80f40b3f6?w=400&h=300&fit=crop',
-        brand: 'New Holland',
-        hp: '90',
-        year: '2018',
-        location: 'Amritsar, Punjab',
-        condition: 'Fair',
-    },
-];
+import PostMachineryAdButton from '@/components/v2/machinery/PostMachineryAdButton';
+import { fetchMachineryListings, type MachineryCard } from '@/lib/machinery-listings';
 
 export default function BuyHarvestersPage() {
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
+    const [listings, setListings] = useState<MachineryCard[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    // Real ads posted through this category's sell form. They also appear
+    // on the Buy & Sell board under Machinery — same rows, narrowed here to
+    // this one subcategory.
+    useEffect(() => {
+        let cancelled = false;
+        fetchMachineryListings('harvesters', 'Harvester')
+            .then(rows => { if (!cancelled) setListings(rows); })
+            .finally(() => { if (!cancelled) setLoading(false); });
+        return () => { cancelled = true; };
+    }, []);
 
     const toggleSelection = (id: number) => {
         setSelectedItems(prev => {
@@ -77,32 +37,32 @@ export default function BuyHarvestersPage() {
         setSelectedItems(prev => prev.filter((_, i) => i !== index));
     };
 
-    const compareItems = usedHarvesters.filter(item => selectedItems.includes(item.id));
+    const compareItems = listings.filter(item => selectedItems.includes(item.id));
 
     return (
-        <div className="px-6">
+        <div className="px-3 sm:px-6">
             <div className="mx-auto max-w-[1280px]">
                 <MachinerySubNav category="harvesters" currentAction="buy" />
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Buy Used Harvesters</h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Buy Used Harvesters</h1>
                     <p className="text-gray-500">Browse pre-owned combine harvesters and reaper machines from trusted sellers.</p>
                 </div>
 
-                <div className="flex items-center gap-4 mb-8">
-                    <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
+                <div className="grid grid-cols-2 gap-3 mb-6 sm:mb-8 sm:flex sm:flex-wrap sm:items-center sm:gap-4">
+                    <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
                         <option>All Brands</option>
                         <option>Preet</option>
                         <option>Dashmesh</option>
                         <option>Kubota</option>
                         <option>New Holland</option>
                     </select>
-                    <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
+                    <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
                         <option>Condition</option>
                         <option>Excellent</option>
                         <option>Good</option>
                         <option>Fair</option>
                     </select>
-                    <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
+                    <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
                         <option>Year</option>
                         <option>2024</option>
                         <option>2023</option>
@@ -111,7 +71,7 @@ export default function BuyHarvestersPage() {
                         <option>2020</option>
                         <option>Older</option>
                     </select>
-                    <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
+                    <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
                         <option>Price Range</option>
                         <option>Under ₹6 Lakhs</option>
                         <option>₹6-8 Lakhs</option>
@@ -126,18 +86,30 @@ export default function BuyHarvestersPage() {
                     onCompare={() => setShowCompareModal(true)}
                 />
 
-                <MachineryListing
-                    items={usedHarvesters}
-                    type="used"
-                    onCompare={toggleSelection}
-                    selectedForCompare={selectedItems}
-                />
+                {loading ? (
+                    <div className="py-16 text-center text-sm text-gray-500">Loading listings…</div>
+                ) : listings.length === 0 ? (
+                    <div className="py-16 text-center bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800">
+                        <span className="material-symbols-outlined text-5xl text-gray-300 mb-3">agriculture</span>
+                        <p className="text-gray-500 font-medium px-6">No listings here yet — be the first to post one.</p>
+                    </div>
+                ) : (
+                    <MachineryListing
+                        items={listings}
+                        type="used"
+                        onCompare={toggleSelection}
+                        selectedForCompare={selectedItems}
+                    />
+                )}
 
                 <CompareModal
                     isOpen={showCompareModal}
                     onClose={() => setShowCompareModal(false)}
                     items={compareItems}
                 />
+
+                {/* Selling moved here when the category modal was removed. */}
+                <PostMachineryAdButton category="harvesters" />
             </div>
         </div>
     );

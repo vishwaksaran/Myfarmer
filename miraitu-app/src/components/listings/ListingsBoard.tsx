@@ -61,6 +61,13 @@ function Board({ mode }: { mode: ListingMode }) {
             : 'all';
     })();
     const wantsPost = searchParams.get('post') === '1';
+    /**
+     * `?subcategory=Tractor` — the type the caller already knows, e.g. every
+     * machinery category page. It only seeds the form; the board itself stays
+     * on the whole category so the seller can still see what else is listed.
+     * The form drops it if it does not belong to the category.
+     */
+    const wantsSubcategory = searchParams.get('subcategory');
     const { location } = useAppLocation();
 
     const [listings, setListings] = useState<Listing[]>([]);
@@ -425,6 +432,8 @@ function Board({ mode }: { mode: ListingMode }) {
                 isOpen={showForm}
                 mode={mode}
                 editing={editing}
+                initialCategory={wantsCategory === 'all' ? null : wantsCategory}
+                initialSubcategory={wantsSubcategory}
                 onClose={() => { setShowForm(false); setEditing(null); }}
                 onSubmit={handleSubmit}
             />

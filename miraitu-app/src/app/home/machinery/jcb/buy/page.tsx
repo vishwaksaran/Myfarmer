@@ -1,69 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import CompareModal from '@/components/v2/machinery/CompareModal';
 import CompareSection from '@/components/v2/machinery/CompareSection';
 import MachinerySubNav from '@/components/v2/machinery/MachinerySubNav';
-
-const usedJCBs = [
-    {
-        id: 1,
-        name: 'JCB 3DX Super',
-        category: 'JCB',
-        specs: '76 HP • Backhoe Loader • Well Maintained',
-        price: '₹18,50,000',
-        image: 'https://images.pexels.com/photos/5125782/pexels-photo-5125782.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',
-        brand: 'JCB',
-        hp: '76',
-        year: '2021',
-        location: 'Pune, Maharashtra',
-        condition: 'Excellent',
-    },
-    {
-        id: 2,
-        name: 'JCB 3DX',
-        category: 'JCB',
-        specs: '74 HP • 4WD • Low Hours',
-        price: '₹14,75,000',
-        image: 'https://images.unsplash.com/photo-1580901368919-7738efb0f87e?w=400&h=300&fit=crop',
-        brand: 'JCB',
-        hp: '74',
-        year: '2019',
-        location: 'Nashik, Maharashtra',
-        condition: 'Good',
-    },
-    {
-        id: 3,
-        name: 'JCB 4DX',
-        category: 'JCB',
-        specs: '92 HP • Heavy Duty • Single Owner',
-        price: '₹28,00,000',
-        image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400&h=300&fit=crop',
-        brand: 'JCB',
-        hp: '92',
-        year: '2022',
-        location: 'Bangalore, Karnataka',
-        condition: 'Excellent',
-    },
-    {
-        id: 4,
-        name: 'JCB Skid Steer 135',
-        category: 'JCB',
-        specs: '45 HP • Compact • Fair Condition',
-        price: '₹9,50,000',
-        image: 'https://images.unsplash.com/photo-1590496793929-36417d3117de?w=400&h=300&fit=crop',
-        brand: 'JCB',
-        hp: '45',
-        year: '2018',
-        location: 'Hyderabad, Telangana',
-        condition: 'Fair',
-    },
-];
+import PostMachineryAdButton from '@/components/v2/machinery/PostMachineryAdButton';
+import { fetchMachineryListings, type MachineryCard } from '@/lib/machinery-listings';
 
 export default function BuyJCBPage() {
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
+    const [listings, setListings] = useState<MachineryCard[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    // Real ads posted through this category's sell form. They also appear
+    // on the Buy & Sell board under Machinery — same rows, narrowed here to
+    // this one subcategory.
+    useEffect(() => {
+        let cancelled = false;
+        fetchMachineryListings('jcb', 'JCB')
+            .then(rows => { if (!cancelled) setListings(rows); })
+            .finally(() => { if (!cancelled) setLoading(false); });
+        return () => { cancelled = true; };
+    }, []);
 
     const toggleSelection = (id: number) => {
         setSelectedItems(prev => {
@@ -77,31 +37,31 @@ export default function BuyJCBPage() {
         setSelectedItems(prev => prev.filter((_, i) => i !== index));
     };
 
-    const compareItems = usedJCBs.filter(item => selectedItems.includes(item.id));
+    const compareItems = listings.filter(item => selectedItems.includes(item.id));
 
     return (
-        <div className="px-6">
+        <div className="px-3 sm:px-6">
             <div className="mx-auto max-w-[1280px]">
                 <MachinerySubNav category="jcb" currentAction="buy" />
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Buy Used JCB's</h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Buy Used JCBs</h1>
                     <p className="text-gray-500">Browse verified pre-owned JCB equipment from trusted sellers.</p>
                 </div>
 
-                <div className="flex items-center gap-4 mb-8">
-                    <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
+                <div className="grid grid-cols-2 gap-3 mb-6 sm:mb-8 sm:flex sm:flex-wrap sm:items-center sm:gap-4">
+                    <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
                         <option>All Types</option>
                         <option>Backhoe Loader</option>
                         <option>Skid Steer</option>
                         <option>Telehandler</option>
                     </select>
-                    <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
+                    <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
                         <option>Condition</option>
                         <option>Excellent</option>
                         <option>Good</option>
                         <option>Fair</option>
                     </select>
-                    <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
+                    <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
                         <option>Year</option>
                         <option>2024</option>
                         <option>2023</option>
@@ -109,7 +69,7 @@ export default function BuyJCBPage() {
                         <option>2021</option>
                         <option>Older</option>
                     </select>
-                    <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
+                    <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
                         <option>Price Range</option>
                         <option>Under ₹10 Lakhs</option>
                         <option>₹10-20 Lakhs</option>
@@ -124,18 +84,30 @@ export default function BuyJCBPage() {
                     onCompare={() => setShowCompareModal(true)}
                 />
 
-                <MachineryListing
-                    items={usedJCBs}
-                    type="used"
-                    onCompare={toggleSelection}
-                    selectedForCompare={selectedItems}
-                />
+                {loading ? (
+                    <div className="py-16 text-center text-sm text-gray-500">Loading listings…</div>
+                ) : listings.length === 0 ? (
+                    <div className="py-16 text-center bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800">
+                        <span className="material-symbols-outlined text-5xl text-gray-300 mb-3">agriculture</span>
+                        <p className="text-gray-500 font-medium px-6">No listings here yet — be the first to post one.</p>
+                    </div>
+                ) : (
+                    <MachineryListing
+                        items={listings}
+                        type="used"
+                        onCompare={toggleSelection}
+                        selectedForCompare={selectedItems}
+                    />
+                )}
 
                 <CompareModal
                     isOpen={showCompareModal}
                     onClose={() => setShowCompareModal(false)}
                     items={compareItems}
                 />
+
+                {/* Selling moved here when the category modal was removed. */}
+                <PostMachineryAdButton category="jcb" />
             </div>
         </div>
     );
