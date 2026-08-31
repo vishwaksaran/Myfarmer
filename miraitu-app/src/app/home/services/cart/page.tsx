@@ -61,6 +61,13 @@ export default function ServiceCartPage() {
     const [submitting, setSubmitting] = useState(false);
     const [done, setDone] = useState(false);
 
+    // The confirmation panel replaces a page several screens tall, and the
+    // browser keeps whatever scroll offset the form was at — which left people
+    // staring at the footer with the confirmation off-screen above them.
+    useEffect(() => {
+        if (done) window.scrollTo({ top: 0, behavior: 'auto' });
+    }, [done]);
+
     // Prefill name / phone from the signed-in user
     useEffect(() => {
         if (user) {

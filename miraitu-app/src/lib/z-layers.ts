@@ -12,6 +12,13 @@
  * sits on top of all of it.
  */
 export const Z = {
+    /**
+     * Page-level floating actions — a board's "post a listing" button and its
+     * menu. Must clear the app-wide FloatingActionButtons stack (z-50) and the
+     * mobile bottom nav (z-50), and must be portaled: page content sits inside
+     * `<main class="relative z-10">`, which traps any z-index declared in it.
+     */
+    FLOATING: 60,
     /** Content modals — listing details, composers, confirmations. */
     MODAL: 99997,
     /** Full-screen media viewers opened *from* a modal. */

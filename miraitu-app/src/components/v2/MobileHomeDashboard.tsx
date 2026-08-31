@@ -334,7 +334,7 @@ export default function MobileHomeDashboard() {
                     tally to show. */}
                 <Tile
                     href="/home/labour-services"
-                    label="Labour & Services"
+                    label="Labour & Service Registration"
                     caption="Borewell, fencing, drone spray, workers"
                     icon="engineering"
                     className="col-span-2 bg-gradient-to-r from-[#f3e5f5] to-[#ede0f7] dark:from-[#2a1a2e] dark:to-[#221528]"

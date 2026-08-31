@@ -273,7 +273,10 @@ export default function ListingFormModal({ isOpen, mode, editing, onClose, onSub
                         disabled={!canSubmit || uploading || saving}
                         className="px-4 py-2 rounded-full bg-[#22c33d] text-white text-sm font-bold hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                        {uploading ? 'Uploading…' : saving ? 'Saving…' : editing ? 'Save' : 'Publish'}
+                        {/* Labour submissions are not published anywhere — they
+                            are a registration the team follows up on — so the
+                            button says what actually happens. */}
+                        {uploading ? 'Uploading…' : saving ? 'Saving…' : editing ? 'Save' : mode === 'labour' ? 'Register' : 'Publish'}
                     </button>
                 </div>
 

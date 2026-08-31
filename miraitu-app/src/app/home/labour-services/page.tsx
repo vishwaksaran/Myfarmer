@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import ListingFormModal from '@/components/listings/ListingFormModal';
 import { submitBooking } from '@/app/actions/bookings';
@@ -24,6 +24,11 @@ import type { ListingInput } from '@/components/listings/listingTypes';
 export default function LabourServicesPage() {
     const router = useRouter();
     const [done, setDone] = useState(false);
+    // The form calls onClose() after a successful save as well as on cancel.
+    // Read through a ref rather than `done`, because that close fires in the
+    // same tick as the state update — the closure would still see `false` and
+    // navigate away from the thank-you the user is meant to land on.
+    const submittedRef = useRef(false);
 
     const handleSubmit = async (input: ListingInput) => {
         const res = await submitBooking({
@@ -50,6 +55,7 @@ export default function LabourServicesPage() {
         });
 
         if (!res.success) return { success: false, error: res.error };
+        submittedRef.current = true;
         setDone(true);
         return { success: true };
     };
@@ -66,10 +72,16 @@ export default function LabourServicesPage() {
                             task_alt
                         </span>
                     </div>
-                    <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Thank You</h1>
-                    <p className="text-gray-500 mb-6">
-                        Thank you for submitting the form. Our team has your details and will
-                        get in touch about the work you offer.
+                    <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">
+                        Thanks for registering!
+                    </h1>
+                    <p className="text-gray-500 mb-4 leading-relaxed">
+                        Your registration has been received. Our team is reviewing your details
+                        and will get in touch shortly with an update on the work you offer.
+                    </p>
+                    <p className="text-sm text-gray-400 mb-6">
+                        Please keep your phone reachable — we will call you on the number you
+                        registered with.
                     </p>
                     <Link
                         href="/home"
@@ -86,7 +98,7 @@ export default function LabourServicesPage() {
         <ListingFormModal
             isOpen
             mode="labour"
-            onClose={() => router.back()}
+            onClose={() => { if (!submittedRef.current) router.back(); }}
             onSubmit={handleSubmit}
         />
     );

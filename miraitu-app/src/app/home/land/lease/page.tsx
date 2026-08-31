@@ -112,6 +112,16 @@ export default function LeaseLandPage() {
     const [mounted, setMounted] = useState(false);
     useEffect(() => { setMounted(true); }, []);
 
+    // ?tab=list opens straight into the form. The land feed's "+" button sends
+    // people here to post, and landing on the browse tab would make them tap
+    // again for the thing they already asked for. Read off window rather than
+    // useSearchParams so the page needs no Suspense boundary.
+    useEffect(() => {
+        if (new URLSearchParams(window.location.search).get('tab') === 'list') {
+            setActiveTab('list');
+        }
+    }, []);
+
     const handleContactClick = (listing: LeaseListingRecord) => {
         if (!user || user.isGuest) {
             setShowLoginModal(true);
