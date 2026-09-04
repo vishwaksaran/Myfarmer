@@ -1,16 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import type { LangCode } from '@/i18n/translations';
 import { Z } from '@/lib/z-layers';
+import { onSplashDone } from '@/lib/splash';
 
 /**
  * First-run language chooser.
  *
- * Shown once per device, on mobile only, before the user reaches the app. The
- * answer is remembered under LANG_ONBOARDED_KEY, so a normal reopen never asks
- * again — only a reinstall or a storage clear brings it back.
+ * Shown once per device, on mobile only, before the user reaches the app — and
+ * in the installed PWA, only after the splash has finished. The answer is
+ * remembered under LANG_ONBOARDED_KEY, so a normal reopen never asks again —
+ * only a reinstall or a storage clear brings it back.
  *
  * Deliberately blocking: no close button and no backdrop dismiss, because the
  * whole point is to pick a language before reading a screenful of English.
@@ -49,25 +51,48 @@ export default function LanguageFirstRunGate() {
     const [visible, setVisible] = useState(false);
     const [choice, setChoice] = useState<LangCode>('en');
 
+    // Read through a ref so the wait below can be mount-once. Watching `lang`
+    // directly would tear the wait down and rebuild it every time the provider
+    // restores a saved language, and a teardown landing between the splash
+    // leaving and the frame that follows it drops the reveal entirely.
+    const langRef = useRef(lang);
+    useEffect(() => { langRef.current = lang; }, [lang]);
+
     // Must run after mount: localStorage and viewport are client-only, and
     // deciding during render would desync from the server-rendered HTML.
-    // The check is deferred to the next frame so the app paints first and the
-    // gate appears over it, rather than blocking the first render.
+    //
+    // Waits for the splash to leave before asking. The installed PWA launches
+    // onto it and this gate outranks it (Z.AUTH 1000000 vs the splash's
+    // 999999), so revealing on the next frame — as this used to — put the
+    // chooser on top of the brand moment instead of after it. In a normal
+    // browser tab no splash plays and the wait resolves at once.
     useEffect(() => {
-        const frame = requestAnimationFrame(() => {
-            try {
-                if (localStorage.getItem(LANG_ONBOARDED_KEY)) return;
-            } catch {
-                // Private mode / storage blocked — asking every launch would be
-                // worse than never asking, so stay out of the way.
-                return;
-            }
-            if (!isMobileDevice()) return;
-            setChoice(lang);
-            setVisible(true);
-        });
-        return () => cancelAnimationFrame(frame);
-    }, [lang]);
+        let frame = 0;
+
+        const reveal = () => {
+            // A frame's grace so the app under the splash has painted before the
+            // gate lands on it.
+            frame = requestAnimationFrame(() => {
+                try {
+                    if (localStorage.getItem(LANG_ONBOARDED_KEY)) return;
+                } catch {
+                    // Private mode / storage blocked — asking every launch would
+                    // be worse than never asking, so stay out of the way.
+                    return;
+                }
+                if (!isMobileDevice()) return;
+                setChoice(langRef.current);
+                setVisible(true);
+            });
+        };
+
+        const unsubscribe = onSplashDone(reveal);
+
+        return () => {
+            unsubscribe();
+            cancelAnimationFrame(frame);
+        };
+    }, []);
 
     if (!visible) return null;
 

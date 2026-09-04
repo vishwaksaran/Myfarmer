@@ -1,6 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
+import { createPortal } from 'react-dom';
+import { Z } from '@/lib/z-layers';
+
+/** Store subscription for a value that is fixed for the life of the document. */
+const neverChanges = () => () => { };
 
 interface MachineryItem {
     id: number;
@@ -23,6 +28,9 @@ interface CompareModalProps {
 }
 
 export default function CompareModal({ isOpen, onClose, items }: CompareModalProps) {
+    // Portaled to <body>: page content sits in `<main class="relative z-10">`, which
+    // traps any z-index declared here. See @/lib/z-layers.
+    const canPortal = useSyncExternalStore(neverChanges, () => true, () => false);
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -34,7 +42,7 @@ export default function CompareModal({ isOpen, onClose, items }: CompareModalPro
         };
     }, [isOpen]);
 
-    if (!isOpen) return null;
+    if (!isOpen || !canPortal) return null;
 
     const specs = [
         { label: 'Price', key: 'price' },
@@ -46,8 +54,8 @@ export default function CompareModal({ isOpen, onClose, items }: CompareModalPro
         { label: 'Specifications', key: 'specs' },
     ];
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+    return createPortal(
+        <div style={{ zIndex: Z.MODAL }} className="fixed inset-0 flex items-center justify-center">
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -55,9 +63,9 @@ export default function CompareModal({ isOpen, onClose, items }: CompareModalPro
             />
 
             {/* Modal */}
-            <div className="relative w-full max-w-4xl max-h-[90vh] m-4 bg-white dark:bg-[#1a231a] rounded-3xl shadow-2xl overflow-hidden">
+            <div className="relative w-full max-w-4xl max-h-[calc(100dvh-1.5rem)] sm:max-h-[90dvh] m-3 sm:m-4 bg-white dark:bg-[#1a231a] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="shrink-0 flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                     <div>
                         <h2 className="text-2xl font-bold text-primary-dark dark:text-white">Compare Models</h2>
                         <p className="text-sm text-gray-500">Side-by-side comparison of selected machinery</p>
@@ -71,7 +79,7 @@ export default function CompareModal({ isOpen, onClose, items }: CompareModalPro
                 </div>
 
                 {/* Content */}
-                <div className="overflow-auto max-h-[calc(90vh-120px)] p-6">
+                <div className="flex-1 min-h-0 overflow-auto overscroll-contain p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
                     {items.length === 0 ? (
                         <div className="text-center py-12">
                             <span className="material-symbols-outlined text-6xl text-gray-300 mb-4">compare_arrows</span>
@@ -131,6 +139,7 @@ export default function CompareModal({ isOpen, onClose, items }: CompareModalPro
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

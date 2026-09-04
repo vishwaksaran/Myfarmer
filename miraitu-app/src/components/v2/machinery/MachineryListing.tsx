@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { normalizeIndianPhone } from '@/lib/phone';
+import { Z } from '@/lib/z-layers';
 
 interface MachineryItem {
     id: number;
@@ -32,6 +34,9 @@ interface MachineryListingProps {
     selectedForCompare?: number[];
     onGetPrice?: (item: MachineryItem) => void;
 }
+
+/** Store subscription for a value that is fixed for the life of the document. */
+const neverChanges = () => () => { };
 
 const TECH_PACK_COLORS: Record<string, string> = {
     ROBOJA: 'bg-red-500',
@@ -67,6 +72,21 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
     const [quoteErrors, setQuoteErrors] = useState<Record<string, string>>({});
     const [quoteState, setQuoteState] = useState('');
     const [quoteDistrict, setQuoteDistrict] = useState('');
+
+    // Overlays are portaled to <body>: these pages render inside
+    // `<main class="relative z-10">`, whose stacking context traps any z-index
+    // declared in here — which is how the bottom nav (z-50) and the floating
+    // action stack ended up painting over the quote modal. See @/lib/z-layers.
+    const canPortal = useSyncExternalStore(neverChanges, () => true, () => false);
+
+    // The page behind must not scroll under an open modal.
+    const anyModalOpen = showQuoteModal || !!selectedItem;
+    useEffect(() => {
+        if (!anyModalOpen) return;
+        const previous = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = previous; };
+    }, [anyModalOpen]);
 
     const handleQuoteSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -400,10 +420,10 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
             )}
 
             {/* Details Modal */}
-            {selectedItem && !showQuoteModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {canPortal && selectedItem && !showQuoteModal && createPortal(
+                <div style={{ zIndex: Z.MODAL }} className="fixed inset-0 flex items-center justify-center p-3 sm:p-4">
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedItem(null)} />
-                    <div className="relative w-full max-w-2xl bg-white dark:bg-[#1a231a] rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+                    <div className="relative w-full max-w-2xl bg-white dark:bg-[#1a231a] rounded-3xl shadow-2xl overflow-hidden max-h-[calc(100dvh-1.5rem)] sm:max-h-[90dvh] overflow-y-auto overscroll-contain">
                         <div className="relative h-64">
                             <div
                                 className="absolute inset-0 bg-cover bg-center"
@@ -478,14 +498,15 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Quote/Price Modal */}
-            {showQuoteModal && selectedItem && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {canPortal && showQuoteModal && selectedItem && createPortal(
+                <div style={{ zIndex: Z.MODAL }} className="fixed inset-0 flex items-center justify-center p-3 sm:p-4">
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={closeQuoteModal} />
-                    <div className="relative w-full max-w-lg bg-white dark:bg-[#1a231a] rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+                    <div className="relative w-full max-w-lg bg-white dark:bg-[#1a231a] rounded-3xl shadow-2xl overflow-hidden max-h-[calc(100dvh-1.5rem)] sm:max-h-[90dvh] flex flex-col">
                         <div className="p-6 border-b border-gray-200 dark:border-gray-700 shrink-0">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -502,7 +523,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                         </div>
 
                         {submitSuccess ? (
-                            <div className="p-8 flex flex-col items-center text-center">
+                            <div className="flex-1 min-h-0 overflow-y-auto p-8 flex flex-col items-center text-center">
                                 <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4">
                                     <span className="material-symbols-outlined text-green-500 text-3xl">check_circle</span>
                                 </div>
@@ -525,7 +546,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                 </button>
                             </div>
                         ) : (
-                            <form onSubmit={handleQuoteSubmit} className="p-6 space-y-4 overflow-y-auto">
+                            <form onSubmit={handleQuoteSubmit} className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-6 pb-0 space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name *</label>
@@ -611,16 +632,19 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                     </span>
                                 </div>
 
-                                <button
-                                    type="submit"
-                                    className="w-full py-4 rounded-xl bg-primary text-white font-bold text-lg hover:bg-primary-dark transition-colors"
-                                >
-                                    {type === 'new' ? t('machineryListing.getPrice') : t('machineryListing.requestQuote')}
-                                </button>
+                                <div className="sticky bottom-0 -mx-6 mt-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a231a] px-6 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                                    <button
+                                        type="submit"
+                                        className="w-full py-4 rounded-xl bg-primary text-white font-bold text-lg hover:bg-primary-dark transition-colors"
+                                    >
+                                        {type === 'new' ? t('machineryListing.getPrice') : t('machineryListing.requestQuote')}
+                                    </button>
+                                </div>
                             </form>
                         )}
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </>
     );
