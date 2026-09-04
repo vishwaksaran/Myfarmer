@@ -5,9 +5,14 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import type { LangCode } from '@/i18n/translations';
 import { Z } from '@/lib/z-layers';
 import { onSplashDone } from '@/lib/splash';
+import { LANGUAGE_FIRST_RUN_ENABLED } from '@/lib/feature-flags';
 
 /**
  * First-run language chooser.
+ *
+ * CURRENTLY OFF — gated behind LANGUAGE_FIRST_RUN_ENABLED while the app is only
+ * part-translated. See docs/TEMPORARY-CHANGES.md. Everything below describes
+ * how it behaves once the flag goes back to true; nothing here was deleted.
  *
  * Shown once per device, on mobile only, before the user reaches the app — and
  * in the installed PWA, only after the splash has finished. The answer is
@@ -67,6 +72,8 @@ export default function LanguageFirstRunGate() {
     // chooser on top of the brand moment instead of after it. In a normal
     // browser tab no splash plays and the wait resolves at once.
     useEffect(() => {
+        if (!LANGUAGE_FIRST_RUN_ENABLED) return;
+
         let frame = 0;
 
         const reveal = () => {

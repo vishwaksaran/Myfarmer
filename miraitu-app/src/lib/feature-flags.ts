@@ -20,6 +20,24 @@ export const MACHINERY_NEW_ENABLED: boolean = false;
 export const MACHINERY_RENT_ENABLED: boolean = false;
 
 /**
+ * The first-run language chooser that greets a new device on launch.
+ *
+ * Hidden while the app is only part-translated: most of the marketplace pages
+ * (rent, buy & sell, machinery, land, livestock) still render hardcoded
+ * English, so pushing a language choice up front promises more than the app
+ * delivers. The header's translate button is deliberately untouched — anyone
+ * who wants another language can still pick one, they are just not asked.
+ *
+ * Flip to true to start asking again. The component, its copy in all ten
+ * languages and the `miraitu-lang-onboarded` flag all stay in place.
+ *
+ * Annotated `: boolean` for the same reason as the machinery flags above —
+ * a bare `= false` narrows to the literal type and makes TypeScript treat the
+ * guarded JSX as unreachable.
+ */
+export const LANGUAGE_FIRST_RUN_ENABLED: boolean = false;
+
+/**
  * AdSense rendering, globally. When false no ad script loads, no ad slot
  * renders, and the consent banner stays hidden — the whole ads layer is inert
  * and costs nothing at runtime.
