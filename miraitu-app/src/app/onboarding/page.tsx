@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import MiraituLogo from '@/components/MiraituLogo';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { normalizeIndianPhone } from '@/lib/phone';
+import type { PlaceSuggestion } from '@/app/api/geo/places/route';
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -89,6 +90,21 @@ const ROLES = [
         description: 'I\'m learning agriculture',
     },
 ];
+
+/**
+ * The roles offered during onboarding.
+ *
+ * ROLES itself is deliberately left whole — accounts created earlier already
+ * carry `dealer`, `livestock_farmer`, `buyer` and `student`, and the profile
+ * summary plus the provider check in handleSubmit still look their labels up by
+ * id. Filtering only the picker keeps those accounts rendering correctly while
+ * new sign-ups choose between the two roles the app actually serves today.
+ *
+ * To offer a role again, add its id back to this list.
+ */
+const SELECTABLE_ROLE_IDS = ['farmer', 'service_provider'];
+
+const SELECTABLE_ROLES = ROLES.filter(role => SELECTABLE_ROLE_IDS.includes(role.id));
 
 // ─── Role-Specific Interest Options ───────────────────────────────
 
@@ -417,6 +433,44 @@ export default function OnboardingPage() {
         phone: '',
     });
 
+    // Village/town/city lookup against /api/geo/places, which reaches down to
+    // village level across India and returns the district and state with each
+    // hit — that is what lets picking a place fill the two fields below it.
+    //
+    // LOCATION_SUGGESTIONS stays as the offline shortlist: it is what shows
+    // before anything is typed, and what the field falls back to when the
+    // lookup is unreachable, so a farmer on a weak connection is never stuck.
+    const [placeResults, setPlaceResults] = useState<PlaceSuggestion[]>([]);
+    const [placeLoading, setPlaceLoading] = useState(false);
+
+    useEffect(() => {
+        const query = formData.farm_location.trim();
+        if (query.length < 2) {
+            setPlaceResults([]);
+            setPlaceLoading(false);
+            return;
+        }
+
+        // Debounced so a typed name costs one request, not one per keystroke.
+        setPlaceLoading(true);
+        const controller = new AbortController();
+        const timer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/api/geo/places?q=${encodeURIComponent(query)}`, { signal: controller.signal });
+                const data = await res.json();
+                setPlaceResults(Array.isArray(data.results) ? data.results : []);
+            } catch {
+                // Aborted or offline — keep the shortlist showing.
+                setPlaceResults([]);
+            } finally {
+                setPlaceLoading(false);
+            }
+        }, 300);
+
+        return () => { clearTimeout(timer); controller.abort(); };
+    }, [formData.farm_location]);
+
+    /** Offline shortlist, used before typing and when the lookup returns nothing. */
     const locationMatches = useMemo(() => {
         const query = formData.farm_location.trim().toLowerCase();
         if (!query) return LOCATION_SUGGESTIONS.slice(0, 8);
@@ -680,6 +734,11 @@ export default function OnboardingPage() {
             setError('Please enter your village/town or district');
             return;
         }
+        if (!formData.full_name.trim()) {
+            setError('Please enter your name in Step 1');
+            setCurrentStep(1);
+            return;
+        }
         if (!formData.phone || formData.phone.length !== 10) {
             setError('Please provide a valid 10-digit phone number in Step 1');
             return;
@@ -881,7 +940,9 @@ export default function OnboardingPage() {
 
                             {/* Name Input */}
                             <div className="skeuo-card rounded-2xl p-5">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">Your Full Name</label>
+                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">
+                                    Your Full Name <span className="text-red-500">*</span>
+                                </label>
                                 <div className="relative">
                                     <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--miraitu-primary-green)]/60 text-xl">person</span>
                                     <input
@@ -890,6 +951,8 @@ export default function OnboardingPage() {
                                         onChange={(e) => setFormData(f => ({ ...f, full_name: e.target.value }))}
                                         className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-green-200 bg-white focus:border-[var(--miraitu-primary-green)] outline-none transition-all text-base font-medium placeholder:text-gray-400"
                                         placeholder="Enter your full name"
+                                        required
+                                        aria-required="true"
                                         autoFocus
                                     />
                                 </div>
@@ -1021,7 +1084,7 @@ export default function OnboardingPage() {
                             <div className="skeuo-card rounded-2xl p-5">
                                 <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-3 block">I am a...</label>
                                 <div className="grid grid-cols-2 gap-2.5">
-                                    {ROLES.map(role => (
+                                    {SELECTABLE_ROLES.map(role => (
                                         <button
                                             key={role.id}
                                             onClick={() => setFormData(f => ({ ...f, role: role.id, interests: [], farm_size: '', experience_years: '' }))}
@@ -1157,20 +1220,48 @@ export default function OnboardingPage() {
                                         />
                                     </div>
                                     {showLocationSuggestions && (
-                                        <div className="mt-1.5 rounded-xl border border-green-200 bg-white shadow-sm max-h-40 overflow-y-auto">
-                                            {locationMatches.length > 0 ? locationMatches.map((city) => (
-                                                <button
-                                                    key={city}
-                                                    type="button"
-                                                    onMouseDown={() => {
-                                                        setFormData(f => ({ ...f, farm_location: city }));
-                                                        setShowLocationSuggestions(false);
-                                                    }}
-                                                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-green-50"
-                                                >
-                                                    {city}
-                                                </button>
-                                            )) : (
+                                        <div className="mt-1.5 rounded-xl border border-green-200 bg-white shadow-sm max-h-52 overflow-y-auto">
+                                            {placeResults.length > 0 ? (
+                                                placeResults.map((place) => (
+                                                    <button
+                                                        key={place.id}
+                                                        type="button"
+                                                        onMouseDown={() => {
+                                                            // Fill the district and state from the same record, so the
+                                                            // two fields below agree with the place that was chosen.
+                                                            setFormData(f => ({
+                                                                ...f,
+                                                                farm_location: place.name,
+                                                                district: place.district || f.district,
+                                                                state: place.state || f.state,
+                                                            }));
+                                                            setShowLocationSuggestions(false);
+                                                        }}
+                                                        className="w-full text-left px-3 py-2 hover:bg-green-50"
+                                                    >
+                                                        <span className="block text-sm font-medium text-gray-800">{place.name}</span>
+                                                        <span className="block text-[11px] text-gray-500">
+                                                            {[place.district, place.state].filter(Boolean).join(', ')}
+                                                        </span>
+                                                    </button>
+                                                ))
+                                            ) : placeLoading ? (
+                                                <p className="px-3 py-2 text-xs text-gray-500">Searching…</p>
+                                            ) : locationMatches.length > 0 ? (
+                                                locationMatches.map((city) => (
+                                                    <button
+                                                        key={city}
+                                                        type="button"
+                                                        onMouseDown={() => {
+                                                            setFormData(f => ({ ...f, farm_location: city }));
+                                                            setShowLocationSuggestions(false);
+                                                        }}
+                                                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-green-50"
+                                                    >
+                                                        {city}
+                                                    </button>
+                                                ))
+                                            ) : (
                                                 <p className="px-3 py-2 text-xs text-gray-500">No exact match. You can continue typing your own location.</p>
                                             )}
                                         </div>
