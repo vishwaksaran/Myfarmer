@@ -2,7 +2,12 @@
 
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { createSupabaseAdminClient } from '@/lib/supabase-admin';
-import { fetchApprovedLeaseListings, type LeaseListingRecord } from './bookings';
+import {
+    fetchApprovedLeaseListings,
+    fetchApprovedSellListings,
+    type LeaseListingRecord,
+    type SellListingRecord,
+} from './bookings';
 
 /**
  * The Rent and Buy & Sell boards.
@@ -188,23 +193,124 @@ function landRentToListing(rec: LeaseListingRecord): Listing {
     };
 }
 
-async function fetchLandRentListings(term?: string): Promise<Listing[]> {
-    const { data } = await fetchApprovedLeaseListings();
-    let rows = data
-        .filter(rec => rec.extra_data?.service_type === 'rent')
-        .map(landRentToListing);
+/**
+ * The same story on the sale side.
+ *
+ * Land for sale is posted through /home/land/sell, which writes a
+ * `service_bookings` row (module 'land', category 'sell') and only becomes
+ * public once an admin confirms or publishes it — so the Buy & Sell board's
+ * Land tab read "No ads here yet" while /home/land was showing those very
+ * listings. `fetchApprovedSellListings` is reused verbatim so both boards
+ * agree on which rows count as published.
+ */
+function landSaleToListing(rec: SellListingRecord): Listing {
+    const ed = rec.extra_data ?? {};
 
-    // The marketplace query filters in SQL; these are filtered here so the
-    // search box behaves the same across both sources.
+    // Prices are free text ("60,00,000", "₹60000", "60000 per acre"), so take
+    // the digits and nothing else.
+    const toAmount = (raw?: string): number | null => {
+        const digits = (raw ?? '').replace(/[^\d.]/g, '');
+        if (!digits) return null;
+        const n = Number(digits);
+        return Number.isFinite(n) && n > 0 ? n : null;
+    };
+    const total = toAmount(ed.total_price);
+    const perAcre = toAmount(ed.price_per_acre);
+
+    const place = [rec.location, ed.district, ed.state]
+        .map(p => (p ?? '').trim())
+        .filter((p, i, all) => p && all.findIndex(q => q.toLowerCase() === p.toLowerCase()) === i)
+        .join(', ');
+
+    // Listing has no acreage field, and area is the first thing a buyer looks
+    // for, so it leads the description rather than being dropped. The rate the
+    // headline price does not show follows it.
+    const description = [
+        ed.area ? `${ed.area} acres` : '',
+        total !== null && perAcre !== null ? `${formatRupeeAmount(perAcre)} per acre` : '',
+        (ed.description ?? '').trim(),
+    ].filter(Boolean).join(' · ');
+
+    return {
+        // Prefixed so it can never collide with a marketplace_listings UUID.
+        id: `land-sale:${rec.id}`,
+        mode: 'sale',
+        category: 'land',
+        subcategory: LAND_CATEGORY_TO_SUBCATEGORY[ed.land_category ?? ''] ?? '',
+        title: ed.title?.trim() || 'Land for sale',
+        description,
+        brand: '',
+        model: '',
+        // A total is what a buyer compares on; the per-acre rate stands in when
+        // the seller only quoted that.
+        price: total ?? perAcre,
+        priceUnit: total !== null ? 'Total' : perAcre !== null ? 'Per acre' : '',
+        negotiable: false,
+        location: place,
+        district: (ed.district ?? '').trim(),
+        state: (ed.state ?? '').trim(),
+        // service_bookings stores no coordinates, so these sort last under
+        // "nearest first" rather than pretending to be nearby.
+        latitude: null,
+        longitude: null,
+        images: (ed.photos ?? []).filter((p): p is string => typeof p === 'string' && p.length > 0),
+        status: 'active',
+        contactPhone: rec.phone ?? '',
+        createdAt: rec.created_at,
+        // Not a Labour & Services listing, so these stay empty.
+        workType: '',
+        workerCount: null,
+        contactName: rec.full_name ?? '',
+        // Editing and deleting belong to the land board, not this one.
+        isOwn: false,
+        distanceKm: null,
+    };
+}
+
+/** Indian digit grouping, matching how the boards render every other price. */
+function formatRupeeAmount(amount: number): string {
+    return `₹${amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+}
+
+/**
+ * The sell form's own category ids mapped onto the board's land sub-categories,
+ * so the chips filter these rows too. Anything unmapped surfaces under "All
+ * Land" rather than being filed under a type it is not.
+ */
+const LAND_CATEGORY_TO_SUBCATEGORY: Record<string, string> = {
+    agriculture: 'Agricultural Land',
+    irrigated: 'Agricultural Land',
+    farmhouse: 'Farm House',
+    orchard: 'Orchard',
+    plantation: 'Other Property',
+};
+
+/** Title / description / location matching, mirroring the SQL search above. */
+function matchesTerm(listing: Listing, term?: string): boolean {
     const q = term?.trim().toLowerCase();
-    if (q) {
-        rows = rows.filter(l =>
-            l.title.toLowerCase().includes(q) ||
-            l.description.toLowerCase().includes(q) ||
-            l.location.toLowerCase().includes(q)
-        );
-    }
-    return rows;
+    if (!q) return true;
+    return (
+        listing.title.toLowerCase().includes(q) ||
+        listing.description.toLowerCase().includes(q) ||
+        listing.location.toLowerCase().includes(q)
+    );
+}
+
+async function fetchLandRentListings(term?: string, subcategory?: string): Promise<Listing[]> {
+    const { data } = await fetchApprovedLeaseListings();
+    // The marketplace query filters in SQL; these are filtered here so the
+    // search box and the chips behave the same across both sources.
+    return data
+        .filter(rec => rec.extra_data?.service_type === 'rent')
+        .map(landRentToListing)
+        .filter(l => (!subcategory || l.subcategory === subcategory) && matchesTerm(l, term));
+}
+
+async function fetchLandSaleListings(term?: string, subcategory?: string): Promise<Listing[]> {
+    const { data } = await fetchApprovedSellListings();
+    return data
+        .map(landSaleToListing)
+        .filter(l => (!subcategory || l.subcategory === subcategory) && matchesTerm(l, term));
 }
 
 export async function fetchListings(
@@ -264,16 +370,20 @@ export async function fetchListings(
 
         const listings = page.map(row => toListing(row, user?.id ?? null, options.near));
 
-        // Land-for-rent rows come from the land board (see landRentToListing).
+        // Land rows come from the land board, not this table — for rent (see
+        // landRentToListing) and for sale (see landSaleToListing).
         // Only on the first page — they are a small admin-curated set, so
         // paging them alongside a second table would risk gaps and repeats.
-        // Skipped for "My Ads" (the viewer does not own them) and whenever a
-        // land sub-category is selected (they carry none).
+        // Skipped for "My Ads", since the viewer does not own them here.
         const wantsLand = !options.category || options.category === 'all' || options.category === 'land';
-        if (options.mode === 'rent' && wantsLand && !options.mineOnly && !options.subcategory && offset === 0) {
-            const landRentals = await fetchLandRentListings(options.query);
-            if (landRentals.length) {
-                listings.push(...landRentals);
+        if (wantsLand && !options.mineOnly && offset === 0) {
+            const landRows = options.mode === 'rent'
+                ? await fetchLandRentListings(options.query, options.subcategory)
+                : options.mode === 'sale'
+                    ? await fetchLandSaleListings(options.query, options.subcategory)
+                    : [];
+            if (landRows.length) {
+                listings.push(...landRows);
                 // Restore newest-first across the merged set; the distance sort
                 // below overrides this when the viewer's position is known.
                 listings.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
