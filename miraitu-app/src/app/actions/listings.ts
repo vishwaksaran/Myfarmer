@@ -313,6 +313,80 @@ async function fetchLandSaleListings(term?: string, subcategory?: string): Promi
         .filter(l => (!subcategory || l.subcategory === subcategory) && matchesTerm(l, term));
 }
 
+/**
+ * The seller's name, which `marketplace_listings` does not carry.
+ *
+ * The land board names whoever posted each listing, so board rows shown there
+ * need one too. One lookup for the whole page; a missing profile just leaves
+ * the name blank rather than failing the fetch.
+ */
+async function sellerNames(userIds: string[]): Promise<Record<string, string>> {
+    const ids = [...new Set(userIds.filter(Boolean))];
+    if (ids.length === 0) return {};
+
+    try {
+        const { data } = await createSupabaseAdminClient()
+            .from('profiles')
+            .select('id, full_name')
+            .in('id', ids);
+
+        const names: Record<string, string> = {};
+        for (const row of (data ?? []) as { id: string; full_name: string | null }[]) {
+            if (row.full_name) names[row.id] = row.full_name;
+        }
+        return names;
+    } catch {
+        return {};
+    }
+}
+
+/**
+ * Land posted on the Rent and Buy & Sell boards, for the land board to show.
+ *
+ * The mirror image of the two fold-ins above. Those let the boards show the
+ * land board's rows; this lets /home/land show the boards' rows, so land
+ * offered for rent on the Rent board turns up where someone looking for land
+ * actually looks. Posted once, visible in both places.
+ *
+ * Only `marketplace_listings` rows: the land board reads `service_bookings`
+ * itself, and folding those back in would list every one of them twice.
+ *
+ * The seller's name rides in `contactName`, which is otherwise a Labour &
+ * Services field — the land board shows a name on every card, and this is the
+ * only field on `Listing` that carries one.
+ */
+export async function fetchMarketplaceLandListings(): Promise<{ data: Listing[]; error?: string }> {
+    try {
+        const { data, error } = await createSupabaseAdminClient()
+            .from('marketplace_listings')
+            .select(COLUMNS)
+            .eq('category', 'land')
+            .eq('status', 'active')
+            // 'labour' is the third mode; land is never posted under it.
+            .in('listing_mode', ['sale', 'rent'])
+            .order('created_at', { ascending: false })
+            .limit(100);
+
+        if (error) {
+            console.error('[fetchMarketplaceLandListings] error:', error);
+            return { data: [], error: error.message };
+        }
+
+        const rows = (data ?? []) as unknown as ListingRow[];
+        const names = await sellerNames(rows.map(row => row.user_id));
+
+        return {
+            data: rows.map(row => ({
+                ...toListing(row, null),
+                contactName: names[row.user_id] ?? '',
+            })),
+        };
+    } catch (err) {
+        console.error('[fetchMarketplaceLandListings] unexpected:', err);
+        return { data: [], error: 'Failed to load listings' };
+    }
+}
+
 export async function fetchListings(
     options: FetchListingsOptions
 ): Promise<{ data: Listing[]; hasMore: boolean; error?: string }> {

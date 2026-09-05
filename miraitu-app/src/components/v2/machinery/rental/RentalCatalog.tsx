@@ -11,6 +11,7 @@ import {
 } from '@/lib/machinery-rental-catalog';
 import { useMachineryCart } from '@/context/MachineryBookingCart';
 import MachinerySubNav from '@/components/v2/machinery/MachinerySubNav';
+import PeerRentalStrip from '@/components/v2/machinery/PeerRentalStrip';
 
 const inr = (n: number) => '₹' + n.toLocaleString('en-IN');
 
@@ -104,6 +105,10 @@ export default function RentalCatalog({ category }: { category: string }) {
                         ))}
                     </div>
                 )}
+
+                {/* Machines other farmers have listed for rent — same rows the
+                    Rent board shows, narrowed to this category. */}
+                <PeerRentalStrip pageCategory={category} heading={`Rent ${config.title} from farmers`} />
             </div>
 
             {/* Item detail sheet */}

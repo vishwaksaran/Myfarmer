@@ -288,6 +288,12 @@ export interface ListingRecord {
     id?: string;
     user_id: string;
     listing_type: 'machinery' | 'crops' | 'livestock';
+    /**
+     * Which board the ad belongs to — added by migration 030, defaulting to
+     * 'sale'. Rows written here leave it to that default; the Rent and Labour
+     * boards set it themselves.
+     */
+    listing_mode?: string;
     category: string;
     /** Second level under category — added by migration 031. */
     subcategory?: string;
@@ -297,6 +303,9 @@ export interface ListingRecord {
     description?: string;
     price: number;
     unit?: string;
+    /** Migration 030's replacement for `unit` — "Per hour", "One day", … */
+    price_unit?: string;
+    negotiable?: boolean;
     location: string;
     district?: string;
     state?: string;

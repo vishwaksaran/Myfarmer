@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import { useLanguage } from '@/i18n/LanguageContext';
+import PeerRentalStrip from '@/components/v2/machinery/PeerRentalStrip';
 
 // Category data with real images
 const categories = [
@@ -163,6 +164,11 @@ export default function MachineryPage() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Every machinery rental posted on the Rent board, not just
+                        the ones that picked a sub-type — those have no category
+                        page to sit on, so this is where they are found. */}
+                    <PeerRentalStrip />
 
                 </div>
 

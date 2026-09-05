@@ -14,6 +14,8 @@ import {
     type LeaseListingRecord,
     type SellListingRecord,
 } from '@/app/actions/bookings';
+import { fetchMarketplaceLandListings } from '@/app/actions/listings';
+import type { Listing } from '@/components/listings/listingTypes';
 import { logListingContact, type ContactChannel } from '@/app/actions/listing-contact';
 
 /**
@@ -137,6 +139,14 @@ interface LandItem {
     amenities: string[];
 }
 
+/** "Village, District, State" — blanks and repeats (village == district) dropped. */
+function joinPlace(parts: (string | null | undefined)[]): string {
+    return parts
+        .map(p => (p ?? '').trim())
+        .filter((p, i, all) => p && all.findIndex(q => q.toLowerCase() === p.toLowerCase()) === i)
+        .join(', ');
+}
+
 function sellToItem(record: SellListingRecord): LandItem {
     const ed = record.extra_data ?? {};
     const perAcre = formatPrice(ed.price_per_acre);
@@ -144,11 +154,7 @@ function sellToItem(record: SellListingRecord): LandItem {
         id: record.id,
         kind: 'sale',
         title: ed.title?.trim() || 'Farm Land for Sale',
-        // "Village, District, State" — skip blanks and repeats (e.g. village == district).
-        location: [record.location, ed.district, ed.state]
-            .map(p => (p ?? '').trim())
-            .filter((p, i, all) => p && all.findIndex(q => q.toLowerCase() === p.toLowerCase()) === i)
-            .join(', '),
+        location: joinPlace([record.location, ed.district, ed.state]),
         area: (ed.area ?? '').trim(),
         price: formatPrice(ed.total_price),
         priceSuffix: '',
@@ -194,6 +200,48 @@ function leaseToItem(record: LeaseListingRecord): LandItem {
     };
 }
 
+/**
+ * Land posted on the Rent or Buy & Sell board.
+ *
+ * Those two boards already show this page's rows; this is the other half of
+ * the trade, so land listed for rent from the Rent board turns up here rather
+ * than only on the board it was posted from.
+ *
+ * The board's form asks for none of the land-specific fields — no acreage, no
+ * survey number — so those stay empty and the price unit the seller chose
+ * ("Per month", "Per acre") becomes the note under the price.
+ */
+function boardToItem(listing: Listing): LandItem {
+    const note = [
+        listing.priceUnit && listing.priceUnit !== 'Total' ? listing.priceUnit : '',
+        listing.negotiable ? 'negotiable' : '',
+    ].filter(Boolean).join(' · ');
+
+    return {
+        // Prefixed so it can never collide with a service_bookings UUID.
+        id: `board:${listing.id}`,
+        kind: listing.mode === 'rent' ? 'rent' : 'sale',
+        title: listing.title,
+        location: joinPlace([listing.location, listing.district, listing.state]),
+        area: '',
+        price: formatPrice(listing.price),
+        priceSuffix: '',
+        priceNote: note,
+        description: listing.description,
+        photos: listing.images,
+        // fetchMarketplaceLandListings looks the name up from `profiles`;
+        // older rows whose owner has no profile fall back to the generic.
+        seller: listing.contactName || 'Miraitu member',
+        phone: listing.contactPhone,
+        createdAt: listing.createdAt,
+        address: [
+            { label: 'District', value: listing.district },
+            { label: 'State', value: listing.state },
+        ].filter(a => a.value),
+        amenities: [],
+    };
+}
+
 export default function LandFeed() {
     const { user } = useAuth();
     const isGuest = !user || user.isGuest;
@@ -228,15 +276,20 @@ export default function LandFeed() {
 
     useEffect(() => {
         let cancelled = false;
-        // One feed, two tables' worth of rows. A failure in either is reported
-        // rather than silently showing half a marketplace.
-        Promise.all([fetchApprovedSellListings(), fetchApprovedLeaseListings()])
-            .then(([sell, lease]) => {
+        // One feed, two tables' worth of rows: the land board's own
+        // service_bookings, plus the land posted on the Rent and Buy & Sell
+        // boards. A failure in any of them is reported rather than silently
+        // showing half a marketplace.
+        Promise.all([fetchApprovedSellListings(), fetchApprovedLeaseListings(), fetchMarketplaceLandListings()])
+            .then(([sell, lease, board]) => {
                 if (cancelled) return;
-                if (sell.error || lease.error) setError(sell.error || lease.error || null);
+                if (sell.error || lease.error || board.error) {
+                    setError(sell.error || lease.error || board.error || null);
+                }
                 const merged = [
                     ...sell.data.map(sellToItem),
                     ...lease.data.map(leaseToItem),
+                    ...board.data.map(boardToItem),
                 ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
                 setItems(merged);
             })

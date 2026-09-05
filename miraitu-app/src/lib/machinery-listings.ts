@@ -95,6 +95,70 @@ export async function fetchMachineryListings(
     // narrowing happens here, so one helper covers all six pages.
     const rows = await getActiveListings('machinery', 'machinery');
     return rows
-        .filter(row => row.subcategory === subcategory)
+        // Sales only. A tractor posted on the Rent board carries the same
+        // category and subcategory, and without this it turned up under "Buy
+        // Used Tractors" with its hourly rate read as a sale price.
+        .filter(row => isSale(row) && row.subcategory === subcategory)
         .map((row, i) => toCard(row, i, categoryLabel));
+}
+
+/** Rows written before migration 030, and by the forms here, carry no mode. */
+function isSale(row: ListingRecord): boolean {
+    return (row.listing_mode ?? 'sale') === 'sale';
+}
+
+/** One machinery rental, as the peer-rental strip renders it. */
+export interface MachineryRental {
+    id: string;
+    title: string;
+    brand: string;
+    /** 'Tractor', 'Harvester', … Empty when the seller picked no sub-type. */
+    subcategory: string;
+    price: number | null;
+    /** 'Per hour', 'One day', 'per KM' — how the owner quoted it. */
+    priceUnit: string;
+    negotiable: boolean;
+    location: string;
+    images: string[];
+    phone: string;
+    createdAt: string;
+}
+
+/**
+ * Machinery offered for rent by other farmers, from the Rent board.
+ *
+ * The buy pages have shown real ads for a while — this is the same idea for
+ * the rent side, which until now only listed Miraitu's own catalogue. An ad
+ * posted once on the Rent board belongs wherever a farmer looks for that
+ * machine.
+ *
+ * `pageCategory` narrows to one sub-type ('tractors' → 'Tractor'); omit it for
+ * every machinery rental, which is what the hub shows. Ads whose seller chose
+ * no sub-type have no category page to sit on, so the hub is where they
+ * surface.
+ */
+export async function fetchMachineryRentals(pageCategory?: string): Promise<MachineryRental[]> {
+    const subcategory = pageCategory ? MACHINERY_SUBCATEGORY[pageCategory] : undefined;
+    if (pageCategory && !subcategory) return [];
+
+    const rows = await getActiveListings(undefined, 'machinery');
+    return rows
+        .filter(row => row.listing_mode === 'rent')
+        .filter(row => !subcategory || row.subcategory === subcategory)
+        .map(row => ({
+            id: row.id ?? '',
+            title: row.title,
+            brand: row.brand || '',
+            subcategory: row.subcategory || '',
+            price: row.price ?? null,
+            priceUnit: row.price_unit || row.unit || '',
+            negotiable: !!row.negotiable,
+            location: [row.location, row.district, row.state]
+                .map(p => (p ?? '').trim())
+                .filter((p, i, all) => p && all.findIndex(q => q.toLowerCase() === p.toLowerCase()) === i)
+                .join(', '),
+            images: (row.images ?? []).filter(Boolean),
+            phone: row.contact_phone || '',
+            createdAt: row.created_at ?? '',
+        }));
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -168,14 +169,36 @@ const TITLE_PLACEHOLDER: Record<string, string> = {
     others: 'e.g. White Giant Rabbits - 10 Pairs',
 };
 
+// useSearchParams must sit inside a Suspense boundary, or the production
+// build fails to prerender this route.
 export default function LivestockPage() {
+    return (
+        <Suspense fallback={null}>
+            <LivestockBrowser />
+        </Suspense>
+    );
+}
+
+function LivestockBrowser() {
     const { t } = useLanguage();
+    /**
+     * `?tab=sell&category=cattle` — how the five livestock pages hand a seller
+     * straight to the right form. They keep no form of their own, so this is
+     * the only way in from there. An unknown category is ignored rather than
+     * rejected: a stale link should open the form, not an error.
+     */
+    const searchParams = useSearchParams();
+    const wantsSell = searchParams.get('tab') === 'sell';
+    const wantsSellCategory = (() => {
+        const c = searchParams.get('category');
+        return c && sellCategories.some(s => s.id === c) ? c : '';
+    })();
     // Opens on the listings, not the category grid: with the welcome modal
     // gone this is the first thing a farmer sees, and "what is for sale" is
     // the question they came with.
-    const [activeTab, setActiveTab] = useState<TabType>('buy');
+    const [activeTab, setActiveTab] = useState<TabType>(wantsSell ? 'sell' : 'buy');
     const [selectedCategory, setSelectedCategory] = useState('All');
-    const [selectedSellCategory, setSelectedSellCategory] = useState('');
+    const [selectedSellCategory, setSelectedSellCategory] = useState(wantsSellCategory);
     const [contactModal, setContactModal] = useState<{ open: boolean; seller: string; phone: string } | null>(null);
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [pendingContact, setPendingContact] = useState<{ seller: string; phone: string } | null>(null);
