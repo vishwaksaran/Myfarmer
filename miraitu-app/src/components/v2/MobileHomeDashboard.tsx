@@ -306,13 +306,15 @@ export default function MobileHomeDashboard() {
                 the two marketplaces read as the primary destinations and the rest
                 fall into a clear second tier. */}
             <div className="mt-4 grid grid-cols-2 gap-3">
-                {/* Row 1 — the two marketplaces, tall and illustrated */}
+                {/* Row 1 — the two marketplaces, tall and illustrated.
+                    No count badge: these boards fold in land rows from a second
+                    table, so a marketplace_listings tally would under-report
+                    what the board actually shows. */}
                 <Tile
                     href="/home/rent"
                     label="Rent"
                     caption="Tractors, land, labour"
                     icon="agriculture"
-                    count={counts.rent}
                     className="bg-gradient-to-br from-[#e8f5e9] to-[#d6ecd8] dark:from-[#17301a] dark:to-[#122414]"
                     accent="text-[#1f8c30] dark:text-[#6abf62]"
                     tall
@@ -322,7 +324,6 @@ export default function MobileHomeDashboard() {
                     label="Buy & Sell"
                     caption="Post an ad free"
                     icon="storefront"
-                    count={counts.sale}
                     className="bg-gradient-to-br from-[#e3f2fd] to-[#d3e7fa] dark:from-[#152634] dark:to-[#101d29]"
                     accent="text-[#1565c0] dark:text-[#64b5f6]"
                     tall
