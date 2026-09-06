@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import MiraituLogo from '@/components/MiraituLogo';
-import LoginModal from '@/components/auth/LoginModal';
+import LivestockAdGrid from '@/components/livestock/LivestockAdGrid';
+import { fetchLivestockListings, type LivestockAd, type LivestockType } from '@/app/actions/livestock';
 import { uploadListingImages, createListing } from '@/lib/supabase-db';
 import supabase from '@/lib/supabase';
 
@@ -33,48 +33,20 @@ const tabs = [
     { id: 'buy' as TabType, titleKey: 'livestockPage.buy', icon: 'shopping_cart', bgColor: 'bg-emerald-500' },
 ];
 
-// Featured listings
 /**
- * The livestock shown on this page.
+ * The Buy tab's category chips.
  *
- * Both arrays are empty on purpose. They used to hold seeded demo animals —
- * a Gir cow at Rs 85,000 from "Ramesh Patel" in Rajkot, Murrah buffalo, layer
- * hens — complete with invented seller names and phone numbers. To a farmer
- * those read as real animals for sale from real people, and the numbers went
- * nowhere.
- *
- * Real livestock is posted by farmers on the Buy & Sell board under Animals,
- * so until this page reads from there it shows an empty state and a way to
- * post. Category chips, filters and the sell form are untouched and work the
- * moment these arrays have entries again.
+ * `value` is a LivestockType, the same id the five sub-pages and the sell form
+ * use, so a chip filters the fetched ads directly instead of matching on a
+ * display label that translation would break.
  */
-interface LivestockListing {
-    id: number;
-    name: string;
-    category: string;
-    breed: string;
-    age: string;
-    milkYield: string;
-    price: string;
-    location: string;
-    image: string;
-    verified: boolean;
-    seller: string;
-    phone: string;
-    featured?: boolean;
-}
-
-const featuredListings: LivestockListing[] = [];
-
-const allListings: LivestockListing[] = [];
-
-const categoryFilters = [
-    { value: 'All', key: 'common.all' },
-    { value: 'Cattle', key: 'livestock.cattle' },
-    { value: 'Goats & Sheep', key: 'livestock.goatsSheep' },
-    { value: 'Poultry', key: 'livestock.poultry' },
-    { value: 'Fish', key: 'livestock.fish' },
-    { value: 'Others', key: 'livestock.others' },
+const categoryFilters: { value: LivestockType | 'all'; key: string }[] = [
+    { value: 'all', key: 'common.all' },
+    { value: 'cattle', key: 'livestock.cattle' },
+    { value: 'goats', key: 'livestock.goatsSheep' },
+    { value: 'poultry', key: 'livestock.poultry' },
+    { value: 'fish', key: 'livestock.fish' },
+    { value: 'others', key: 'livestock.others' },
 ];
 
 /**
@@ -197,11 +169,12 @@ function LivestockBrowser() {
     // gone this is the first thing a farmer sees, and "what is for sale" is
     // the question they came with.
     const [activeTab, setActiveTab] = useState<TabType>(wantsSell ? 'sell' : 'buy');
-    const [selectedCategory, setSelectedCategory] = useState('All');
+    const [selectedCategory, setSelectedCategory] = useState<LivestockType | 'all'>('all');
     const [selectedSellCategory, setSelectedSellCategory] = useState(wantsSellCategory);
-    const [contactModal, setContactModal] = useState<{ open: boolean; seller: string; phone: string } | null>(null);
-    const [showLoginModal, setShowLoginModal] = useState(false);
-    const [pendingContact, setPendingContact] = useState<{ seller: string; phone: string } | null>(null);
+    /** Every livestock ad, of all five types — see the effect below. */
+    const [ads, setAds] = useState<LivestockAd[]>([]);
+    const [adsLoading, setAdsLoading] = useState(true);
+    const [adsError, setAdsError] = useState<string | null>(null);
     const [sellSubmitting, setSellSubmitting] = useState(false);
     const [sellError, setSellError] = useState('');
     const [sellSuccess, setSellSuccess] = useState(false);
@@ -234,39 +207,40 @@ function LivestockBrowser() {
     const setSpec = (key: string, value: string) =>
         setSellForm(p => ({ ...p, specs: { ...p.specs, [key]: value } }));
 
-    // Auth context
-    const { user } = useAuth();
+    /**
+     * The Buy tab reads the same ads the five sub-pages do, all five types at
+     * once. It used to render a hardcoded empty array, so it showed "0
+     * listings" and the empty state even when /home/livestock/poultry had ads
+     * on it — the two pages disagreed about what was for sale.
+     *
+     * `reloadAds` also runs after a successful post, so a seller sees their own
+     * animal in the grid instead of having to reload the page.
+     */
+    const reloadAds = useCallback(() => {
+        setAdsLoading(true);
+        return fetchLivestockListings('all')
+            .then(res => { setAds(res.data); setAdsError(res.error ?? null); })
+            .catch(() => setAdsError('Failed to load listings'))
+            .finally(() => setAdsLoading(false));
+    }, []);
 
-    // Effect to handle post-login action
     useEffect(() => {
-        if (user && pendingContact) {
-            setContactModal({ open: true, ...pendingContact });
-            setPendingContact(null);
-            setShowLoginModal(false);
-        }
-    }, [user, pendingContact]);
+        let cancelled = false;
+        fetchLivestockListings('all')
+            .then(res => {
+                if (cancelled) return;
+                setAds(res.data);
+                setAdsError(res.error ?? null);
+            })
+            .catch(() => { if (!cancelled) setAdsError('Failed to load listings'); })
+            .finally(() => { if (!cancelled) setAdsLoading(false); });
+        return () => { cancelled = true; };
+    }, []);
 
-    const filteredListings = selectedCategory === 'All' ? allListings : allListings.filter(l => l.category === selectedCategory);
-
-    const translateAge = (age: string) =>
-        age
-            .replace(/\bYears\b/g, t('common.years'))
-            .replace(/\bYear\b/g, t('common.year'))
-            .replace(/\bMonths\b/g, t('common.months'))
-            .replace(/\bMonth\b/g, t('common.month'))
-            .replace(/\bFresh\b/g, t('common.fresh'));
-
-    const translateMilkYield = (my: string) =>
-        my.replace('L/day', t('common.lperday'));
-
-    const handleContactClick = (seller: string, phone: string) => {
-        if (user) {
-            setContactModal({ open: true, seller, phone });
-        } else {
-            setPendingContact({ seller, phone });
-            setShowLoginModal(true);
-        }
-    };
+    const filteredListings = useMemo(
+        () => (selectedCategory === 'all' ? ads : ads.filter(a => a.type === selectedCategory)),
+        [ads, selectedCategory]
+    );
 
     const validateSellForm = (): boolean => {
         const errs: string[] = [];
@@ -339,6 +313,9 @@ function LivestockBrowser() {
                 setSellError(error);
             } else {
                 setSellSuccess(true);
+                // So "Browse Listings" from the success screen shows the animal
+                // just posted rather than the grid as it was on page load.
+                void reloadAds();
             }
         } catch (err) {
             setSellError('Something went wrong. Please try again.');
@@ -349,50 +326,6 @@ function LivestockBrowser() {
     };
 
 
-    // Listing Card Component
-    const ListingCard = ({ listing, showFeaturedBadge = false }: { listing: typeof allListings[0], showFeaturedBadge?: boolean }) => (
-        <div className="bg-white dark:bg-[#1a231a] rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-all group flex flex-col">
-            <div className="relative aspect-[4/3] overflow-hidden">
-                <img src={listing.image} alt={listing.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                {listing.verified && (
-                    <div className="absolute top-3 left-3 px-2 py-1 rounded-lg bg-primary text-white text-xs font-semibold flex items-center gap-1">
-                        <span className="material-symbols-outlined text-sm">verified</span>{t('common.verified')}
-                    </div>
-                )}
-                {showFeaturedBadge && (
-                    <div className="absolute top-3 right-3 px-2 py-1 rounded-lg bg-amber-500 text-white text-xs font-bold flex items-center gap-1">
-                        <span className="material-symbols-outlined text-sm">star</span>{t('common.featured')}
-                    </div>
-                )}
-                {!showFeaturedBadge && (
-                    <div className="absolute top-3 right-3 px-2 py-1 rounded-lg bg-white/90 dark:bg-gray-800/90 text-xs font-semibold">{listing.category}</div>
-                )}
-            </div>
-            <div className="p-4 flex-1 flex flex-col">
-                <h3 className="font-bold text-gray-900 dark:text-white">{listing.name}</h3>
-                <div className="flex items-center gap-2 text-xs text-gray-500 mt-1 flex-wrap">
-                    <span className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800">{listing.breed}</span>
-                    <span>•</span><span>{translateAge(listing.age)}</span>
-                    {listing.milkYield !== '-' && <><span>•</span><span>{translateMilkYield(listing.milkYield)}</span></>}
-                </div>
-                <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-                    <p className="text-lg font-bold text-primary">{listing.price}</p>
-                    <p className="text-xs text-gray-500 flex items-center gap-1">
-                        <span className="material-symbols-outlined text-sm">location_on</span>
-                        {listing.location.split(',')[0]}
-                    </p>
-                </div>
-                {/* Contact Button */}
-                <button
-                    onClick={() => handleContactClick(listing.seller, listing.phone)}
-                    className="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-primary to-emerald-600 text-white font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg hover:scale-[1.02] transition-all"
-                >
-                    <span className="material-symbols-outlined text-lg">call</span>
-                    {t('livestockPage.contactSeller')}
-                </button>
-            </div>
-        </div>
-    );
 
     return (
         <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-[#121811] dark:text-[#f9fbf9] transition-colors duration-300">
@@ -452,21 +385,10 @@ function LivestockBrowser() {
                                     ))}
                                 </div>
 
-                                {/* Featured — hidden while empty; a starred heading
-                                    over an empty grid reads as a loading failure. */}
-                                {featuredListings.length > 0 && (
-                                <div className="mb-8 md:mb-10">
-                                    <div className="flex items-center gap-2 mb-3 md:mb-6">
-                                        <span className="material-symbols-outlined text-amber-500 text-lg md:text-xl">star</span>
-                                        <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">{t('livestockPage.featured')}</h2>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                                        {featuredListings.map((listing) => (
-                                            <ListingCard key={listing.id} listing={listing} showFeaturedBadge={true} />
-                                        ))}
-                                    </div>
-                                </div>
-                                )}
+                                {/* The Featured strip is gone with the seeded ads it
+                                    rendered: nothing marks a real listing as featured,
+                                    so it was a starred heading over a permanently
+                                    empty grid. */}
 
                                 {/* The stats bar was removed: "5,000+ verified sellers",
                                     "25,000+ animals listed", "10,000+ successful trades",
@@ -481,21 +403,6 @@ function LivestockBrowser() {
                         {/* Buy Tab */}
                         {activeTab === 'buy' && (
                             <div className="animate-fadeIn">
-                                {/* Featured Section — hidden while empty. */}
-                                {featuredListings.length > 0 && (
-                                <div className="mb-6 md:mb-8">
-                                    <div className="flex items-center gap-2 mb-3 md:mb-4">
-                                        <span className="material-symbols-outlined text-amber-500 text-lg md:text-xl">star</span>
-                                        <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white">{t('livestockPage.featured')}</h2>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                                        {featuredListings.map((listing) => (
-                                            <ListingCard key={listing.id} listing={listing} showFeaturedBadge={true} />
-                                        ))}
-                                    </div>
-                                </div>
-                                )}
-
                                 {/* All Listings */}
                                 <div className="pt-4 md:pt-6 border-t border-gray-200 dark:border-gray-700">
                                     <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white mb-3 md:mb-4">All Listings</h2>
@@ -518,8 +425,28 @@ function LivestockBrowser() {
 
                                     {/* Listings Grid, or the same empty state the
                                         Buy & Sell board shows — that is where the
-                                        button lands, so the two should match. */}
-                                    {filteredListings.length === 0 ? (
+                                        button lands, so the two should match.
+                                        "Nothing posted" must wait for the fetch,
+                                        or it flashes over ads that are on their way. */}
+                                    {adsLoading ? (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            {[0, 1, 2].map(i => (
+                                                <div key={i} className="h-80 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
+                                            ))}
+                                        </div>
+                                    ) : adsError ? (
+                                        <div className="text-center py-16 bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800">
+                                            <span className="material-symbols-outlined text-5xl text-gray-300 mb-3">error</span>
+                                            <p className="text-gray-500 font-medium px-6">{adsError}</p>
+                                            <button
+                                                onClick={() => { void reloadAds(); }}
+                                                className="mt-4 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#22c33d] text-white text-sm font-bold hover:brightness-110"
+                                            >
+                                                <span className="material-symbols-outlined text-lg">refresh</span>
+                                                Try again
+                                            </button>
+                                        </div>
+                                    ) : filteredListings.length === 0 ? (
                                         <div className="text-center py-16 bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800">
                                             <span className="material-symbols-outlined text-5xl text-gray-300 mb-3">pets</span>
                                             <p className="text-gray-500 font-medium px-6">
@@ -534,11 +461,7 @@ function LivestockBrowser() {
                                             </button>
                                         </div>
                                     ) : (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
-                                            {filteredListings.map((listing) => (
-                                                <ListingCard key={listing.id} listing={listing} />
-                                            ))}
-                                        </div>
+                                        <LivestockAdGrid ads={filteredListings} />
                                     )}
                                 </div>
                             </div>
@@ -743,38 +666,10 @@ function LivestockBrowser() {
                         )}
                     </div>
 
-                    {/* Contact Modal (only shows if logged in) */}
-                    {contactModal?.open && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn" onClick={() => setContactModal(null)}>
-                            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-                            <div className="relative bg-white dark:bg-[#1a231a] rounded-2xl p-8 max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                                <button onClick={() => setContactModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                                    <span className="material-symbols-outlined">close</span>
-                                </button>
-                                <div className="text-center">
-                                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-primary text-3xl">call</span>
-                                    </div>
-                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Contact Seller</h3>
-                                    <p className="text-gray-500 mb-4">{contactModal.seller}</p>
-                                    <div className="flex flex-col gap-3">
-                                        <a href={`tel:${contactModal.phone}`} className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-emerald-600 text-white font-bold rounded-xl hover:shadow-lg transition-all">
-                                            <span className="material-symbols-outlined">call</span>
-                                            Call {contactModal.phone}
-                                        </a>
-                                        <a href={`https://wa.me/${contactModal.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#25D366] text-white font-bold rounded-xl hover:shadow-lg transition-all">
-                                            <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
-                                            Chat on WhatsApp
-                                        </a>
-                                    </div>
-                                    <p className="text-xs text-gray-400 mt-4">Choose how you want to contact the seller</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* New "Welcome Back" Login Modal */}
-                    <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+                    {/* The contact and login modals that stood here belonged to
+                        the seeded ListingCard. LivestockAdGrid owns both now, so
+                        the Buy tab and the five type pages gate the seller's
+                        number the same way. */}
 
                     {/* The "What would you like to do?" welcome modal was removed.
                         It interrupted every visit with a Buy/Sell/Skip choice before the

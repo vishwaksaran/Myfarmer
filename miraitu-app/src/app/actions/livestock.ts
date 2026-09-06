@@ -39,6 +39,12 @@ const SUBCATEGORIES_BY_TYPE: Record<LivestockType, string[]> = {
 
 export interface LivestockAd {
     id: string;
+    /**
+     * Which of the five pages this ad belongs to. Carried on the ad because
+     * the Buy tab on /home/livestock mixes all five, and its category chips
+     * and each card's breed/age/yield line both key off it.
+     */
+    type: LivestockType;
     title: string;
     description: string;
     /** 'Cow', 'Poultry', … — shown as a chip so a buffalo does not read as a cow. */
@@ -98,6 +104,17 @@ function belongsTo(row: Row, type: LivestockType): boolean {
     return fromSpecs ? fromSpecs === type : type === 'others';
 }
 
+/**
+ * The one page a row belongs to. `belongsTo` answers this per page; this walks
+ * the five in order and returns the first that claims the row. `others` is the
+ * catch-all in `belongsTo`, so the walk always terminates.
+ */
+const LIVESTOCK_TYPES: LivestockType[] = ['cattle', 'goats', 'poultry', 'fish', 'others'];
+
+function typeOf(row: Row): LivestockType {
+    return LIVESTOCK_TYPES.find(t => belongsTo(row, t)) ?? 'others';
+}
+
 /** Everything the seller answered, as printable strings. */
 function toSpecs(raw: Record<string, unknown> | null): Record<string, string> {
     const out: Record<string, string> = {};
@@ -109,12 +126,15 @@ function toSpecs(raw: Record<string, unknown> | null): Record<string, string> {
     return out;
 }
 
+/**
+ * The ads for one page, or — with 'all' — every livestock ad there is, which
+ * is what the Buy tab on /home/livestock shows.
+ */
 export async function fetchLivestockListings(
-    type: LivestockType
+    type: LivestockType | 'all'
 ): Promise<{ data: LivestockAd[]; error?: string }> {
-    const subcategories = SUBCATEGORIES_BY_TYPE[type];
     // An unknown slug is a stale link, not an error worth showing a farmer.
-    if (!subcategories) return { data: [] };
+    if (type !== 'all' && !SUBCATEGORIES_BY_TYPE[type]) return { data: [] };
 
     try {
         const { data, error } = await createSupabaseAdminClient()
@@ -135,10 +155,12 @@ export async function fetchLivestockListings(
             return { data: [], error: error.message };
         }
 
-        const rows = ((data ?? []) as unknown as Row[]).filter(row => belongsTo(row, type));
+        const all = (data ?? []) as unknown as Row[];
+        const rows = type === 'all' ? all : all.filter(row => belongsTo(row, type));
         return {
             data: rows.map(row => ({
                 id: row.id,
+                type: type === 'all' ? typeOf(row) : type,
                 title: row.title,
                 description: row.description || '',
                 subcategory: row.subcategory || '',
