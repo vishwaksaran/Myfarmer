@@ -15,11 +15,11 @@ type TabType = 'browse' | 'buy' | 'sell';
 
 // Category data with real images
 const categories = [
-    { id: 'cattle', nameKey: 'livestock.cattle', image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=200&h=200&fit=crop', count: 245, path: '/home/livestock/cattle' },
-    { id: 'goats-sheep', nameKey: 'livestock.goatsSheep', image: 'https://images.unsplash.com/photo-1524024973431-2ad916746881?w=200&h=200&fit=crop', count: 189, path: '/home/livestock/goats-sheep' },
-    { id: 'poultry', nameKey: 'livestock.poultry', image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=200&h=200&fit=crop', count: 312, path: '/home/livestock/poultry' },
-    { id: 'fish', nameKey: 'livestock.fishAquaculture', image: 'https://images.unsplash.com/photo-1731552466988-26d1dbeff4ee?w=200&h=200&fit=crop', count: 156, path: '/home/livestock/fish' },
-    { id: 'others', nameKey: 'livestock.others', image: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=200&h=200&fit=crop', count: 78, path: '/home/livestock/others' },
+    { id: 'cattle', nameKey: 'livestock.cattle', image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=200&h=200&fit=crop', path: '/home/livestock/cattle' },
+    { id: 'goats-sheep', nameKey: 'livestock.goatsSheep', image: 'https://images.unsplash.com/photo-1524024973431-2ad916746881?w=200&h=200&fit=crop', path: '/home/livestock/goats-sheep' },
+    { id: 'poultry', nameKey: 'livestock.poultry', image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=200&h=200&fit=crop', path: '/home/livestock/poultry' },
+    { id: 'fish', nameKey: 'livestock.fishAquaculture', image: 'https://images.unsplash.com/photo-1731552466988-26d1dbeff4ee?w=200&h=200&fit=crop', path: '/home/livestock/fish' },
+    { id: 'others', nameKey: 'livestock.others', image: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=200&h=200&fit=crop', path: '/home/livestock/others' },
 ];
 
 /**
@@ -441,8 +441,9 @@ function LivestockBrowser() {
                                                 <div className="w-16 md:w-20 h-16 md:h-20 rounded-lg md:rounded-2xl bg-[#c8e6c9] dark:bg-emerald-800/50 flex items-center justify-center mb-2 md:mb-3 overflow-hidden group-hover:scale-105 transition-transform duration-300">
                                                     <img src={category.image} alt={t(category.nameKey)} className="w-full h-full object-cover rounded-lg md:rounded-xl" />
                                                 </div>
-                                                <h3 className="font-bold text-gray-900 dark:text-white text-center text-xs md:text-sm mb-1">{t(category.nameKey)}</h3>
-                                                <p className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 text-center">{category.count} {t('common.listings')}</p>
+                                                {/* No listing count: the numbers that used to sit here
+                                                    were invented and bore no relation to the ads posted. */}
+                                                <h3 className="font-bold text-gray-900 dark:text-white text-center text-xs md:text-sm">{t(category.nameKey)}</h3>
                                             </div>
                                             <div className="absolute bottom-1 md:bottom-3 right-1 md:right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <span className="material-symbols-outlined text-primary text-base md:text-lg">arrow_forward</span>
