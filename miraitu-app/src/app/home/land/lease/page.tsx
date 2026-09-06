@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
@@ -33,6 +33,51 @@ async function uploadLeasePhoto(file: File): Promise<string | null> {
 }
 
 type TabType = 'browse' | 'list';
+
+interface LeaseFormData {
+    title: string;
+    location: string;
+    surveyNo: string;
+    district: string;
+    taluk: string;
+    hobli: string;
+    village: string;
+    area: string;
+    leasePrice: string;
+    duration: string;
+    description: string;
+    contactName: string;
+    contactPhone: string;
+}
+
+const BLANK_LEASE_FORM: LeaseFormData = {
+    title: '', location: '', surveyNo: '', district: '', taluk: '', hobli: '',
+    village: '', area: '', leasePrice: '', duration: '', description: '',
+    contactName: '', contactPhone: '',
+};
+
+/**
+ * Where an abandoned "List Your Land" draft is parked in sessionStorage.
+ *
+ * Filling this form used to require nothing, but Submit does: a guest who
+ * gets this far has typed everything and only then meets the login wall. The
+ * form's own React state survives that — the login modal is an overlay, not a
+ * navigation — but nothing told the seller that, and closing the tab or
+ * genuinely navigating away (a back gesture, a refresh) really did lose it.
+ * This is the safety net: text fields are persisted as they're typed and
+ * restored on the next visit, so "log in and it's gone" cannot happen even in
+ * the worst case. Photos are not — a File object cannot survive
+ * sessionStorage, so a seller who is bounced by an actual reload will need to
+ * re-attach them; a submit blocked by nothing but the login modal never
+ * unmounts this page at all, and never loses them.
+ */
+const LEASE_DRAFT_KEY = 'miraitu.landLease.listDraft';
+
+interface LeaseDraft {
+    serviceType: 'lease' | 'rent';
+    formData: LeaseFormData;
+    agreedToTerms: boolean;
+}
 
 // Full class strings (not built at runtime) so Tailwind keeps them in the build.
 const SERVICE_TYPE_OPTIONS = [
@@ -208,23 +253,65 @@ export default function LeaseLandPage() {
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [uploadingPhotos, setUploadingPhotos] = useState(false);
     const [serviceType, setServiceType] = useState<'lease' | 'rent'>('lease');
-    const [formData, setFormData] = useState({
-        title: '',
-        location: '',
-        surveyNo: '',
-        district: '',
-        taluk: '',
-        hobli: '',
-        village: '',
-        area: '',
-        leasePrice: '',
-        duration: '',
-        description: '',
-        contactName: '',
-        contactPhone: '',
-    });
+    const [formData, setFormData] = useState<LeaseFormData>(BLANK_LEASE_FORM);
+    /** True once a saved draft has been read back onto the form, for the banner below. */
+    const [draftRestored, setDraftRestored] = useState(false);
     const { submit, submitting } = useBookingSubmit();
     const submission = useSubmissionCopy('request');
+
+    /**
+     * Set the instant Submit is blocked for login, consumed the instant login
+     * succeeds. A ref rather than state: it must not persist across an actual
+     * remount, or a login made later for something unrelated would silently
+     * post a draft the seller typed and may no longer want — see the effect
+     * below and LEASE_DRAFT_KEY's comment for the sessionStorage half of this.
+     */
+    const pendingLoginSubmit = useRef(false);
+    /** Skips the persistence effect's first run — see its own comment. */
+    const isFirstPersist = useRef(true);
+
+    // Read back a draft left from a previous visit — a genuine navigation
+    // away (not just the login modal) is the one case the ref above can't
+    // cover, since a fresh mount starts with pendingLoginSubmit false. Runs
+    // once; deliberately does not auto-submit even if already logged in, so
+    // returning to this tab days later never posts old data without a click.
+    useEffect(() => {
+        try {
+            const raw = sessionStorage.getItem(LEASE_DRAFT_KEY);
+            if (!raw) return;
+            const draft = JSON.parse(raw) as Partial<LeaseDraft>;
+            const hasContent = !!draft.formData && Object.values(draft.formData).some(v => typeof v === 'string' && v.trim());
+            if (!hasContent) {
+                sessionStorage.removeItem(LEASE_DRAFT_KEY);
+                return;
+            }
+            setServiceType(draft.serviceType === 'rent' ? 'rent' : 'lease');
+            setFormData(prev => ({ ...prev, ...draft.formData }));
+            setAgreedToTerms(!!draft.agreedToTerms);
+            setActiveTab('list');
+            setDraftRestored(true);
+        } catch {
+            sessionStorage.removeItem(LEASE_DRAFT_KEY);
+        }
+        // Deliberately once, on mount.
+    }, []);
+
+    // Keeps the draft current as the seller types. Skips its first run so it
+    // never fires with the blank initial state ahead of the restore effect
+    // above and overwrite a draft that effect hasn't read yet.
+    useEffect(() => {
+        if (isFirstPersist.current) { isFirstPersist.current = false; return; }
+        const hasContent = Object.values(formData).some(v => v.trim());
+        try {
+            if (hasContent) {
+                sessionStorage.setItem(LEASE_DRAFT_KEY, JSON.stringify({ serviceType, formData, agreedToTerms }));
+            } else {
+                sessionStorage.removeItem(LEASE_DRAFT_KEY);
+            }
+        } catch {
+            /* Private-mode or full storage — the in-memory ref-based resume still works. */
+        }
+    }, [formData, serviceType, agreedToTerms]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -270,17 +357,12 @@ export default function LeaseLandPage() {
         setPreviews(previews.filter((_, i) => i !== index));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        // Require login — show modal for guests
-        if (!user || user.isGuest) {
-            setShowLoginModal(true);
-            return;
-        }
-
-        if (!validate()) return;
-
+    /**
+     * The actual submission — upload, save, reset. Split out from
+     * `handleSubmit` so the effect below can run exactly this once login
+     * completes, without re-running the auth check it just passed.
+     */
+    const performSubmit = async () => {
         // 1. Upload photos to Supabase Storage first
         let photoUrls: string[] = [];
         if (photos.length > 0) {
@@ -321,15 +403,53 @@ export default function LeaseLandPage() {
             setTimeout(() => setShowSuccessModal(false), 6000);
             // Reset form
             setServiceType('lease');
-            setFormData({ title: '', location: '', surveyNo: '', district: '', taluk: '', hobli: '', village: '', area: '', leasePrice: '', duration: '', description: '', contactName: '', contactPhone: '' });
+            setFormData(BLANK_LEASE_FORM);
             previews.forEach(url => URL.revokeObjectURL(url));
             setPhotos([]);
             setPreviews([]);
             setAgreedToTerms(false);
+            setDraftRestored(false);
+            try { sessionStorage.removeItem(LEASE_DRAFT_KEY); } catch { /* nothing left to clean up */ }
         } else {
             setErrors({ submit: result.error || 'Failed to submit' });
         }
     };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // A guest can fill in every field here — nothing stops them — and
+        // only meets the login wall at this point. Remembering the attempt is
+        // what turns "closed the login modal, form's still sitting there,
+        // now what?" into "logged in, and it's already posted".
+        if (!user || user.isGuest) {
+            pendingLoginSubmit.current = true;
+            setShowLoginModal(true);
+            return;
+        }
+
+        if (!validate()) return;
+        await performSubmit();
+    };
+
+    /**
+     * Finishes the submission the instant login succeeds, so the seller never
+     * has to notice the form was fine all along and press Submit a second
+     * time. Fires only for a submit blocked in *this* mounted instance
+     * (`pendingLoginSubmit` is a ref, reset to false on every fresh mount) —
+     * logging in later for something unrelated must never quietly post a
+     * draft the seller has since abandoned.
+     */
+    useEffect(() => {
+        if (!pendingLoginSubmit.current) return;
+        if (!user || user.isGuest) return;
+        pendingLoginSubmit.current = false;
+        // Re-validate rather than assume: something could have gone stale
+        // (e.g. the phone field) while the login modal was up.
+        if (!validate()) return;
+        void performSubmit();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user]);
 
     const isBusy = submitting || uploadingPhotos;
 
@@ -560,6 +680,36 @@ export default function LeaseLandPage() {
                         <form onSubmit={handleSubmit} className="bg-white dark:bg-[#1a231a] rounded-lg md:rounded-2xl p-4 md:p-8 border border-gray-100 dark:border-gray-800 shadow-sm">
                             <h2 className="text-xl md:text-2xl font-bold text-primary text-center mb-2">List Your Land</h2>
                             <p className="text-sm md:text-base text-gray-500 text-center mb-4 md:mb-6">Connect with farmers looking for land</p>
+
+                            {/* Only shown when the fields below came back from a
+                                previous, unfinished visit — see LEASE_DRAFT_KEY. */}
+                            {draftRestored && (
+                                <div className="mb-4 md:mb-6 flex items-start gap-2.5 rounded-xl border border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-900/20 px-3.5 py-3">
+                                    <span className="material-symbols-outlined text-teal-600 dark:text-teal-400 shrink-0">restore</span>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-semibold text-teal-800 dark:text-teal-300">
+                                            Picked up where you left off
+                                        </p>
+                                        <p className="text-xs text-teal-700/80 dark:text-teal-400/80 mt-0.5">
+                                            We kept what you&apos;d typed. Photos don&apos;t carry over — please re-add them.
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setServiceType('lease');
+                                            setFormData(BLANK_LEASE_FORM);
+                                            setAgreedToTerms(false);
+                                            setErrors({});
+                                            setDraftRestored(false);
+                                            try { sessionStorage.removeItem(LEASE_DRAFT_KEY); } catch { /* nothing left to clean up */ }
+                                        }}
+                                        className="text-xs font-bold text-teal-700 dark:text-teal-400 hover:underline shrink-0"
+                                    >
+                                        Start fresh
+                                    </button>
+                                </div>
+                            )}
 
                             {/* Service type — selectable cards. A plain segmented toggle made it
                                 hard to tell which side was active, so each option is now a card
