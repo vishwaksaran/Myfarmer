@@ -7,7 +7,10 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import MiraituLogo from '@/components/MiraituLogo';
 import LivestockAdGrid from '@/components/livestock/LivestockAdGrid';
+import EnableLocationBanner from '@/components/location/EnableLocationBanner';
 import { fetchLivestockListings, type LivestockAd, type LivestockType } from '@/app/actions/livestock';
+import { useAppLocation } from '@/context/LocationContext';
+import { nearFrom } from '@/lib/geo-distance';
 import { uploadListingImages, createListing } from '@/lib/supabase-db';
 import supabase from '@/lib/supabase';
 
@@ -171,6 +174,11 @@ function LivestockBrowser() {
     const [activeTab, setActiveTab] = useState<TabType>(wantsSell ? 'sell' : 'buy');
     const [selectedCategory, setSelectedCategory] = useState<LivestockType | 'all'>('all');
     const [selectedSellCategory, setSelectedSellCategory] = useState(wantsSellCategory);
+    const { location } = useAppLocation();
+    /** Distance is worked out server-side, so a new position means a refetch. */
+    const near = nearFrom(location);
+    const nearKey = near ? `${near.lat},${near.lng}` : '';
+
     /** Every livestock ad, of all five types — see the effect below. */
     const [ads, setAds] = useState<LivestockAd[]>([]);
     const [adsLoading, setAdsLoading] = useState(true);
@@ -218,15 +226,15 @@ function LivestockBrowser() {
      */
     const reloadAds = useCallback(() => {
         setAdsLoading(true);
-        return fetchLivestockListings('all')
+        return fetchLivestockListings('all', nearFrom(location))
             .then(res => { setAds(res.data); setAdsError(res.error ?? null); })
             .catch(() => setAdsError('Failed to load listings'))
             .finally(() => setAdsLoading(false));
-    }, []);
+    }, [location]);
 
     useEffect(() => {
         let cancelled = false;
-        fetchLivestockListings('all')
+        fetchLivestockListings('all', near)
             .then(res => {
                 if (cancelled) return;
                 setAds(res.data);
@@ -235,7 +243,9 @@ function LivestockBrowser() {
             .catch(() => { if (!cancelled) setAdsError('Failed to load listings'); })
             .finally(() => { if (!cancelled) setAdsLoading(false); });
         return () => { cancelled = true; };
-    }, []);
+        // `near` is rebuilt each render; nearKey is its stable identity.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [nearKey]);
 
     const filteredListings = useMemo(
         () => (selectedCategory === 'all' ? ads : ads.filter(a => a.type === selectedCategory)),
@@ -262,6 +272,21 @@ function LivestockBrowser() {
         setSellFormErrors(errs);
         return errs.length === 0;
     };
+
+    /**
+     * Is the seller standing in the place they are describing?
+     *
+     * The only coordinates available here are the device's, and they are worth
+     * saving only when the district and state the seller typed match where the
+     * device says it is. Compared case- and space-insensitively; a blank on
+     * either side counts as no match rather than as agreement.
+     */
+    const norm = (s: string | undefined | null) => (s ?? '').trim().toLowerCase();
+    const postingFromHere =
+        !!near &&
+        !!norm(location?.district) &&
+        norm(location?.district) === norm(sellForm.district) &&
+        norm(location?.state) === norm(sellForm.state);
 
     const handleSellSubmit = async () => {
         if (!validateSellForm()) return;
@@ -295,6 +320,15 @@ function LivestockBrowser() {
                 location: sellForm.location,
                 district: sellForm.district,
                 state: sellForm.state,
+                // Coordinates only when the device agrees with the district and
+                // state the seller typed — i.e. they are posting from where the
+                // animal is. Someone in Bengaluru listing a Bobbepalli flock
+                // would otherwise pin it to Bangalore East, and every buyer's
+                // "km away" would be measured from the wrong village. No
+                // coordinates means no distance line, which beats a wrong one.
+                ...(postingFromHere
+                    ? { latitude: near?.lat ?? null, longitude: near?.lng ?? null }
+                    : { latitude: null, longitude: null }),
                 images: imageUrls,
                 // Only the fields this category actually asked for, blanks dropped.
                 specs: {
@@ -406,6 +440,10 @@ function LivestockBrowser() {
                                 {/* All Listings */}
                                 <div className="pt-4 md:pt-6 border-t border-gray-200 dark:border-gray-700">
                                     <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white mb-3 md:mb-4">All Listings</h2>
+
+                                    {/* Only worth asking for a location when there
+                                        is something on screen to measure against. */}
+                                    {ads.length > 0 && <EnableLocationBanner />}
 
                                     {/* Category Filters */}
                                     <div className="flex items-center gap-1.5 md:gap-2 mb-4 md:mb-6 overflow-x-auto pb-2">

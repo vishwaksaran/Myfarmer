@@ -34,6 +34,13 @@ export interface PlaceSuggestion {
     district: string;
     /** State or union territory. */
     state: string;
+    /**
+     * Where the place is. Carried so a listing can be pinned to the village the
+     * seller names rather than to wherever their phone happened to be — see
+     * ListingFormModal.
+     */
+    latitude: number | null;
+    longitude: number | null;
 }
 
 /**
@@ -89,6 +96,8 @@ function toSuggestion(r: OpenMeteoResult): PlaceSuggestion | null {
         // the provider leaves admin2 blank for a small village.
         district: cleanDistrict(r.admin2) || cleanDistrict(r.admin3),
         state,
+        latitude: typeof r.latitude === 'number' ? r.latitude : null,
+        longitude: typeof r.longitude === 'number' ? r.longitude : null,
     };
 }
 

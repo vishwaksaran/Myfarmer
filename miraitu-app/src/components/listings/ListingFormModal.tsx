@@ -16,6 +16,32 @@ import { CATEGORY_META, defaultPriceUnit, listingPlaceholders, postCta } from '.
 import { discardCommunityMedia, uploadCommunityMedia } from '@/lib/community-media';
 import { useAppLocation } from '@/context/LocationContext';
 import { Z } from '@/lib/z-layers';
+import type { PlaceSuggestion } from '@/app/api/geo/places/route';
+
+/**
+ * Where the ad is, as opposed to where the person filling the form is.
+ *
+ * These two were the same thing: district, state and coordinates were all read
+ * from the app's current location at submit time, whatever the seller typed in
+ * the Location field. Posting a Bobbepalli (Andhra Pradesh) listing from
+ * Bengaluru filed it under Bangalore East, Karnataka, with coordinates to
+ * match — and editing that ad from a third place moved it again, because the
+ * overwrite ran on every save.
+ *
+ * `label` is what pins these values to the text they describe. When the
+ * Location field no longer reads as the pinned place, the pin is dropped and
+ * the ad is saved with no coordinates at all, which is honest: a distance we
+ * cannot compute is better than one measured from the wrong village.
+ */
+interface PlacePin {
+    label: string;
+    district: string;
+    state: string;
+    lat: number | null;
+    lng: number | null;
+}
+
+const sameLabel = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
 interface ListingFormModalProps {
     isOpen: boolean;
@@ -70,6 +96,12 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
     const [priceUnit, setPriceUnit] = useState<string>(priceUnits[0]);
     const [negotiable, setNegotiable] = useState(false);
     const [locationText, setLocationText] = useState('');
+    /** The place the Location text is pinned to — see PlacePin. */
+    const [pin, setPin] = useState<PlacePin | null>(null);
+    const [placeResults, setPlaceResults] = useState<PlaceSuggestion[]>([]);
+    const [placeLoading, setPlaceLoading] = useState(false);
+    /** Closed after a pick, so choosing a place does not immediately re-search. */
+    const [placeOpen, setPlaceOpen] = useState(false);
     const [contactPhone, setContactPhone] = useState('');
     const [images, setImages] = useState<string[]>([]);
     // Labour & Services only — stored in specs, see migration 032.
@@ -112,6 +144,14 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
             setPriceUnit(editing.priceUnit || defaultPriceUnit(mode, editing.category));
             setNegotiable(editing.negotiable);
             setLocationText(editing.location);
+            // The ad's own place, never the editor's current one.
+            setPin({
+                label: editing.location,
+                district: editing.district,
+                state: editing.state,
+                lat: editing.latitude,
+                lng: editing.longitude,
+            });
             setContactPhone(editing.contactPhone);
             setImages(editing.images);
             setWorkType(editing.workType);
@@ -134,15 +174,78 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
             setPriceUnit(defaultPriceUnit(mode, startCategory));
             setNegotiable(false);
             setLocationText(location?.address || '');
+            // A new ad starts where the seller is standing, which is usually
+            // right — and is dropped the moment they name a different place.
+            setPin(location
+                ? {
+                    label: location.address,
+                    district: location.district || '',
+                    state: location.state || '',
+                    lat: location.lat || null,
+                    lng: location.lng || null,
+                }
+                : null);
             setContactPhone('');
             setImages([]);
             setUnitTouched(false);
         }
+        setPlaceResults([]);
+        setPlaceOpen(false);
         setError(null);
         mediaPathsRef.current.clear();
         // priceUnits is derived from `mode` and is stable for a given board.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, editing, location?.address, startCategory, startSubcategory]);
+
+    /**
+     * Village lookup against /api/geo/places, the same index onboarding uses.
+     * It reaches village level and returns district, state and coordinates with
+     * each hit, which is what lets a picked place pin the ad accurately.
+     */
+    useEffect(() => {
+        const query = locationText.trim();
+        if (!placeOpen || query.length < 2) {
+            setPlaceResults([]);
+            setPlaceLoading(false);
+            return;
+        }
+
+        // Debounced so a typed name costs one request, not one per keystroke.
+        setPlaceLoading(true);
+        const controller = new AbortController();
+        const timer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/api/geo/places?q=${encodeURIComponent(query)}`, { signal: controller.signal });
+                const data = await res.json();
+                setPlaceResults(Array.isArray(data.results) ? data.results : []);
+            } catch {
+                // Aborted or offline — free typing still works, the ad just
+                // saves without coordinates.
+                setPlaceResults([]);
+            } finally {
+                setPlaceLoading(false);
+            }
+        }, 300);
+
+        return () => { clearTimeout(timer); controller.abort(); };
+    }, [locationText, placeOpen]);
+
+    const choosePlace = (place: PlaceSuggestion) => {
+        const label = [place.name, place.district].filter(Boolean).join(', ');
+        setLocationText(label);
+        setPin({
+            label,
+            district: place.district,
+            state: place.state,
+            lat: place.latitude,
+            lng: place.longitude,
+        });
+        setPlaceOpen(false);
+        setPlaceResults([]);
+    };
+
+    /** The pin only counts while the Location field still reads as its place. */
+    const activePin = pin && sameLabel(pin.label, locationText) ? pin : null;
 
     if (!isOpen) return null;
 
@@ -232,12 +335,14 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
             priceUnit,
             negotiable,
             location: locationText,
-            district: location?.district,
-            state: location?.state,
-            // Coordinates come from the app's location so cards can show
-            // "6.0 km away" to other farmers.
-            latitude: editing?.latitude ?? location?.lat ?? null,
-            longitude: editing?.longitude ?? location?.lng ?? null,
+            // All four describe the place named above, not the device filling
+            // in this form — see PlacePin. Null when the seller typed a place
+            // they did not pick from the list, because coordinates borrowed
+            // from somewhere else would put the ad in the wrong district.
+            district: activePin?.district || undefined,
+            state: activePin?.state || undefined,
+            latitude: activePin?.lat ?? null,
+            longitude: activePin?.lng ?? null,
             images,
             contactPhone,
             workType,
@@ -480,19 +585,61 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                         </div>
                     )}
 
-                    {/* Location */}
+                    {/* Location — where the ad is, which is not always where
+                        the seller is standing while they write it. */}
                     <div>
                         <label htmlFor="listing-location" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">
                             Location <span className="text-red-500">*</span>
                         </label>
-                        <input
-                            id="listing-location"
-                            type="text"
-                            value={locationText}
-                            onChange={(e) => setLocationText(e.target.value)}
-                            placeholder="Village, district"
-                            className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#22c33d]/30"
-                        />
+                        <div className="relative">
+                            <input
+                                id="listing-location"
+                                type="text"
+                                autoComplete="off"
+                                value={locationText}
+                                onChange={(e) => { setLocationText(e.target.value); setPlaceOpen(true); }}
+                                onFocus={() => setPlaceOpen(true)}
+                                placeholder="Village, district"
+                                className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#22c33d]/30"
+                            />
+
+                            {placeOpen && (placeLoading || placeResults.length > 0) && (
+                                <ul className="absolute left-0 right-0 top-full mt-1 max-h-56 overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a231a] shadow-xl" style={{ zIndex: 1 }}>
+                                    {placeLoading && placeResults.length === 0 ? (
+                                        <li className="px-3.5 py-2.5 text-sm text-gray-500">Searching…</li>
+                                    ) : placeResults.map(place => (
+                                        <li key={place.id}>
+                                            <button
+                                                type="button"
+                                                onClick={() => choosePlace(place)}
+                                                className="w-full text-left px-3.5 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                                            >
+                                                <span className="block text-sm font-semibold text-gray-900 dark:text-white">{place.name}</span>
+                                                <span className="block text-xs text-gray-500">
+                                                    {[place.district, place.state].filter(Boolean).join(', ')}
+                                                </span>
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+
+                        {/* What the ad is actually filed under. Without this the
+                            seller had no way to tell a pinned place from a bare
+                            line of text that looks identical in the field. */}
+                        {activePin && (activePin.district || activePin.state) ? (
+                            <p className="mt-1.5 text-xs text-[#1f8c30] dark:text-[#6abf62] flex items-center gap-1">
+                                <span className="material-symbols-outlined text-sm">check_circle</span>
+                                Listed in {[activePin.district, activePin.state].filter(Boolean).join(', ')}
+                            </p>
+                        ) : locationText.trim() ? (
+                            <p className="mt-1.5 text-xs text-gray-500 flex items-start gap-1">
+                                <span className="material-symbols-outlined text-sm shrink-0">info</span>
+                                Pick your village from the list so buyers nearby can find this
+                                ad and see how far away it is.
+                            </p>
+                        ) : null}
                     </div>
 
                     {/* Contact */}

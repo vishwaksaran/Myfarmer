@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import LoginModal from '@/components/auth/LoginModal';
 import type { LivestockAd } from '@/app/actions/livestock';
 import { logListingContact, type ContactChannel } from '@/app/actions/listing-contact';
-import { formatRupees } from '@/components/listings/listingFormat';
+import { formatDistance, formatRupees } from '@/components/listings/listingFormat';
 import { BOARDS, specLabel } from './boards';
 import { Z } from '@/lib/z-layers';
 
@@ -135,6 +135,14 @@ export default function LivestockAdGrid({ ads }: { ads: LivestockAd[] }) {
                                         </p>
                                     )}
                                 </div>
+                                {/* Distance sits on its own line: the place name
+                                    above can already fill the row on a narrow card. */}
+                                {formatDistance(ad.distanceKm) && (
+                                    <p className="mt-1.5 text-xs text-gray-500 flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-sm text-red-500">near_me</span>
+                                        {formatDistance(ad.distanceKm)}
+                                    </p>
+                                )}
                                 <button
                                     onClick={e => { e.stopPropagation(); handleContactClick(ad); }}
                                     disabled={!ad.phone}
@@ -206,6 +214,12 @@ export default function LivestockAdGrid({ ads }: { ads: LivestockAd[] }) {
                                 <p className="mt-3 flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300">
                                     <span className="material-symbols-outlined text-base text-red-500">location_on</span>
                                     {[detailAd.location, detailAd.district, detailAd.state].filter(Boolean).join(', ')}
+                                </p>
+                            )}
+                            {formatDistance(detailAd.distanceKm) && (
+                                <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300">
+                                    <span className="material-symbols-outlined text-base text-red-500">near_me</span>
+                                    {formatDistance(detailAd.distanceKm)}
                                 </p>
                             )}
 

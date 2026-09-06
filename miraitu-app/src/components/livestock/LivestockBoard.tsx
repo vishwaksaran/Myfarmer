@@ -3,6 +3,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { fetchLivestockListings, type LivestockAd, type LivestockType } from '@/app/actions/livestock';
+import { useAppLocation } from '@/context/LocationContext';
+import { nearFrom } from '@/lib/geo-distance';
+import EnableLocationBanner from '@/components/location/EnableLocationBanner';
 import LivestockAdGrid from './LivestockAdGrid';
 import { BOARDS } from './boards';
 
@@ -43,6 +46,7 @@ function placeOf(ad: LivestockAd): string {
 
 export default function LivestockBoard({ type }: { type: LivestockType }) {
     const cfg = BOARDS[type];
+    const { location } = useAppLocation();
 
     const [ads, setAds] = useState<LivestockAd[]>([]);
     const [loading, setLoading] = useState(true);
@@ -54,9 +58,17 @@ export default function LivestockBoard({ type }: { type: LivestockType }) {
 
     const sellHref = `/home/livestock?tab=sell&category=${cfg.sellCategory}`;
 
+    /**
+     * Refetched when the viewer's position changes, because distance is worked
+     * out on the server against each ad's coordinates. `nearKey` is the stable
+     * identity of an object rebuilt every render.
+     */
+    const near = nearFrom(location);
+    const nearKey = near ? `${near.lat},${near.lng}` : '';
+
     useEffect(() => {
         let cancelled = false;
-        fetchLivestockListings(type)
+        fetchLivestockListings(type, near)
             .then(res => {
                 if (cancelled) return;
                 setAds(res.data);
@@ -65,7 +77,9 @@ export default function LivestockBoard({ type }: { type: LivestockType }) {
             .catch(() => { if (!cancelled) setError('Failed to load listings'); })
             .finally(() => { if (!cancelled) setLoading(false); });
         return () => { cancelled = true; };
-    }, [type]);
+        // `near` is rebuilt each render; nearKey is its stable identity.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [type, nearKey]);
 
     /**
      * Both dropdowns are built from the ads on the page rather than a fixed
@@ -128,6 +142,10 @@ export default function LivestockBoard({ type }: { type: LivestockType }) {
                 <div className="min-h-[500px]">
                     {activeTab === 'buy' && (
                         <div className="animate-fadeIn">
+                            {/* Only worth asking for a location when there is
+                                something on screen to measure against. */}
+                            {ads.length > 0 && <EnableLocationBanner />}
+
                             {/* Filters — hidden until there is something to filter. */}
                             {ads.length > 0 && (
                                 <div className="flex items-center gap-4 mb-6 overflow-x-auto pb-2">

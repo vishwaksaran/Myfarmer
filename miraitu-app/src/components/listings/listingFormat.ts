@@ -51,7 +51,10 @@ export function formatPrice(listing: Pick<Listing, 'price' | 'priceUnit' | 'nego
 /** "0 m away", "6.0 km away" — matches how the reference app reads. */
 export function formatDistance(km: number | null | undefined): string | null {
     if (km === null || km === undefined || !Number.isFinite(km)) return null;
-    if (km < 0.05) return '0 m away';
+    // "0 m away" read as a broken distance rather than a very close one. It
+    // shows most often on your own ad, whose coordinates are the ones your
+    // device reported when you posted it.
+    if (km < 0.05) return 'Nearby';
     if (km < 1) return `${Math.round(km * 1000)} m away`;
     return `${km.toFixed(1)} km away`;
 }

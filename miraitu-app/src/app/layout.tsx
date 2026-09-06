@@ -268,7 +268,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 "https://www.facebook.com/share/17xh4f5AUZ/",
                 "https://www.youtube.com/@Miraitu",
                 "https://www.linkedin.com/company/miraitu",
-                "https://play.google.com/store/apps/details?id=in.miraitu",
               ],
               contactPoint: [
                 {

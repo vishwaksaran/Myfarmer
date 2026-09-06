@@ -2,6 +2,7 @@
 
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { createSupabaseAdminClient } from '@/lib/supabase-admin';
+import { haversineKm } from '@/lib/geo-distance';
 import {
     fetchApprovedLeaseListings,
     fetchApprovedSellListings,
@@ -68,18 +69,6 @@ interface ListingRow {
 
 const COLUMNS =
     'id, user_id, listing_mode, category, subcategory, listing_type, title, brand, model, description, price, price_unit, negotiable, unit, location, district, state, latitude, longitude, images, status, contact_phone, specs, created_at';
-
-/** Great-circle distance in km — what the "6.0 km away" line is built from. */
-function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const toRad = (deg: number) => (deg * Math.PI) / 180;
-    const R = 6371;
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-    const a =
-        Math.sin(dLat / 2) ** 2 +
-        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-    return 2 * R * Math.asin(Math.sqrt(a));
-}
 
 function toListing(row: ListingRow, userId: string | null, near?: { lat: number; lng: number }): Listing {
     const distanceKm =

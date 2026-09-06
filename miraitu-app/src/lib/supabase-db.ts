@@ -309,6 +309,16 @@ export interface ListingRecord {
     location: string;
     district?: string;
     state?: string;
+    /**
+     * Where the ad actually is, so a buyer's card can say "6.0 km away".
+     *
+     * `location` is free text the seller typed and cannot be measured against
+     * anything; these come from the poster's device. Null when the poster had
+     * no location enabled — the distance line is then simply omitted rather
+     * than guessed at.
+     */
+    latitude?: number | null;
+    longitude?: number | null;
     /** Added by migration 030 — how a buyer reaches the seller. */
     contact_phone?: string;
     images?: string[];

@@ -21,6 +21,8 @@ import type { Listing, ListingCategory, ListingInput, ListingMode } from './list
 import ListingCard from './ListingCard';
 import ListingFormModal from './ListingFormModal';
 import ListingDetailModal from './ListingDetailModal';
+import EnableLocationBanner from '@/components/location/EnableLocationBanner';
+import { nearFrom } from '@/lib/geo-distance';
 import { boardCategories, CATEGORY_META, boardTitle, postCta, searchPlaceholder } from './listingFormat';
 import { SUBCATEGORIES } from './listingTypes';
 
@@ -87,9 +89,7 @@ function Board({ mode }: { mode: ListingMode }) {
     const [confirmDelete, setConfirmDelete] = useState<Listing | null>(null);
     const loadedCountRef = useRef(0);
 
-    const near = location && location.lat && location.lng
-        ? { lat: location.lat, lng: location.lng }
-        : undefined;
+    const near = nearFrom(location);
     const nearKey = near ? `${near.lat},${near.lng}` : '';
 
     // Debounce typing so a search does not fire a query per keystroke.
@@ -352,6 +352,10 @@ function Board({ mode }: { mode: ListingMode }) {
                             <span className="text-sm font-semibold text-[#1f8c30] dark:text-[#6abf62]">{notice}</span>
                         </div>
                     )}
+
+                    {/* Only worth asking for a location when there is something
+                        on screen to measure against. */}
+                    {!loading && listings.length > 0 && <EnableLocationBanner />}
 
                     {/* Results */}
                     {loading ? (

@@ -1,6 +1,7 @@
 'use server';
 
 import { createSupabaseAdminClient } from '@/lib/supabase-admin';
+import { haversineKm, type NearPoint } from '@/lib/geo-distance';
 
 /**
  * The five livestock pages, reading the ads farmers actually posted.
@@ -64,10 +65,16 @@ export interface LivestockAd {
      * and blanks dropped, so a card can render whatever it finds.
      */
     specs: Record<string, string>;
+    /**
+     * Km from the coordinates passed to `fetchLivestockListings`, when both the
+     * viewer's position and the ad's own are known. Null otherwise — the card
+     * shows no distance rather than guessing one.
+     */
+    distanceKm: number | null;
 }
 
 const COLUMNS =
-    'id, title, description, subcategory, price, price_unit, unit, location, district, state, images, contact_phone, specs, created_at';
+    'id, title, description, subcategory, price, price_unit, unit, location, district, state, latitude, longitude, images, contact_phone, specs, created_at';
 
 interface Row {
     id: string;
@@ -80,6 +87,8 @@ interface Row {
     location: string | null;
     district: string | null;
     state: string | null;
+    latitude: number | null;
+    longitude: number | null;
     images: string[] | null;
     contact_phone: string | null;
     specs: Record<string, unknown> | null;
@@ -131,7 +140,9 @@ function toSpecs(raw: Record<string, unknown> | null): Record<string, string> {
  * is what the Buy tab on /home/livestock shows.
  */
 export async function fetchLivestockListings(
-    type: LivestockType | 'all'
+    type: LivestockType | 'all',
+    /** The viewer's position, so cards can show "6.0 km away". */
+    near?: NearPoint
 ): Promise<{ data: LivestockAd[]; error?: string }> {
     // An unknown slug is a stale link, not an error worth showing a farmer.
     if (type !== 'all' && !SUBCATEGORIES_BY_TYPE[type]) return { data: [] };
@@ -173,6 +184,10 @@ export async function fetchLivestockListings(
                 phone: row.contact_phone || '',
                 createdAt: row.created_at,
                 specs: toSpecs(row.specs),
+                distanceKm:
+                    near && row.latitude !== null && row.longitude !== null
+                        ? haversineKm(near.lat, near.lng, row.latitude, row.longitude)
+                        : null,
             })),
         };
     } catch (err) {
