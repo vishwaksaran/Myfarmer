@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { useSubmissionCopy, SUBMISSION_ACCENT, SUBMISSION_ICON } from '@/lib/service-availability';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
+import { useAuth } from '@/context/AuthContext';
+import LoginModal from '@/components/auth/LoginModal';
 
 // Uploads to the shared `listing-images` bucket and returns the public URL.
 // Same endpoint the Lease form uses — it is not lease-specific.
@@ -34,7 +36,45 @@ const landCategories = [
     { id: 'irrigated', name: 'Irrigated Land', icon: '💧' },
 ];
 
+interface SellFormData {
+    title: string;
+    location: string;
+    district: string;
+    state: string;
+    area: string;
+    pricePerAcre: string;
+    totalPrice: string;
+    description: string;
+    amenities: string;
+    contactName: string;
+    contactPhone: string;
+}
+
+const BLANK_SELL_FORM: SellFormData = {
+    title: '', location: '', district: '', state: '', area: '', pricePerAcre: '',
+    totalPrice: '', description: '', amenities: '', contactName: '', contactPhone: '',
+};
+
+/**
+ * Where an abandoned "Sell Your Farm Land" draft is parked in sessionStorage.
+ *
+ * This form used to have no login gate at all — a guest could submit it
+ * outright. Adding one, the same way the Lease form's already works, means
+ * this page needs the same safety net: the React state itself survives the
+ * login modal (it's an overlay, not a navigation) but a genuine reload does
+ * not, so text fields are persisted as they're typed and restored on the
+ * next visit. Photos are not — a File object cannot survive sessionStorage.
+ */
+const SELL_DRAFT_KEY = 'miraitu.landSell.draft';
+
+interface SellDraft {
+    selectedCategory: string;
+    formData: SellFormData;
+    agreedToTerms: boolean;
+}
+
 export default function SellLandPage() {
+    const { user } = useAuth();
     const [selectedCategory, setSelectedCategory] = useState('');
     const [photos, setPhotos] = useState<File[]>([]);
     const [previews, setPreviews] = useState<string[]>([]);
@@ -42,21 +82,65 @@ export default function SellLandPage() {
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [uploadingPhotos, setUploadingPhotos] = useState(false);
-    const [formData, setFormData] = useState({
-        title: '',
-        location: '',
-        district: '',
-        state: '',
-        area: '',
-        pricePerAcre: '',
-        totalPrice: '',
-        description: '',
-        amenities: '',
-        contactName: '',
-        contactPhone: '',
-    });
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [formData, setFormData] = useState<SellFormData>(BLANK_SELL_FORM);
+    /** True once a saved draft has been read back onto the form, for the banner below. */
+    const [draftRestored, setDraftRestored] = useState(false);
     const { submit, submitting } = useBookingSubmit();
     const submission = useSubmissionCopy('request');
+
+    /**
+     * Set the instant Submit is blocked for login, consumed the instant login
+     * succeeds. A ref rather than state: it must not persist across an actual
+     * remount, or a login made later for something unrelated would silently
+     * post a draft the seller typed and may no longer want — see the effect
+     * below and SELL_DRAFT_KEY's comment for the sessionStorage half of this.
+     */
+    const pendingLoginSubmit = useRef(false);
+    /** Skips the persistence effect's first run — see its own comment. */
+    const isFirstPersist = useRef(true);
+
+    // Read back a draft left from a previous visit — a genuine navigation
+    // away (not just the login modal) is the one case the ref above can't
+    // cover, since a fresh mount starts with pendingLoginSubmit false. Runs
+    // once; deliberately does not auto-submit even if already logged in, so
+    // returning to this page days later never posts old data without a click.
+    useEffect(() => {
+        try {
+            const raw = sessionStorage.getItem(SELL_DRAFT_KEY);
+            if (!raw) return;
+            const draft = JSON.parse(raw) as Partial<SellDraft>;
+            const hasContent = !!draft.formData && Object.values(draft.formData).some(v => typeof v === 'string' && v.trim());
+            if (!hasContent) {
+                sessionStorage.removeItem(SELL_DRAFT_KEY);
+                return;
+            }
+            setSelectedCategory(draft.selectedCategory || '');
+            setFormData(prev => ({ ...prev, ...draft.formData }));
+            setAgreedToTerms(!!draft.agreedToTerms);
+            setDraftRestored(true);
+        } catch {
+            sessionStorage.removeItem(SELL_DRAFT_KEY);
+        }
+        // Deliberately once, on mount.
+    }, []);
+
+    // Keeps the draft current as the seller types. Skips its first run so it
+    // never fires with the blank initial state ahead of the restore effect
+    // above and overwrite a draft that effect hasn't read yet.
+    useEffect(() => {
+        if (isFirstPersist.current) { isFirstPersist.current = false; return; }
+        const hasContent = Object.values(formData).some(v => v.trim());
+        try {
+            if (hasContent) {
+                sessionStorage.setItem(SELL_DRAFT_KEY, JSON.stringify({ selectedCategory, formData, agreedToTerms }));
+            } else {
+                sessionStorage.removeItem(SELL_DRAFT_KEY);
+            }
+        } catch {
+            /* Private-mode or full storage — the in-memory ref-based resume still works. */
+        }
+    }, [formData, selectedCategory, agreedToTerms]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -113,10 +197,12 @@ export default function SellLandPage() {
         setPreviews(newPreviews);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!validate()) return;
-
+    /**
+     * The actual submission — upload, save, reset. Split out from
+     * `handleSubmit` so the effect below can run exactly this once login
+     * completes, without re-running the auth check it just passed.
+     */
+    const performSubmit = async () => {
         // 1. Upload photos to Supabase Storage first — the Buy page shows the
         // first one as the listing image.
         let photoUrls: string[] = [];
@@ -155,15 +241,54 @@ export default function SellLandPage() {
             setTimeout(() => setShowSuccessModal(false), 6000);
             // Reset form
             setSelectedCategory('');
-            setFormData({ title: '', location: '', district: '', state: '', area: '', pricePerAcre: '', totalPrice: '', description: '', amenities: '', contactName: '', contactPhone: '' });
+            setFormData(BLANK_SELL_FORM);
             previews.forEach(url => URL.revokeObjectURL(url));
             setPhotos([]);
             setPreviews([]);
             setAgreedToTerms(false);
+            setDraftRestored(false);
+            try { sessionStorage.removeItem(SELL_DRAFT_KEY); } catch { /* nothing left to clean up */ }
         } else {
             setErrors({ submit: result.error || 'Failed to submit' });
         }
     };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // A guest can fill in every field here — nothing stopped them before
+        // this gate existed — and only meets the login wall at this point.
+        // Remembering the attempt is what turns "closed the login modal,
+        // form's still sitting there, now what?" into "logged in, and it's
+        // already posted" — the same fix already applied to the Lease form.
+        if (!user || user.isGuest) {
+            pendingLoginSubmit.current = true;
+            setShowLoginModal(true);
+            return;
+        }
+
+        if (!validate()) return;
+        await performSubmit();
+    };
+
+    /**
+     * Finishes the submission the instant login succeeds, so the seller never
+     * has to notice the form was fine all along and press Submit a second
+     * time. Fires only for a submit blocked in *this* mounted instance
+     * (`pendingLoginSubmit` is a ref, reset to false on every fresh mount) —
+     * logging in later for something unrelated must never quietly post a
+     * draft the seller has since abandoned.
+     */
+    useEffect(() => {
+        if (!pendingLoginSubmit.current) return;
+        if (!user || user.isGuest) return;
+        pendingLoginSubmit.current = false;
+        // Re-validate rather than assume: something could have gone stale
+        // (e.g. the phone field) while the login modal was up.
+        if (!validate()) return;
+        void performSubmit();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user]);
 
     return (
         <div className="px-3 md:px-6 pb-8 md:pb-12 py-6 md:py-8">
@@ -205,6 +330,36 @@ export default function SellLandPage() {
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
                     <div className="bg-white dark:bg-[#1a231a] rounded-lg md:rounded-2xl p-4 md:p-8 border border-gray-100 dark:border-gray-800 shadow-sm">
+                        {/* Only shown when the fields below came back from a
+                            previous, unfinished visit — see SELL_DRAFT_KEY. */}
+                        {draftRestored && (
+                            <div className="mb-4 md:mb-6 flex items-start gap-2.5 rounded-xl border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 px-3.5 py-3">
+                                <span className="material-symbols-outlined text-green-600 dark:text-green-400 shrink-0">restore</span>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-semibold text-green-800 dark:text-green-300">
+                                        Picked up where you left off
+                                    </p>
+                                    <p className="text-xs text-green-700/80 dark:text-green-400/80 mt-0.5">
+                                        We kept what you&apos;d typed. Photos don&apos;t carry over — please re-add them.
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setSelectedCategory('');
+                                        setFormData(BLANK_SELL_FORM);
+                                        setAgreedToTerms(false);
+                                        setErrors({});
+                                        setDraftRestored(false);
+                                        try { sessionStorage.removeItem(SELL_DRAFT_KEY); } catch { /* nothing left to clean up */ }
+                                    }}
+                                    className="text-xs font-bold text-green-700 dark:text-green-400 hover:underline shrink-0"
+                                >
+                                    Start fresh
+                                </button>
+                            </div>
+                        )}
+
                         {/* Category Selection */}
                         <div className="mb-6 md:mb-8">
                             <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 md:mb-4">Select Land Type</label>
@@ -408,6 +563,9 @@ export default function SellLandPage() {
                     </div>
                 </div>
             )}
+
+            <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+
             <style jsx>{`@keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }`}</style>
         </div>
     );
