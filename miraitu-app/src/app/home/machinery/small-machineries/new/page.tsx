@@ -5,6 +5,8 @@ import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import CompareModal from '@/components/v2/machinery/CompareModal';
 import CompareSection from '@/components/v2/machinery/CompareSection';
 import MachinerySubNav from '@/components/v2/machinery/MachinerySubNav';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 const newSmallMachineries = [
     {
@@ -70,6 +72,8 @@ const newSmallMachineries = [
 ];
 
 export default function NewSmallMachineriesPage() {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
 
@@ -92,22 +96,22 @@ export default function NewSmallMachineriesPage() {
             <div className="mx-auto max-w-[1280px]">
                 <MachinerySubNav category="small-machineries" currentAction="new" />
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">New Small Machineries</h1>
-                    <p className="text-gray-500">Browse power tillers, weeders, pumps, and other small farm equipment.</p>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{tp('New Small Machineries')}</h1>
+                    <p className="text-gray-500">{tp('Browse power tillers, weeders, pumps, and other small farm equipment.')}</p>
                 </div>
 
                 <div className="flex items-center gap-4 mb-8">
                     <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
-                        <option>All Types</option>
-                        <option>Power Tiller</option>
-                        <option>Power Weeder</option>
-                        <option>Pump Set</option>
-                        <option>Chainsaw</option>
-                        <option>Sprayer</option>
-                        <option>Brush Cutter</option>
+                        <option>{tp('All Types')}</option>
+                        <option>{tp('Power Tiller')}</option>
+                        <option>{tp('Power Weeder')}</option>
+                        <option>{tp('Pump Set')}</option>
+                        <option>{tp('Chainsaw')}</option>
+                        <option>{tp('Sprayer')}</option>
+                        <option>{tp('Brush Cutter')}</option>
                     </select>
                     <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
-                        <option>All Brands</option>
+                        <option>{tp('All Brands')}</option>
                         <option>Honda</option>
                         <option>VST Shakti</option>
                         <option>Kirloskar</option>
@@ -115,7 +119,7 @@ export default function NewSmallMachineriesPage() {
                         <option>Neptune</option>
                     </select>
                     <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
-                        <option>Price Range</option>
+                        <option>{tp('Price Range')}</option>
                         <option>Under ₹10,000</option>
                         <option>₹10,000 - ₹50,000</option>
                         <option>₹50,000 - ₹1,00,000</option>

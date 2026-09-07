@@ -5,6 +5,8 @@ import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import CompareModal from '@/components/v2/machinery/CompareModal';
 import CompareSection from '@/components/v2/machinery/CompareSection';
 import MachinerySubNav from '@/components/v2/machinery/MachinerySubNav';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 const newDrones = [
     {
@@ -70,6 +72,8 @@ const newDrones = [
 ];
 
 export default function NewDronesPage() {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
 
@@ -92,33 +96,33 @@ export default function NewDronesPage() {
             <div className="mx-auto max-w-[1280px]">
                 <MachinerySubNav category="drones" currentAction="new" />
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">New Agricultural Drones</h1>
-                    <p className="text-gray-500">Browse the latest spraying and surveying drones for precision agriculture.</p>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{tp('New Agricultural Drones')}</h1>
+                    <p className="text-gray-500">{tp('Browse the latest spraying and surveying drones for precision agriculture.')}</p>
                 </div>
 
                 <div className="flex items-center gap-4 mb-8">
                     <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
-                        <option>All Types</option>
-                        <option>Spraying Drone</option>
-                        <option>Survey Drone</option>
-                        <option>Mapping Drone</option>
+                        <option>{tp('All Types')}</option>
+                        <option>{tp('Spraying Drone')}</option>
+                        <option>{tp('Survey Drone')}</option>
+                        <option>{tp('Mapping Drone')}</option>
                     </select>
                     <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
-                        <option>All Brands</option>
+                        <option>{tp('All Brands')}</option>
                         <option>DJI</option>
                         <option>Garuda</option>
                         <option>IoTech</option>
                         <option>Marut</option>
                     </select>
                     <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
-                        <option>Tank Capacity</option>
+                        <option>{tp('Tank Capacity')}</option>
                         <option>Under 10L</option>
                         <option>10-20L</option>
                         <option>20-40L</option>
                         <option>Above 40L</option>
                     </select>
                     <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
-                        <option>Price Range</option>
+                        <option>{tp('Price Range')}</option>
                         <option>Under ₹5 Lakhs</option>
                         <option>₹5-8 Lakhs</option>
                         <option>₹8-12 Lakhs</option>

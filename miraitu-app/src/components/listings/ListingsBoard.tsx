@@ -25,6 +25,8 @@ import EnableLocationBanner from '@/components/location/EnableLocationBanner';
 import { nearFrom } from '@/lib/geo-distance';
 import { boardCategories, CATEGORY_META, boardTitle, postCta, searchPlaceholder } from './listingFormat';
 import { SUBCATEGORIES } from './listingTypes';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 const PAGE_SIZE = 20;
 
@@ -46,6 +48,8 @@ export default function ListingsBoard({ mode }: { mode: ListingMode }) {
 }
 
 function Board({ mode }: { mode: ListingMode }) {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const { user } = useAuth();
     const searchParams = useSearchParams();
     /** `?mine=1` opens straight into My Ads — what the home screen's tile links to. */
@@ -176,7 +180,7 @@ function Board({ mode }: { mode: ListingMode }) {
         if (!res.success) return res;
 
         await load();
-        setNotice(editing ? 'Listing updated' : `${postCta(mode)} — published`);
+        setNotice(editing ? tp('Listing updated') : `${tp(postCta(mode))} — ${tp('published')}`);
         setTimeout(() => setNotice(null), 3000);
         setEditing(null);
         return { success: true };
@@ -186,13 +190,13 @@ function Board({ mode }: { mode: ListingMode }) {
         const res = await deleteListing(listing.id);
         setConfirmDelete(null);
         if (!res.success) {
-            setNotice(res.error || 'Could not delete that listing');
+            setNotice(res.error || tp('Could not delete that listing'));
             setTimeout(() => setNotice(null), 4000);
             return;
         }
         setViewing(null);
         await load();
-        setNotice('Listing deleted');
+        setNotice(tp('Listing deleted'));
         setTimeout(() => setNotice(null), 3000);
     };
 
@@ -200,7 +204,7 @@ function Board({ mode }: { mode: ListingMode }) {
         const next = listing.status === 'active' ? 'sold' : 'active';
         const res = await setListingStatus(listing.id, next);
         if (!res.success) {
-            setNotice(res.error || 'Could not update that listing');
+            setNotice(res.error || tp('Could not update that listing'));
             setTimeout(() => setNotice(null), 4000);
             return;
         }
@@ -236,7 +240,7 @@ function Board({ mode }: { mode: ListingMode }) {
                                 <span className="material-symbols-outlined text-[#22c33d] text-2xl">
                                     {mode === 'labour' ? 'engineering' : mode === 'rent' ? 'agriculture' : 'storefront'}
                                 </span>
-                                {boardTitle(mode)}
+                                {tp(boardTitle(mode))}
                             </h1>
                             {location?.address && (
                                 <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
@@ -250,7 +254,7 @@ function Board({ mode }: { mode: ListingMode }) {
                             className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#22c33d] text-white text-sm font-bold hover:brightness-110 transition-all shadow-sm"
                         >
                             <span className="material-symbols-outlined text-lg">add</span>
-                            {postCta(mode)}
+                            {tp(postCta(mode))}
                         </button>
                     </div>
 
@@ -261,12 +265,12 @@ function Board({ mode }: { mode: ListingMode }) {
                             type="text"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
-                            placeholder={searchPlaceholder(mode)}
-                            aria-label={`Search ${boardTitle(mode)}`}
+                            placeholder={tp(searchPlaceholder(mode))}
+                            aria-label={`${tp('Search')} ${tp(boardTitle(mode))}`}
                             className="flex-1 min-w-0 bg-transparent text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none"
                         />
                         {query && (
-                            <button onClick={() => setQuery('')} aria-label="Clear search" className="text-gray-400 hover:text-gray-600">
+                            <button onClick={() => setQuery('')} aria-label={tp('Clear search')} className="text-gray-400 hover:text-gray-600">
                                 <span className="material-symbols-outlined text-lg">close</span>
                             </button>
                         )}
@@ -276,7 +280,7 @@ function Board({ mode }: { mode: ListingMode }) {
                     <div className="flex gap-2 overflow-x-auto pb-2 mb-2 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
                         {boardCategories(mode).map(c => {
                             const active = category === c;
-                            const label = c === 'all' ? 'All' : CATEGORY_META[c].label;
+                            const label = c === 'all' ? tp('All') : tp(CATEGORY_META[c].label);
                             const emoji = c === 'all' ? '📋' : CATEGORY_META[c].emoji;
                             return (
                                 <button
@@ -310,7 +314,7 @@ function Board({ mode }: { mode: ListingMode }) {
                                     : 'bg-white dark:bg-[#1a231a] text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-gray-800'
                                     }`}
                             >
-                                All {CATEGORY_META[category].label}
+                                {tp('All')} {tp(CATEGORY_META[category].label)}
                             </button>
                             {SUBCATEGORIES[category].map(sub => (
                                 <button
@@ -321,7 +325,7 @@ function Board({ mode }: { mode: ListingMode }) {
                                         : 'bg-white dark:bg-[#1a231a] text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-gray-800'
                                         }`}
                                 >
-                                    {sub}
+                                    {tp(sub)}
                                 </button>
                             ))}
                         </div>
@@ -338,10 +342,10 @@ function Board({ mode }: { mode: ListingMode }) {
                                     }`}
                             >
                                 <span className="material-symbols-outlined text-sm">person</span>
-                                My ads
+                                {tp('My ads')}
                             </button>
                             {mineOnly && (
-                                <span className="text-[11px] text-gray-500">Showing your listings, including sold ones</span>
+                                <span className="text-[11px] text-gray-500">{tp('Showing your listings, including sold ones')}</span>
                             )}
                         </div>
                     )}
@@ -371,17 +375,20 @@ function Board({ mode }: { mode: ListingMode }) {
                             </span>
                             <p className="text-gray-500 font-medium px-6">
                                 {debouncedQuery
-                                    ? `Nothing matches “${debouncedQuery}”`
+                                    ? tp('Nothing matches "{query}"').replace('{query}', debouncedQuery)
                                     : mineOnly
-                                        ? 'You have not posted anything here yet.'
-                                        : `No ${mode === 'labour' ? 'listings' : mode === 'rent' ? 'rentals' : 'ads'} here yet — be the first to post one.`}
+                                        ? tp('You have not posted anything here yet.')
+                                        : tp('No {items} here yet — be the first to post one.').replace(
+                                            '{items}',
+                                            tp(mode === 'labour' ? 'listings' : mode === 'rent' ? 'rentals' : 'ads')
+                                        )}
                             </p>
                             <button
                                 onClick={openNew}
                                 className="mt-4 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#22c33d] text-white text-sm font-bold hover:brightness-110"
                             >
                                 <span className="material-symbols-outlined text-lg">add</span>
-                                {postCta(mode)}
+                                {tp(postCta(mode))}
                             </button>
                         </div>
                     ) : (
@@ -413,7 +420,7 @@ function Board({ mode }: { mode: ListingMode }) {
                                 <span className={`material-symbols-outlined ${loadingMore ? 'animate-spin' : ''}`}>
                                     {loadingMore ? 'progress_activity' : 'expand_more'}
                                 </span>
-                                {loadingMore ? 'Loading…' : 'Load more'}
+                                {loadingMore ? tp('Loading…') : tp('Load more')}
                             </button>
                         </div>
                     )}
@@ -428,7 +435,7 @@ function Board({ mode }: { mode: ListingMode }) {
                 className="sm:hidden fixed bottom-24 right-4 z-40 inline-flex items-center gap-1.5 px-5 py-3.5 rounded-full bg-[#22c33d] text-white text-sm font-bold shadow-lg shadow-[#22c33d]/30 active:scale-95 transition-all"
             >
                 <span className="material-symbols-outlined text-xl">add</span>
-                {postCta(mode)}
+                {tp(postCta(mode))}
             </button>
 
             <ListingFormModal
@@ -456,22 +463,22 @@ function Board({ mode }: { mode: ListingMode }) {
                         <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-3">
                             <span className="material-symbols-outlined text-xl text-red-500">delete_forever</span>
                         </div>
-                        <h4 className="font-bold text-gray-900 dark:text-white mb-1">Delete listing?</h4>
+                        <h4 className="font-bold text-gray-900 dark:text-white mb-1">{tp('Delete listing?')}</h4>
                         <p className="text-xs text-gray-500 mb-4">
-                            “{confirmDelete.title}” will be removed for everyone. This cannot be undone.
+                            {tp('"{title}" will be removed for everyone. This cannot be undone.').replace('{title}', confirmDelete.title)}
                         </p>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setConfirmDelete(null)}
                                 className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-300"
                             >
-                                Cancel
+                                {tp('Cancel')}
                             </button>
                             <button
                                 onClick={() => { void handleDelete(confirmDelete); }}
                                 className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600"
                             >
-                                Delete
+                                {tp('Delete')}
                             </button>
                         </div>
                     </div>

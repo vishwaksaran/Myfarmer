@@ -7,8 +7,12 @@ import CompareSection from '@/components/v2/machinery/CompareSection';
 import MachinerySubNav from '@/components/v2/machinery/MachinerySubNav';
 import PostMachineryAdButton from '@/components/v2/machinery/PostMachineryAdButton';
 import { fetchMachineryListings, type MachineryCard } from '@/lib/machinery-listings';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 export default function BuyHarvestersPage() {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
     const [listings, setListings] = useState<MachineryCard[]>([]);
@@ -44,35 +48,35 @@ export default function BuyHarvestersPage() {
             <div className="mx-auto max-w-[1280px]">
                 <MachinerySubNav category="harvesters" currentAction="buy" />
                 <div className="mb-8">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Buy Used Harvesters</h1>
-                    <p className="text-gray-500">Browse pre-owned combine harvesters and reaper machines from trusted sellers.</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">{tp('Buy Used Harvesters')}</h1>
+                    <p className="text-gray-500">{tp('Browse pre-owned combine harvesters and reaper machines from trusted sellers.')}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-6 sm:mb-8 sm:flex sm:flex-wrap sm:items-center sm:gap-4">
                     <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
-                        <option>All Brands</option>
+                        <option>{tp('All Brands')}</option>
                         <option>Preet</option>
                         <option>Dashmesh</option>
                         <option>Kubota</option>
                         <option>New Holland</option>
                     </select>
                     <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
-                        <option>Condition</option>
-                        <option>Excellent</option>
-                        <option>Good</option>
-                        <option>Fair</option>
+                        <option>{tp('Condition')}</option>
+                        <option>{tp('Excellent')}</option>
+                        <option>{tp('Good')}</option>
+                        <option>{tp('Fair')}</option>
                     </select>
                     <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
-                        <option>Year</option>
+                        <option>{tp('Year')}</option>
                         <option>2024</option>
                         <option>2023</option>
                         <option>2022</option>
                         <option>2021</option>
                         <option>2020</option>
-                        <option>Older</option>
+                        <option>{tp('Older')}</option>
                     </select>
                     <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
-                        <option>Price Range</option>
+                        <option>{tp('Price Range')}</option>
                         <option>Under ₹6 Lakhs</option>
                         <option>₹6-8 Lakhs</option>
                         <option>₹8-10 Lakhs</option>
@@ -87,11 +91,11 @@ export default function BuyHarvestersPage() {
                 />
 
                 {loading ? (
-                    <div className="py-16 text-center text-sm text-gray-500">Loading listings…</div>
+                    <div className="py-16 text-center text-sm text-gray-500">{tp('Loading listings…')}</div>
                 ) : listings.length === 0 ? (
                     <div className="py-16 text-center bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800">
                         <span className="material-symbols-outlined text-5xl text-gray-300 mb-3">agriculture</span>
-                        <p className="text-gray-500 font-medium px-6">No listings here yet — be the first to post one.</p>
+                        <p className="text-gray-500 font-medium px-6">{tp('No listings here yet — be the first to post one.')}</p>
                     </div>
                 ) : (
                     <MachineryListing

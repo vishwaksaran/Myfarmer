@@ -17,6 +17,8 @@ import {
 import { fetchMarketplaceLandListings } from '@/app/actions/listings';
 import type { Listing } from '@/components/listings/listingTypes';
 import { logListingContact, type ContactChannel } from '@/app/actions/listing-contact';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 /**
  * The land marketplace's front door.
@@ -245,6 +247,8 @@ function boardToItem(listing: Listing): LandItem {
 export default function LandFeed() {
     const { user } = useAuth();
     const isGuest = !user || user.isGuest;
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
 
     const [items, setItems] = useState<LandItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -293,9 +297,11 @@ export default function LandFeed() {
                 ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
                 setItems(merged);
             })
-            .catch(() => { if (!cancelled) setError('Failed to load listings'); })
+            .catch(() => { if (!cancelled) setError(tp('Failed to load listings')); })
             .finally(() => { if (!cancelled) setLoading(false); });
         return () => { cancelled = true; };
+        // Deliberately once, on mount — tp is stable enough for this rare error path.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const counts = useMemo(() => ({
@@ -344,14 +350,16 @@ export default function LandFeed() {
         }).catch(() => { /* tracking must never block the user */ });
     };
 
+    const FOR_KIND: Record<Kind, string> = { sale: 'For Sale', lease: 'For Lease', rent: 'For Rent' };
+
     const shareItem = async (item: LandItem) => {
         const text = [
-            `${item.title} — ${KIND_META[item.kind].chip === 'Sale' ? 'For Sale' : `For ${KIND_META[item.kind].chip}`}`,
+            `${item.title} — ${tp(FOR_KIND[item.kind])}`,
             `📍 ${item.location}`,
-            item.area ? `📐 ${item.area} Acres` : '',
+            item.area ? `📐 ${item.area} ${tp('Acres')}` : '',
             item.price ? `💰 ${item.price}${item.priceSuffix}` : '',
             item.description ? `\n${item.description.slice(0, 120)}…` : '',
-            '\nFind more on Miraitu 🌾',
+            `\n${tp('Find more on Miraitu 🌾')}`,
         ].filter(Boolean).join('\n');
         const url = typeof window !== 'undefined' ? window.location.href.split('?')[0] : '';
         try {
@@ -359,7 +367,7 @@ export default function LandFeed() {
                 await navigator.share({ title: item.title, text, url });
             } else {
                 await navigator.clipboard.writeText(`${text}\n\n${url}`);
-                setShareToast('Link copied to clipboard!');
+                setShareToast(tp('Link copied to clipboard!'));
                 setTimeout(() => setShareToast(''), 3000);
             }
         } catch {
@@ -377,27 +385,27 @@ export default function LandFeed() {
                     <div className="flex items-center gap-2 text-xs md:text-sm text-gray-500 mb-4">
                         <Link
                             href="/home"
-                            aria-label="Back to Home"
+                            aria-label={tp('Back to Home')}
                             className="w-8 h-8 -ml-1 grid place-items-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 active:scale-95 transition-all shrink-0"
                         >
                             <span className="material-symbols-outlined text-xl">arrow_back</span>
                         </Link>
-                        <Link href="/home" className="hover:text-primary transition-colors">Home</Link>
+                        <Link href="/home" className="hover:text-primary transition-colors">{tp('Home')}</Link>
                         <span className="material-symbols-outlined text-xs">chevron_right</span>
-                        <span className="text-gray-900 dark:text-white font-semibold">Land</span>
+                        <span className="text-gray-900 dark:text-white font-semibold">{tp('Land')}</span>
                     </div>
 
                     {/* Header */}
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5 md:mb-8">
                         <div>
                             <span className="inline-block px-3 py-1 rounded-full bg-green-100 text-green-700 font-bold text-xs border border-green-200 mb-2">
-                                Farmers Land Marketplace
+                                {tp('Farmers Land Marketplace')}
                             </span>
                             <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
-                                Land for sale, lease &amp; rent
+                                {tp('Land for sale, lease & rent')}
                             </h1>
                             <p className="hidden md:block text-base text-gray-500 mt-2 font-medium">
-                                Verified listings from farmers and land owners across the country.
+                                {tp('Verified listings from farmers and land owners across the country.')}
                             </p>
                         </div>
                         <NearbyLocation />
@@ -406,7 +414,7 @@ export default function LandFeed() {
                     {/* Loading */}
                     {loading && (
                         <div className="flex flex-col items-center justify-center py-20 gap-3">
-                            <MiraituLoader fullScreen={false} label="Loading listings…" />
+                            <MiraituLoader fullScreen={false} label={tp('Loading listings…')} />
                         </div>
                     )}
 
@@ -414,7 +422,7 @@ export default function LandFeed() {
                     {!loading && error && (
                         <div className="bg-red-50 border border-red-100 rounded-xl p-6 text-center">
                             <span className="material-symbols-outlined text-3xl text-red-400 mb-2 block">error</span>
-                            <p className="text-sm text-red-600 font-medium">Could not load listings. Please try again later.</p>
+                            <p className="text-sm text-red-600 font-medium">{tp('Could not load listings. Please try again later.')}</p>
                         </div>
                     )}
 
@@ -422,8 +430,8 @@ export default function LandFeed() {
                     {!loading && !error && items.length === 0 && (
                         <div className="bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800 p-12 text-center">
                             <span className="material-symbols-outlined text-5xl text-gray-300 mb-3 block">grass</span>
-                            <p className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-1">No listings yet</p>
-                            <p className="text-sm text-gray-500 mb-5">Be the first to put your land on the marketplace.</p>
+                            <p className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-1">{tp('No listings yet')}</p>
+                            <p className="text-sm text-gray-500 mb-5">{tp('Be the first to put your land on the marketplace.')}</p>
                             <div className="flex flex-col sm:flex-row gap-2 justify-center">
                                 {POST_ACTIONS.map(a => (
                                     <Link
@@ -431,7 +439,7 @@ export default function LandFeed() {
                                         href={a.href}
                                         className="px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-colors"
                                     >
-                                        {a.label}
+                                        {tp(a.label)}
                                     </Link>
                                 ))}
                             </div>
@@ -451,18 +459,18 @@ export default function LandFeed() {
                                             ? 'bg-primary text-white border-primary'
                                             : 'bg-white dark:bg-[#1a231a] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-primary/50'}`}
                                     >
-                                        {key === 'all' ? 'All' : KIND_META[key].chip} ({counts[key]})
+                                        {key === 'all' ? tp('All') : tp(KIND_META[key].chip)} ({counts[key]})
                                     </button>
                                 ))}
                             </div>
                             <p className="text-xs md:text-sm text-gray-500 mb-4">
-                                Showing <span className="font-bold text-gray-900 dark:text-white">{filtered.length}</span>{' '}
-                                {filtered.length === 1 ? 'listing' : 'listings'}
+                                {tp('Showing')} <span className="font-bold text-gray-900 dark:text-white">{filtered.length}</span>{' '}
+                                {tp('listings')}
                             </p>
 
                             {filtered.length === 0 ? (
                                 <div className="text-center py-12 text-gray-400 text-sm">
-                                    No {filter} listings yet.
+                                    {tp('No {type} listings yet.').replace('{type}', filter === 'all' ? tp('All') : tp(KIND_META[filter].chip))}
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -488,7 +496,7 @@ export default function LandFeed() {
                                                         <span className="material-symbols-outlined text-white text-3xl opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg">zoom_in</span>
                                                     </div>
                                                     <div className={`absolute bottom-2 left-2 px-2 py-0.5 backdrop-blur-sm text-white text-[10px] md:text-xs font-semibold rounded-md ${meta.ribbonClass}`}>
-                                                        {item.priceNote || `For ${meta.chip}`}
+                                                        {item.priceNote || tp(FOR_KIND[item.kind])}
                                                     </div>
                                                     {photos.length > 1 && (
                                                         <div className="absolute top-2 right-2 px-2 py-0.5 bg-black/60 text-white text-[10px] font-bold rounded-md flex items-center gap-1">
@@ -504,7 +512,7 @@ export default function LandFeed() {
                                                             {item.title}
                                                         </h3>
                                                         <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full ${meta.badgeClass}`}>
-                                                            {meta.badge}
+                                                            {tp(meta.badge)}
                                                         </span>
                                                     </div>
                                                     <div className="flex items-center gap-1 text-xs md:text-sm text-gray-500 mb-2 md:mb-3">
@@ -515,7 +523,7 @@ export default function LandFeed() {
                                                         {item.area && (
                                                             <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
                                                                 <span className="material-symbols-outlined text-sm">square_foot</span>
-                                                                {item.area} Acres
+                                                                {item.area} {tp('Acres')}
                                                             </div>
                                                         )}
                                                         <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
@@ -529,25 +537,25 @@ export default function LandFeed() {
                                                     <div className="pt-3 md:pt-4 border-t border-gray-100 dark:border-gray-800">
                                                         <div className="flex items-baseline justify-between mb-2">
                                                             <p className="text-base md:text-xl font-bold text-primary">
-                                                                {item.price ? `${item.price}${item.priceSuffix}` : 'Price on request'}
+                                                                {item.price ? `${item.price}${item.priceSuffix}` : tp('Price on request')}
                                                             </p>
                                                             <p className="text-[10px] md:text-xs text-gray-500 ml-2 shrink-0">{timeAgo(item.createdAt)}</p>
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                                             <button
                                                                 onClick={() => shareItem(item)}
-                                                                title="Share"
+                                                                title={tp('Share')}
                                                                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 text-xs font-semibold hover:text-primary hover:border-primary transition-colors"
                                                             >
                                                                 <span className="material-symbols-outlined text-sm">share</span>
-                                                                Share
+                                                                {tp('Share')}
                                                             </button>
                                                             <button
                                                                 onClick={() => { setDetailItem(item); setDetailPhotoIdx(0); }}
                                                                 className="flex-1 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-1"
                                                             >
                                                                 <span className="material-symbols-outlined text-sm">open_in_new</span>
-                                                                View Details
+                                                                {tp('View Details')}
                                                             </button>
                                                         </div>
                                                     </div>
@@ -595,7 +603,7 @@ export default function LandFeed() {
                             }`}
                         >
                             <p className="text-[11px] font-bold uppercase tracking-wider text-white/90 drop-shadow px-1">
-                                What would you like to do?
+                                {tp('What would you like to do?')}
                             </p>
                             {POST_ACTIONS.map((action, i) => (
                                 <Link
@@ -612,8 +620,8 @@ export default function LandFeed() {
                                         <span className="material-symbols-outlined text-[22px]">{action.icon}</span>
                                     </span>
                                     <span className="min-w-0 flex-1 text-left">
-                                        <span className="block text-sm font-bold text-gray-900 dark:text-white leading-tight">{action.label}</span>
-                                        <span className="block text-[11px] text-gray-500 leading-snug mt-0.5">{action.caption}</span>
+                                        <span className="block text-sm font-bold text-gray-900 dark:text-white leading-tight">{tp(action.label)}</span>
+                                        <span className="block text-[11px] text-gray-500 leading-snug mt-0.5">{tp(action.caption)}</span>
                                     </span>
                                     <span className="material-symbols-outlined text-gray-300 dark:text-gray-600 text-lg shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-primary">
                                         arrow_forward
@@ -628,7 +636,7 @@ export default function LandFeed() {
                             onClick={() => setFabOpen(o => !o)}
                             aria-expanded={fabOpen}
                             aria-controls="land-post-menu"
-                            aria-label={fabOpen ? 'Close listing options' : 'Post a land listing'}
+                            aria-label={fabOpen ? tp('Close listing options') : tp('Post a land listing')}
                             className={`relative w-14 h-14 md:w-16 md:h-16 self-end md:self-start rounded-full bg-primary text-white grid place-items-center transition-all duration-200 active:scale-90 hover:-translate-y-0.5 ${
                                 fabOpen
                                     ? 'shadow-[0_0_0_6px_rgba(34,195,61,0.25),0_12px_28px_rgba(0,0,0,0.35)]'
@@ -732,7 +740,7 @@ export default function LandFeed() {
                                 />
                                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%)' }} />
                                 <div style={{ position: 'absolute', top: '12px', left: '12px', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 700, color: 'white', background: meta.accent }}>
-                                    FOR {meta.badge}
+                                    {tp(`FOR ${meta.badge}`)}
                                 </div>
                                 <button onClick={() => setDetailItem(null)} style={{ position: 'absolute', top: '10px', right: '10px', padding: '6px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', border: 'none', cursor: 'pointer', display: 'flex' }}>
                                     <span className="material-symbols-outlined" style={{ color: 'white', fontSize: '20px' }}>close</span>
@@ -767,9 +775,9 @@ export default function LandFeed() {
 
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
                                     {[
-                                        { icon: 'square_foot', label: 'Area', value: item.area ? `${item.area} Acres` : '—' },
-                                        { icon: 'payments', label: item.kind === 'sale' ? 'Price' : item.kind === 'rent' ? 'Rent' : 'Lease Price', value: item.price ? `${item.price}${item.priceSuffix}` : 'On request' },
-                                        { icon: item.kind === 'sale' ? 'straighten' : 'schedule', label: item.kind === 'sale' ? 'Per Acre' : 'Term', value: item.priceNote || '—' },
+                                        { icon: 'square_foot', label: tp('Area'), value: item.area ? `${item.area} ${tp('Acres')}` : '—' },
+                                        { icon: 'payments', label: item.kind === 'sale' ? tp('Price') : item.kind === 'rent' ? tp('Rent') : tp('Lease Price'), value: item.price ? `${item.price}${item.priceSuffix}` : tp('On request') },
+                                        { icon: item.kind === 'sale' ? 'straighten' : 'schedule', label: item.kind === 'sale' ? tp('Per Acre') : tp('Term'), value: item.priceNote || '—' },
                                     ].map(stat => (
                                         <div key={stat.label} style={{ background: '#f9fafb', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
                                             <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#16a34a', display: 'block', marginBottom: '4px' }}>{stat.icon}</span>
@@ -781,11 +789,11 @@ export default function LandFeed() {
 
                                 {item.address.length > 0 && (
                                     <div style={{ marginBottom: '20px' }}>
-                                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>Land Location Details</p>
+                                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>{tp('Land Location Details')}</p>
                                         <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '14px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                                             {item.address.map(({ label, value }) => (
                                                 <div key={label}>
-                                                    <p style={{ fontSize: '11px', color: '#9ca3af', margin: '0 0 2px' }}>{label}</p>
+                                                    <p style={{ fontSize: '11px', color: '#9ca3af', margin: '0 0 2px' }}>{tp(label)}</p>
                                                     <p style={{ fontSize: '13px', fontWeight: 600, color: '#374151', margin: 0 }}>{value}</p>
                                                 </div>
                                             ))}
@@ -795,7 +803,7 @@ export default function LandFeed() {
 
                                 {item.amenities.length > 0 && (
                                     <div style={{ marginBottom: '20px' }}>
-                                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>Amenities</p>
+                                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>{tp('Amenities')}</p>
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                                             {item.amenities.map(a => (
                                                 <span key={a} style={{ background: '#f0fdf4', color: '#15803d', fontSize: '12px', fontWeight: 600, padding: '5px 10px', borderRadius: '999px' }}>{a}</span>
@@ -806,7 +814,7 @@ export default function LandFeed() {
 
                                 {item.description && (
                                     <div style={{ marginBottom: '20px' }}>
-                                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>About the Land</p>
+                                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>{tp('About the Land')}</p>
                                         <p style={{ fontSize: '14px', color: '#374151', lineHeight: 1.7, whiteSpace: 'pre-wrap', margin: 0 }}>{item.description}</p>
                                     </div>
                                 )}
@@ -816,7 +824,7 @@ export default function LandFeed() {
                                         <span className="material-symbols-outlined" style={{ color: 'white', fontSize: '18px' }}>person</span>
                                     </div>
                                     <div>
-                                        <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>Listed by</p>
+                                        <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>{tp('Listed by')}</p>
                                         <p style={{ fontSize: '14px', fontWeight: 700, color: '#111', margin: 0 }}>{item.seller}</p>
                                     </div>
                                     <p style={{ marginLeft: 'auto', fontSize: '11px', color: '#9ca3af' }}>{timeAgo(item.createdAt)}</p>
@@ -826,24 +834,24 @@ export default function LandFeed() {
                             <div style={{ padding: '16px 24px', borderTop: '1px solid #f3f4f6', flexShrink: 0, display: 'flex', gap: '10px' }}>
                                 <button
                                     onClick={() => shareItem(item)}
-                                    title="Share"
+                                    title={tp('Share')}
                                     style={{ padding: '12px 14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, fontSize: '14px', color: '#374151', flexShrink: 0 }}
                                 >
                                     <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>share</span>
-                                    Share
+                                    {tp('Share')}
                                 </button>
                                 <button
                                     onClick={() => setDetailItem(null)}
                                     style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1.5px solid #e5e7eb', background: 'white', fontWeight: 700, fontSize: '14px', cursor: 'pointer', color: '#374151' }}
                                 >
-                                    Close
+                                    {tp('Close')}
                                 </button>
                                 <button
                                     onClick={() => { handleContactClick(item); if (!isGuest) setDetailItem(null); }}
                                     style={{ flex: 2, padding: '12px', borderRadius: '12px', background: '#16a34a', color: 'white', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                                 >
                                     <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>{isGuest ? 'lock' : 'call'}</span>
-                                    {isGuest ? 'Login to Contact' : 'Contact Owner'}
+                                    {isGuest ? tp('Login to Contact') : tp('Contact Owner')}
                                 </button>
                             </div>
                         </div>
@@ -858,7 +866,11 @@ export default function LandFeed() {
                 // First 5 digits shown, last 5 masked — the full number is still
                 // used in the call and WhatsApp links.
                 const masked = digits.length === 10 ? `${digits.slice(0, 5)} •••••` : 'N/A';
-                const intent = item.kind === 'sale' ? 'buying' : item.kind === 'rent' ? 'renting' : 'leasing';
+                const WA_MESSAGE: Record<Kind, string> = {
+                    sale: "Hi, I saw your land listing \"{title}\" at {location} on Miraitu. I'm interested in buying it.",
+                    rent: "Hi, I saw your land listing \"{title}\" at {location} on Miraitu. I'm interested in renting it.",
+                    lease: "Hi, I saw your land listing \"{title}\" at {location} on Miraitu. I'm interested in leasing it.",
+                };
                 return (
                     <div
                         style={{ position: 'fixed', inset: 0, zIndex: Z.MODAL + 1, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
@@ -889,10 +901,10 @@ export default function LandFeed() {
                                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', background: '#16a34a', color: 'white', fontWeight: 700, borderRadius: '12px', textDecoration: 'none', fontSize: '14px' }}
                                 >
                                     <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>call</span>
-                                    Call Now
+                                    {tp('Call Now')}
                                 </a>
                                 <a
-                                    href={`https://wa.me/91${digits}?text=${encodeURIComponent(`Hi, I saw your land listing "${item.title}" at ${item.location} on Miraitu. I'm interested in ${intent} it.`)}`}
+                                    href={`https://wa.me/91${digits}?text=${encodeURIComponent(tp(WA_MESSAGE[item.kind]).replace('{title}', item.title).replace('{location}', item.location))}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     onClick={() => trackContact(item, 'whatsapp')}

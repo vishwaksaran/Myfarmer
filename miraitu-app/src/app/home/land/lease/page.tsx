@@ -13,6 +13,8 @@ import { logListingContact, type ContactChannel } from '@/app/actions/listing-co
 import { useAuth } from '@/context/AuthContext';
 import LoginModal from '@/components/auth/LoginModal';
 import { Z } from '@/lib/z-layers';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 async function uploadLeasePhoto(file: File): Promise<string | null> {
     const fd = new FormData();
@@ -137,6 +139,8 @@ function timeAgo(dateStr: string): string {
 
 export default function LeaseLandPage() {
     const { user } = useAuth();
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const [activeTab, setActiveTab] = useState<TabType>('browse');
     const [showLoginModal, setShowLoginModal] = useState(false);
 
@@ -192,14 +196,14 @@ export default function LeaseLandPage() {
     const shareListing = async (listing: LeaseListingRecord) => {
         const ed = listing.extra_data;
         const isRent = ed.service_type === 'rent';
-        const title = ed.title || 'Land for Lease';
+        const title = ed.title || tp('Land for Lease');
         const text = [
-            `${title} — ${isRent ? 'For Rent' : 'For Lease'}`,
+            `${title} — ${isRent ? tp('For Rent') : tp('For Lease')}`,
             `📍 ${listing.location}`,
-            ed.area ? `📐 ${ed.area} Acres` : '',
+            ed.area ? `📐 ${ed.area} ${tp('Acres')}` : '',
             formatPrice(ed.lease_price) ? `💰 ${formatPrice(ed.lease_price)}${isRent ? '/acre/month' : '/acre/year'}` : '',
             ed.description ? `\n${ed.description.slice(0, 120)}…` : '',
-            '\nFind more on Miraitu 🌾',
+            `\n${tp('Find more on Miraitu 🌾')}`,
         ].filter(Boolean).join('\n');
         const url = typeof window !== 'undefined' ? window.location.href.split('?')[0] : '';
         try {
@@ -207,7 +211,7 @@ export default function LeaseLandPage() {
                 await navigator.share({ title, text, url });
             } else {
                 await navigator.clipboard.writeText(`${text}\n\n${url}`);
-                setShareToast('Link copied to clipboard!');
+                setShareToast(tp('Link copied to clipboard!'));
                 setTimeout(() => setShareToast(''), 3000);
             }
         } catch {
@@ -320,16 +324,16 @@ export default function LeaseLandPage() {
 
     const validate = () => {
         const newErrors: Record<string, string> = {};
-        if (!formData.title.trim()) newErrors.title = 'Land title is required';
-        if (!formData.location.trim()) newErrors.location = 'Location is required';
-        if (!formData.area.trim()) newErrors.area = 'Area is required';
-        else if (isNaN(Number(formData.area))) newErrors.area = 'Enter a valid number';
-        if (!formData.leasePrice.trim()) newErrors.leasePrice = 'Price is required';
-        else if (isNaN(Number(formData.leasePrice))) newErrors.leasePrice = 'Enter digits only — no commas, ₹ or text';
-        if (serviceType === 'lease' && !formData.duration) newErrors.duration = 'Duration is required';
-        if (!formData.contactName.trim()) newErrors.contactName = 'Name is required';
-        if (!formData.contactPhone.trim()) newErrors.contactPhone = 'Phone number is required';
-        else if (!/^\d{10}$/.test(formData.contactPhone.replace(/[\s+-]/g, '').slice(-10))) newErrors.contactPhone = 'Enter a valid 10-digit phone number';
+        if (!formData.title.trim()) newErrors.title = tp('Land title is required');
+        if (!formData.location.trim()) newErrors.location = tp('Location is required');
+        if (!formData.area.trim()) newErrors.area = tp('Area is required');
+        else if (isNaN(Number(formData.area))) newErrors.area = tp('Enter a valid number');
+        if (!formData.leasePrice.trim()) newErrors.leasePrice = tp('Price is required');
+        else if (isNaN(Number(formData.leasePrice))) newErrors.leasePrice = tp('Enter digits only — no commas, ₹ or text');
+        if (serviceType === 'lease' && !formData.duration) newErrors.duration = tp('Duration is required');
+        if (!formData.contactName.trim()) newErrors.contactName = tp('Name is required');
+        if (!formData.contactPhone.trim()) newErrors.contactPhone = tp('Phone number is required');
+        else if (!/^\d{10}$/.test(formData.contactPhone.replace(/[\s+-]/g, '').slice(-10))) newErrors.contactPhone = tp('Enter a valid 10-digit phone number');
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -341,8 +345,8 @@ export default function LeaseLandPage() {
         const newPreviews: string[] = [];
 
         for (const file of files) {
-            if (photos.length + newPhotos.length >= 3) { alert('Maximum 3 photos allowed'); break; }
-            if (file.size > maxSize) { alert(`${file.name} exceeds 5MB limit`); continue; }
+            if (photos.length + newPhotos.length >= 3) { alert(tp('Maximum 3 photos allowed')); break; }
+            if (file.size > maxSize) { alert(tp('{name} exceeds 5MB limit').replace('{name}', file.name)); continue; }
             newPhotos.push(file);
             newPreviews.push(URL.createObjectURL(file));
         }
@@ -411,7 +415,7 @@ export default function LeaseLandPage() {
             setDraftRestored(false);
             try { sessionStorage.removeItem(LEASE_DRAFT_KEY); } catch { /* nothing left to clean up */ }
         } else {
-            setErrors({ submit: result.error || 'Failed to submit' });
+            setErrors({ submit: result.error || tp('Failed to submit') });
         }
     };
 
@@ -459,21 +463,21 @@ export default function LeaseLandPage() {
             <div className="mx-auto max-w-[1280px]">
                 {/* Breadcrumb */}
                 <div className="flex items-center gap-2 text-xs md:text-sm text-gray-500 mb-4 md:mb-6">
-                    <Link href="/home" className="hover:text-primary transition-colors">Home</Link>
+                    <Link href="/home" className="hover:text-primary transition-colors">{tp('Home')}</Link>
                     <span className="material-symbols-outlined text-xs">chevron_right</span>
-                    <Link href="/home/land" className="hover:text-primary transition-colors">Land</Link>
+                    <Link href="/home/land" className="hover:text-primary transition-colors">{tp('Land')}</Link>
                     <span className="material-symbols-outlined text-xs">chevron_right</span>
-                    <span className="text-gray-900 dark:text-white font-semibold">Lease</span>
+                    <span className="text-gray-900 dark:text-white font-semibold">{tp('Lease')}</span>
                 </div>
 
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6 md:mb-8">
                     <div>
                         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                            Lease Farm Land
+                            {tp('Lease Farm Land')}
                         </h1>
                         <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">
-                            Long-term leasing opportunities for productive farming
+                            {tp('Long-term leasing opportunities for productive farming')}
                         </p>
                     </div>
                     <NearbyLocation />
@@ -482,8 +486,8 @@ export default function LeaseLandPage() {
                 {/* Tabs */}
                 <div className="grid grid-cols-2 gap-2 md:gap-3 mb-6 md:mb-8">
                     {[
-                        { id: 'browse' as TabType, title: 'Find Land to Lease', icon: 'search', bgColor: 'bg-teal-500' },
-                        { id: 'list' as TabType, title: 'List Your Land for Lease', icon: 'add_circle', bgColor: 'bg-emerald-500' },
+                        { id: 'browse' as TabType, title: tp('Find Land to Lease'), icon: 'search', bgColor: 'bg-teal-500' },
+                        { id: 'list' as TabType, title: tp('List Your Land for Lease'), icon: 'add_circle', bgColor: 'bg-emerald-500' },
                     ].map((tab) => (
                         <button
                             key={tab.id}
@@ -509,9 +513,9 @@ export default function LeaseLandPage() {
                             <div className="flex items-start gap-3">
                                 <span className="material-symbols-outlined text-teal-600 text-xl md:text-2xl mt-0.5">info</span>
                                 <div>
-                                    <h3 className="text-sm md:text-base font-bold text-teal-800 dark:text-teal-300 mb-1">How Land Leasing Works</h3>
+                                    <h3 className="text-sm md:text-base font-bold text-teal-800 dark:text-teal-300 mb-1">{tp('How Land Leasing Works')}</h3>
                                     <p className="text-xs md:text-sm text-teal-700/80 dark:text-teal-400/80">
-                                        Lease agricultural land for 3-10 years. You get full farming rights with a yearly rental fee. All agreements are registered and legally binding.
+                                        {tp('Lease agricultural land for 3-10 years. You get full farming rights with a yearly rental fee. All agreements are registered and legally binding.')}
                                     </p>
                                 </div>
                             </div>
@@ -520,7 +524,7 @@ export default function LeaseLandPage() {
                         {/* Loading */}
                         {listingsLoading && (
                             <div className="flex flex-col items-center justify-center py-20 gap-3">
-                                <MiraituLoader fullScreen={false} label="Loading listings…" />
+                                <MiraituLoader fullScreen={false} label={tp('Loading listings…')} />
                             </div>
                         )}
 
@@ -528,7 +532,7 @@ export default function LeaseLandPage() {
                         {!listingsLoading && listingsError && (
                             <div className="bg-red-50 border border-red-100 rounded-xl p-6 text-center">
                                 <span className="material-symbols-outlined text-3xl text-red-400 mb-2 block">error</span>
-                                <p className="text-sm text-red-600 font-medium">Could not load listings. Please try again later.</p>
+                                <p className="text-sm text-red-600 font-medium">{tp('Could not load listings. Please try again later.')}</p>
                             </div>
                         )}
 
@@ -536,13 +540,13 @@ export default function LeaseLandPage() {
                         {!listingsLoading && !listingsError && listings.length === 0 && (
                             <div className="bg-white dark:bg-[#1a231a] rounded-xl border border-gray-100 dark:border-gray-800 p-12 text-center">
                                 <span className="material-symbols-outlined text-5xl text-gray-300 mb-3 block">grass</span>
-                                <p className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-1">No listings yet</p>
-                                <p className="text-sm text-gray-500 mb-4">Be the first to list your land for lease.</p>
+                                <p className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-1">{tp('No listings yet')}</p>
+                                <p className="text-sm text-gray-500 mb-4">{tp('Be the first to list your land for lease.')}</p>
                                 <button
                                     onClick={() => setActiveTab('list')}
                                     className="px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-colors"
                                 >
-                                    List Your Land
+                                    {tp('List Your Land')}
                                 </button>
                             </div>
                         )}
@@ -594,7 +598,7 @@ export default function LeaseLandPage() {
                                                             </div>
                                                             {/* Service type badge */}
                                                             <div className={`absolute bottom-2 left-2 px-2 py-0.5 backdrop-blur-sm text-white text-[10px] md:text-xs font-semibold rounded-md ${isRent ? 'bg-amber-600/80' : 'bg-teal-600/80'}`}>
-                                                                {isRent ? 'For Rent' : ed.duration ? `${ed.duration} Lease` : 'For Lease'}
+                                                                {isRent ? tp('For Rent') : ed.duration ? `${tp(ed.duration)} ${tp('Lease')}` : tp('For Lease')}
                                                             </div>
                                                             {photos.length > 1 && (
                                                                 <div className="absolute top-2 right-2 px-2 py-0.5 bg-black/60 text-white text-[10px] font-bold rounded-md flex items-center gap-1">
@@ -608,10 +612,10 @@ export default function LeaseLandPage() {
                                                         <div className="p-3 md:p-5">
                                                             <div className="flex items-start justify-between gap-2 mb-1.5 md:mb-2">
                                                                 <h3 className="text-sm md:text-lg font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-primary transition-colors flex-1">
-                                                                    {ed.title || 'Land for Lease'}
+                                                                    {ed.title || tp('Land for Lease')}
                                                                 </h3>
                                                                 <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full ${isRent ? 'bg-amber-100 text-amber-700' : 'bg-teal-100 text-teal-700'}`}>
-                                                                    {isRent ? 'RENT' : 'LEASE'}
+                                                                    {isRent ? tp('RENT') : tp('LEASE')}
                                                                 </span>
                                                             </div>
                                                             <div className="flex items-center gap-1 text-xs md:text-sm text-gray-500 mb-2 md:mb-3">
@@ -622,7 +626,7 @@ export default function LeaseLandPage() {
                                                                 {ed.area && (
                                                                     <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
                                                                         <span className="material-symbols-outlined text-sm">square_foot</span>
-                                                                        {ed.area} Acres
+                                                                        {ed.area} {tp('Acres')}
                                                                     </div>
                                                                 )}
                                                                 <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
@@ -639,7 +643,7 @@ export default function LeaseLandPage() {
                                                                     <p className="text-base md:text-xl font-bold text-primary">
                                                                         {formatPrice(ed.lease_price)
                                                                             ? `${formatPrice(ed.lease_price)}${isRent ? '/acre/mo' : '/acre/yr'}`
-                                                                            : 'Price on request'}
+                                                                            : tp('Price on request')}
                                                                     </p>
                                                                     <p className="text-[10px] md:text-xs text-gray-500 ml-2 shrink-0">{timeAgo(listing.created_at)}</p>
                                                                 </div>
@@ -647,18 +651,18 @@ export default function LeaseLandPage() {
                                                                 <div className="flex items-center gap-2">
                                                                     <button
                                                                         onClick={() => shareListing(listing)}
-                                                                        title="Share"
+                                                                        title={tp('Share')}
                                                                         className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 text-xs font-semibold hover:text-primary hover:border-primary transition-colors"
                                                                     >
                                                                         <span className="material-symbols-outlined text-sm">share</span>
-                                                                        Share
+                                                                        {tp('Share')}
                                                                     </button>
                                                                     <button
                                                                         onClick={() => { setDetailListing(listing); setDetailPhotoIdx(0); }}
                                                                         className="flex-1 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-1"
                                                                     >
                                                                         <span className="material-symbols-outlined text-sm">open_in_new</span>
-                                                                        View Details
+                                                                        {tp('View Details')}
                                                                     </button>
                                                                 </div>
                                                             </div>
@@ -678,8 +682,8 @@ export default function LeaseLandPage() {
                 {activeTab === 'list' && (
                     <div className="animate-fadeIn max-w-3xl mx-auto">
                         <form onSubmit={handleSubmit} className="bg-white dark:bg-[#1a231a] rounded-lg md:rounded-2xl p-4 md:p-8 border border-gray-100 dark:border-gray-800 shadow-sm">
-                            <h2 className="text-xl md:text-2xl font-bold text-primary text-center mb-2">List Your Land</h2>
-                            <p className="text-sm md:text-base text-gray-500 text-center mb-4 md:mb-6">Connect with farmers looking for land</p>
+                            <h2 className="text-xl md:text-2xl font-bold text-primary text-center mb-2">{tp('List Your Land')}</h2>
+                            <p className="text-sm md:text-base text-gray-500 text-center mb-4 md:mb-6">{tp('Connect with farmers looking for land')}</p>
 
                             {/* Only shown when the fields below came back from a
                                 previous, unfinished visit — see LEASE_DRAFT_KEY. */}
@@ -688,10 +692,10 @@ export default function LeaseLandPage() {
                                     <span className="material-symbols-outlined text-teal-600 dark:text-teal-400 shrink-0">restore</span>
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-semibold text-teal-800 dark:text-teal-300">
-                                            Picked up where you left off
+                                            {tp('Picked up where you left off')}
                                         </p>
                                         <p className="text-xs text-teal-700/80 dark:text-teal-400/80 mt-0.5">
-                                            We kept what you&apos;d typed. Photos don&apos;t carry over — please re-add them.
+                                            {tp("We kept what you'd typed. Photos don't carry over — please re-add them.")}
                                         </p>
                                     </div>
                                     <button
@@ -706,7 +710,7 @@ export default function LeaseLandPage() {
                                         }}
                                         className="text-xs font-bold text-teal-700 dark:text-teal-400 hover:underline shrink-0"
                                     >
-                                        Start fresh
+                                        {tp('Start fresh')}
                                     </button>
                                 </div>
                             )}
@@ -716,8 +720,8 @@ export default function LeaseLandPage() {
                                 that visibly changes (ring, tint, check badge) plus a confirmation
                                 strip below restating the choice and what it changes. */}
                             <div className="mb-6 md:mb-8">
-                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">What are you offering?</p>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label="Listing type">
+                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{tp('What are you offering?')}</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label={tp('Listing type')}>
                                     {SERVICE_TYPE_OPTIONS.map(opt => {
                                         const selected = serviceType === opt.key;
                                         return (
@@ -741,8 +745,8 @@ export default function LeaseLandPage() {
                                                         <span className="material-symbols-outlined text-xl">{opt.icon}</span>
                                                     </div>
                                                     <div className="min-w-0 pr-6">
-                                                        <p className={`font-bold text-sm ${selected ? opt.textOn : 'text-gray-700 dark:text-gray-300'}`}>{opt.title}</p>
-                                                        <p className="text-[11px] text-gray-500 leading-snug">{opt.subtitle}</p>
+                                                        <p className={`font-bold text-sm ${selected ? opt.textOn : 'text-gray-700 dark:text-gray-300'}`}>{tp(opt.title)}</p>
+                                                        <p className="text-[11px] text-gray-500 leading-snug">{tp(opt.subtitle)}</p>
                                                     </div>
                                                 </div>
                                             </button>
@@ -757,7 +761,7 @@ export default function LeaseLandPage() {
                                         <div key={active.key} className={`animate-fade-in mt-3 flex items-start gap-2 rounded-xl px-3 py-2.5 ${active.bannerBg}`}>
                                             <span className={`material-symbols-outlined text-base shrink-0 ${active.textOn}`}>info</span>
                                             <p className="text-xs text-gray-600 dark:text-gray-300 leading-snug">
-                                                Listing as <span className={`font-bold ${active.textOn}`}>{active.title}</span> — {active.hint}
+                                                {tp('Listing as')} <span className={`font-bold ${active.textOn}`}>{tp(active.title)}</span> — {tp(active.hint)}
                                             </p>
                                         </div>
                                     );
@@ -767,12 +771,12 @@ export default function LeaseLandPage() {
                             <div className="space-y-4 md:space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                                     <div>
-                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Land Title</label>
+                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Land Title')}</label>
                                         <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. 10 Acres Paddy Land" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.title ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                         {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">District / City</label>
+                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('District / City')}</label>
                                         <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="e.g. Chamarajanagar" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.location ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                         {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
                                     </div>
@@ -780,26 +784,26 @@ export default function LeaseLandPage() {
 
                                 {/* Detailed address */}
                                 <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 space-y-3">
-                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Detailed Address <span className="font-normal normal-case">(optional)</span></p>
+                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">{tp('Detailed Address')} <span className="font-normal normal-case">{tp('(optional)')}</span></p>
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                         <div>
-                                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Survey / S.No</label>
+                                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">{tp('Survey / S.No')}</label>
                                             <input type="text" name="surveyNo" value={formData.surveyNo} onChange={handleChange} placeholder="e.g. 255" className="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm" />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Taluk</label>
+                                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">{tp('Taluk')}</label>
                                             <input type="text" name="taluk" value={formData.taluk} onChange={handleChange} placeholder="e.g. Chamarajanagar" className="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm" />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Hobli</label>
+                                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">{tp('Hobli')}</label>
                                             <input type="text" name="hobli" value={formData.hobli} onChange={handleChange} placeholder="e.g. Harave" className="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm" />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Village</label>
+                                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">{tp('Village')}</label>
                                             <input type="text" name="village" value={formData.village} onChange={handleChange} placeholder="e.g. Harave" className="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm" />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">District</label>
+                                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">{tp('District')}</label>
                                             <input type="text" name="district" value={formData.district} onChange={handleChange} placeholder="e.g. Chamarajanagar" className="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm" />
                                         </div>
                                     </div>
@@ -807,28 +811,28 @@ export default function LeaseLandPage() {
 
                                 <div className={`grid gap-3 md:gap-4 ${serviceType === 'lease' ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'}`}>
                                     <div>
-                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Area (Acres)</label>
+                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Area (Acres)')}</label>
                                         <input type="text" name="area" value={formData.area} onChange={handleChange} placeholder="e.g. 10" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.area ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                         {errors.area && <p className="text-red-500 text-xs mt-1">{errors.area}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
-                                            {serviceType === 'lease' ? 'Lease Price (₹/acre/year)' : 'Rent Price (₹/acre/month)'}
+                                            {tp(serviceType === 'lease' ? 'Lease Price (₹/acre/year)' : 'Rent Price (₹/acre/month)')}
                                         </label>
                                         <input type="text" name="leasePrice" value={formData.leasePrice} onChange={handleChange} placeholder="e.g. 50000" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.leasePrice ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                         {errors.leasePrice && <p className="text-red-500 text-xs mt-1">{errors.leasePrice}</p>}
                                     </div>
                                     {serviceType === 'lease' && (
                                         <div>
-                                            <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Lease Duration</label>
+                                            <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Lease Duration')}</label>
                                             <select name="duration" value={formData.duration} onChange={handleChange} className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.duration ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`}>
-                                                <option value="">Select Duration</option>
-                                                <option>1 Year</option>
-                                                <option>2 Years</option>
-                                                <option>3 Years</option>
-                                                <option>5 Years</option>
-                                                <option>10 Years</option>
-                                                <option>Can be discussed</option>
+                                                <option value="">{tp('Select Duration')}</option>
+                                                <option value="1 Year">{tp('1 Year')}</option>
+                                                <option value="2 Years">{tp('2 Years')}</option>
+                                                <option value="3 Years">{tp('3 Years')}</option>
+                                                <option value="5 Years">{tp('5 Years')}</option>
+                                                <option value="10 Years">{tp('10 Years')}</option>
+                                                <option value="Can be discussed">{tp('Can be discussed')}</option>
                                             </select>
                                             {errors.duration && <p className="text-red-500 text-xs mt-1">{errors.duration}</p>}
                                         </div>
@@ -836,15 +840,15 @@ export default function LeaseLandPage() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Description</label>
+                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Description')}</label>
                                     <textarea name="description" value={formData.description} onChange={handleChange} rows={4} placeholder="Describe your land, soil type, water sources, current crops..." className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm md:text-base resize-none" />
                                 </div>
 
                                 {/* Photo Upload */}
                                 <div>
                                     <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                        Land Photos ({photos.length}/3)
-                                        <span className="ml-2 font-normal text-gray-400">— uploaded to cloud, shown publicly after approval</span>
+                                        {tp('Land Photos')} ({photos.length}/3)
+                                        <span className="ml-2 font-normal text-gray-400">— {tp('uploaded to cloud, shown publicly after approval')}</span>
                                     </label>
                                     <input
                                         type="file"
@@ -863,8 +867,8 @@ export default function LeaseLandPage() {
                                             }`}
                                     >
                                         <span className="material-symbols-outlined text-2xl md:text-4xl text-gray-400 mb-1 md:mb-2 block">add_a_photo</span>
-                                        <p className="text-xs md:text-sm text-gray-500 font-medium">{photos.length >= 3 ? 'Max 3 photos reached' : 'Upload land photos'}</p>
-                                        <p className="text-[10px] md:text-xs text-gray-400 mt-1">JPG, PNG up to 5MB each • Max 3 photos</p>
+                                        <p className="text-xs md:text-sm text-gray-500 font-medium">{tp(photos.length >= 3 ? 'Max 3 photos reached' : 'Upload land photos')}</p>
+                                        <p className="text-[10px] md:text-xs text-gray-400 mt-1">{tp('JPG, PNG up to 5MB each • Max 3 photos')}</p>
                                     </label>
                                     {previews.length > 0 && (
                                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4 mt-4">
@@ -889,12 +893,12 @@ export default function LeaseLandPage() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                                     <div>
-                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Your Name</label>
-                                        <input type="text" name="contactName" value={formData.contactName} onChange={handleChange} placeholder="Full Name" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.contactName ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
+                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Your Name')}</label>
+                                        <input type="text" name="contactName" value={formData.contactName} onChange={handleChange} placeholder={tp('Full Name')} className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.contactName ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                         {errors.contactName && <p className="text-red-500 text-xs mt-1">{errors.contactName}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Phone Number</label>
+                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Phone Number')}</label>
                                         <input type="tel" name="contactPhone" value={formData.contactPhone} onChange={handleChange} placeholder="+91 XXXXX XXXXX" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.contactPhone ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                         {errors.contactPhone && <p className="text-red-500 text-xs mt-1">{errors.contactPhone}</p>}
                                     </div>
@@ -912,7 +916,7 @@ export default function LeaseLandPage() {
                                 {uploadingPhotos && (
                                     <div className="flex items-center gap-2 text-sm text-teal-600 font-medium">
                                         <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
-                                        Uploading photos…
+                                        {tp('Uploading photos…')}
                                     </div>
                                 )}
 
@@ -924,12 +928,12 @@ export default function LeaseLandPage() {
                                     {isBusy ? (
                                         <>
                                             <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
-                                            {uploadingPhotos ? 'Uploading photos…' : 'Submitting…'}
+                                            {uploadingPhotos ? tp('Uploading photos…') : tp('Submitting…')}
                                         </>
                                     ) : (
                                         <>
                                             <span className="material-symbols-outlined text-lg md:text-xl">publish</span>
-                                            Submit {serviceType === 'lease' ? 'Lease' : 'Rent'} Listing
+                                            {tp(serviceType === 'lease' ? 'Submit Lease Listing' : 'Submit Rent Listing')}
                                         </>
                                     )}
                                 </button>
@@ -950,7 +954,7 @@ export default function LeaseLandPage() {
                                 <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 text-xs font-bold ${SUBMISSION_ACCENT.badge}`}><span className="material-symbols-outlined text-sm leading-none">location_off</span>{submission.badge}</span>
                                 <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mb-4">{submission.message}</p>
                                 <button onClick={() => { setShowSuccessModal(false); setActiveTab('browse'); }} className="w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors">
-                                    View All Listings
+                                    {tp('View All Listings')}
                                 </button>
                             </div>
                         </div>
@@ -1035,7 +1039,7 @@ export default function LeaseLandPage() {
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
                         <div>
                             <p style={{ fontSize: '18px', fontWeight: 700, color: '#111', margin: 0 }}>{contactListing.full_name}</p>
-                            <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>{contactListing.extra_data.title || 'Land for Lease'} · {contactListing.location}</p>
+                            <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>{contactListing.extra_data.title || tp('Land for Lease')} · {contactListing.location}</p>
                         </div>
                         <button onClick={() => setContactListing(null)} style={{ padding: '6px', borderRadius: '50%', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex' }}>
                             <span className="material-symbols-outlined" style={{ color: '#6b7280', fontSize: '20px' }}>close</span>
@@ -1061,10 +1065,10 @@ export default function LeaseLandPage() {
                                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', background: '#16a34a', color: 'white', fontWeight: 700, borderRadius: '12px', textDecoration: 'none', fontSize: '14px' }}
                                     >
                                         <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>call</span>
-                                        Call Now
+                                        {tp('Call Now')}
                                     </a>
                                     <a
-                                        href={`https://wa.me/91${digits}?text=${encodeURIComponent(`Hi, I saw your land listing "${contactListing.extra_data.title || 'Land for Lease'}" at ${contactListing.location} on Miraitu. I'm interested in leasing it.`)}`}
+                                        href={`https://wa.me/91${digits}?text=${encodeURIComponent(tp("Hi, I saw your land listing \"{title}\" at {location} on Miraitu. I'm interested in leasing it.").replace('{title}', contactListing.extra_data.title || tp('Land for Lease')).replace('{location}', contactListing.location))}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         onClick={() => trackContact(contactListing, 'whatsapp')}
@@ -1111,7 +1115,7 @@ export default function LeaseLandPage() {
                             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%)' }} />
                             {/* type badge */}
                             <div style={{ position: 'absolute', top: '12px', left: '12px', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 700, color: 'white', background: isRent ? '#d97706' : '#0d9488' }}>
-                                {isRent ? 'FOR RENT' : 'FOR LEASE'}
+                                {isRent ? tp('FOR RENT') : tp('FOR LEASE')}
                             </div>
                             {/* close */}
                             <button onClick={() => setDetailListing(null)} style={{ position: 'absolute', top: '10px', right: '10px', padding: '6px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', border: 'none', cursor: 'pointer', display: 'flex' }}>
@@ -1144,7 +1148,7 @@ export default function LeaseLandPage() {
                         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
                             {/* Title row */}
                             <div style={{ marginBottom: '4px' }}>
-                                <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#111', margin: 0 }}>{ed.title || 'Land Listing'}</h2>
+                                <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#111', margin: 0 }}>{ed.title || tp('Land Listing')}</h2>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#6b7280', fontSize: '13px', marginBottom: '16px' }}>
                                 <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>location_on</span>
@@ -1154,9 +1158,9 @@ export default function LeaseLandPage() {
                             {/* Key stats */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
                                 {[
-                                    { icon: 'square_foot', label: 'Area', value: ed.area ? `${ed.area} Acres` : '—' },
-                                    { icon: 'payments', label: isRent ? 'Rent' : 'Lease Price', value: formatPrice(ed.lease_price) ? `${formatPrice(ed.lease_price)}${priceUnit}` : 'On request' },
-                                    { icon: 'schedule', label: 'Duration', value: isRent ? 'Flexible' : (ed.duration || '—') },
+                                    { icon: 'square_foot', label: tp('Area'), value: ed.area ? `${ed.area} ${tp('Acres')}` : '—' },
+                                    { icon: 'payments', label: isRent ? tp('Rent') : tp('Lease Price'), value: formatPrice(ed.lease_price) ? `${formatPrice(ed.lease_price)}${priceUnit}` : tp('On request') },
+                                    { icon: 'schedule', label: tp('Duration'), value: isRent ? tp('Flexible') : (ed.duration ? tp(ed.duration) : '—') },
                                 ].map(stat => (
                                     <div key={stat.label} style={{ background: '#f9fafb', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
                                         <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#16a34a', display: 'block', marginBottom: '4px' }}>{stat.icon}</span>
@@ -1169,14 +1173,14 @@ export default function LeaseLandPage() {
                             {/* Address details */}
                             {hasAddress && (
                                 <div style={{ marginBottom: '20px' }}>
-                                    <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>Land Location Details</p>
+                                    <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>{tp('Land Location Details')}</p>
                                     <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '14px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                                         {[
-                                            ed.survey_no && { label: 'Survey No.', value: ed.survey_no },
-                                            ed.district && { label: 'District', value: ed.district },
-                                            ed.taluk && { label: 'Taluk', value: ed.taluk },
-                                            ed.hobli && { label: 'Hobli', value: ed.hobli },
-                                            ed.village && { label: 'Village', value: ed.village },
+                                            ed.survey_no && { label: tp('Survey No.'), value: ed.survey_no },
+                                            ed.district && { label: tp('District'), value: ed.district },
+                                            ed.taluk && { label: tp('Taluk'), value: ed.taluk },
+                                            ed.hobli && { label: tp('Hobli'), value: ed.hobli },
+                                            ed.village && { label: tp('Village'), value: ed.village },
                                         ].filter(Boolean).map((item) => {
                                             const { label, value } = item as { label: string; value: string };
                                             return (
@@ -1193,7 +1197,7 @@ export default function LeaseLandPage() {
                             {/* Description */}
                             {ed.description && (
                                 <div style={{ marginBottom: '20px' }}>
-                                    <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>About the Land</p>
+                                    <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>{tp('About the Land')}</p>
                                     <p style={{ fontSize: '14px', color: '#374151', lineHeight: 1.7, whiteSpace: 'pre-wrap', margin: 0 }}>{ed.description}</p>
                                 </div>
                             )}
@@ -1204,7 +1208,7 @@ export default function LeaseLandPage() {
                                     <span className="material-symbols-outlined" style={{ color: 'white', fontSize: '18px' }}>person</span>
                                 </div>
                                 <div>
-                                    <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>Listed by</p>
+                                    <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>{tp('Listed by')}</p>
                                     <p style={{ fontSize: '14px', fontWeight: 700, color: '#111', margin: 0 }}>{detailListing.full_name}</p>
                                 </div>
                                 <p style={{ marginLeft: 'auto', fontSize: '11px', color: '#9ca3af' }}>{timeAgo(detailListing.created_at)}</p>
@@ -1215,24 +1219,24 @@ export default function LeaseLandPage() {
                         <div style={{ padding: '16px 24px', borderTop: '1px solid #f3f4f6', flexShrink: 0, display: 'flex', gap: '10px' }}>
                             <button
                                 onClick={() => shareListing(detailListing)}
-                                title="Share"
+                                title={tp('Share')}
                                 style={{ padding: '12px 14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, fontSize: '14px', color: '#374151', flexShrink: 0 }}
                             >
                                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>share</span>
-                                Share
+                                {tp('Share')}
                             </button>
                             <button
                                 onClick={() => setDetailListing(null)}
                                 style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1.5px solid #e5e7eb', background: 'white', fontWeight: 700, fontSize: '14px', cursor: 'pointer', color: '#374151' }}
                             >
-                                Close
+                                {tp('Close')}
                             </button>
                             <button
                                 onClick={() => { handleContactClick(detailListing); if (user && !user.isGuest) setDetailListing(null); }}
                                 style={{ flex: 2, padding: '12px', borderRadius: '12px', background: '#16a34a', color: 'white', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                             >
                                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>{(!user || user.isGuest) ? 'lock' : 'call'}</span>
-                                {(!user || user.isGuest) ? 'Login to Contact' : 'Contact Owner'}
+                                {(!user || user.isGuest) ? tp('Login to Contact') : tp('Contact Owner')}
                             </button>
                         </div>
                     </div>

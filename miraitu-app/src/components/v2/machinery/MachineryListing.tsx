@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 import { normalizeIndianPhone } from '@/lib/phone';
 import { Z } from '@/lib/z-layers';
 
@@ -62,7 +63,8 @@ const STATE_DISTRICTS: Record<string, string[]> = {
 
 export default function MachineryListing({ items, type, viewMode = 'grid', onCompare, selectedForCompare = [], onGetPrice }: MachineryListingProps) {
     const { user } = useAuth();
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const [selectedItem, setSelectedItem] = useState<MachineryItem | null>(null);
     const [showQuoteModal, setShowQuoteModal] = useState(false);
     const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -94,12 +96,12 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
         const errs: Record<string, string> = {};
         const digits = quotePhone.replace(/\D/g, '');
         if (!digits) {
-            errs.phone = 'Mobile number is required';
+            errs.phone = tp('Mobile number is required');
         } else if (digits.length !== 10) {
-            errs.phone = 'Mobile number must be exactly 10 digits';
+            errs.phone = tp('Mobile number must be exactly 10 digits');
         }
         if (quoteEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(quoteEmail)) {
-            errs.email = 'Enter a valid email address';
+            errs.email = tp('Enter a valid email address');
         }
         if (Object.keys(errs).length > 0) {
             setQuoteErrors(errs);
@@ -177,9 +179,9 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                     {/* Tech Pack Badges */}
                                     {item.techPacks && item.techPacks.length > 0 && (
                                         <div className="flex flex-wrap gap-1.5 mb-2">
-                                            {item.techPacks.map(tp => (
-                                                <span key={tp} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold text-white ${TECH_PACK_COLORS[tp] || 'bg-gray-500'}`}>
-                                                    {tp}
+                                            {item.techPacks.map(pack => (
+                                                <span key={pack} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold text-white ${TECH_PACK_COLORS[pack] || 'bg-gray-500'}`}>
+                                                    {pack}
                                                 </span>
                                             ))}
                                         </div>
@@ -219,7 +221,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                             <div>
                                                 {user && revealedPrices.has(item.id) ? (
                                                     <>
-                                                        <span className="text-xs text-gray-500">{type === 'new' ? 'Starting from' : 'Asking Price'}</span>
+                                                        <span className="text-xs text-gray-500">{tp(type === 'new' ? 'Starting from' : 'Asking Price')}</span>
                                                         <p className="text-xl font-bold text-primary">{item.price}</p>
                                                     </>
                                                 ) : user ? (
@@ -230,7 +232,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                                 ) : (
                                                     <Link href="/user-login" className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                                                         <span className="material-symbols-outlined text-sm">lock</span>
-                                                        Login to see price
+                                                        {tp('Login to see price')}
                                                     </Link>
                                                 )}
                                             </div>
@@ -250,7 +252,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                                     className="flex-1 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors flex items-center justify-center gap-1"
                                                 >
                                                     <span className="material-symbols-outlined text-sm">location_on</span>
-                                                    On-Road Price
+                                                    {tp('On-Road Price')}
                                                 </button>
                                             ) : user ? (
                                                 <button
@@ -366,7 +368,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                         <div className="shrink-0">
                                             {user && revealedPrices.has(item.id) ? (
                                                 <>
-                                                    <span className="text-[10px] md:text-xs text-gray-500">{type === 'new' ? 'Starting from' : 'Asking Price'}</span>
+                                                    <span className="text-[10px] md:text-xs text-gray-500">{tp(type === 'new' ? 'Starting from' : 'Asking Price')}</span>
                                                     <p className="text-lg md:text-xl font-bold text-primary leading-tight">{item.price}</p>
                                                 </>
                                             ) : user ? (
@@ -377,7 +379,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                             ) : (
                                                 <Link href="/user-login" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs md:text-sm font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                                                     <span className="material-symbols-outlined text-sm">lock</span>
-                                                    Login to see price
+                                                    {tp('Login to see price')}
                                                 </Link>
                                             )}
                                         </div>
@@ -447,7 +449,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                         <div className="p-6">
                             <div className="grid grid-cols-2 gap-4 mb-6">
                                 <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
-                                    <span className="text-sm text-gray-500">Price</span>
+                                    <span className="text-sm text-gray-500">{tp('Price')}</span>
                                     {user && revealedPrices.has(selectedItem.id) ? (
                                         <p className="text-xl font-bold text-primary">{selectedItem.price}</p>
                                     ) : user ? (
@@ -458,19 +460,19 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                     ) : (
                                         <Link href="/user-login" className="mt-1 flex items-center gap-1 text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors">
                                             <span className="material-symbols-outlined text-sm">lock</span>
-                                            Login to see
+                                            {tp('Login to see')}
                                         </Link>
                                     )}
                                 </div>
                                 <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
-                                    <span className="text-sm text-gray-500">{selectedItem.hp ? 'Horsepower' : 'Warranty'}</span>
+                                    <span className="text-sm text-gray-500">{tp(selectedItem.hp ? 'Horsepower' : 'Warranty')}</span>
                                     <p className="text-xl font-bold text-gray-900 dark:text-white">
-                                        {selectedItem.hp ? `${selectedItem.hp} HP` : selectedItem.warranty || 'N/A'}
+                                        {selectedItem.hp ? `${selectedItem.hp} HP` : selectedItem.warranty || tp('N/A')}
                                     </p>
                                 </div>
                             </div>
 
-                            <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Specifications</h4>
+                            <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{tp('Specifications')}</h4>
                             <p className="text-gray-600 dark:text-gray-300 mb-6">{selectedItem.specs}</p>
 
                             <div className="flex gap-3">
@@ -527,29 +529,29 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                 <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4">
                                     <span className="material-symbols-outlined text-green-500 text-3xl">check_circle</span>
                                 </div>
-                                <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Here&apos;s Your Price!</h4>
+                                <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{tp("Here's Your Price!")}</h4>
                                 <p className="text-gray-500 dark:text-gray-400 mb-2">
                                     {selectedItem.name}
                                 </p>
                                 <div className="bg-primary/10 rounded-2xl px-6 py-4 mb-4">
-                                    <span className="text-xs text-gray-500">{type === 'new' ? 'Starting from' : 'Asking Price'}</span>
+                                    <span className="text-xs text-gray-500">{tp(type === 'new' ? 'Starting from' : 'Asking Price')}</span>
                                     <p className="text-3xl font-black text-primary">{selectedItem.price}</p>
                                 </div>
                                 <div className="bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-3 mb-6">
-                                    <p className="text-sm font-bold text-green-700 dark:text-green-400">📞 Our team will also contact you with the best deal</p>
+                                    <p className="text-sm font-bold text-green-700 dark:text-green-400">{tp('📞 Our team will also contact you with the best deal')}</p>
                                 </div>
                                 <button
                                     onClick={closeQuoteModal}
                                     className="w-full py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-colors"
                                 >
-                                    Done
+                                    {tp('Done')}
                                 </button>
                             </div>
                         ) : (
                             <form onSubmit={handleQuoteSubmit} className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-6 pb-0 space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name *</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tp('First Name *')}</label>
                                         <input
                                             type="text"
                                             required
@@ -558,7 +560,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name *</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tp('Last Name *')}</label>
                                         <input
                                             type="text"
                                             required
@@ -569,7 +571,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mobile Number *</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tp('Mobile Number *')}</label>
                                     <input
                                         type="tel"
                                         required
@@ -583,7 +585,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email (Optional)</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tp('Email (Optional)')}</label>
                                     <input
                                         type="email"
                                         value={quoteEmail}
@@ -596,28 +598,28 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State *</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tp('State *')}</label>
                                         <select
                                             required
                                             value={quoteState}
                                             onChange={e => { setQuoteState(e.target.value); setQuoteDistrict(''); }}
                                             className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none appearance-none"
                                         >
-                                            <option value="">Select State</option>
+                                            <option value="">{tp('Select State')}</option>
                                             {Object.keys(STATE_DISTRICTS).map(s => (
                                                 <option key={s} value={s}>{s}</option>
                                             ))}
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">District *</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tp('District *')}</label>
                                         <select
                                             required
                                             value={quoteDistrict}
                                             onChange={e => setQuoteDistrict(e.target.value)}
                                             className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none appearance-none"
                                         >
-                                            <option value="">Select District</option>
+                                            <option value="">{tp('Select District')}</option>
                                             {(STATE_DISTRICTS[quoteState] || []).map(d => (
                                                 <option key={d} value={d}>{d}</option>
                                             ))}
@@ -628,7 +630,7 @@ export default function MachineryListing({ items, type, viewMode = 'grid', onCom
                                 <div className="flex items-start gap-2 pt-2">
                                     <input type="checkbox" required className="mt-1 rounded border-gray-300" />
                                     <span className="text-xs text-gray-500">
-                                        I agree that by clicking Get Price, I am explicitly soliciting a call from Miraitu or its partners.
+                                        {tp('I agree that by clicking Get Price, I am explicitly soliciting a call from Miraitu or its partners.')}
                                     </span>
                                 </div>
 

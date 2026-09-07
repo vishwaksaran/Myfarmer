@@ -5,6 +5,8 @@ import Link from 'next/link';
 import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import SellMachineryForm from '@/components/v2/machinery/SellMachineryForm';
 import CompareModal from '@/components/v2/machinery/CompareModal';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 type TabType = 'new' | 'sell' | 'buy' | 'rent';
 
@@ -133,6 +135,8 @@ const usedItems = [
 ];
 
 export default function JCBPage() {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const [activeTab, setActiveTab] = useState<TabType>('new');
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
@@ -160,13 +164,13 @@ export default function JCBPage() {
                             <span className="material-symbols-outlined text-primary text-2xl">front_loader</span>
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">JCB & Excavators</h1>
-                            <p className="text-sm text-gray-500">Browse, buy, or sell heavy equipment</p>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{tp('JCB & Excavators')}</h1>
+                            <p className="text-sm text-gray-500">{tp('Browse, buy, or sell heavy equipment')}</p>
                         </div>
                     </div>
                     <Link href="/home/machinery" className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors text-sm">
                         <span className="material-symbols-outlined text-lg">arrow_back</span>
-                        <span className="hidden sm:inline">Back to Machinery</span>
+                        <span className="hidden sm:inline">{tp('Back to Machinery')}</span>
                     </Link>
                 </div>
 
@@ -192,12 +196,12 @@ export default function JCBPage() {
                             </div>
                             <div className="text-left hidden sm:block">
                                 <p className={`font-bold ${activeTab === tab.id ? 'text-primary' : 'text-gray-700 dark:text-gray-200'}`}>
-                                    {tab.title}
+                                    {tp(tab.title)}
                                 </p>
-                                <p className="text-xs text-gray-500">{tab.description}</p>
+                                <p className="text-xs text-gray-500">{tp(tab.description)}</p>
                             </div>
                             <p className={`font-bold sm:hidden ${activeTab === tab.id ? 'text-primary' : 'text-gray-700 dark:text-gray-200'}`}>
-                                {tab.shortTitle}
+                                {tp(tab.shortTitle)}
                             </p>
                         </button>
                     ))}
@@ -234,7 +238,7 @@ export default function JCBPage() {
                                             : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100'
                                             }`}
                                     >
-                                        {condition}
+                                        {tp(condition)}
                                     </button>
                                 ))}
                             </div>
@@ -252,14 +256,14 @@ export default function JCBPage() {
                             <div className="w-20 h-20 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center mb-4">
                                 <span className="material-symbols-outlined text-yellow-600 text-4xl">construction</span>
                             </div>
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Rent JCB</h2>
-                            <p className="text-gray-500 mb-6 max-w-sm">Hire JCB & earthmoving equipment by the hour, day, or week. All machines come with certified operators.</p>
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{tp('Rent JCB')}</h2>
+                            <p className="text-gray-500 mb-6 max-w-sm">{tp('Hire JCB & earthmoving equipment by the hour, day, or week. All machines come with certified operators.')}</p>
                             <Link
                                 href="/home/machinery/jcb/rent"
                                 className="flex items-center gap-2 px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-bold rounded-2xl transition-colors"
                             >
                                 <span className="material-symbols-outlined">handshake</span>
-                                Browse JCB Rentals
+                                {tp('Browse JCB Rentals')}
                             </Link>
                         </div>
                     )}

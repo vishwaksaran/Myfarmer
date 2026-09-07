@@ -5,6 +5,8 @@ import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import CompareModal from '@/components/v2/machinery/CompareModal';
 import CompareSection from '@/components/v2/machinery/CompareSection';
 import MachinerySubNav from '@/components/v2/machinery/MachinerySubNav';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 const newImplements = [
     {
@@ -70,6 +72,8 @@ const newImplements = [
 ];
 
 export default function NewImplementsPage() {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
 
@@ -92,22 +96,22 @@ export default function NewImplementsPage() {
             <div className="mx-auto max-w-[1280px]">
                 <MachinerySubNav category="implements" currentAction="new" />
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">New Implements</h1>
-                    <p className="text-gray-500">Browse ploughs, harrows, seeders, and other farming implements with warranty.</p>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{tp('New Implements')}</h1>
+                    <p className="text-gray-500">{tp('Browse ploughs, harrows, seeders, and other farming implements with warranty.')}</p>
                 </div>
 
                 <div className="flex items-center gap-4 mb-8">
                     <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
-                        <option>All Types</option>
-                        <option>Disc Harrow</option>
-                        <option>Rotavator</option>
-                        <option>Cultivator</option>
-                        <option>Plough</option>
-                        <option>Seed Drill</option>
-                        <option>Sprayer</option>
+                        <option>{tp('All Types')}</option>
+                        <option>{tp('Disc Harrow')}</option>
+                        <option>{tp('Rotavator')}</option>
+                        <option>{tp('Cultivator')}</option>
+                        <option>{tp('Plough')}</option>
+                        <option>{tp('Seed Drill')}</option>
+                        <option>{tp('Sprayer')}</option>
                     </select>
                     <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
-                        <option>All Brands</option>
+                        <option>{tp('All Brands')}</option>
                         <option>Fieldstar</option>
                         <option>Mahindra</option>
                         <option>Shaktiman</option>
@@ -116,7 +120,7 @@ export default function NewImplementsPage() {
                         <option>Khedut</option>
                     </select>
                     <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
-                        <option>Price Range</option>
+                        <option>{tp('Price Range')}</option>
                         <option>Under ₹30,000</option>
                         <option>₹30,000 - ₹60,000</option>
                         <option>₹60,000 - ₹1,00,000</option>

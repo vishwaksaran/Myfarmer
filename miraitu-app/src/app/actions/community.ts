@@ -269,6 +269,7 @@ export async function fetchFeed(
                 likes: commentLikeCounts.get(row.id) ?? 0,
                 liked: likedByMe.has(row.id),
                 replies: [],
+                isOwn: !!user && row.user_id === user.id,
             };
             commentById.set(row.id, comment);
             if (row.parent_id && commentById.has(row.parent_id)) {
@@ -903,6 +904,49 @@ export async function addComment(
         return { success: true };
     } catch {
         return { success: false, error: 'Could not post your comment' };
+    }
+}
+
+/** Edits one of the caller's own comments. Silently no-ops on someone else's. */
+export async function editComment(commentId: string, text: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        const supabase = await createSupabaseServerClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: 'Please sign in' };
+
+        const clean = text.trim();
+        if (!clean) return { success: false, error: 'Comment cannot be empty' };
+
+        const { error } = await createSupabaseAdminClient()
+            .from('community_comments')
+            .update({ text: clean, updated_at: new Date().toISOString() })
+            .eq('id', commentId)
+            .eq('user_id', user.id);
+
+        if (error) return { success: false, error: error.message };
+        return { success: true };
+    } catch {
+        return { success: false, error: 'Could not update your comment' };
+    }
+}
+
+/** Deletes one of the caller's own comments (and its replies, via cascade). */
+export async function deleteComment(commentId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        const supabase = await createSupabaseServerClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: 'Please sign in' };
+
+        const { error } = await createSupabaseAdminClient()
+            .from('community_comments')
+            .delete()
+            .eq('id', commentId)
+            .eq('user_id', user.id);
+
+        if (error) return { success: false, error: error.message };
+        return { success: true };
+    } catch {
+        return { success: false, error: 'Could not delete your comment' };
     }
 }
 

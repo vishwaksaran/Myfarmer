@@ -7,8 +7,12 @@ import CompareSection from '@/components/v2/machinery/CompareSection';
 import MachinerySubNav from '@/components/v2/machinery/MachinerySubNav';
 import PostMachineryAdButton from '@/components/v2/machinery/PostMachineryAdButton';
 import { fetchMachineryListings, type MachineryCard } from '@/lib/machinery-listings';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 export default function BuyImplementsPage() {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
     const [listings, setListings] = useState<MachineryCard[]>([]);
@@ -44,26 +48,26 @@ export default function BuyImplementsPage() {
             <div className="mx-auto max-w-[1280px]">
                 <MachinerySubNav category="implements" currentAction="buy" />
                 <div className="mb-8">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Buy Used Implements</h1>
-                    <p className="text-gray-500">Browse verified pre-owned farming implements from trusted sellers.</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">{tp('Buy Used Implements')}</h1>
+                    <p className="text-gray-500">{tp('Browse verified pre-owned farming implements from trusted sellers.')}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-6 sm:mb-8 sm:flex sm:flex-wrap sm:items-center sm:gap-4">
                     <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
-                        <option>All Types</option>
-                        <option>Rotavator</option>
-                        <option>Disc Harrow</option>
-                        <option>Cultivator</option>
-                        <option>Plough</option>
+                        <option>{tp('All Types')}</option>
+                        <option>{tp('Rotavator')}</option>
+                        <option>{tp('Disc Harrow')}</option>
+                        <option>{tp('Cultivator')}</option>
+                        <option>{tp('Plough')}</option>
                     </select>
                     <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
-                        <option>Condition</option>
-                        <option>Excellent</option>
-                        <option>Good</option>
-                        <option>Fair</option>
+                        <option>{tp('Condition')}</option>
+                        <option>{tp('Excellent')}</option>
+                        <option>{tp('Good')}</option>
+                        <option>{tp('Fair')}</option>
                     </select>
                     <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
-                        <option>Price Range</option>
+                        <option>{tp('Price Range')}</option>
                         <option>Under ₹20,000</option>
                         <option>₹20,000 - ₹40,000</option>
                         <option>Above ₹40,000</option>
@@ -77,11 +81,11 @@ export default function BuyImplementsPage() {
                 />
 
                 {loading ? (
-                    <div className="py-16 text-center text-sm text-gray-500">Loading listings…</div>
+                    <div className="py-16 text-center text-sm text-gray-500">{tp('Loading listings…')}</div>
                 ) : listings.length === 0 ? (
                     <div className="py-16 text-center bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800">
                         <span className="material-symbols-outlined text-5xl text-gray-300 mb-3">agriculture</span>
-                        <p className="text-gray-500 font-medium px-6">No listings here yet — be the first to post one.</p>
+                        <p className="text-gray-500 font-medium px-6">{tp('No listings here yet — be the first to post one.')}</p>
                     </div>
                 ) : (
                     <MachineryListing

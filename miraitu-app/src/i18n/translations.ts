@@ -660,6 +660,9 @@ const supplementalHomeTranslations: Partial<Record<LangCode, Record<string, stri
         'communityPage.feed': 'ಫೀಡ್', 'communityPage.network': 'ನನ್ನ ನೆಟ್‌ವರ್ಕ್', 'communityPage.savedPosts': 'ಉಳಿಸಿದ ಪೋಸ್ಟ್‌ಗಳು', 'communityPage.groups': 'ಗ್ರೂಪ್‌ಗಳು', 'communityPage.events': 'ಕಾರ್ಯಕ್ರಮಗಳು', 'communityPage.news': 'ಸುದ್ದಿ', 'communityPage.forYou': 'ನಿಮಗಾಗಿ', 'communityPage.trending': 'ಟ್ರೆಂಡಿಂಗ್', 'communityPage.shareTip': 'ನಿಮ್ಮ ಕೃಷಿ ಅನುಭವ, ಸಲಹೆಗಳು ಅಥವಾ ಪ್ರಶ್ನೆಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳಿ...',
         'landPage.title': 'ರೈತರ ಭೂಮಿ', 'landPage.titleHighlight': 'ಮಾರುಕಟ್ಟೆ', 'landPage.subtitle': 'ಕೃಷಿ ಭೂಮಿಯನ್ನು ಸುಲಭವಾಗಿ ಖರೀದಿಸಿ, ಮಾರಿ ಅಥವಾ ಗುತ್ತಿಗೆ ನೀಡಿ', 'landPage.buy': 'ಭೂಮಿ ಖರೀದಿಸಿ', 'landPage.sell': 'ಭೂಮಿ ಮಾರಿ', 'landPage.lease': 'ಗುತ್ತಿಗೆ / ಬಾಡಿಗೆ',
         'vetPage.title': 'ಪಶುವೈದ್ಯ', 'vetPage.titleHighlight': 'ಸೇವೆಗಳು', 'vetPage.subtitle': 'ನಿಮ್ಮ ಜಾನುವಾರುಗಳಿಗೆ ತಜ್ಞ ಪಶುವೈದ್ಯ ಆರೈಕೆ', 'vetPage.ourServices': 'ನಮ್ಮ ಸೇವೆಗಳು', 'vetPage.enquireNow': 'ಈಗ ವಿಚಾರಿಸಿ', 'vetPage.emergency': 'ತುರ್ತು ಸೇವೆಗಳು', 'vetPage.registerVet': 'ಪಶುವೈದ್ಯರಾಗಿ ನೋಂದಾಯಿಸಿ', 'vetPage.findSemen': 'ಈಗ ಹುಡುಕಿ', 'vetPage.semenTitle': 'ನಿಮ್ಮ ತಳಿಗೆ ಸೀಮನ್ ಹುಡುಕಬೇಕೇ?',
+        'fpo.knowMore': 'ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ', 'livestockPage.sellYourLivestock': 'ನಿಮ್ಮ ಜಾನುವಾರುಗಳನ್ನು ಮಾರಾಟ ಮಾಡಿ', 'livestockPage.sellYourLivestockDesc': 'ನಿಮ್ಮ ಪ್ರಾಣಿಗಳನ್ನು ಪಟ್ಟಿ ಮಾಡಿ ಮತ್ತು ಸಾವಿರಾರು ಖರೀದಿದಾರರನ್ನು ತಲುಪಿ', 'livestockPage.showingListings': '{count} ಪಟ್ಟಿಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ',
+        'machineryListing.details': 'ವಿವರಗಳು', 'machineryListing.getPrice': 'ಬೆಲೆ ಪಡೆಯಿರಿ', 'machineryListing.requestQuote': 'ಉಲ್ಲೇಖ ಕೋರಿ', 'machineryListing.priceOnRequest': 'ವಿನಂತಿಯ ಮೇರೆಗೆ ಬೆಲೆ', 'machineryListing.loginToGetPrice': 'ಬೆಲೆ ಪಡೆಯಲು ಲಾಗಿನ್ ಮಾಡಿ', 'machineryListing.getOnRoadPrice': 'ಆನ್-ರೋಡ್ ಬೆಲೆ ಪಡೆಯಿರಿ', 'machineryListing.success': 'ಯಶಸ್ವಿ!',
+        'shopPage.deliverTo': 'ಇಲ್ಲಿಗೆ ತಲುಪಿಸಿ:', 'shopPage.enterArea': 'ನಿಮ್ಮ ಪ್ರದೇಶ, ನಗರ ಅಥವಾ ಪಿನ್‌ಕೋಡ್ ನಮೂದಿಸಿ...', 'shopPage.popularCities': 'ಜನಪ್ರಿಯ ನಗರಗಳು', 'shopPage.useLocation': 'ಪ್ರಸ್ತುತ ಸ್ಥಳ ಬಳಸಿ',
     },
     mr: {
         'header.suggestions': 'सूचना',
@@ -778,6 +781,9 @@ const supplementalHomeTranslations: Partial<Record<LangCode, Record<string, stri
         'communityPage.title': 'भारतातील सर्वात मोठे', 'communityPage.titleHighlight': 'शेतकरी समुदाय', 'communityPage.subtitle': 'भारतभर 10L+ शेतकऱ्यांशी जोडा', 'communityPage.signUp': 'मोफत साइन अप', 'communityPage.logIn': 'लॉगिन', 'communityPage.feed': 'फीड', 'communityPage.network': 'माझे नेटवर्क', 'communityPage.forYou': 'तुमच्यासाठी', 'communityPage.trending': 'ट्रेंडिंग', 'communityPage.shareTip': 'तुमचा शेती अनुभव, टिप्स किंवा प्रश्न शेअर करा...',
         'landPage.title': 'शेतकरी जमीन', 'landPage.titleHighlight': 'बाजार', 'landPage.subtitle': 'सहजपणे शेतजमीन खरेदी, विक्री किंवा भाडेपट्टा करा', 'landPage.buy': 'जमीन खरेदी करा', 'landPage.sell': 'जमीन विका', 'landPage.lease': 'भाडेपट्टा / भाडे',
         'vetPage.title': 'पशुवैद्यकीय', 'vetPage.titleHighlight': 'सेवा', 'vetPage.subtitle': 'आपल्या पशुधनासाठी तज्ज्ञ पशुवैद्यकीय सेवा', 'vetPage.ourServices': 'आमच्या सेवा', 'vetPage.enquireNow': 'आता चौकशी करा', 'vetPage.emergency': 'आपत्कालीन सेवा', 'vetPage.registerVet': 'पशुवैद्य म्हणून नोंदणी करा', 'vetPage.findSemen': 'आता शोधा', 'vetPage.semenTitle': 'आपल्या जातीसाठी सीमेन शोधायचे आहे का?',
+        'fpo.knowMore': 'अधिक जाणून घ्या', 'livestockPage.sellYourLivestock': 'तुमचे पशुधन विका', 'livestockPage.sellYourLivestockDesc': 'तुमचे प्राणी सूचीबद्ध करा आणि हजारो खरेदीदारांपर्यंत पोहोचा', 'livestockPage.showingListings': '{count} यादी दाखवत आहे',
+        'machineryListing.details': 'तपशील', 'machineryListing.getPrice': 'किंमत मिळवा', 'machineryListing.requestQuote': 'कोटेशन मागवा', 'machineryListing.priceOnRequest': 'मागणीनुसार किंमत', 'machineryListing.loginToGetPrice': 'किंमत मिळवण्यासाठी लॉगिन करा', 'machineryListing.getOnRoadPrice': 'ऑन-रोड किंमत मिळवा', 'machineryListing.success': 'यशस्वी!',
+        'shopPage.deliverTo': 'येथे डिलिव्हर करा:', 'shopPage.enterArea': 'तुमचा परिसर, शहर किंवा पिनकोड टाका...', 'shopPage.popularCities': 'लोकप्रिय शहरे', 'shopPage.useLocation': 'सध्याचे स्थान वापरा',
     },
     gu: {
         'header.suggestions': 'સૂચનો',
@@ -869,6 +875,9 @@ const supplementalHomeTranslations: Partial<Record<LangCode, Record<string, stri
         'communityPage.title': 'ભારતના સૌથી મોટા', 'communityPage.titleHighlight': 'ખેડૂત સમુદાય', 'communityPage.subtitle': 'ભારત ભરના 10L+ ખેડૂતો સાથે જોડાઓ', 'communityPage.signUp': 'મફત સાઇન અપ', 'communityPage.logIn': 'લૉગિન', 'communityPage.feed': 'ફીડ', 'communityPage.network': 'મારું નેટવર્ક', 'communityPage.forYou': 'તમારા માટે', 'communityPage.trending': 'ટ્રેન્ડિંગ', 'communityPage.shareTip': 'તમારો ખેતી અનુભવ, ટિપ્સ અથવા પ્રશ્નો શેર કરો...',
         'landPage.title': 'ખેડૂત જમીન', 'landPage.titleHighlight': 'બજાર', 'landPage.subtitle': 'સહેલાઈથી ખેત જમીન ખરીદો, વેચો અથવા ભાડે આપો', 'landPage.buy': 'જમીન ખરીદો', 'landPage.sell': 'જમીન વેચો', 'landPage.lease': 'ભાડાપટ્ટો / ભાડે',
         'vetPage.title': 'પશુ ચિકિત્સા', 'vetPage.titleHighlight': 'સેવાઓ', 'vetPage.subtitle': 'તમારા પશુધન માટે નિષ્ણાત પશુ ચિકિત્સા સંભાળ', 'vetPage.ourServices': 'અમારી સેવાઓ', 'vetPage.enquireNow': 'હવે પૂછો', 'vetPage.emergency': 'કટોકટી સેવાઓ', 'vetPage.registerVet': 'પશુ ચિકિત્સક તરીકે નોંધો', 'vetPage.findSemen': 'હવે શોધો', 'vetPage.semenTitle': 'તમારી જાત માટે સીમેન શોધવા ઈચ્છો છો?',
+        'fpo.knowMore': 'વધુ જાણો', 'livestockPage.sellYourLivestock': 'તમારું પશુધન વેચો', 'livestockPage.sellYourLivestockDesc': 'તમારા પ્રાણીઓની યાદી બનાવો અને હજારો ખરીદદારો સુધી પહોંચો', 'livestockPage.showingListings': '{count} યાદીઓ બતાવી રહ્યાં છીએ',
+        'machineryListing.details': 'વિગતો', 'machineryListing.getPrice': 'ભાવ મેળવો', 'machineryListing.requestQuote': 'ભાવ-પત્રક માંગો', 'machineryListing.priceOnRequest': 'માંગ પર ભાવ', 'machineryListing.loginToGetPrice': 'ભાવ મેળવવા લોગિન કરો', 'machineryListing.getOnRoadPrice': 'ઓન-રોડ ભાવ મેળવો', 'machineryListing.success': 'સફળ!',
+        'shopPage.deliverTo': 'અહીં ડિલિવર કરો:', 'shopPage.enterArea': 'તમારો વિસ્તાર, શહેર અથવા પિનકોડ દાખલ કરો...', 'shopPage.popularCities': 'લોકપ્રિય શહેરો', 'shopPage.useLocation': 'હાલનું સ્થાન વાપરો',
     },
     pa: {
         'header.suggestions': 'ਸੁਝਾਅ',
@@ -959,6 +968,9 @@ const supplementalHomeTranslations: Partial<Record<LangCode, Record<string, stri
         'communityPage.title': 'ਭਾਰਤ ਦੇ ਸਭ ਤੋਂ ਵੱਡੇ', 'communityPage.titleHighlight': 'ਕਿਸਾਨ ਭਾਈਚਾਰੇ', 'communityPage.subtitle': 'ਭਾਰਤ ਭਰ ਵਿੱਚ 10L+ ਕਿਸਾਨਾਂ ਨਾਲ ਜੁੜੋ', 'communityPage.signUp': 'ਮੁਫ਼ਤ ਸਾਈਨ ਅਪ', 'communityPage.logIn': 'ਲੌਗਇਨ', 'communityPage.feed': 'ਫੀਡ', 'communityPage.network': 'ਮੇਰਾ ਨੈੱਟਵਰਕ', 'communityPage.forYou': 'ਤੁਹਾਡੇ ਲਈ', 'communityPage.trending': 'ਟ੍ਰੈਂਡਿੰਗ', 'communityPage.shareTip': 'ਆਪਣਾ ਖੇਤੀ ਅਨੁਭਵ, ਸੁਝਾਅ ਜਾਂ ਸਵਾਲ ਸਾਂਝੇ ਕਰੋ...',
         'landPage.title': 'ਕਿਸਾਨ ਜ਼ਮੀਨ', 'landPage.titleHighlight': 'ਬਾਜ਼ਾਰ', 'landPage.subtitle': 'ਆਸਾਨੀ ਨਾਲ ਖੇਤੀ ਜ਼ਮੀਨ ਖਰੀਦੋ, ਵੇਚੋ ਜਾਂ ਕਿਰਾਏ ਤੇ ਦਿਓ', 'landPage.buy': 'ਜ਼ਮੀਨ ਖਰੀਦੋ', 'landPage.sell': 'ਜ਼ਮੀਨ ਵੇਚੋ', 'landPage.lease': 'ਲੀਜ਼ / ਕਿਰਾਇਆ',
         'vetPage.title': 'ਪਸ਼ੂ ਚਿਕਿਤਸਾ', 'vetPage.titleHighlight': 'ਸੇਵਾਵਾਂ', 'vetPage.subtitle': 'ਤੁਹਾਡੇ ਪਸ਼ੂਧਨ ਲਈ ਮਾਹਿਰ ਪਸ਼ੂ ਚਿਕਿਤਸਾ ਸੰਭਾਲ', 'vetPage.ourServices': 'ਸਾਡੀਆਂ ਸੇਵਾਵਾਂ', 'vetPage.enquireNow': 'ਹੁਣੇ ਪੁੱਛਗਿੱਛ ਕਰੋ', 'vetPage.emergency': 'ਐਮਰਜੈਂਸੀ ਸੇਵਾਵਾਂ', 'vetPage.registerVet': 'ਪਸ਼ੂ ਚਿਕਿਤਸਕ ਵਜੋਂ ਰਜਿਸਟਰ ਕਰੋ', 'vetPage.findSemen': 'ਹੁਣੇ ਲੱਭੋ', 'vetPage.semenTitle': 'ਤੁਹਾਡੀ ਨਸਲ ਲਈ ਸੀਮੇਨ ਲੱਭਣਾ ਚਾਹੁੰਦੇ ਹੋ?',
+        'fpo.knowMore': 'ਹੋਰ ਜਾਣੋ', 'livestockPage.sellYourLivestock': 'ਆਪਣਾ ਪਸ਼ੂਧਨ ਵੇਚੋ', 'livestockPage.sellYourLivestockDesc': 'ਆਪਣੇ ਜਾਨਵਰਾਂ ਦੀ ਸੂਚੀ ਬਣਾਓ ਅਤੇ ਹਜ਼ਾਰਾਂ ਖਰੀਦਦਾਰਾਂ ਤੱਕ ਪਹੁੰਚੋ', 'livestockPage.showingListings': '{count} ਸੂਚੀਆਂ ਦਿਖਾ ਰਿਹਾ ਹੈ',
+        'machineryListing.details': 'ਵੇਰਵੇ', 'machineryListing.getPrice': 'ਕੀਮਤ ਪ੍ਰਾਪਤ ਕਰੋ', 'machineryListing.requestQuote': 'ਕੋਟੇਸ਼ਨ ਮੰਗੋ', "machineryListing.priceOnRequest": "ਮੰਗ 'ਤੇ ਕੀਮਤ", 'machineryListing.loginToGetPrice': 'ਕੀਮਤ ਪ੍ਰਾਪਤ ਕਰਨ ਲਈ ਲੌਗਇਨ ਕਰੋ', 'machineryListing.getOnRoadPrice': 'ਆਨ-ਰੋਡ ਕੀਮਤ ਪ੍ਰਾਪਤ ਕਰੋ', 'machineryListing.success': 'ਸਫਲ!',
+        'shopPage.deliverTo': 'ਇੱਥੇ ਡਿਲੀਵਰ ਕਰੋ:', 'shopPage.enterArea': 'ਆਪਣਾ ਖੇਤਰ, ਸ਼ਹਿਰ ਜਾਂ ਪਿੰਨਕੋਡ ਦਰਜ ਕਰੋ...', 'shopPage.popularCities': 'ਪ੍ਰਸਿੱਧ ਸ਼ਹਿਰ', 'shopPage.useLocation': 'ਮੌਜੂਦਾ ਟਿਕਾਣਾ ਵਰਤੋ',
     },
     bn: {
         'header.suggestions': 'প্রস্তাবনা',
@@ -1049,6 +1061,9 @@ const supplementalHomeTranslations: Partial<Record<LangCode, Record<string, stri
         'communityPage.title': 'ভারতের বৃহত্তম', 'communityPage.titleHighlight': 'কৃষক সম্প্রদায়', 'communityPage.subtitle': 'ভারত জুড়ে 10L+ কৃষকদের সাথে সংযুক্ত হন', 'communityPage.signUp': 'বিনামূল্যে সাইন আপ', 'communityPage.logIn': 'লগইন', 'communityPage.feed': 'ফিড', 'communityPage.network': 'আমার নেটওয়ার্ক', 'communityPage.forYou': 'আপনার জন্য', 'communityPage.trending': 'ট্রেন্ডিং', 'communityPage.shareTip': 'আপনার কৃষি অভিজ্ঞতা, টিপস বা প্রশ্ন শেয়ার করুন...',
         'landPage.title': 'কৃষক জমি', 'landPage.titleHighlight': 'বাজার', 'landPage.subtitle': 'সহজে কৃষি জমি কিনুন, বিক্রি করুন বা লিজ দিন', 'landPage.buy': 'জমি কিনুন', 'landPage.sell': 'জমি বিক্রি করুন', 'landPage.lease': 'লিজ / ভাড়া',
         'vetPage.title': 'পশুচিকিৎসা', 'vetPage.titleHighlight': 'সেবা', 'vetPage.subtitle': 'আপনার পশুসম্পদের জন্য বিশেষজ্ঞ পশুচিকিৎসা সেবা', 'vetPage.ourServices': 'আমাদের সেবা', 'vetPage.enquireNow': 'এখনই জিজ্ঞেস করুন', 'vetPage.emergency': 'জরুরি সেবা', 'vetPage.registerVet': 'পশুচিকিৎসক হিসেবে নিবন্ধন করুন', 'vetPage.findSemen': 'এখনই খুঁজুন', 'vetPage.semenTitle': 'আপনার জাতের জন্য সিমেন খুঁজতে চান?',
+        'fpo.knowMore': 'আরও জানুন', 'livestockPage.sellYourLivestock': 'আপনার পশুসম্পদ বিক্রি করুন', 'livestockPage.sellYourLivestockDesc': 'আপনার পশু তালিকাভুক্ত করুন এবং হাজার হাজার ক্রেতার কাছে পৌঁছান', 'livestockPage.showingListings': '{count}টি তালিকা দেখানো হচ্ছে',
+        'machineryListing.details': 'বিস্তারিত', 'machineryListing.getPrice': 'মূল্য জানুন', 'machineryListing.requestQuote': 'কোটেশন চান', 'machineryListing.priceOnRequest': 'অনুরোধের ভিত্তিতে মূল্য', 'machineryListing.loginToGetPrice': 'মূল্য জানতে লগইন করুন', 'machineryListing.getOnRoadPrice': 'অন-রোড মূল্য জানুন', 'machineryListing.success': 'সফল!',
+        'shopPage.deliverTo': 'এখানে ডেলিভারি করুন:', 'shopPage.enterArea': 'আপনার এলাকা, শহর বা পিনকোড লিখুন...', 'shopPage.popularCities': 'জনপ্রিয় শহর', 'shopPage.useLocation': 'বর্তমান অবস্থান ব্যবহার করুন',
     },
     ml: {
         'header.suggestions': 'നിർദ്ദേശങ്ങൾ',
@@ -1139,6 +1154,9 @@ const supplementalHomeTranslations: Partial<Record<LangCode, Record<string, stri
         'communityPage.title': 'ഇന്ത്യയിലെ ഏറ്റവും വലിയ', 'communityPage.titleHighlight': 'കർഷക കൂട്ടായ്മ', 'communityPage.subtitle': 'ഭാരതം മുഴുവൻ 10L+ കർഷകരുമായി ബന്ധപ്പെടൂ', 'communityPage.signUp': 'സൗജന്യ സൈൻ അപ്', 'communityPage.logIn': 'ലോഗിൻ', 'communityPage.feed': 'ഫീഡ്', 'communityPage.network': 'എന്റെ നെറ്റ്‌വർക്ക്', 'communityPage.forYou': 'നിങ്ങൾക്കായി', 'communityPage.trending': 'ട്രെൻഡിംഗ്', 'communityPage.shareTip': 'നിങ്ങളുടെ കൃഷി അനുഭവം, ടിപ്സ് അല്ലെങ്കിൽ ചോദ്യങ്ങൾ പങ്കിടൂ...',
         'landPage.title': 'കർഷക ഭൂമി', 'landPage.titleHighlight': 'മാർക്കറ്റ്', 'landPage.subtitle': 'കൃഷി ഭൂമി എളുപ്പത്തിൽ വാങ്ങൂ, വിൽക്കൂ അല്ലെങ്കിൽ പാട്ടത്തിന് കൊടുക്കൂ', 'landPage.buy': 'ഭൂമി വാങ്ങൂ', 'landPage.sell': 'ഭൂമി വിൽക്കൂ', 'landPage.lease': 'പാട്ടം / വാടക',
         'vetPage.title': 'മൃഗഡോക്ടർ', 'vetPage.titleHighlight': 'സേവനങ്ങൾ', 'vetPage.subtitle': 'നിങ്ങളുടെ കന്നുകാലിക്ക് വിദഗ്ദ്ധ മൃഗ ചികിത്സ', 'vetPage.ourServices': 'ഞങ്ങളുടെ സേവനങ്ങൾ', 'vetPage.enquireNow': 'ഇപ്പോൾ അന്വേഷിക്കൂ', 'vetPage.emergency': 'അടിയന്തര സേവനങ്ങൾ', 'vetPage.registerVet': 'മൃഗ ഡോക്ടറായി രജിസ്റ്റർ ചെയ്യൂ', 'vetPage.findSemen': 'ഇപ്പോൾ കണ്ടെത്തൂ', 'vetPage.semenTitle': 'നിങ്ങളുടെ ഇനത്തിനായി സീമൻ കണ്ടെത്താൻ ആഗ്രഹിക്കുന്നോ?',
+        'fpo.knowMore': 'കൂടുതൽ അറിയുക', 'livestockPage.sellYourLivestock': 'നിങ്ങളുടെ കന്നുകാലികളെ വിൽക്കുക', 'livestockPage.sellYourLivestockDesc': 'നിങ്ങളുടെ മൃഗങ്ങളെ ലിസ്റ്റ് ചെയ്ത് ആയിരക്കണക്കിന് വാങ്ങുന്നവരിലേക്ക് എത്തുക', 'livestockPage.showingListings': '{count} ലിസ്റ്റിംഗുകൾ കാണിക്കുന്നു',
+        'machineryListing.details': 'വിശദാംശങ്ങൾ', 'machineryListing.getPrice': 'വില അറിയുക', 'machineryListing.requestQuote': 'ക്വോട്ട് അഭ്യർത്ഥിക്കുക', 'machineryListing.priceOnRequest': 'അഭ്യർത്ഥന പ്രകാരം വില', 'machineryListing.loginToGetPrice': 'വില അറിയാൻ ലോഗിൻ ചെയ്യുക', 'machineryListing.getOnRoadPrice': 'ഓൺ-റോഡ് വില അറിയുക', 'machineryListing.success': 'വിജയം!',
+        'shopPage.deliverTo': 'ഇവിടേക്ക് ഡെലിവർ ചെയ്യുക:', 'shopPage.enterArea': 'നിങ്ങളുടെ പ്രദേശം, നഗരം അല്ലെങ്കിൽ പിൻകോഡ് നൽകുക...', 'shopPage.popularCities': 'ജനപ്രിയ നഗരങ്ങൾ', 'shopPage.useLocation': 'നിലവിലെ സ്ഥാനം ഉപയോഗിക്കുക',
     },
 };
 
@@ -1195,6 +1213,8 @@ const supplementalAuthTranslations: Partial<Record<LangCode, Record<string, stri
         'register.smartMatching': 'ஸ்மார்ட் பொருத்தம்',
         'register.members': '50k+ உறுப்பினர்கள்',
         'register.footer': 'உலகெங்கும் உள்ள விவசாயிகளை வலுப்படுத்துகிறோம்.',
+        'login.noAccount': 'கணக்கு இல்லையா?',
+        'register.changeNumber': 'எண்ணை மாற்று',
     },
     kn: {
         'login.continueEmail': 'ನೋಂದಾಯಿತ ಇಮೇಲ್‌ನೊಂದಿಗೆ ಮುಂದುವರಿಸಿ',
@@ -1248,6 +1268,8 @@ const supplementalAuthTranslations: Partial<Record<LangCode, Record<string, stri
         'register.smartMatching': 'ಸ್ಮಾರ್ಟ್ ಮ್ಯಾಚಿಂಗ್',
         'register.members': '50k+ ಸದಸ್ಯರು',
         'register.footer': 'ಜಗತ್ತಿನಾದ್ಯಂತ ರೈತರನ್ನು ಶಕ್ತಿಪಡಿಸುತ್ತಿದ್ದೇವೆ.',
+        'login.noAccount': 'ಖಾತೆ ಇಲ್ಲವೇ?',
+        'register.changeNumber': 'ಸಂಖ್ಯೆ ಬದಲಾಯಿಸಿ',
     },
     mr: {
         'login.continueEmail': 'नोंदणीकृत ईमेलद्वारे सुरू ठेवा',
@@ -1301,6 +1323,8 @@ const supplementalAuthTranslations: Partial<Record<LangCode, Record<string, stri
         'register.smartMatching': 'स्मार्ट मॅचिंग',
         'register.members': '50k+ सदस्य',
         'register.footer': 'जगभरातील शेतकऱ्यांना सक्षम करत आहोत.',
+        'login.noAccount': 'खाते नाही?',
+        'register.changeNumber': 'नंबर बदला',
     },
     gu: {
         'login.continueEmail': 'નોંધાયેલ ઈમેલ સાથે ચાલુ રાખો',
@@ -1354,6 +1378,8 @@ const supplementalAuthTranslations: Partial<Record<LangCode, Record<string, stri
         'register.smartMatching': 'સ્માર્ટ મેચિંગ',
         'register.members': '50k+ સભ્યો',
         'register.footer': 'વિશ્વભરના ખેડૂતોને સશક્ત બનાવી રહ્યા છીએ.',
+        'login.noAccount': 'ખાતું નથી?',
+        'register.changeNumber': 'નંબર બદલો',
     },
     pa: {
         'login.continueEmail': 'ਰਜਿਸਟਰਡ ਈਮੇਲ ਨਾਲ ਜਾਰੀ ਰੱਖੋ',
@@ -1407,6 +1433,8 @@ const supplementalAuthTranslations: Partial<Record<LangCode, Record<string, stri
         'register.smartMatching': 'ਸਮਾਰਟ ਮੈਚਿੰਗ',
         'register.members': '50k+ ਮੈਂਬਰ',
         'register.footer': 'ਦੁਨੀਆ ਭਰ ਦੇ ਕਿਸਾਨਾਂ ਨੂੰ ਸਸ਼ਕਤ ਬਣਾ ਰਹੇ ਹਾਂ।',
+        'login.noAccount': 'ਖਾਤਾ ਨਹੀਂ ਹੈ?',
+        'register.changeNumber': 'ਨੰਬਰ ਬਦਲੋ',
     },
     bn: {
         'login.continueEmail': 'নিবন্ধিত ইমেল দিয়ে চালিয়ে যান',
@@ -1460,6 +1488,8 @@ const supplementalAuthTranslations: Partial<Record<LangCode, Record<string, stri
         'register.smartMatching': 'স্মার্ট ম্যাচিং',
         'register.members': '50k+ সদস্য',
         'register.footer': 'বিশ্বজুড়ে কৃষকদের শক্তিশালী করছি।',
+        'login.noAccount': 'অ্যাকাউন্ট নেই?',
+        'register.changeNumber': 'নম্বর পরিবর্তন করুন',
     },
     ml: {
         'login.continueEmail': 'രജിസ്റ്റർ ചെയ്ത ഇമെയിലിലൂടെ തുടരുക',
@@ -1513,6 +1543,8 @@ const supplementalAuthTranslations: Partial<Record<LangCode, Record<string, stri
         'register.smartMatching': 'സ്മാർട്ട് മാച്ചിംഗ്',
         'register.members': '50k+ അംഗങ്ങൾ',
         'register.footer': 'ലോകമെമ്പാടുമുള്ള കർഷകരെ ശക്തിപ്പെടുത്തുന്നു.',
+        'login.noAccount': 'അക്കൗണ്ട് ഇല്ലേ?',
+        'register.changeNumber': 'നമ്പർ മാറ്റുക',
     },
 };
 
@@ -2655,6 +2687,7 @@ export const translations: Record<LangCode, Record<string, string>> = {
         'login.continuePhone': 'फ़ोन से जारी रखें',
         'login.skipGuest': 'छोड़ें और अतिथि के रूप में जारी रखें (डेमो)',
         'login.noAccount': 'खाता नहीं है?',
+        'register.changeNumber': 'नंबर बदलें',
         'login.createHere': 'यहां बनाएं',
         'login.phoneLogin': 'फ़ोन लॉगिन',
         'login.enterMobile': 'जारी रखने के लिए अपना मोबाइल नंबर दर्ज करें',
@@ -3552,6 +3585,7 @@ export const translations: Record<LangCode, Record<string, string>> = {
         'login.continuePhone': 'ఫోన్ తో కొనసాగించండి',
         'login.skipGuest': 'దాటవేసి అతిథిగా కొనసాగించండి (డెమో)',
         'login.noAccount': 'ఖాతా లేదా?',
+        'register.changeNumber': 'నంబర్ మార్చండి',
         'login.createHere': 'ఇక్కడ సృష్టించండి',
         'login.phoneLogin': 'ఫోన్ లాగిన్',
         'login.enterMobile': 'కొనసాగించడానికి మీ మొబైల్ నంబర్ నమోదు చేయండి',

@@ -5,6 +5,8 @@ import Link from 'next/link';
 import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import SellMachineryForm from '@/components/v2/machinery/SellMachineryForm';
 import CompareModal from '@/components/v2/machinery/CompareModal';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 type TabType = 'new' | 'sell' | 'buy' | 'rent';
 
@@ -29,6 +31,8 @@ const usedItems = [
 ];
 
 export default function DronesPage() {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const [activeTab, setActiveTab] = useState<TabType>('new');
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
@@ -59,13 +63,13 @@ export default function DronesPage() {
                             </svg>
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Agri Drones Marketplace</h1>
-                            <p className="text-sm text-gray-500">Agricultural drones for spraying & monitoring</p>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{tp('Agri Drones Marketplace')}</h1>
+                            <p className="text-sm text-gray-500">{tp('Agricultural drones for spraying & monitoring')}</p>
                         </div>
                     </div>
                     <Link href="/home/machinery" className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors text-sm">
                         <span className="material-symbols-outlined text-lg">arrow_back</span>
-                        <span className="hidden sm:inline">Back to Machinery</span>
+                        <span className="hidden sm:inline">{tp('Back to Machinery')}</span>
                     </Link>
                 </div>
 
@@ -78,10 +82,10 @@ export default function DronesPage() {
                                 <span className={`material-symbols-outlined text-xl ${activeTab === tab.id ? 'text-white' : 'text-gray-500'}`}>{tab.icon}</span>
                             </div>
                             <div className="text-left hidden sm:block">
-                                <p className={`font-bold ${activeTab === tab.id ? 'text-primary' : 'text-gray-700 dark:text-gray-200'}`}>{tab.title}</p>
-                                <p className="text-xs text-gray-500">{tab.description}</p>
+                                <p className={`font-bold ${activeTab === tab.id ? 'text-primary' : 'text-gray-700 dark:text-gray-200'}`}>{tp(tab.title)}</p>
+                                <p className="text-xs text-gray-500">{tp(tab.description)}</p>
                             </div>
-                            <p className={`font-bold sm:hidden ${activeTab === tab.id ? 'text-primary' : 'text-gray-700 dark:text-gray-200'}`}>{tab.shortTitle}</p>
+                            <p className={`font-bold sm:hidden ${activeTab === tab.id ? 'text-primary' : 'text-gray-700 dark:text-gray-200'}`}>{tp(tab.shortTitle)}</p>
                         </button>
                     ))}
                 </div>
@@ -100,7 +104,7 @@ export default function DronesPage() {
                                 {['All', 'Excellent', 'Good', 'Fair'].map((condition) => (
                                     <button key={condition} onClick={() => setSelectedCondition(condition)}
                                         className={`px-5 py-2.5 rounded-xl font-medium transition-all ${selectedCondition === condition ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100'}`}>
-                                        {condition}
+                                        {tp(condition)}
                                     </button>
                                 ))}
                             </div>
@@ -113,11 +117,11 @@ export default function DronesPage() {
                             <div className="w-20 h-20 rounded-full bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center mb-4">
                                 <span className="material-symbols-outlined text-sky-600 text-4xl">flight</span>
                             </div>
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Rent Agri Drones</h2>
-                            <p className="text-gray-500 mb-6 max-w-sm">Hire DGCA-certified drones for spraying, field survey, and seeding. Priced per acre, per day, or for the season.</p>
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{tp('Rent Agri Drones')}</h2>
+                            <p className="text-gray-500 mb-6 max-w-sm">{tp('Hire DGCA-certified drones for spraying, field survey, and seeding. Priced per acre, per day, or for the season.')}</p>
                             <Link href="/home/machinery/drones/rent" className="flex items-center gap-2 px-8 py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-2xl transition-colors">
                                 <span className="material-symbols-outlined">handshake</span>
-                                Browse Drone Rentals
+                                {tp('Browse Drone Rentals')}
                             </Link>
                         </div>
                     )}

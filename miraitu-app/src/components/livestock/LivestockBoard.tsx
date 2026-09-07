@@ -8,6 +8,8 @@ import { nearFrom } from '@/lib/geo-distance';
 import EnableLocationBanner from '@/components/location/EnableLocationBanner';
 import LivestockAdGrid from './LivestockAdGrid';
 import { BOARDS } from './boards';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 /**
  * The five livestock pages — cattle, goats & sheep, poultry, fish, others.
@@ -45,6 +47,8 @@ function placeOf(ad: LivestockAd): string {
 }
 
 export default function LivestockBoard({ type }: { type: LivestockType }) {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const cfg = BOARDS[type];
     const { location } = useAppLocation();
 
@@ -74,7 +78,7 @@ export default function LivestockBoard({ type }: { type: LivestockType }) {
                 setAds(res.data);
                 setError(res.error ?? null);
             })
-            .catch(() => { if (!cancelled) setError('Failed to load listings'); })
+            .catch(() => { if (!cancelled) setError(tp('Failed to load listings')); })
             .finally(() => { if (!cancelled) setLoading(false); });
         return () => { cancelled = true; };
         // `near` is rebuilt each render; nearKey is its stable identity.
@@ -114,12 +118,12 @@ export default function LivestockBoard({ type }: { type: LivestockType }) {
                 {/* Header */}
                 <div className="mb-8">
                     <div className="flex items-center justify-between mb-2">
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{cfg.title}</h1>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{tp(cfg.title)}</h1>
                         <Link href="/home/livestock" className="text-gray-500 hover:text-primary text-sm flex items-center gap-1">
-                            <span className="material-symbols-outlined text-lg">arrow_back</span>Back to Livestock
+                            <span className="material-symbols-outlined text-lg">arrow_back</span>{tp('Back to Livestock')}
                         </Link>
                     </div>
-                    <p className="text-gray-500 dark:text-gray-400">{cfg.subtitle}</p>
+                    <p className="text-gray-500 dark:text-gray-400">{tp(cfg.subtitle)}</p>
                 </div>
 
                 {/* Tabs */}
@@ -134,7 +138,7 @@ export default function LivestockBoard({ type }: { type: LivestockType }) {
                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${activeTab === tab.id ? tab.bgColor : 'bg-gray-100 dark:bg-gray-800'}`}>
                                 <span className={`material-symbols-outlined text-xl ${activeTab === tab.id ? 'text-white' : 'text-gray-500'}`}>{tab.icon}</span>
                             </div>
-                            <p className={`font-bold ${activeTab === tab.id ? 'text-primary' : 'text-gray-700 dark:text-gray-200'}`}>{tab.title}</p>
+                            <p className={`font-bold ${activeTab === tab.id ? 'text-primary' : 'text-gray-700 dark:text-gray-200'}`}>{tp(tab.title)}</p>
                         </button>
                     ))}
                 </div>
@@ -151,16 +155,16 @@ export default function LivestockBoard({ type }: { type: LivestockType }) {
                                 <div className="flex items-center gap-4 mb-6 overflow-x-auto pb-2">
                                     {varieties.length > 0 && (
                                         <select value={variety} onChange={e => setVariety(e.target.value)} className={selectClass}>
-                                            <option value="all">{cfg.filterAll}</option>
+                                            <option value="all">{tp(cfg.filterAll)}</option>
                                             {varieties.map(v => <option key={v} value={v}>{v}</option>)}
                                         </select>
                                     )}
                                     <select value={band} onChange={e => setBand(e.target.value)} className={selectClass}>
-                                        {PRICE_BANDS.map(b => <option key={b.id} value={b.id}>{b.label}</option>)}
+                                        {PRICE_BANDS.map(b => <option key={b.id} value={b.id}>{tp(b.label)}</option>)}
                                     </select>
                                     {places.length > 0 && (
                                         <select value={place} onChange={e => setPlace(e.target.value)} className={selectClass}>
-                                            <option value="all">Location</option>
+                                            <option value="all">{tp('Location')}</option>
                                             {places.map(p => <option key={p} value={p}>{p}</option>)}
                                         </select>
                                     )}
@@ -184,8 +188,8 @@ export default function LivestockBoard({ type }: { type: LivestockType }) {
                                     <span className="material-symbols-outlined text-5xl text-gray-300 mb-3">pets</span>
                                     <p className="text-gray-500 font-medium px-6">
                                         {ads.length === 0
-                                            ? `No ${cfg.noun} here yet — be the first to post one.`
-                                            : 'Nothing matches those filters.'}
+                                            ? tp('No {items} here yet — be the first to post one.').replace('{items}', tp(cfg.noun))
+                                            : tp('Nothing matches those filters.')}
                                     </p>
                                     {ads.length === 0 ? (
                                         <Link
@@ -193,7 +197,7 @@ export default function LivestockBoard({ type }: { type: LivestockType }) {
                                             className="mt-4 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#22c33d] text-white text-sm font-bold hover:brightness-110"
                                         >
                                             <span className="material-symbols-outlined text-lg">add</span>
-                                            Post a Listing
+                                            {tp('Post a Listing')}
                                         </Link>
                                     ) : (
                                         <button
@@ -201,7 +205,7 @@ export default function LivestockBoard({ type }: { type: LivestockType }) {
                                             className="mt-4 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-bold"
                                         >
                                             <span className="material-symbols-outlined text-lg">filter_alt_off</span>
-                                            Clear filters
+                                            {tp('Clear filters')}
                                         </button>
                                     )}
                                 </div>
@@ -209,7 +213,7 @@ export default function LivestockBoard({ type }: { type: LivestockType }) {
                                 <>
                                     <div className="mb-6">
                                         <p className="text-gray-600 dark:text-gray-400">
-                                            Showing <span className="font-semibold text-gray-900 dark:text-white">{filtered.length}</span> {cfg.noun}
+                                            {tp('Showing')} <span className="font-semibold text-gray-900 dark:text-white">{filtered.length}</span> {tp(cfg.noun)}
                                         </p>
                                     </div>
                                     <LivestockAdGrid ads={filtered} />
@@ -224,17 +228,17 @@ export default function LivestockBoard({ type }: { type: LivestockType }) {
                         <div className="animate-fadeIn max-w-2xl mx-auto">
                             <div className="bg-white dark:bg-[#1a231a] rounded-2xl p-8 border border-gray-100 dark:border-gray-800 text-center">
                                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 grid place-items-center text-3xl" aria-hidden>{cfg.emoji}</div>
-                                <h2 className="text-2xl font-bold text-primary mb-2">{cfg.sellTab}</h2>
-                                <p className="text-gray-500 mb-6">{cfg.sellCaption}</p>
+                                <h2 className="text-2xl font-bold text-primary mb-2">{tp(cfg.sellTab)}</h2>
+                                <p className="text-gray-500 mb-6">{tp(cfg.sellCaption)}</p>
                                 <Link
                                     href={sellHref}
                                     className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-colors"
                                 >
                                     <span className="material-symbols-outlined">add</span>
-                                    Open the listing form
+                                    {tp('Open the listing form')}
                                 </Link>
                                 <p className="text-xs text-gray-400 mt-4">
-                                    Your ad appears here and on Buy &amp; Sell under Animals.
+                                    {tp('Your ad appears here and on Buy & Sell under Animals.')}
                                 </p>
                             </div>
                         </div>

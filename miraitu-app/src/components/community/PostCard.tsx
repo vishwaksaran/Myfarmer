@@ -12,6 +12,8 @@ interface PostCardProps {
   onSave: (postId: string) => void;
   onTagClick: (tag: string) => void;
   onLikeComment: (postId: string, commentId: string) => void;
+  onEditComment?: (postId: string, commentId: string, text: string) => void;
+  onDeleteComment?: (postId: string, commentId: string) => void;
   onVotePoll?: (postId: string, optionIndex: number) => void;
   onEdit?: (postId: string) => void;
   onDelete?: (postId: string) => void;
@@ -55,14 +57,44 @@ function CommentItem({
   depth,
   onLikeComment,
   onReply,
+  onEditComment,
+  onDeleteComment,
 }: {
   comment: Comment;
   postId: string;
   depth: number;
   onLikeComment: (postId: string, commentId: string) => void;
   onReply: (commentId: string, author: string) => void;
+  onEditComment?: (postId: string, commentId: string, text: string) => void;
+  onDeleteComment?: (postId: string, commentId: string) => void;
 }) {
   const [showReplies, setShowReplies] = useState(depth === 0);
+  const [showMenu, setShowMenu] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(comment.text);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showMenu) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setShowMenu(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showMenu]);
+
+  const startEdit = () => {
+    setEditText(comment.text);
+    setIsEditing(true);
+    setShowMenu(false);
+  };
+
+  const saveEdit = () => {
+    const clean = editText.trim();
+    if (clean && clean !== comment.text) onEditComment?.(postId, comment.id, clean);
+    setIsEditing(false);
+  };
 
   return (
     <div className={`${depth > 0 ? 'ml-8 mt-2' : ''}`}>
@@ -79,34 +111,116 @@ function CommentItem({
             }}
           />
         </div>
-        <div className="flex-1">
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl px-3.5 py-2.5">
+        <div className="flex-1 min-w-0">
+          <div className="relative bg-gray-50 dark:bg-gray-800/50 rounded-2xl px-3.5 py-2.5">
             <span className="text-xs font-bold text-gray-900 dark:text-white">{comment.author}</span>
-            <p className="text-sm text-gray-700 dark:text-gray-300 mt-0.5 leading-relaxed">{comment.text}</p>
+            {isEditing ? (
+              <div className="mt-1.5">
+                <textarea
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  rows={2}
+                  autoFocus
+                  className="w-full resize-none rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2.5 py-1.5 text-sm text-gray-800 dark:text-gray-200 outline-none focus:border-[#22c33d]"
+                />
+                <div className="flex justify-end gap-2 mt-1.5">
+                  <button
+                    onClick={() => setIsEditing(false)}
+                    className="text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={saveEdit}
+                    disabled={!editText.trim()}
+                    className="text-xs font-bold text-[#22c33d] hover:underline disabled:opacity-40 disabled:hover:no-underline"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-0.5 leading-relaxed whitespace-pre-line break-words">{comment.text}</p>
+            )}
+
+            {/* Own-comment menu */}
+            {comment.isOwn && !isEditing && (onEditComment || onDeleteComment) && (
+              <div className="absolute top-1.5 right-1.5" ref={menuRef}>
+                <button
+                  onClick={() => setShowMenu(v => !v)}
+                  className="p-1 rounded-full text-gray-400 opacity-0 group-hover:opacity-100 focus:opacity-100 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 transition-opacity"
+                  aria-label="Comment options"
+                  aria-expanded={showMenu}
+                >
+                  <span className="material-symbols-outlined text-[16px] leading-none">more_horiz</span>
+                </button>
+                {showMenu && (
+                  <div className="absolute right-0 top-full mt-1 w-36 rounded-xl bg-white dark:bg-[#222c22] shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-10">
+                    {onEditComment && (
+                      <button
+                        onClick={startEdit}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                      >
+                        <span className="material-symbols-outlined text-sm">edit</span>
+                        Edit
+                      </button>
+                    )}
+                    {onDeleteComment && (
+                      <button
+                        onClick={() => { setShowMenu(false); setConfirmDelete(true); }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      >
+                        <span className="material-symbols-outlined text-sm">delete</span>
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-          <div className="flex items-center gap-4 mt-1 px-2">
-            <span className="text-[11px] text-gray-400">{comment.time}</span>
-            <button
-              onClick={() => onLikeComment(postId, comment.id)}
-              className={`flex items-center gap-1 text-[11px] font-bold transition-colors ${comment.liked ? 'text-[#ed4956]' : 'text-gray-500 hover:text-[#ed4956]'}`}
-              aria-pressed={comment.liked}
-              aria-label={comment.liked ? 'Unlike this comment' : 'Like this comment'}
-            >
-              <span
-                className="material-symbols-outlined text-[13px] leading-none"
-                style={comment.liked ? { fontVariationSettings: "'FILL' 1" } : undefined}
+
+          {confirmDelete ? (
+            <div className="flex items-center gap-3 mt-1 px-2">
+              <span className="text-[11px] text-gray-500">Delete this comment?</span>
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="text-[11px] font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
               >
-                favorite
-              </span>
-              {comment.likes > 0 && <span>{comment.likes}</span>}
-            </button>
-            <button
-              onClick={() => onReply(comment.id, comment.author)}
-              className="text-[11px] font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-            >
-              Reply
-            </button>
-          </div>
+                Cancel
+              </button>
+              <button
+                onClick={() => { setConfirmDelete(false); onDeleteComment?.(postId, comment.id); }}
+                className="text-[11px] font-bold text-red-500 hover:text-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4 mt-1 px-2">
+              <span className="text-[11px] text-gray-400">{comment.time}</span>
+              <button
+                onClick={() => onLikeComment(postId, comment.id)}
+                className={`flex items-center gap-1 text-[11px] font-bold transition-colors ${comment.liked ? 'text-[#ed4956]' : 'text-gray-500 hover:text-[#ed4956]'}`}
+                aria-pressed={comment.liked}
+                aria-label={comment.liked ? 'Unlike this comment' : 'Like this comment'}
+              >
+                <span
+                  className="material-symbols-outlined text-[13px] leading-none"
+                  style={comment.liked ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                >
+                  favorite
+                </span>
+                {comment.likes > 0 && <span>{comment.likes}</span>}
+              </button>
+              <button
+                onClick={() => onReply(comment.id, comment.author)}
+                className="text-[11px] font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+              >
+                Reply
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -130,6 +244,8 @@ function CommentItem({
               depth={depth + 1}
               onLikeComment={onLikeComment}
               onReply={onReply}
+              onEditComment={onEditComment}
+              onDeleteComment={onDeleteComment}
             />
           ))}
         </>
@@ -138,12 +254,22 @@ function CommentItem({
   );
 }
 
-export default function PostCard({ post, onReact, onComment, onShare, onSave, onTagClick, onLikeComment, onVotePoll, onEdit, onDelete, isFollowingAuthor = false, onToggleFollowAuthor, onAuthorClick, userAvatar, requireAuth }: PostCardProps) {
+export default function PostCard({ post, onReact, onComment, onShare, onSave, onTagClick, onLikeComment, onEditComment, onDeleteComment, onVotePoll, onEdit, onDelete, isFollowingAuthor = false, onToggleFollowAuthor, onAuthorClick, userAvatar, requireAuth }: PostCardProps) {
   const [showReactionPicker, setShowReactionPicker] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [replyTo, setReplyTo] = useState<{ id: string; author: string } | null>(null);
   const [imageIndex, setImageIndex] = useState(0);
+  /**
+   * Width/height of the image actually loaded, clamped to Instagram's own
+   * bounds (4:5 portrait .. 1.91:1 landscape). A fixed aspect-[4/3] box used
+   * to crop anything that was not that exact shape — a square product photo
+   * lost its sides, a tall portrait lost its top and bottom. Sizing the box
+   * to (a clamped version of) the real image instead means the whole photo
+   * shows for every ratio in that range, and only the rare extreme beyond it
+   * is gently cropped, the same trade-off Instagram makes.
+   */
+  const [mediaAspect, setMediaAspect] = useState(4 / 3);
   const [doubleTapReaction, setDoubleTapReaction] = useState(false);
   const [heartPop, setHeartPop] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -514,12 +640,21 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
       {post.images && post.images.length > 0 && (
         <div className="relative" onClick={handleDoubleTap}>
           {/* Image carousel */}
-          <div className="relative aspect-[4/3] bg-gray-100 dark:bg-gray-800 overflow-hidden">
+          <div
+            className="relative bg-gray-100 dark:bg-gray-800 overflow-hidden"
+            style={{ aspectRatio: mediaAspect }}
+          >
             <img
               src={post.images[imageIndex]}
               alt="Post"
               className="w-full h-full object-cover"
               loading="lazy"
+              onLoad={(e) => {
+                const img = e.currentTarget;
+                if (!img.naturalWidth || !img.naturalHeight) return;
+                const ratio = img.naturalWidth / img.naturalHeight;
+                setMediaAspect(Math.min(1.91, Math.max(0.8, ratio)));
+              }}
             />
             {/* Double tap heart animation */}
             {doubleTapReaction && (
@@ -743,6 +878,8 @@ export default function PostCard({ post, onReact, onComment, onShare, onSave, on
                   depth={0}
                   onLikeComment={onLikeComment}
                   onReply={handleReply}
+                  onEditComment={onEditComment}
+                  onDeleteComment={onDeleteComment}
                 />
               ))}
               {post.commentCount > post.comments.length && (

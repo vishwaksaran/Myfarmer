@@ -12,10 +12,14 @@ import {
 import { useMachineryCart } from '@/context/MachineryBookingCart';
 import MachinerySubNav from '@/components/v2/machinery/MachinerySubNav';
 import PeerRentalStrip from '@/components/v2/machinery/PeerRentalStrip';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 const inr = (n: number) => '₹' + n.toLocaleString('en-IN');
 
 export default function RentalCatalog({ category }: { category: string }) {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const config = getRentalCategory(category);
     const { addLine, totalItems, subtotal } = useMachineryCart();
     const router = useRouter();
@@ -33,8 +37,8 @@ export default function RentalCatalog({ category }: { category: string }) {
     if (!config) {
         return (
             <div className="px-4 md:px-6 py-12 text-center">
-                <p className="text-gray-500">This rental category is not available yet.</p>
-                <Link href="/home/machinery" className="text-primary font-semibold">Back to Machinery</Link>
+                <p className="text-gray-500">{tp('This rental category is not available yet.')}</p>
+                <Link href="/home/machinery" className="text-primary font-semibold">{tp('Back to Machinery')}</Link>
             </div>
         );
     }
@@ -51,13 +55,13 @@ export default function RentalCatalog({ category }: { category: string }) {
                             <span className="material-symbols-outlined text-primary text-2xl">{config.icon}</span>
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Rent {config.title}</h1>
-                            <p className="text-sm text-gray-500">{config.blurb}</p>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{tp('Rent {category}').replace('{category}', tp(config.title))}</h1>
+                            <p className="text-sm text-gray-500">{tp(config.blurb)}</p>
                         </div>
                     </div>
                     <Link href="/home/machinery/bookings" className="hidden sm:flex items-center gap-2 text-sm font-semibold text-primary hover:underline">
                         <span className="material-symbols-outlined text-lg">receipt_long</span>
-                        My Bookings
+                        {tp('My Bookings')}
                     </Link>
                 </div>
 
@@ -67,14 +71,14 @@ export default function RentalCatalog({ category }: { category: string }) {
                     <input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search services"
+                        placeholder={tp('Search services')}
                         className="w-full pl-12 pr-4 py-3 rounded-2xl bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-primary outline-none text-sm"
                     />
                 </div>
 
                 {/* Item cards */}
                 {items.length === 0 ? (
-                    <p className="text-center text-gray-500 py-12">No items match your search.</p>
+                    <p className="text-center text-gray-500 py-12">{tp('No items match your search.')}</p>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {items.map((item) => (
@@ -97,7 +101,7 @@ export default function RentalCatalog({ category }: { category: string }) {
                                     <div className="flex items-center justify-between mt-3">
                                         <p className="text-lg font-black text-primary">{inr(item.price)}<span className="text-xs font-medium text-gray-400">{unitLabel[item.unit]}</span></p>
                                         <button onClick={() => setSelected(item)} className="px-4 py-2 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 active:scale-95 transition-all">
-                                            + Add
+                                            {tp('+ Add')}
                                         </button>
                                     </div>
                                 </div>
@@ -108,7 +112,7 @@ export default function RentalCatalog({ category }: { category: string }) {
 
                 {/* Machines other farmers have listed for rent — same rows the
                     Rent board shows, narrowed to this category. */}
-                <PeerRentalStrip pageCategory={category} heading={`Rent ${config.title} from farmers`} />
+                <PeerRentalStrip pageCategory={category} heading={tp('Rent {category} from farmers').replace('{category}', tp(config.title))} />
             </div>
 
             {/* Item detail sheet */}
@@ -156,6 +160,8 @@ function ItemDetailSheet({
     onClose: () => void;
     onAdd: (line: { category: string; itemId: string; name: string; price: number; unit: RentalItem['unit']; image: string; quantity: number; answers: Record<string, string> }) => void;
 }) {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const [quantity, setQuantity] = useState(1);
     const [answers, setAnswers] = useState<Record<string, string>>({});
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -168,7 +174,7 @@ function ItemDetailSheet({
     const handleAdd = () => {
         const errs: Record<string, string> = {};
         for (const q of questions) {
-            if (q.required && !answers[q.id]?.trim()) errs[q.id] = 'Required';
+            if (q.required && !answers[q.id]?.trim()) errs[q.id] = tp('Required');
         }
         if (Object.keys(errs).length) { setErrors(errs); return; }
         onAdd({
@@ -200,13 +206,13 @@ function ItemDetailSheet({
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">{item.name}</h2>
 
                     <div className="mt-3 flex items-center justify-between bg-primary/10 rounded-2xl px-4 py-3">
-                        <span className="text-primary font-medium">Amount</span>
+                        <span className="text-primary font-medium">{tp('Amount')}</span>
                         <span className="text-xl font-black text-primary">{inr(item.price)}<span className="text-xs font-medium text-gray-400">{unitLabel[item.unit]}</span></span>
                     </div>
 
                     {/* Quantity */}
                     <div className="mt-5">
-                        <p className="font-bold text-gray-900 dark:text-white mb-2">Quantity (Per Day)</p>
+                        <p className="font-bold text-gray-900 dark:text-white mb-2">{tp('Quantity (Per Day)')}</p>
                         <div className="flex gap-2 flex-wrap">
                             {Array.from({ length: maxQuantity }, (_, i) => i + 1).map(n => (
                                 <button
@@ -226,7 +232,7 @@ function ItemDetailSheet({
                             {questions.map((q) => (
                                 <div key={q.id}>
                                     <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1.5">
-                                        {q.label}{q.required && <span className="text-red-500"> *</span>}
+                                        {tp(q.label)}{q.required && <span className="text-red-500"> *</span>}
                                     </label>
                                     {q.type === 'select' ? (
                                         <div className="flex flex-wrap gap-2">
@@ -236,7 +242,7 @@ function ItemDetailSheet({
                                                     onClick={() => setAnswer(q.id, opt)}
                                                     className={`px-3.5 py-2 rounded-xl text-sm font-medium border-2 transition-all ${answers[q.id] === opt ? 'border-primary bg-primary/10 text-primary' : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'}`}
                                                 >
-                                                    {opt}
+                                                    {tp(opt)}
                                                 </button>
                                             ))}
                                         </div>
@@ -257,7 +263,7 @@ function ItemDetailSheet({
 
                     {item.description && (
                         <div className="mt-5">
-                            <p className="font-bold text-gray-900 dark:text-white mb-1">Description</p>
+                            <p className="font-bold text-gray-900 dark:text-white mb-1">{tp('Description')}</p>
                             <p className="text-sm text-gray-500">{item.description}</p>
                         </div>
                     )}
@@ -266,7 +272,7 @@ function ItemDetailSheet({
                         onClick={handleAdd}
                         className="w-full mt-6 py-3.5 rounded-2xl bg-primary text-white font-bold text-base hover:bg-primary/90 active:scale-[0.99] transition-all"
                     >
-                        Add to cart · {inr(item.price * quantity)}
+                        {tp('Add to cart · {amount}').replace('{amount}', inr(item.price * quantity))}
                     </button>
                 </div>
             </div>

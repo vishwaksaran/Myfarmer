@@ -17,6 +17,8 @@ import { discardCommunityMedia, uploadCommunityMedia } from '@/lib/community-med
 import { useAppLocation } from '@/context/LocationContext';
 import { Z } from '@/lib/z-layers';
 import type { PlaceSuggestion } from '@/app/api/geo/places/route';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 /**
  * Where the ad is, as opposed to where the person filling the form is.
@@ -42,6 +44,22 @@ interface PlacePin {
 }
 
 const sameLabel = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+
+/**
+ * Same 36-state/UT list and spelling used by onboarding and the places API's
+ * own canonicalisation (STATE_ALIASES in /api/geo/places), so a value this
+ * dropdown writes is always one the rest of the app already recognises.
+ */
+const INDIAN_STATES = [
+    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+    'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
+    'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+    'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
+    'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+    'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+    'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu',
+    'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry',
+];
 
 interface ListingFormModalProps {
     isOpen: boolean;
@@ -70,6 +88,8 @@ const MAX_PHOTOS = 6;
  * that is never published gets deleted instead of orphaned.
  */
 export default function ListingFormModal({ isOpen, mode, editing, initialCategory, initialSubcategory, onClose, onSubmit }: ListingFormModalProps) {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const { location } = useAppLocation();
     const priceUnits =
         mode === 'labour' ? LABOUR_PRICE_UNITS : mode === 'rent' ? RENT_PRICE_UNITS : SALE_PRICE_UNITS;
@@ -96,7 +116,17 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
     const [priceUnit, setPriceUnit] = useState<string>(priceUnits[0]);
     const [negotiable, setNegotiable] = useState(false);
     const [locationText, setLocationText] = useState('');
-    /** The place the Location text is pinned to — see PlacePin. */
+    /**
+     * District and state are their own fields now, editable directly — a
+     * seller who knows their own district should never be stuck with
+     * whatever the village picker guessed, or unable to fix it once the
+     * geocoder gets it wrong. Prefilled from the picked place or the app's
+     * location, same as before, but no longer read-only.
+     */
+    const [district, setDistrict] = useState('');
+    const [state, setState] = useState('');
+    /** The place the Location text is pinned to — see PlacePin. Only feeds
+     *  coordinates now; district/state are the fields above. */
     const [pin, setPin] = useState<PlacePin | null>(null);
     const [placeResults, setPlaceResults] = useState<PlaceSuggestion[]>([]);
     const [placeLoading, setPlaceLoading] = useState(false);
@@ -144,6 +174,8 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
             setPriceUnit(editing.priceUnit || defaultPriceUnit(mode, editing.category));
             setNegotiable(editing.negotiable);
             setLocationText(editing.location);
+            setDistrict(editing.district);
+            setState(editing.state);
             // The ad's own place, never the editor's current one.
             setPin({
                 label: editing.location,
@@ -174,6 +206,8 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
             setPriceUnit(defaultPriceUnit(mode, startCategory));
             setNegotiable(false);
             setLocationText(location?.address || '');
+            setDistrict(location?.district || '');
+            setState(location?.state || '');
             // A new ad starts where the seller is standing, which is usually
             // right — and is dropped the moment they name a different place.
             setPin(location
@@ -233,6 +267,11 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
     const choosePlace = (place: PlaceSuggestion) => {
         const label = [place.name, place.district].filter(Boolean).join(', ');
         setLocationText(label);
+        // Fills the District/State fields below, which the seller can still
+        // correct by hand — the geocoder is a starting point, not the source
+        // of truth those fields now are.
+        if (place.district) setDistrict(place.district);
+        if (place.state) setState(place.state);
         setPin({
             label,
             district: place.district,
@@ -267,7 +306,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
             setUploading(true);
             for (const file of picked) {
                 if (images.length + mediaPathsRef.current.size >= MAX_PHOTOS) {
-                    setError(`You can add up to ${MAX_PHOTOS} photos`);
+                    setError(tp('You can add up to {count} photos').replace('{count}', String(MAX_PHOTOS)));
                     break;
                 }
                 const { media, error: uploadError } = await uploadCommunityMedia(file, 'image');
@@ -275,7 +314,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                     mediaPathsRef.current.set(media.url, media.path);
                     setImages(prev => (prev.length >= MAX_PHOTOS ? prev : [...prev, media.url]));
                 } else {
-                    setError(uploadError || 'Upload failed. Please try again.');
+                    setError(uploadError || tp('Upload failed. Please try again.'));
                 }
             }
             setUploading(false);
@@ -298,7 +337,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
         const trimmedPrice = price.trim();
         const numericPrice = trimmedPrice === '' ? null : Number(trimmedPrice);
         if (numericPrice !== null && !Number.isFinite(numericPrice)) {
-            setError('Enter the price as a number');
+            setError(tp('Enter the price as a number'));
             return;
         }
 
@@ -306,11 +345,11 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
         // a name and a working number are the two things that must be there.
         if (mode === 'labour') {
             if (!contactName.trim()) {
-                setError('Add your name so we know who to ask for');
+                setError(tp('Add your name so we know who to ask for'));
                 return;
             }
             if (contactPhone.replace(/D/g, '').length !== 10) {
-                setError('Enter a valid 10-digit contact number');
+                setError(tp('Enter a valid 10-digit contact number'));
                 return;
             }
         }
@@ -318,7 +357,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
         const trimmedCount = workerCount.trim();
         const numericCount = trimmedCount === '' ? null : Number(trimmedCount);
         if (numericCount !== null && (!Number.isInteger(numericCount) || numericCount < 1)) {
-            setError('Number of workers must be a whole number');
+            setError(tp('Number of workers must be a whole number'));
             return;
         }
 
@@ -335,12 +374,15 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
             priceUnit,
             negotiable,
             location: locationText,
-            // All four describe the place named above, not the device filling
-            // in this form — see PlacePin. Null when the seller typed a place
-            // they did not pick from the list, because coordinates borrowed
-            // from somewhere else would put the ad in the wrong district.
-            district: activePin?.district || undefined,
-            state: activePin?.state || undefined,
+            // District and state are the seller's own typed fields now — sent
+            // as they stand, not tied to whether a village was picked.
+            district: district.trim() || undefined,
+            state: state || undefined,
+            // Coordinates are the one thing still gated on a real pick: they
+            // describe a specific point, so borrowing one from wherever the
+            // device happens to be would put the ad in the wrong place — see
+            // PlacePin. Null when the seller typed a place they did not pick
+            // from the list.
             latitude: activePin?.lat ?? null,
             longitude: activePin?.lng ?? null,
             images,
@@ -353,7 +395,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
 
         if (!result.success) {
             // Keep the draft and its uploads so the user can just retry.
-            setError(result.error || 'Could not save your listing');
+            setError(result.error || tp('Could not save your listing'));
             return;
         }
 
@@ -387,7 +429,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                         <span className="material-symbols-outlined">close</span>
                     </button>
                     <h3 className="font-bold text-gray-900 dark:text-white">
-                        {editing ? 'Edit listing' : postCta(mode)}
+                        {editing ? tp('Edit listing') : tp(postCta(mode))}
                     </h3>
                     <button
                         onClick={() => { void handleSubmit(); }}
@@ -397,14 +439,14 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                         {/* Labour submissions are not published anywhere — they
                             are a registration the team follows up on — so the
                             button says what actually happens. */}
-                        {uploading ? 'Uploading…' : saving ? 'Saving…' : editing ? 'Save' : mode === 'labour' ? 'Register' : 'Publish'}
+                        {uploading ? tp('Uploading…') : saving ? tp('Saving…') : editing ? tp('Save') : mode === 'labour' ? tp('Register') : tp('Publish')}
                     </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                     {/* Category */}
                     <div>
-                        <label className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-2">Category</label>
+                        <label className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-2">{tp('Category')}</label>
                         <div className="flex flex-wrap gap-2">
                             {categories.map(c => (
                                 <button
@@ -416,7 +458,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                                         }`}
                                 >
                                     <span aria-hidden>{CATEGORY_META[c].emoji}</span>
-                                    {CATEGORY_META[c].label}
+                                    {tp(CATEGORY_META[c].label)}
                                 </button>
                             ))}
                         </div>
@@ -430,7 +472,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                     {typeOptions.length > 0 && (
                         <div>
                             <label htmlFor="listing-subcategory" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">
-                                {CATEGORY_META[category].label} type <span className="text-red-500">*</span>
+                                {tp('{category} type').replace('{category}', tp(CATEGORY_META[category].label))} <span className="text-red-500">*</span>
                             </label>
                             <select
                                 id="listing-subcategory"
@@ -438,8 +480,8 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                                 onChange={(e) => setSubcategory(e.target.value)}
                                 className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#22c33d]/30"
                             >
-                                <option value="">Select {CATEGORY_META[category].label.toLowerCase()} type</option>
-                                {typeOptions.map(sub => <option key={sub} value={sub}>{sub}</option>)}
+                                <option value="">{tp('Select {category} type').replace('{category}', tp(CATEGORY_META[category].label).toLowerCase())}</option>
+                                {typeOptions.map(sub => <option key={sub} value={sub}>{tp(sub)}</option>)}
                             </select>
                         </div>
                     )}
@@ -447,7 +489,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                     {/* Title */}
                     <div>
                         <label htmlFor="listing-title" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">
-                            Title <span className="text-red-500">*</span>
+                            {tp('Title')} <span className="text-red-500">*</span>
                         </label>
                         <input
                             id="listing-title"
@@ -464,7 +506,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label htmlFor="listing-price" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">
-                                Price (₹)
+                                {tp('Price (₹)')}
                             </label>
                             <input
                                 id="listing-price"
@@ -479,7 +521,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                         </div>
                         <div>
                             <label htmlFor="listing-unit" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">
-                                Per
+                                {tp('Per')}
                             </label>
                             <select
                                 id="listing-unit"
@@ -487,7 +529,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                                 onChange={(e) => { setPriceUnit(e.target.value); setUnitTouched(true); }}
                                 className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#22c33d]/30"
                             >
-                                {priceUnits.map(u => <option key={u} value={u}>{u}</option>)}
+                                {priceUnits.map(u => <option key={u} value={u}>{tp(u)}</option>)}
                             </select>
                         </div>
                     </div>
@@ -500,8 +542,8 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                             className="w-4 h-4 accent-[#22c33d]"
                         />
                         <span className="text-sm text-gray-700 dark:text-gray-300">
-                            Price is negotiable
-                            <span className="block text-[11px] text-gray-400">Tick this to post without a fixed price</span>
+                            {tp('Price is negotiable')}
+                            <span className="block text-[11px] text-gray-400">{tp('Tick this to post without a fixed price')}</span>
                         </span>
                     </label>
 
@@ -511,7 +553,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                     {mode === 'labour' && (
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label htmlFor="listing-work-type" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">Work type</label>
+                                <label htmlFor="listing-work-type" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">{tp('Work type')}</label>
                                 <input
                                     id="listing-work-type"
                                     type="text"
@@ -522,7 +564,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                                 />
                             </div>
                             <div>
-                                <label htmlFor="listing-worker-count" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">Number of workers</label>
+                                <label htmlFor="listing-worker-count" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">{tp('Number of workers')}</label>
                                 <input
                                     id="listing-worker-count"
                                     type="text"
@@ -543,7 +585,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                     {(category === 'machinery' || category === 'vehicles') && (
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label htmlFor="listing-brand" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">Brand</label>
+                                <label htmlFor="listing-brand" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">{tp('Brand')}</label>
                                 <input
                                     id="listing-brand"
                                     type="text"
@@ -554,7 +596,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                                 />
                             </div>
                             <div>
-                                <label htmlFor="listing-model" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">Model</label>
+                                <label htmlFor="listing-model" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">{tp('Model')}</label>
                                 <input
                                     id="listing-model"
                                     type="text"
@@ -572,7 +614,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                     {mode === 'labour' && (
                         <div>
                             <label htmlFor="listing-contact-name" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">
-                                Your Name <span className="text-red-500">*</span>
+                                {tp('Your Name')} <span className="text-red-500">*</span>
                             </label>
                             <input
                                 id="listing-contact-name"
@@ -589,7 +631,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                         the seller is standing while they write it. */}
                     <div>
                         <label htmlFor="listing-location" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">
-                            Location <span className="text-red-500">*</span>
+                            {tp('Location')} <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
                             <input
@@ -599,14 +641,14 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                                 value={locationText}
                                 onChange={(e) => { setLocationText(e.target.value); setPlaceOpen(true); }}
                                 onFocus={() => setPlaceOpen(true)}
-                                placeholder="Village, district"
+                                placeholder={tp('Village, district')}
                                 className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#22c33d]/30"
                             />
 
                             {placeOpen && (placeLoading || placeResults.length > 0) && (
                                 <ul className="absolute left-0 right-0 top-full mt-1 max-h-56 overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a231a] shadow-xl" style={{ zIndex: 1 }}>
                                     {placeLoading && placeResults.length === 0 ? (
-                                        <li className="px-3.5 py-2.5 text-sm text-gray-500">Searching…</li>
+                                        <li className="px-3.5 py-2.5 text-sm text-gray-500">{tp('Searching…')}</li>
                                     ) : placeResults.map(place => (
                                         <li key={place.id}>
                                             <button
@@ -625,27 +667,55 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                             )}
                         </div>
 
-                        {/* What the ad is actually filed under. Without this the
-                            seller had no way to tell a pinned place from a bare
-                            line of text that looks identical in the field. */}
-                        {activePin && (activePin.district || activePin.state) ? (
-                            <p className="mt-1.5 text-xs text-[#1f8c30] dark:text-[#6abf62] flex items-center gap-1">
-                                <span className="material-symbols-outlined text-sm">check_circle</span>
-                                Listed in {[activePin.district, activePin.state].filter(Boolean).join(', ')}
-                            </p>
-                        ) : locationText.trim() ? (
+                        {/* Only about distance now — District/State below are
+                            their own editable fields, not tied to a pick. */}
+                        {!activePin && locationText.trim() && (
                             <p className="mt-1.5 text-xs text-gray-500 flex items-start gap-1">
                                 <span className="material-symbols-outlined text-sm shrink-0">info</span>
-                                Pick your village from the list so buyers nearby can find this
-                                ad and see how far away it is.
+                                {tp('Pick your village from the list above so buyers nearby can see how far away this is.')}
                             </p>
-                        ) : null}
+                        )}
+                    </div>
+
+                    {/* District / State — filled in from the picked village
+                        above, but a plain editable pair of fields like every
+                        other form's, not a read-only line derived from it. A
+                        seller who knows their own district should never be
+                        stuck with what the geocoder guessed. */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label htmlFor="listing-district" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">
+                                {tp('District')}
+                            </label>
+                            <input
+                                id="listing-district"
+                                type="text"
+                                value={district}
+                                onChange={(e) => setDistrict(e.target.value)}
+                                placeholder={tp('e.g. Chittoor')}
+                                className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#22c33d]/30"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="listing-state" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">
+                                {tp('State')}
+                            </label>
+                            <select
+                                id="listing-state"
+                                value={state}
+                                onChange={(e) => setState(e.target.value)}
+                                className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#22c33d]/30"
+                            >
+                                <option value="">{tp('Select')}</option>
+                                {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                        </div>
                     </div>
 
                     {/* Contact */}
                     <div>
                         <label htmlFor="listing-phone" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">
-                            Contact number {mode === 'labour' && <span className="text-red-500">*</span>}
+                            {tp('Contact number')} {mode === 'labour' && <span className="text-red-500">*</span>}
                         </label>
                         <input
                             id="listing-phone"
@@ -653,14 +723,14 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                             inputMode="tel"
                             value={contactPhone}
                             onChange={(e) => setContactPhone(e.target.value)}
-                            placeholder="Buyers will call this number"
+                            placeholder={tp('Buyers will call this number')}
                             className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#22c33d]/30"
                         />
                     </div>
 
                     {/* Description */}
                     <div>
-                        <label htmlFor="listing-desc" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">Details</label>
+                        <label htmlFor="listing-desc" className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">{tp('Details')}</label>
                         <textarea
                             id="listing-desc"
                             value={description}
@@ -674,7 +744,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                     {/* Photos */}
                     <div>
                         <label className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-2">
-                            Photos <span className="font-normal text-gray-400">({images.length}/{MAX_PHOTOS})</span>
+                            {tp('Photos')} <span className="font-normal text-gray-400">({images.length}/{MAX_PHOTOS})</span>
                         </label>
                         <div className="flex flex-wrap gap-2">
                             {images.map(url => (
@@ -682,7 +752,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                                     <img src={url} alt="" className="w-full h-full object-cover" />
                                     <button
                                         onClick={() => removePhoto(url)}
-                                        aria-label="Remove photo"
+                                        aria-label={tp('Remove photo')}
                                         className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center"
                                     >
                                         <span className="material-symbols-outlined text-white text-xs">close</span>
@@ -699,7 +769,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                                         {uploading ? 'progress_activity' : 'add_a_photo'}
                                     </span>
                                     <span className="text-[10px] font-semibold text-gray-500">
-                                        {uploading ? 'Uploading' : 'Add'}
+                                        {uploading ? tp('Uploading') : tp('Add')}
                                     </span>
                                 </button>
                             )}
@@ -711,7 +781,7 @@ export default function ListingFormModal({ isOpen, mode, editing, initialCategor
                         <div className="flex items-center gap-2 p-2.5 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
                             <span className="material-symbols-outlined text-red-500 text-lg">error</span>
                             <span className="text-xs text-red-600 dark:text-red-400 font-medium flex-1">{error}</span>
-                            <button onClick={() => setError(null)} aria-label="Dismiss" className="text-red-400 hover:text-red-600">
+                            <button onClick={() => setError(null)} aria-label={tp('Dismiss')} className="text-red-400 hover:text-red-600">
                                 <span className="material-symbols-outlined text-sm">close</span>
                             </button>
                         </div>

@@ -7,8 +7,12 @@ import CompareSection from '@/components/v2/machinery/CompareSection';
 import MachinerySubNav from '@/components/v2/machinery/MachinerySubNav';
 import PostMachineryAdButton from '@/components/v2/machinery/PostMachineryAdButton';
 import { fetchMachineryListings, type MachineryCard } from '@/lib/machinery-listings';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 export default function BuyTractorsPage() {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
     const [selectedCondition, setSelectedCondition] = useState('All');
@@ -52,8 +56,8 @@ export default function BuyTractorsPage() {
                 <MachinerySubNav category="tractors" currentAction="buy" />
                 {/* Page Header */}
                 <div className="mb-8">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Buy Used Tractors</h1>
-                    <p className="text-gray-500">Browse verified pre-owned tractors from trusted sellers. Request quotes instantly.</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">{tp('Buy Used Tractors')}</h1>
+                    <p className="text-gray-500">{tp('Browse verified pre-owned tractors from trusted sellers. Request quotes instantly.')}</p>
                 </div>
 
                 {/* Condition Tabs */}
@@ -67,7 +71,7 @@ export default function BuyTractorsPage() {
                                 : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                                 }`}
                         >
-                            {condition}
+                            {tp(condition)}
                         </button>
                     ))}
                 </div>
@@ -75,7 +79,7 @@ export default function BuyTractorsPage() {
                 {/* Filters Bar */}
                 <div className="grid grid-cols-2 gap-3 mb-6 sm:mb-8 sm:flex sm:flex-wrap sm:items-center sm:gap-4">
                     <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
-                        <option>All Brands</option>
+                        <option>{tp('All Brands')}</option>
                         <option>Mahindra</option>
                         <option>John Deere</option>
                         <option>Swaraj</option>
@@ -84,35 +88,35 @@ export default function BuyTractorsPage() {
                         <option>TAFE</option>
                     </select>
                     <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
-                        <option>Year</option>
+                        <option>{tp('Year')}</option>
                         <option>2024</option>
                         <option>2023</option>
                         <option>2022</option>
                         <option>2021</option>
                         <option>2020</option>
-                        <option>Older</option>
+                        <option>{tp('Older')}</option>
                     </select>
                     <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
-                        <option>Price Range</option>
+                        <option>{tp('Price Range')}</option>
                         <option>Under ₹3 Lakhs</option>
                         <option>₹3-5 Lakhs</option>
                         <option>₹5-7 Lakhs</option>
                         <option>Above ₹7 Lakhs</option>
                     </select>
                     <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
-                        <option>Location</option>
+                        <option>{tp('Location')}</option>
                         <option>Maharashtra</option>
                         <option>Karnataka</option>
                         <option>Punjab</option>
                         <option>Tamil Nadu</option>
                     </select>
                     <div className="ml-auto flex items-center gap-2">
-                        <span className="text-sm text-gray-500">Sort by:</span>
+                        <span className="text-sm text-gray-500">{tp('Sort by:')}</span>
                         <select className="w-full min-w-0 sm:w-auto px-3 sm:px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base">
-                            <option>Recently Added</option>
-                            <option>Price: Low to High</option>
-                            <option>Price: High to Low</option>
-                            <option>Year: Newest</option>
+                            <option>{tp('Recently Added')}</option>
+                            <option>{tp('Price: Low to High')}</option>
+                            <option>{tp('Price: High to Low')}</option>
+                            <option>{tp('Year: Newest')}</option>
                         </select>
                     </div>
                 </div>
@@ -132,14 +136,14 @@ export default function BuyTractorsPage() {
 
                 {/* Listing */}
                 {loading ? (
-                    <div className="py-16 text-center text-sm text-gray-500">Loading listings…</div>
+                    <div className="py-16 text-center text-sm text-gray-500">{tp('Loading listings…')}</div>
                 ) : filteredTractors.length === 0 ? (
                     <div className="py-16 text-center bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800">
                         <span className="material-symbols-outlined text-5xl text-gray-300 mb-3">agriculture</span>
                         <p className="text-gray-500 font-medium px-6">
                             {listings.length === 0
-                                ? 'No listings here yet — be the first to post one.'
-                                : `No ${selectedCondition.toLowerCase()} tractors listed right now.`}
+                                ? tp('No listings here yet — be the first to post one.')
+                                : tp('No {condition} tractors listed right now.').replace('{condition}', tp(selectedCondition).toLowerCase())}
                         </p>
                     </div>
                 ) : (

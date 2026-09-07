@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { MACHINERY_NEW_ENABLED, MACHINERY_RENT_ENABLED } from '@/lib/feature-flags';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 // Category display names mapping
 const categoryLabels: Record<string, string> = {
@@ -19,7 +21,10 @@ interface MachinerySubNavProps {
 }
 
 export default function MachinerySubNav({ category, currentAction }: MachinerySubNavProps) {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const categoryLabel = categoryLabels[category] || category;
+    const translatedCategoryLabel = tp(categoryLabel);
     const basePath = `/home/machinery/${category}`;
 
     // Selling is not a tab any more — it is the floating "Post an Ad" button,
@@ -31,8 +36,8 @@ export default function MachinerySubNav({ category, currentAction }: MachinerySu
     const navItems = ([
         {
             key: 'new' as const,
-            label: `New ${categoryLabel}`,
-            shortLabel: 'New',
+            label: tp('New {category}').replace('{category}', translatedCategoryLabel),
+            shortLabel: tp('New'),
             href: `${basePath}/new`,
             icon: 'add_circle',
             color: 'bg-blue-500',
@@ -43,8 +48,8 @@ export default function MachinerySubNav({ category, currentAction }: MachinerySu
         },
         {
             key: 'buy' as const,
-            label: `Buy Used ${categoryLabel}`,
-            shortLabel: 'Buy Used',
+            label: tp('Buy Used {category}').replace('{category}', translatedCategoryLabel),
+            shortLabel: tp('Buy Used'),
             href: `${basePath}/buy`,
             icon: 'shopping_cart',
             color: 'bg-emerald-500',
@@ -55,8 +60,8 @@ export default function MachinerySubNav({ category, currentAction }: MachinerySu
         },
         {
             key: 'rent' as const,
-            label: `Rent ${categoryLabel}`,
-            shortLabel: 'Rent',
+            label: tp('Rent {category}').replace('{category}', translatedCategoryLabel),
+            shortLabel: tp('Rent'),
             href: `${basePath}/rent`,
             icon: 'handshake',
             color: 'bg-primary',
@@ -80,10 +85,10 @@ export default function MachinerySubNav({ category, currentAction }: MachinerySu
                     className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary transition-colors font-medium"
                 >
                     <span className="material-symbols-outlined text-base">arrow_back</span>
-                    All Machinery
+                    {tp('All Machinery')}
                 </Link>
                 <span className="text-gray-300 dark:text-gray-600">•</span>
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{categoryLabel}</span>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{translatedCategoryLabel}</span>
             </div>
 
             {/* Navigation Tabs. With New and Rent flagged off only Buy Used is

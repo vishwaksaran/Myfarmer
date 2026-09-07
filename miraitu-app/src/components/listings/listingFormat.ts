@@ -33,30 +33,39 @@ export function formatRupees(amount: number): string {
 /**
  * The price line: "₹45,000 negotiable", "₹3,500 One day", "₹13 per KM", or
  * plain "negotiable" when the seller named no figure.
+ *
+ * `tp` is the caller's own `translatePage(lang, …)` closure — passed in
+ * rather than imported, because this is a plain module (no React) and has no
+ * way to read the active language itself. Every caller already has one for
+ * its own copy; defaulting to identity keeps a caller that forgets it in
+ * English rather than throwing.
  */
-export function formatPrice(listing: Pick<Listing, 'price' | 'priceUnit' | 'negotiable'>): {
+export function formatPrice(
+    listing: Pick<Listing, 'price' | 'priceUnit' | 'negotiable'>,
+    tp: (s: string) => string = (s) => s
+): {
     amount: string;
     suffix: string;
 } {
     const suffixParts: string[] = [];
-    if (listing.priceUnit && listing.priceUnit !== 'Total') suffixParts.push(listing.priceUnit);
-    if (listing.negotiable) suffixParts.push('negotiable');
+    if (listing.priceUnit && listing.priceUnit !== 'Total') suffixParts.push(tp(listing.priceUnit));
+    if (listing.negotiable) suffixParts.push(tp('negotiable'));
 
     if (listing.price === null || listing.price === undefined) {
-        return { amount: '', suffix: suffixParts.join(' · ') || 'Price on request' };
+        return { amount: '', suffix: suffixParts.join(' · ') || tp('Price on request') };
     }
     return { amount: formatRupees(listing.price), suffix: suffixParts.join(' · ') };
 }
 
 /** "0 m away", "6.0 km away" — matches how the reference app reads. */
-export function formatDistance(km: number | null | undefined): string | null {
+export function formatDistance(km: number | null | undefined, tp: (s: string) => string = (s) => s): string | null {
     if (km === null || km === undefined || !Number.isFinite(km)) return null;
     // "0 m away" read as a broken distance rather than a very close one. It
     // shows most often on your own ad, whose coordinates are the ones your
     // device reported when you posted it.
-    if (km < 0.05) return 'Nearby';
-    if (km < 1) return `${Math.round(km * 1000)} m away`;
-    return `${km.toFixed(1)} km away`;
+    if (km < 0.05) return tp('Nearby');
+    if (km < 1) return `${Math.round(km * 1000)} ${tp('m away')}`;
+    return `${km.toFixed(1)} ${tp('km away')}`;
 }
 
 export function boardTitle(mode: ListingMode): string {

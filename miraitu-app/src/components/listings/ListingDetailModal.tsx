@@ -4,6 +4,8 @@ import { useState } from 'react';
 import type { Listing } from './listingTypes';
 import { CATEGORY_META, formatDistance, formatPrice } from './listingFormat';
 import { Z } from '@/lib/z-layers';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 interface ListingDetailModalProps {
     listing: Listing | null;
@@ -14,14 +16,16 @@ interface ListingDetailModalProps {
 
 /** Full view of one ad, with the seller's number so a buyer can actually call. */
 export default function ListingDetailModal({ listing, onClose, onEdit, onDelete }: ListingDetailModalProps) {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const [imageIndex, setImageIndex] = useState(0);
     const [copied, setCopied] = useState(false);
 
     if (!listing) return null;
 
     const meta = CATEGORY_META[listing.category] ?? CATEGORY_META.other;
-    const price = formatPrice(listing);
-    const distance = formatDistance(listing.distanceKm);
+    const price = formatPrice(listing, tp);
+    const distance = formatDistance(listing.distanceKm, tp);
 
     const share = () => {
         const url = typeof window !== 'undefined'
@@ -55,7 +59,7 @@ export default function ListingDetailModal({ listing, onClose, onEdit, onDelete 
                                         {imageIndex > 0 ? (
                                             <button
                                                 onClick={() => setImageIndex(i => i - 1)}
-                                                aria-label="Previous photo"
+                                                aria-label={tp('Previous photo')}
                                                 className="pointer-events-auto w-9 h-9 rounded-full bg-black/45 text-white flex items-center justify-center"
                                             >
                                                 <span className="material-symbols-outlined text-lg">chevron_left</span>
@@ -64,7 +68,7 @@ export default function ListingDetailModal({ listing, onClose, onEdit, onDelete 
                                         {imageIndex < listing.images.length - 1 ? (
                                             <button
                                                 onClick={() => setImageIndex(i => i + 1)}
-                                                aria-label="Next photo"
+                                                aria-label={tp('Next photo')}
                                                 className="pointer-events-auto w-9 h-9 rounded-full bg-black/45 text-white flex items-center justify-center"
                                             >
                                                 <span className="material-symbols-outlined text-lg">chevron_right</span>
@@ -83,7 +87,7 @@ export default function ListingDetailModal({ listing, onClose, onEdit, onDelete 
 
                     <button
                         onClick={onClose}
-                        aria-label="Close"
+                        aria-label={tp('Close')}
                         className="absolute top-3 left-3 w-9 h-9 rounded-full bg-black/45 text-white flex items-center justify-center"
                     >
                         <span className="material-symbols-outlined text-lg">close</span>
@@ -95,13 +99,13 @@ export default function ListingDetailModal({ listing, onClose, onEdit, onDelete 
                     <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#22c33d]/10 text-[#1f8c30] dark:text-[#6abf62] text-[11px] font-bold">
                             <span aria-hidden>{meta.emoji}</span>
-                            {meta.label}
+                            {tp(meta.label)}
                             <span className="text-gray-400 mx-0.5">·</span>
-                            {listing.mode === 'rent' ? 'For rent' : 'For sale'}
+                            {listing.mode === 'rent' ? tp('For rent') : tp('For sale')}
                         </span>
                         {listing.subcategory && (
                             <span className="px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[11px] font-semibold">
-                                {listing.subcategory}
+                                {tp(listing.subcategory)}
                             </span>
                         )}
                     </div>
@@ -137,7 +141,7 @@ export default function ListingDetailModal({ listing, onClose, onEdit, onDelete 
 
                     {listing.description && (
                         <div className="mt-4">
-                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Details</h3>
+                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">{tp('Details')}</h3>
                             <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line break-words leading-relaxed">
                                 {listing.description}
                             </p>
@@ -148,7 +152,7 @@ export default function ListingDetailModal({ listing, onClose, onEdit, onDelete 
                         <div className="mt-4 flex items-center gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
                             <span className="material-symbols-outlined text-amber-600">info</span>
                             <p className="text-sm text-amber-700 dark:text-amber-300">
-                                This listing is marked <strong>{listing.status}</strong>.
+                                {tp('This listing is marked')} <strong>{listing.status}</strong>.
                             </p>
                         </div>
                     )}
@@ -164,7 +168,7 @@ export default function ListingDetailModal({ listing, onClose, onEdit, onDelete 
                                     className="flex-1 py-3 rounded-xl bg-[#22c33d] text-white text-sm font-bold hover:brightness-110 flex items-center justify-center gap-1.5"
                                 >
                                     <span className="material-symbols-outlined text-lg">edit</span>
-                                    Edit
+                                    {tp('Edit')}
                                 </button>
                             )}
                             {onDelete && (
@@ -173,7 +177,7 @@ export default function ListingDetailModal({ listing, onClose, onEdit, onDelete 
                                     className="flex-1 py-3 rounded-xl border border-red-200 dark:border-red-800 text-red-500 text-sm font-bold hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center justify-center gap-1.5"
                                 >
                                     <span className="material-symbols-outlined text-lg">delete</span>
-                                    Delete
+                                    {tp('Delete')}
                                 </button>
                             )}
                         </>
@@ -185,11 +189,11 @@ export default function ListingDetailModal({ listing, onClose, onEdit, onDelete 
                                     className="flex-1 py-3 rounded-xl bg-[#22c33d] text-white text-sm font-bold hover:brightness-110 flex items-center justify-center gap-1.5"
                                 >
                                     <span className="material-symbols-outlined text-lg">call</span>
-                                    Call seller
+                                    {tp('Call seller')}
                                 </a>
                             ) : (
                                 <div className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 text-sm font-semibold text-center">
-                                    No contact number given
+                                    {tp('No contact number given')}
                                 </div>
                             )}
                             <button
@@ -197,7 +201,7 @@ export default function ListingDetailModal({ listing, onClose, onEdit, onDelete 
                                 className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 text-sm font-bold flex items-center gap-1.5"
                             >
                                 <span className="material-symbols-outlined text-lg">{copied ? 'check' : 'share'}</span>
-                                {copied ? 'Copied' : 'Share'}
+                                {copied ? tp('Copied') : tp('Share')}
                             </button>
                         </>
                     )}

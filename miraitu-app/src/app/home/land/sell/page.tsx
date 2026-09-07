@@ -7,6 +7,8 @@ import { useSubmissionCopy, SUBMISSION_ACCENT, SUBMISSION_ICON } from '@/lib/ser
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import { useAuth } from '@/context/AuthContext';
 import LoginModal from '@/components/auth/LoginModal';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 // Uploads to the shared `listing-images` bucket and returns the public URL.
 // Same endpoint the Lease form uses — it is not lease-specific.
@@ -74,6 +76,8 @@ interface SellDraft {
 }
 
 export default function SellLandPage() {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const { user } = useAuth();
     const [selectedCategory, setSelectedCategory] = useState('');
     const [photos, setPhotos] = useState<File[]>([]);
@@ -149,19 +153,19 @@ export default function SellLandPage() {
 
     const validate = () => {
         const newErrors: Record<string, string> = {};
-        if (!formData.title.trim()) newErrors.title = 'Land title is required';
-        if (!formData.area.trim()) newErrors.area = 'Total area is required';
-        else if (isNaN(Number(formData.area))) newErrors.area = 'Enter a valid number';
-        if (!formData.location.trim()) newErrors.location = 'Village/Town is required';
-        if (!formData.district.trim()) newErrors.district = 'District is required';
-        if (!formData.state) newErrors.state = 'State is required';
-        if (!formData.pricePerAcre.trim()) newErrors.pricePerAcre = 'Price per acre is required';
-        else if (isNaN(Number(formData.pricePerAcre))) newErrors.pricePerAcre = 'Enter a valid number';
-        if (!formData.totalPrice.trim()) newErrors.totalPrice = 'Total price is required';
-        else if (isNaN(Number(formData.totalPrice))) newErrors.totalPrice = 'Enter a valid number';
-        if (!formData.contactName.trim()) newErrors.contactName = 'Name is required';
-        if (!formData.contactPhone.trim()) newErrors.contactPhone = 'Phone number is required';
-        else if (!/^\d{10}$/.test(formData.contactPhone.replace(/[\s+-]/g, '').slice(-10))) newErrors.contactPhone = 'Enter a valid 10-digit phone number';
+        if (!formData.title.trim()) newErrors.title = tp('Land title is required');
+        if (!formData.area.trim()) newErrors.area = tp('Total area is required');
+        else if (isNaN(Number(formData.area))) newErrors.area = tp('Enter a valid number');
+        if (!formData.location.trim()) newErrors.location = tp('Village/Town is required');
+        if (!formData.district.trim()) newErrors.district = tp('District is required');
+        if (!formData.state) newErrors.state = tp('State is required');
+        if (!formData.pricePerAcre.trim()) newErrors.pricePerAcre = tp('Price per acre is required');
+        else if (isNaN(Number(formData.pricePerAcre))) newErrors.pricePerAcre = tp('Enter a valid number');
+        if (!formData.totalPrice.trim()) newErrors.totalPrice = tp('Total price is required');
+        else if (isNaN(Number(formData.totalPrice))) newErrors.totalPrice = tp('Enter a valid number');
+        if (!formData.contactName.trim()) newErrors.contactName = tp('Name is required');
+        if (!formData.contactPhone.trim()) newErrors.contactPhone = tp('Phone number is required');
+        else if (!/^\d{10}$/.test(formData.contactPhone.replace(/[\s+-]/g, '').slice(-10))) newErrors.contactPhone = tp('Enter a valid 10-digit phone number');
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -174,11 +178,11 @@ export default function SellLandPage() {
 
         for (const file of files) {
             if (photos.length + newPhotos.length >= 3) {
-                alert('Maximum 3 photos allowed');
+                alert(tp('Maximum 3 photos allowed'));
                 break;
             }
             if (file.size > maxSize) {
-                alert(`${file.name} exceeds 5MB limit`);
+                alert(tp('{name} exceeds 5MB limit').replace('{name}', file.name));
                 continue;
             }
             newPhotos.push(file);
@@ -249,7 +253,7 @@ export default function SellLandPage() {
             setDraftRestored(false);
             try { sessionStorage.removeItem(SELL_DRAFT_KEY); } catch { /* nothing left to clean up */ }
         } else {
-            setErrors({ submit: result.error || 'Failed to submit' });
+            setErrors({ submit: result.error || tp('Failed to submit') });
         }
     };
 
@@ -295,20 +299,20 @@ export default function SellLandPage() {
             <div className="mx-auto max-w-[1280px]">
                 {/* Breadcrumb */}
                 <div className="flex items-center gap-2 text-xs md:text-sm text-gray-500 mb-4 md:mb-6">
-                    <Link href="/home" className="hover:text-primary transition-colors">Home</Link>
+                    <Link href="/home" className="hover:text-primary transition-colors">{tp('Home')}</Link>
                     <span className="material-symbols-outlined text-xs">chevron_right</span>
-                    <Link href="/home/land" className="hover:text-primary transition-colors">Land</Link>
+                    <Link href="/home/land" className="hover:text-primary transition-colors">{tp('Land')}</Link>
                     <span className="material-symbols-outlined text-xs">chevron_right</span>
-                    <span className="text-gray-900 dark:text-white font-semibold">Sell</span>
+                    <span className="text-gray-900 dark:text-white font-semibold">{tp('Sell')}</span>
                 </div>
 
                 {/* Header */}
                 <div className="text-center mb-6 md:mb-10">
                     <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                        Sell Your Farm Land
+                        {tp('Sell Your Farm Land')}
                     </h1>
                     <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
-                        List your property and reach thousands of verified buyers with zero brokerage
+                        {tp('List your property and reach thousands of verified buyers with zero brokerage')}
                     </p>
                 </div>
 
@@ -321,8 +325,8 @@ export default function SellLandPage() {
                     ].map((benefit, i) => (
                         <div key={i} className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-lg md:rounded-2xl p-3 md:p-5 text-center border border-green-100 dark:border-green-900/30">
                             <span className="material-symbols-outlined text-xl md:text-3xl text-green-600 mb-1 md:mb-2 block">{benefit.icon}</span>
-                            <h3 className="text-xs md:text-sm font-bold text-gray-900 dark:text-white mb-0.5">{benefit.title}</h3>
-                            <p className="text-[10px] md:text-xs text-gray-500">{benefit.desc}</p>
+                            <h3 className="text-xs md:text-sm font-bold text-gray-900 dark:text-white mb-0.5">{tp(benefit.title)}</h3>
+                            <p className="text-[10px] md:text-xs text-gray-500">{tp(benefit.desc)}</p>
                         </div>
                     ))}
                 </div>
@@ -337,10 +341,10 @@ export default function SellLandPage() {
                                 <span className="material-symbols-outlined text-green-600 dark:text-green-400 shrink-0">restore</span>
                                 <div className="min-w-0 flex-1">
                                     <p className="text-sm font-semibold text-green-800 dark:text-green-300">
-                                        Picked up where you left off
+                                        {tp('Picked up where you left off')}
                                     </p>
                                     <p className="text-xs text-green-700/80 dark:text-green-400/80 mt-0.5">
-                                        We kept what you&apos;d typed. Photos don&apos;t carry over — please re-add them.
+                                        {tp("We kept what you'd typed. Photos don't carry over — please re-add them.")}
                                     </p>
                                 </div>
                                 <button
@@ -355,14 +359,14 @@ export default function SellLandPage() {
                                     }}
                                     className="text-xs font-bold text-green-700 dark:text-green-400 hover:underline shrink-0"
                                 >
-                                    Start fresh
+                                    {tp('Start fresh')}
                                 </button>
                             </div>
                         )}
 
                         {/* Category Selection */}
                         <div className="mb-6 md:mb-8">
-                            <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 md:mb-4">Select Land Type</label>
+                            <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 md:mb-4">{tp('Select Land Type')}</label>
                             <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 md:gap-3">
                                 {landCategories.map((cat) => (
                                     <button
@@ -376,7 +380,7 @@ export default function SellLandPage() {
                                     >
                                         <span className="text-xl md:text-2xl mb-0.5 md:mb-1 block">{cat.icon}</span>
                                         <span className={`text-[10px] md:text-xs font-semibold line-clamp-2 ${selectedCategory === cat.id ? 'text-primary' : 'text-gray-600'
-                                            }`}>{cat.name}</span>
+                                            }`}>{tp(cat.name)}</span>
                                     </button>
                                 ))}
                             </div>
@@ -385,17 +389,17 @@ export default function SellLandPage() {
                         {/* Land Details */}
                         <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white mb-3 md:mb-4 flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary text-base md:text-lg">info</span>
-                            Land Details
+                            {tp('Land Details')}
                         </h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6">
                             <div>
-                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Land Title</label>
+                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Land Title')}</label>
                                 <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. 5 Acres Irrigated Farm Land" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.title ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                 {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
                             </div>
                             <div>
-                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Total Area (Acres)</label>
+                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Total Area (Acres)')}</label>
                                 <input type="text" name="area" value={formData.area} onChange={handleChange} placeholder="e.g. 5" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.area ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                 {errors.area && <p className="text-red-500 text-xs mt-1">{errors.area}</p>}
                             </div>
@@ -404,24 +408,24 @@ export default function SellLandPage() {
                         {/* Location */}
                         <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white mb-3 md:mb-4 flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary text-base md:text-lg">location_on</span>
-                            Location
+                            {tp('Location')}
                         </h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-6">
                             <div>
-                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Village / Town</label>
+                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Village / Town')}</label>
                                 <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="e.g. Srirangapatna" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.location ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                 {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
                             </div>
                             <div>
-                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">District</label>
+                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('District')}</label>
                                 <input type="text" name="district" value={formData.district} onChange={handleChange} placeholder="e.g. Mandya" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.district ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                 {errors.district && <p className="text-red-500 text-xs mt-1">{errors.district}</p>}
                             </div>
                             <div>
-                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">State</label>
+                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('State')}</label>
                                 <select name="state" value={formData.state} onChange={handleChange} className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.state ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`}>
-                                    <option value="">Select State</option>
+                                    <option value="">{tp('Select State')}</option>
                                     <option>Karnataka</option>
                                     <option>Maharashtra</option>
                                     <option>Tamil Nadu</option>
@@ -439,17 +443,17 @@ export default function SellLandPage() {
                         {/* Pricing */}
                         <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white mb-3 md:mb-4 flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary text-base md:text-lg">currency_rupee</span>
-                            Pricing
+                            {tp('Pricing')}
                         </h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6">
                             <div>
-                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Price Per Acre (₹)</label>
+                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Price Per Acre (₹)')}</label>
                                 <input type="text" name="pricePerAcre" value={formData.pricePerAcre} onChange={handleChange} placeholder="e.g. 900000" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.pricePerAcre ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                 {errors.pricePerAcre && <p className="text-red-500 text-xs mt-1">{errors.pricePerAcre}</p>}
                             </div>
                             <div>
-                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Total Price (₹)</label>
+                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Total Price (₹)')}</label>
                                 <input type="text" name="totalPrice" value={formData.totalPrice} onChange={handleChange} placeholder="e.g. 4500000" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.totalPrice ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                 {errors.totalPrice && <p className="text-red-500 text-xs mt-1">{errors.totalPrice}</p>}
                             </div>
@@ -457,13 +461,13 @@ export default function SellLandPage() {
 
                         {/* Description */}
                         <div className="mb-6">
-                            <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Description & Amenities</label>
+                            <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Description & Amenities')}</label>
                             <textarea name="description" value={formData.description} onChange={handleChange} rows={4} placeholder="Describe your land, facilities, water sources, crops grown, nearby landmarks..." className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm md:text-base resize-none" />
                         </div>
 
                         {/* Upload Photos */}
                         <div className="mb-6">
-                            <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Upload Land Photos ({photos.length}/3)</label>
+                            <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Upload Land Photos')} ({photos.length}/3)</label>
                             <input
                                 type="file"
                                 multiple
@@ -481,8 +485,8 @@ export default function SellLandPage() {
                                     }`}
                             >
                                 <span className="material-symbols-outlined text-2xl md:text-4xl text-gray-400 mb-1 md:mb-2 block">add_a_photo</span>
-                                <p className="text-xs md:text-sm text-gray-500 font-medium">{photos.length >= 3 ? 'Max 3 photos reached' : 'Tap to upload land photos'}</p>
-                                <p className="text-[10px] md:text-xs text-gray-400 mt-1">JPG, PNG up to 5MB each • Max 3 photos</p>
+                                <p className="text-xs md:text-sm text-gray-500 font-medium">{photos.length >= 3 ? tp('Max 3 photos reached') : tp('Tap to upload land photos')}</p>
+                                <p className="text-[10px] md:text-xs text-gray-400 mt-1">{tp('JPG, PNG up to 5MB each • Max 3 photos')}</p>
                             </label>
                             {previews.length > 0 && (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4 mt-4">
@@ -508,17 +512,17 @@ export default function SellLandPage() {
                         {/* Contact Info */}
                         <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white mb-3 md:mb-4 flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary text-base md:text-lg">call</span>
-                            Contact Information
+                            {tp('Contact Information')}
                         </h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-8">
                             <div>
-                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Your Name</label>
+                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Your Name')}</label>
                                 <input type="text" name="contactName" value={formData.contactName} onChange={handleChange} placeholder="Full Name" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.contactName ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                 {errors.contactName && <p className="text-red-500 text-xs mt-1">{errors.contactName}</p>}
                             </div>
                             <div>
-                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Phone Number</label>
+                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Phone Number')}</label>
                                 <input type="tel" name="contactPhone" value={formData.contactPhone} onChange={handleChange} placeholder="+91 XXXXX XXXXX" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.contactPhone ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                 {errors.contactPhone && <p className="text-red-500 text-xs mt-1">{errors.contactPhone}</p>}
                             </div>
@@ -536,7 +540,7 @@ export default function SellLandPage() {
                             <span className={`material-symbols-outlined text-lg md:text-xl ${submitting || uploadingPhotos ? 'animate-spin' : ''}`}>
                                 {submitting || uploadingPhotos ? 'progress_activity' : 'publish'}
                             </span>
-                            {uploadingPhotos ? 'Uploading photos…' : submitting ? 'Submitting…' : 'Submit Listing for Review'}
+                            {uploadingPhotos ? tp('Uploading photos…') : submitting ? tp('Submitting…') : tp('Submit Listing for Review')}
                         </button>
                         {errors.submit && (
                             <p className="mt-3 text-center text-xs md:text-sm font-semibold text-red-600">{errors.submit}</p>
@@ -557,7 +561,7 @@ export default function SellLandPage() {
                             <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 text-xs font-bold ${SUBMISSION_ACCENT.badge}`}><span className="material-symbols-outlined text-sm leading-none">location_off</span>{submission.badge}</span>
                             <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mb-4">{submission.message}</p>
                             <button onClick={() => setShowSuccessModal(false)} className="w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors">
-                                Done
+                                {tp('Done')}
                             </button>
                         </div>
                     </div>

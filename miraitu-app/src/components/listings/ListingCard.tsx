@@ -2,6 +2,8 @@
 
 import type { Listing } from './listingTypes';
 import { CATEGORY_META, formatDistance, formatPrice } from './listingFormat';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 interface ListingCardProps {
     listing: Listing;
@@ -13,9 +15,11 @@ interface ListingCardProps {
 }
 
 export default function ListingCard({ listing, onOpen, onEdit, onDelete, onToggleSold }: ListingCardProps) {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const meta = CATEGORY_META[listing.category] ?? CATEGORY_META.other;
-    const price = formatPrice(listing);
-    const distance = formatDistance(listing.distanceKm);
+    const price = formatPrice(listing, tp);
+    const distance = formatDistance(listing.distanceKm, tp);
     const owned = !!(onEdit || onDelete || onToggleSold);
 
     return (
@@ -39,11 +43,11 @@ export default function ListingCard({ listing, onOpen, onEdit, onDelete, onToggl
                     <span className="flex items-center gap-1.5 flex-wrap">
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#22c33d]/10 text-[#1f8c30] dark:text-[#6abf62] text-[11px] font-bold">
                             <span aria-hidden>{meta.emoji}</span>
-                            {meta.label}
+                            {tp(meta.label)}
                         </span>
                         {listing.subcategory && (
                             <span className="px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[11px] font-semibold">
-                                {listing.subcategory}
+                                {tp(listing.subcategory)}
                             </span>
                         )}
                     </span>
@@ -87,7 +91,7 @@ export default function ListingCard({ listing, onOpen, onEdit, onDelete, onToggl
                             className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                         >
                             <span className="material-symbols-outlined text-base">edit</span>
-                            Edit
+                            {tp('Edit')}
                         </button>
                     )}
                     {onToggleSold && (
@@ -99,8 +103,8 @@ export default function ListingCard({ listing, onOpen, onEdit, onDelete, onToggl
                                 {listing.status === 'active' ? 'check_circle' : 'restart_alt'}
                             </span>
                             {listing.status === 'active'
-                                ? (listing.mode === 'rent' ? 'Mark rented' : 'Mark sold')
-                                : 'Relist'}
+                                ? tp(listing.mode === 'rent' ? 'Mark rented' : 'Mark sold')
+                                : tp('Relist')}
                         </button>
                     )}
                     {onDelete && (
@@ -109,7 +113,7 @@ export default function ListingCard({ listing, onOpen, onEdit, onDelete, onToggl
                             className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                         >
                             <span className="material-symbols-outlined text-base">delete</span>
-                            Delete
+                            {tp('Delete')}
                         </button>
                     )}
                 </div>

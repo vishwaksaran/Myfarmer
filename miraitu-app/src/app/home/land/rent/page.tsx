@@ -6,6 +6,8 @@ import NearbyLocation from '@/components/v2/NearbyLocation';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { useSubmissionCopy, SUBMISSION_ACCENT, SUBMISSION_ICON } from '@/lib/service-availability';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 type TabType = 'browse' | 'list';
 
@@ -90,6 +92,8 @@ const rentalListings = [
 const periodFilters = ['All', 'Monthly', 'Kharif Season', 'Rabi Season', 'Annual'];
 
 export default function RentFarmLandPage() {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const [activeTab, setActiveTab] = useState<TabType>('browse');
     const [activePeriod, setActivePeriod] = useState('All');
     const [photos, setPhotos] = useState<File[]>([]);
@@ -121,16 +125,16 @@ export default function RentFarmLandPage() {
 
     const validate = () => {
         const newErrors: Record<string, string> = {};
-        if (!formData.title.trim()) newErrors.title = 'Land title is required';
-        if (!formData.location.trim()) newErrors.location = 'Location is required';
-        if (!formData.area.trim()) newErrors.area = 'Area is required';
-        else if (isNaN(Number(formData.area))) newErrors.area = 'Enter a valid number';
-        if (!formData.rentPrice.trim()) newErrors.rentPrice = 'Rent price is required';
-        else if (isNaN(Number(formData.rentPrice))) newErrors.rentPrice = 'Enter digits only — no commas, ₹ or text';
-        if (!formData.period) newErrors.period = 'Rental period is required';
-        if (!formData.contactName.trim()) newErrors.contactName = 'Name is required';
-        if (!formData.contactPhone.trim()) newErrors.contactPhone = 'Phone number is required';
-        else if (!/^\d{10}$/.test(formData.contactPhone.replace(/[\s+-]/g, '').slice(-10))) newErrors.contactPhone = 'Enter a valid 10-digit phone number';
+        if (!formData.title.trim()) newErrors.title = tp('Land title is required');
+        if (!formData.location.trim()) newErrors.location = tp('Location is required');
+        if (!formData.area.trim()) newErrors.area = tp('Area is required');
+        else if (isNaN(Number(formData.area))) newErrors.area = tp('Enter a valid number');
+        if (!formData.rentPrice.trim()) newErrors.rentPrice = tp('Rent price is required');
+        else if (isNaN(Number(formData.rentPrice))) newErrors.rentPrice = tp('Enter digits only — no commas, ₹ or text');
+        if (!formData.period) newErrors.period = tp('Rental period is required');
+        if (!formData.contactName.trim()) newErrors.contactName = tp('Name is required');
+        if (!formData.contactPhone.trim()) newErrors.contactPhone = tp('Phone number is required');
+        else if (!/^\d{10}$/.test(formData.contactPhone.replace(/[\s+-]/g, '').slice(-10))) newErrors.contactPhone = tp('Enter a valid 10-digit phone number');
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -143,11 +147,11 @@ export default function RentFarmLandPage() {
 
         for (const file of files) {
             if (photos.length + newPhotos.length >= 3) {
-                alert('Maximum 3 photos allowed');
+                alert(tp('Maximum 3 photos allowed'));
                 break;
             }
             if (file.size > maxSize) {
-                alert(`${file.name} exceeds 5MB limit`);
+                alert(tp('{name} exceeds 5MB limit').replace('{name}', file.name));
                 continue;
             }
             newPhotos.push(file);
@@ -187,7 +191,7 @@ export default function RentFarmLandPage() {
             setShowSuccessModal(true);
             setTimeout(() => setShowSuccessModal(false), 6000);
         } else {
-            setErrors({ submit: result.error || 'Failed to submit' });
+            setErrors({ submit: result.error || tp('Failed to submit') });
         }
     };
 
@@ -196,21 +200,21 @@ export default function RentFarmLandPage() {
             <div className="mx-auto max-w-[1280px]">
                 {/* Breadcrumb */}
                 <div className="flex items-center gap-2 text-xs md:text-sm text-gray-500 mb-4 md:mb-6">
-                    <Link href="/home" className="hover:text-primary transition-colors">Home</Link>
+                    <Link href="/home" className="hover:text-primary transition-colors">{tp('Home')}</Link>
                     <span className="material-symbols-outlined text-xs">chevron_right</span>
-                    <Link href="/home/land" className="hover:text-primary transition-colors">Land</Link>
+                    <Link href="/home/land" className="hover:text-primary transition-colors">{tp('Land')}</Link>
                     <span className="material-symbols-outlined text-xs">chevron_right</span>
-                    <span className="text-gray-900 dark:text-white font-semibold">Rent</span>
+                    <span className="text-gray-900 dark:text-white font-semibold">{tp('Rent')}</span>
                 </div>
 
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6 md:mb-8">
                     <div>
                         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                            Rent Farm Land
+                            {tp('Rent Farm Land')}
                         </h1>
                         <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">
-                            Short-term and seasonal farm land rentals near you
+                            {tp('Short-term and seasonal farm land rentals near you')}
                         </p>
                     </div>
                     <NearbyLocation />
@@ -219,8 +223,8 @@ export default function RentFarmLandPage() {
                 {/* Tabs */}
                 <div className="grid grid-cols-2 gap-2 md:gap-3 mb-6 md:mb-8">
                     {[
-                        { id: 'browse' as TabType, title: 'Browse Rental Land', icon: 'search', bgColor: 'bg-orange-500' },
-                        { id: 'list' as TabType, title: 'List Land for Rent', icon: 'add_circle', bgColor: 'bg-amber-600' },
+                        { id: 'browse' as TabType, title: tp('Browse Rental Land'), icon: 'search', bgColor: 'bg-orange-500' },
+                        { id: 'list' as TabType, title: tp('List Land for Rent'), icon: 'add_circle', bgColor: 'bg-amber-600' },
                     ].map((tab) => (
                         <button
                             key={tab.id}
@@ -246,9 +250,9 @@ export default function RentFarmLandPage() {
                             <div className="flex items-start gap-3">
                                 <span className="material-symbols-outlined text-orange-600 text-xl md:text-2xl mt-0.5">tips_and_updates</span>
                                 <div>
-                                    <h3 className="text-sm md:text-base font-bold text-orange-800 dark:text-orange-300 mb-1">Flexible Rental Options</h3>
+                                    <h3 className="text-sm md:text-base font-bold text-orange-800 dark:text-orange-300 mb-1">{tp('Flexible Rental Options')}</h3>
                                     <p className="text-xs md:text-sm text-orange-700/80 dark:text-orange-400/80">
-                                        Rent farm land on monthly, seasonal, or annual basis. Ideal for seasonal crops, contract farming, or trying new farming areas without long-term commitment.
+                                        {tp('Rent farm land on monthly, seasonal, or annual basis. Ideal for seasonal crops, contract farming, or trying new farming areas without long-term commitment.')}
                                     </p>
                                 </div>
                             </div>
@@ -265,14 +269,14 @@ export default function RentFarmLandPage() {
                                             : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-primary/10'
                                         }`}
                                 >
-                                    {period}
+                                    {tp(period)}
                                 </button>
                             ))}
                         </div>
 
                         {/* Count */}
                         <p className="text-xs md:text-sm text-gray-500 mb-4">
-                            Showing <span className="font-bold text-gray-900 dark:text-white">{filteredListings.length}</span> rental listings
+                            {tp('Showing')} <span className="font-bold text-gray-900 dark:text-white">{filteredListings.length}</span> {tp('rental listings')}
                         </p>
 
                         {/* Listings Grid */}
@@ -284,17 +288,17 @@ export default function RentFarmLandPage() {
                                         <img src={listing.image} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                         {listing.featured && (
                                             <span className="absolute top-2 md:top-3 left-2 md:left-3 px-2 py-0.5 md:py-1 bg-amber-500 text-white text-[10px] md:text-xs font-bold rounded-md md:rounded-lg shadow-md">
-                                                Featured
+                                                {tp('Featured')}
                                             </span>
                                         )}
                                         {listing.verified && (
                                             <span className="absolute top-2 md:top-3 right-2 md:right-3 px-2 py-0.5 md:py-1 bg-green-500 text-white text-[10px] md:text-xs font-bold rounded-md md:rounded-lg shadow-md flex items-center gap-1">
                                                 <span className="material-symbols-outlined text-xs">verified</span>
-                                                Verified
+                                                {tp('Verified')}
                                             </span>
                                         )}
                                         <div className="absolute bottom-2 md:bottom-3 left-2 md:left-3 px-2 py-0.5 md:py-1 bg-orange-600/80 backdrop-blur-sm text-white text-[10px] md:text-xs font-semibold rounded-md md:rounded-lg">
-                                            {listing.period}
+                                            {tp(listing.period)}
                                         </div>
                                     </div>
 
@@ -333,7 +337,7 @@ export default function RentFarmLandPage() {
                                                 <p className="text-[10px] md:text-xs text-gray-500">{listing.type} • {listing.postedDate}</p>
                                             </div>
                                             <button className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white text-xs md:text-sm font-bold rounded-lg md:rounded-xl hover:bg-primary/90 transition-colors">
-                                                Contact
+                                                {tp('Contact')}
                                             </button>
                                         </div>
                                     </div>
@@ -344,8 +348,8 @@ export default function RentFarmLandPage() {
                         {filteredListings.length === 0 && (
                             <div className="text-center py-12 md:py-16">
                                 <span className="material-symbols-outlined text-4xl md:text-5xl text-gray-300 mb-2 block">search_off</span>
-                                <p className="text-sm md:text-base text-gray-500 font-medium">No rental listings found for this period</p>
-                                <button onClick={() => setActivePeriod('All')} className="mt-3 text-primary text-xs md:text-sm font-bold hover:underline">View All Listings</button>
+                                <p className="text-sm md:text-base text-gray-500 font-medium">{tp('No rental listings found for this period')}</p>
+                                <button onClick={() => setActivePeriod('All')} className="mt-3 text-primary text-xs md:text-sm font-bold hover:underline">{tp('View All Listings')}</button>
                             </div>
                         )}
                     </div>
@@ -355,18 +359,18 @@ export default function RentFarmLandPage() {
                 {activeTab === 'list' && (
                     <div className="animate-fadeIn max-w-3xl mx-auto">
                         <form onSubmit={handleSubmit} className="bg-white dark:bg-[#1a231a] rounded-lg md:rounded-2xl p-4 md:p-8 border border-gray-100 dark:border-gray-800 shadow-sm">
-                            <h2 className="text-xl md:text-2xl font-bold text-primary text-center mb-2">List Your Land for Rent</h2>
-                            <p className="text-sm md:text-base text-gray-500 text-center mb-6 md:mb-8">Quick & easy listing for short-term farm land rentals</p>
+                            <h2 className="text-xl md:text-2xl font-bold text-primary text-center mb-2">{tp('List Your Land for Rent')}</h2>
+                            <p className="text-sm md:text-base text-gray-500 text-center mb-6 md:mb-8">{tp('Quick & easy listing for short-term farm land rentals')}</p>
 
                             <div className="space-y-4 md:space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                                     <div>
-                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Land Title</label>
+                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Land Title')}</label>
                                         <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. 5 Acres Irrigated Field" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.title ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                         {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Location</label>
+                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Location')}</label>
                                         <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="e.g. Mandya, Karnataka" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.location ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                         {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
                                     </div>
@@ -374,34 +378,34 @@ export default function RentFarmLandPage() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                                     <div>
-                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Area (Acres)</label>
+                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Area (Acres)')}</label>
                                         <input type="text" name="area" value={formData.area} onChange={handleChange} placeholder="e.g. 5" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.area ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                         {errors.area && <p className="text-red-500 text-xs mt-1">{errors.area}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Rent Price</label>
+                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Rent Price')}</label>
                                         <input type="text" name="rentPrice" value={formData.rentPrice} onChange={handleChange} placeholder="e.g. ₹15,000/acre/season" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.rentPrice ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                         {errors.rentPrice && <p className="text-red-500 text-xs mt-1">{errors.rentPrice}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Rental Period</label>
+                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Rental Period')}</label>
                                         <select name="period" value={formData.period} onChange={handleChange} className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.period ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`}>
-                                            <option value="">Select Period</option>
-                                            <option>Monthly</option>
-                                            <option>Kharif Season</option>
-                                            <option>Rabi Season</option>
-                                            <option>Annual</option>
+                                            <option value="">{tp('Select Period')}</option>
+                                            <option value="Monthly">{tp('Monthly')}</option>
+                                            <option value="Kharif Season">{tp('Kharif Season')}</option>
+                                            <option value="Rabi Season">{tp('Rabi Season')}</option>
+                                            <option value="Annual">{tp('Annual')}</option>
                                         </select>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Description</label>
+                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Description')}</label>
                                     <textarea name="description" value={formData.description} onChange={handleChange} rows={4} placeholder="Describe your land — soil type, irrigation, nearby facilities, suitable crops..." className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm md:text-base resize-none" />
                                 </div>
 
                                 <>
-                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Land Photos ({photos.length}/3)</label>
+                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{tp('Land Photos')} ({photos.length}/3)</label>
                                     <input
                                         type="file"
                                         multiple
@@ -419,8 +423,8 @@ export default function RentFarmLandPage() {
                                             }`}
                                     >
                                         <span className="material-symbols-outlined text-2xl md:text-4xl text-gray-400 mb-1 md:mb-2 block">add_a_photo</span>
-                                        <p className="text-xs md:text-sm text-gray-500 font-medium">{photos.length >= 3 ? 'Max 3 photos reached' : 'Upload land photos'}</p>
-                                        <p className="text-[10px] md:text-xs text-gray-400 mt-1">JPG, PNG up to 5MB each • Max 3 photos</p>
+                                        <p className="text-xs md:text-sm text-gray-500 font-medium">{tp(photos.length >= 3 ? 'Max 3 photos reached' : 'Upload land photos')}</p>
+                                        <p className="text-[10px] md:text-xs text-gray-400 mt-1">{tp('JPG, PNG up to 5MB each • Max 3 photos')}</p>
                                     </label>
                                     {previews.length > 0 && (
                                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4 mt-4">
@@ -445,12 +449,12 @@ export default function RentFarmLandPage() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                                     <div>
-                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Your Name</label>
-                                        <input type="text" name="contactName" value={formData.contactName} onChange={handleChange} placeholder="Full Name" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.contactName ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
+                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Your Name')}</label>
+                                        <input type="text" name="contactName" value={formData.contactName} onChange={handleChange} placeholder={tp('Full Name')} className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.contactName ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                         {errors.contactName && <p className="text-red-500 text-xs mt-1">{errors.contactName}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Phone Number</label>
+                                        <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{tp('Phone Number')}</label>
                                         <input type="tel" name="contactPhone" value={formData.contactPhone} onChange={handleChange} placeholder="+91 XXXXX XXXXX" className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border ${errors.contactPhone ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'} text-sm md:text-base`} />
                                         {errors.contactPhone && <p className="text-red-500 text-xs mt-1">{errors.contactPhone}</p>}
                                     </div>
@@ -460,7 +464,7 @@ export default function RentFarmLandPage() {
 
                                 <button type="submit" disabled={!agreedToTerms} className={`w-full py-3 md:py-4 bg-primary text-white font-bold text-sm md:text-lg rounded-lg md:rounded-xl hover:bg-primary/90 transition-colors shadow-lg flex items-center justify-center gap-2 ${!agreedToTerms ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                     <span className="material-symbols-outlined text-lg md:text-xl">publish</span>
-                                    Submit Rental Listing
+                                    {tp('Submit Rental Listing')}
                                 </button>
                             </div>
                         </form>
@@ -479,7 +483,7 @@ export default function RentFarmLandPage() {
                                 <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 text-xs font-bold ${SUBMISSION_ACCENT.badge}`}><span className="material-symbols-outlined text-sm leading-none">location_off</span>{submission.badge}</span>
                                 <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mb-4">{submission.message}</p>
                                 <button onClick={() => setShowSuccessModal(false)} className="w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors">
-                                    Done
+                                    {tp('Done')}
                                 </button>
                             </div>
                         </div>

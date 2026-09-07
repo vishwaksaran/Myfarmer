@@ -5,6 +5,8 @@ import LoginModal from '@/components/auth/LoginModal';
 import { useAuth } from '@/context/AuthContext';
 import { fetchMachineryRentals, type MachineryRental } from '@/lib/machinery-listings';
 import { logListingContact, type ContactChannel } from '@/app/actions/listing-contact';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 /**
  * Machinery other farmers have put up for rent, shown inside the machinery
@@ -21,13 +23,15 @@ import { logListingContact, type ContactChannel } from '@/app/actions/listing-co
  */
 export default function PeerRentalStrip({
     pageCategory,
-    heading = 'For rent from farmers',
+    heading,
 }: {
     /** 'tractors', 'jcb', … Omit for every machinery rental. */
     pageCategory?: string;
     heading?: string;
 }) {
     const { user } = useAuth();
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const isGuest = !user || user.isGuest;
 
     const [rentals, setRentals] = useState<MachineryRental[]>([]);
@@ -71,7 +75,7 @@ export default function PeerRentalStrip({
     };
 
     const price = (rental: MachineryRental) => {
-        if (rental.price === null) return 'Price on request';
+        if (rental.price === null) return tp('Price on request');
         const unit = rental.priceUnit ? ` ${rental.priceUnit}` : '';
         return `₹${rental.price.toLocaleString('en-IN')}${unit}`;
     };
@@ -80,10 +84,10 @@ export default function PeerRentalStrip({
         <section className="mt-10">
             <div className="flex items-center gap-2 mb-1">
                 <span className="material-symbols-outlined text-primary">agriculture</span>
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">{heading}</h2>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">{heading ?? tp('For rent from farmers')}</h2>
             </div>
             <p className="text-sm text-gray-500 mb-4">
-                Posted on the Rent board — you deal with the owner directly.
+                {tp('Posted on the Rent board — you deal with the owner directly.')}
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -106,7 +110,7 @@ export default function PeerRentalStrip({
                             {rental.brand && <p className="text-xs text-gray-500 mt-0.5">{rental.brand}</p>}
                             <p className="mt-2 text-lg font-bold text-primary">
                                 {price(rental)}
-                                {rental.negotiable && <span className="ml-1 text-xs font-semibold text-gray-500">negotiable</span>}
+                                {rental.negotiable && <span className="ml-1 text-xs font-semibold text-gray-500">{tp('negotiable')}</span>}
                             </p>
                             {rental.location && (
                                 <p className="mt-1 text-xs text-gray-500 flex items-center gap-1 min-w-0">
@@ -120,7 +124,7 @@ export default function PeerRentalStrip({
                                 className="w-full mt-4 py-2.5 rounded-xl bg-primary text-white font-bold text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all disabled:opacity-50"
                             >
                                 <span className="material-symbols-outlined text-lg">call</span>
-                                {rental.phone ? 'Contact Owner' : 'No number given'}
+                                {rental.phone ? tp('Contact Owner') : tp('No number given')}
                             </button>
                         </div>
                     </article>
@@ -138,7 +142,7 @@ export default function PeerRentalStrip({
                             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
                                 <span className="material-symbols-outlined text-primary text-3xl">call</span>
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Contact Owner</h3>
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{tp('Contact Owner')}</h3>
                             <p className="text-gray-500 mb-4">{openContact.title}</p>
                             <div className="flex flex-col gap-3">
                                 <a
@@ -147,7 +151,7 @@ export default function PeerRentalStrip({
                                     className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl hover:brightness-110 transition-all"
                                 >
                                     <span className="material-symbols-outlined">call</span>
-                                    Call {openContact.phone}
+                                    {tp('Call {phone}').replace('{phone}', openContact.phone)}
                                 </a>
                                 <a
                                     href={`https://wa.me/${openContact.phone.replace(/[^0-9]/g, '')}`}
@@ -157,7 +161,7 @@ export default function PeerRentalStrip({
                                     className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#25D366] text-white font-bold rounded-xl hover:shadow-lg transition-all"
                                 >
                                     <span className="material-symbols-outlined">chat</span>
-                                    Chat on WhatsApp
+                                    {tp('Chat on WhatsApp')}
                                 </a>
                             </div>
                         </div>

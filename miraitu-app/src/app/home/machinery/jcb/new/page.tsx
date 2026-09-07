@@ -5,6 +5,8 @@ import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import CompareModal from '@/components/v2/machinery/CompareModal';
 import CompareSection from '@/components/v2/machinery/CompareSection';
 import MachinerySubNav from '@/components/v2/machinery/MachinerySubNav';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 const newJCBs = [
     {
@@ -70,6 +72,8 @@ const newJCBs = [
 ];
 
 export default function NewJCBPage() {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
 
@@ -92,27 +96,27 @@ export default function NewJCBPage() {
             <div className="mx-auto max-w-[1280px]">
                 <MachinerySubNav category="jcb" currentAction="new" />
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">New JCB's</h1>
-                    <p className="text-gray-500">Browse brand new JCB backhoe loaders and construction equipment with manufacturer warranty.</p>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{tp("New JCB's")}</h1>
+                    <p className="text-gray-500">{tp('Browse brand new JCB backhoe loaders and construction equipment with manufacturer warranty.')}</p>
                 </div>
 
                 <div className="flex items-center gap-4 mb-8">
                     <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
-                        <option>All Types</option>
-                        <option>Backhoe Loader</option>
-                        <option>Skid Steer</option>
-                        <option>Telehandler</option>
-                        <option>Roller</option>
+                        <option>{tp('All Types')}</option>
+                        <option>{tp('Backhoe Loader')}</option>
+                        <option>{tp('Skid Steer')}</option>
+                        <option>{tp('Telehandler')}</option>
+                        <option>{tp('Roller')}</option>
                     </select>
                     <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
-                        <option>HP Range</option>
+                        <option>{tp('HP Range')}</option>
                         <option>40-60 HP</option>
                         <option>60-80 HP</option>
                         <option>80-100 HP</option>
                         <option>Above 100 HP</option>
                     </select>
                     <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
-                        <option>Price Range</option>
+                        <option>{tp('Price Range')}</option>
                         <option>Under ₹25 Lakhs</option>
                         <option>₹25-35 Lakhs</option>
                         <option>₹35-50 Lakhs</option>

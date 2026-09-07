@@ -189,7 +189,17 @@ export default function StoryViewerModal({
                 className="relative w-full max-w-sm h-[75vh] sm:h-[85vh] rounded-3xl overflow-hidden bg-black shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
             >
-                <img src={story.image} alt={story.author} className="w-full h-full object-cover" />
+                {/* Blurred, scaled-up copy fills the frame behind the real image, so a
+                    square or landscape photo never has to be cropped to fit this
+                    portrait frame — it just sits on a soft version of itself instead
+                    of bare black bars, the way WhatsApp/Instagram stories do it. */}
+                <img
+                    src={story.image}
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-50"
+                />
+                <img src={story.image} alt={story.author} className="relative w-full h-full object-contain" />
 
                 <div className="absolute inset-x-0 top-0 p-3 bg-gradient-to-b from-black/70 to-transparent">
                     <div className="flex gap-1 mb-3">

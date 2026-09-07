@@ -18,6 +18,8 @@ import {
     deletePost as deletePostAction,
     toggleReaction as toggleReactionAction,
     addComment as addCommentAction,
+    editComment as editCommentAction,
+    deleteComment as deleteCommentAction,
     fetchCommunityUsers,
     toggleCommentLike as toggleCommentLikeAction,
     recordShare as recordShareAction,
@@ -359,6 +361,7 @@ function CommunityFeedPage() {
                 likes: 0,
                 liked: false,
                 replies: [],
+                isOwn: true,
             };
 
             if (parentId) {
@@ -390,6 +393,45 @@ function CommunityFeedPage() {
                         : { ...c, replies: c.replies ? toggleLike(c.replies) : [] }
                 );
             return { ...p, comments: toggleLike(p.comments) };
+        }));
+    };
+
+    // Edit a comment the caller wrote — persisted, rolled back to server
+    // truth if the server rejects it (e.g. it was not actually theirs).
+    const handleEditComment = (postId: string, commentId: string, text: string) => {
+        void editCommentAction(commentId, text).then(res => {
+            if (!res.success) void loadFeed();
+        });
+        setPosts(prev => prev.map(p => {
+            if (p.id !== postId) return p;
+            const applyEdit = (comments: typeof p.comments): typeof p.comments =>
+                comments.map(c =>
+                    c.id === commentId
+                        ? { ...c, text }
+                        : { ...c, replies: c.replies ? applyEdit(c.replies) : [] }
+                );
+            return { ...p, comments: applyEdit(p.comments) };
+        }));
+    };
+
+    // Delete a comment the caller wrote — removed locally right away; a
+    // rejected delete is restored by reloading the feed from the server.
+    const handleDeleteComment = (postId: string, commentId: string) => {
+        void deleteCommentAction(commentId).then(res => {
+            if (!res.success) void loadFeed();
+        });
+        setPosts(prev => prev.map(p => {
+            if (p.id !== postId) return p;
+            const countAll = (list: typeof p.comments): number =>
+                list.reduce((sum, c) => sum + 1 + countAll(c.replies ?? []), 0);
+            const removeComment = (comments: typeof p.comments): typeof p.comments =>
+                comments
+                    .filter(c => c.id !== commentId)
+                    .map(c => ({ ...c, replies: c.replies ? removeComment(c.replies) : [] }));
+            const before = countAll(p.comments);
+            const comments = removeComment(p.comments);
+            const removed = before - countAll(comments);
+            return { ...p, comments, commentCount: Math.max(0, p.commentCount - removed) };
         }));
     };
 
@@ -1248,6 +1290,8 @@ function CommunityFeedPage() {
                                         onSave={handleSave}
                                         onTagClick={handleTagClick}
                                         onLikeComment={handleLikeComment}
+                                        onEditComment={handleEditComment}
+                                        onDeleteComment={handleDeleteComment}
                                         onVotePoll={handleVotePoll}
                                         onEdit={handleEdit}
                                         onDelete={handleDelete}

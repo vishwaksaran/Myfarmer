@@ -8,6 +8,8 @@ import MachinerySubNav from '@/components/v2/machinery/MachinerySubNav';
 import BrandBanner from '@/components/v2/machinery/BrandBanner';
 import PriceByState from '@/components/v2/machinery/PriceByState';
 import type { BannerSlide } from '@/components/v2/machinery/BrandBanner';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 // ─── Mahindra OJA 2xxx Series (Compact — Sugarcane/Cotton/Orchard/Banana) ───
 // ─── Mahindra OJA 3xxx Series (Mid-Range — Multi-purpose) ───
@@ -356,6 +358,8 @@ const mahindraSlides: BannerSlide[] = [
 const allBrands = [...new Set(newTractors.map(t => t.brand))].sort();
 
 export default function NewTractorsPage() {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
     const [brandFilter, setBrandFilter] = useState('All');
@@ -418,13 +422,13 @@ export default function NewTractorsPage() {
                 <MachinerySubNav category="tractors" currentAction="new" />
 
                 {/* ── Mahindra Hero Banner ── */}
-                <BrandBanner brand="Featured Tractors" slides={slides} autoPlayInterval={6000} />
+                <BrandBanner brand={tp('Featured Tractors')} slides={slides} autoPlayInterval={6000} />
 
                 {/* Page Header */}
                 <div className="mb-6">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">New Tractors</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{tp('New Tractors')}</h1>
                     <p className="text-gray-500">
-                        Browse {filteredTractors.length} brand new tractors with manufacturer warranty. Get on-road price instantly.
+                        {tp('Browse {n} brand new tractors with manufacturer warranty. Get on-road price instantly.').replace('{n}', String(filteredTractors.length))}
                     </p>
                 </div>
 
@@ -434,11 +438,11 @@ export default function NewTractorsPage() {
                         { name: 'ROBOJA', color: 'bg-red-500', desc: 'Automation — Auto PTO, Auto Implement Lift, Auto Braking' },
                         { name: 'PROJA', color: 'bg-blue-600', desc: 'Productivity — 3DI Engine, ePTO, F/R Shuttle, Creeper' },
                         { name: 'MYOJA', color: 'bg-purple-600', desc: 'Monitoring — Live Location, Diesel Monitor, Service Alerts' },
-                    ].map(tp => (
-                        <div key={tp.name} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
-                            <span className={`w-2.5 h-2.5 rounded-full ${tp.color}`} />
-                            <span className="font-bold text-xs text-gray-800 dark:text-gray-200">{tp.name}</span>
-                            <span className="text-[10px] text-gray-500 hidden sm:inline">— {tp.desc}</span>
+                    ].map(pack => (
+                        <div key={pack.name} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                            <span className={`w-2.5 h-2.5 rounded-full ${pack.color}`} />
+                            <span className="font-bold text-xs text-gray-800 dark:text-gray-200">{pack.name}</span>
+                            <span className="text-[10px] text-gray-500 hidden sm:inline">— {tp(pack.desc)}</span>
                         </div>
                     ))}
                 </div>
@@ -450,7 +454,7 @@ export default function NewTractorsPage() {
                         onChange={e => setBrandFilter(e.target.value)}
                         className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm"
                     >
-                        <option value="All">All Brands</option>
+                        <option value="All">{tp('All Brands')}</option>
                         {allBrands.map(b => <option key={b} value={b}>{b}</option>)}
                     </select>
                     <select
@@ -458,7 +462,7 @@ export default function NewTractorsPage() {
                         onChange={e => setHpFilter(e.target.value)}
                         className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm"
                     >
-                        <option value="All">HP Range</option>
+                        <option value="All">{tp('HP Range')}</option>
                         <option value="20-30">20-30 HP</option>
                         <option value="30-40">30-40 HP</option>
                         <option value="40-50">40-50 HP</option>
@@ -470,23 +474,23 @@ export default function NewTractorsPage() {
                         onChange={e => setPriceFilter(e.target.value)}
                         className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm"
                     >
-                        <option value="All">Price Range</option>
+                        <option value="All">{tp('Price Range')}</option>
                         <option value="Under ₹5L">Under ₹5 Lakhs</option>
                         <option value="₹5-8L">₹5-8 Lakhs</option>
                         <option value="₹8-12L">₹8-12 Lakhs</option>
                         <option value="Above ₹12L">Above ₹12 Lakhs</option>
                     </select>
                     <div className="ml-auto flex items-center gap-2 shrink-0">
-                        <span className="text-sm text-gray-500">Sort:</span>
+                        <span className="text-sm text-gray-500">{tp('Sort:')}</span>
                         <select
                             value={sortBy}
                             onChange={e => setSortBy(e.target.value)}
                             className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm"
                         >
-                            <option value="popular">Popular</option>
-                            <option value="price-low">Price: Low → High</option>
-                            <option value="price-high">Price: High → Low</option>
-                            <option value="hp-high">HP: High → Low</option>
+                            <option value="popular">{tp('Popular')}</option>
+                            <option value="price-low">{tp('Price: Low → High')}</option>
+                            <option value="price-high">{tp('Price: High → Low')}</option>
+                            <option value="hp-high">{tp('HP: High → Low')}</option>
                         </select>
                     </div>
                 </div>

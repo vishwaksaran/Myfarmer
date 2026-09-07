@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import MiraituLogo from '@/components/MiraituLogo';
 import LivestockAdGrid from '@/components/livestock/LivestockAdGrid';
@@ -155,7 +156,8 @@ export default function LivestockPage() {
 }
 
 function LivestockBrowser() {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     /**
      * `?tab=sell&category=cattle` — how the five livestock pages hand a seller
      * straight to the right form. They keep no form of their own, so this is
@@ -254,21 +256,21 @@ function LivestockBrowser() {
 
     const validateSellForm = (): boolean => {
         const errs: string[] = [];
-        if (!selectedSellCategory) errs.push('Please select a category');
-        if (!sellForm.title.trim()) errs.push('Title is required');
+        if (!selectedSellCategory) errs.push(tp('Please select a category'));
+        if (!sellForm.title.trim()) errs.push(tp('Title is required'));
         // Required detail fields come from the category's own spec.
         for (const field of activeFields) {
             if (field.required && !(sellForm.specs[field.key] ?? '').trim()) {
-                errs.push(`${field.label} is required`);
+                errs.push(tp('{field} is required').replace('{field}', tp(field.label)));
             }
         }
-        if (!sellForm.price.trim()) errs.push('Price is required');
+        if (!sellForm.price.trim()) errs.push(tp('Price is required'));
         if (sellForm.phone.replace(/D/g, '').length !== 10) {
-            errs.push('Enter a valid 10-digit phone number');
+            errs.push(tp('Enter a valid 10-digit phone number'));
         }
-        if (!sellForm.location.trim()) errs.push('Location is required');
-        if (!sellForm.district.trim()) errs.push('District is required');
-        if (!sellForm.state) errs.push('State is required');
+        if (!sellForm.location.trim()) errs.push(tp('Location is required'));
+        if (!sellForm.district.trim()) errs.push(tp('District is required'));
+        if (!sellForm.state) errs.push(tp('State is required'));
         setSellFormErrors(errs);
         return errs.length === 0;
     };
@@ -439,7 +441,7 @@ function LivestockBrowser() {
                             <div className="animate-fadeIn">
                                 {/* All Listings */}
                                 <div className="pt-4 md:pt-6 border-t border-gray-200 dark:border-gray-700">
-                                    <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white mb-3 md:mb-4">All Listings</h2>
+                                    <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white mb-3 md:mb-4">{tp('All Listings')}</h2>
 
                                     {/* Only worth asking for a location when there
                                         is something on screen to measure against. */}
@@ -481,21 +483,21 @@ function LivestockBrowser() {
                                                 className="mt-4 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#22c33d] text-white text-sm font-bold hover:brightness-110"
                                             >
                                                 <span className="material-symbols-outlined text-lg">refresh</span>
-                                                Try again
+                                                {tp('Try again')}
                                             </button>
                                         </div>
                                     ) : filteredListings.length === 0 ? (
                                         <div className="text-center py-16 bg-white dark:bg-[#1a231a] rounded-2xl border border-gray-100 dark:border-gray-800">
                                             <span className="material-symbols-outlined text-5xl text-gray-300 mb-3">pets</span>
                                             <p className="text-gray-500 font-medium px-6">
-                                                No livestock here yet — be the first to post one.
+                                                {tp('No livestock here yet — be the first to post one.')}
                                             </p>
                                             <button
                                                 onClick={() => setActiveTab('sell')}
                                                 className="mt-4 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#22c33d] text-white text-sm font-bold hover:brightness-110"
                                             >
                                                 <span className="material-symbols-outlined text-lg">add</span>
-                                                Post a Livestock
+                                                {tp('Post a Livestock')}
                                             </button>
                                         </div>
                                     ) : (
@@ -513,8 +515,8 @@ function LivestockBrowser() {
                                         <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
                                             <span className="material-symbols-outlined text-3xl text-white">check</span>
                                         </div>
-                                        <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Livestock Listed!</h2>
-                                        <p className="text-sm text-gray-500 mb-6">Your listing is now active. Buyers can find it in the marketplace.</p>
+                                        <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{tp('Livestock Listed!')}</h2>
+                                        <p className="text-sm text-gray-500 mb-6">{tp('Your listing is now active. Buyers can find it in the marketplace.')}</p>
                                         <div className="flex gap-3 justify-center">
                                             <button onClick={() => { setSellSuccess(false); setSellForm({ title: '', price: '', phone: '', location: '', district: '', state: '', description: '', imageFiles: [], specs: {} }); setSelectedSellCategory(''); }}
                                                 className="px-6 py-3 rounded-xl bg-primary text-white font-bold">{t('livestockPage.listAnother')}</button>
@@ -541,7 +543,7 @@ function LivestockBrowser() {
                                             tiles it used to be, so it reads as one field in
                                             a column of fields instead of a separate widget. */}
                                         <div className="mb-5 md:mb-6">
-                                            <label htmlFor="livestock-category" className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Select Category *</label>
+                                            <label htmlFor="livestock-category" className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">{tp('Select Category')} *</label>
                                             <div className="relative">
                                                 <select
                                                     id="livestock-category"
@@ -549,9 +551,9 @@ function LivestockBrowser() {
                                                     onChange={(e) => handleSellCategoryChange(e.target.value)}
                                                     className="w-full px-3 md:px-4 py-2 md:py-3 pr-9 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base appearance-none"
                                                 >
-                                                    <option value="">Select</option>
+                                                    <option value="">{tp('Select')}</option>
                                                     {sellCategories.map((cat) => (
-                                                        <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
+                                                        <option key={cat.id} value={cat.id}>{cat.icon} {tp(cat.name)}</option>
                                                     ))}
                                                 </select>
                                                     <span className="material-symbols-outlined pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xl">expand_more</span>
@@ -562,11 +564,11 @@ function LivestockBrowser() {
                                         <div className="space-y-4 md:space-y-5">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div>
-                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Title *</label>
+                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">{tp('Title')} *</label>
                                                     <input type="text" placeholder={TITLE_PLACEHOLDER[selectedSellCategory] || 'e.g. Pure Gir Cow'} value={sellForm.title} onChange={(e) => setSellForm(p => ({ ...p, title: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Price (₹) *</label>
+                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">{tp('Price (₹)')} *</label>
                                                     <input type="text" placeholder="e.g. 85000" value={sellForm.price} onChange={(e) => setSellForm(p => ({ ...p, price: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
                                                 </div>
                                             </div>
@@ -575,14 +577,14 @@ function LivestockBrowser() {
                                             {!selectedSellCategory ? (
                                                 <div className="flex items-center gap-2 px-3 md:px-4 py-3 rounded-lg md:rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900 text-amber-700 dark:text-amber-400 text-xs md:text-sm">
                                                     <span className="material-symbols-outlined text-lg">info</span>
-                                                    Pick a category above to see the details we need for it.
+                                                    {tp('Pick a category above to see the details we need for it.')}
                                                 </div>
                                             ) : (
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     {activeFields.map(field => (
                                                         <div key={field.key}>
                                                             <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">
-                                                                {field.label}{field.required ? ' *' : ''}
+                                                                {tp(field.label)}{field.required ? ' *' : ''}
                                                             </label>
                                                             {field.type === 'select' ? (
                                                                 <div className="relative">
@@ -591,9 +593,9 @@ function LivestockBrowser() {
                                                                         onChange={(e) => setSpec(field.key, e.target.value)}
                                                                         className="w-full px-3 md:px-4 py-2 md:py-3 pr-9 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base appearance-none"
                                                                     >
-                                                                        <option value="">Select</option>
+                                                                        <option value="">{tp('Select')}</option>
                                                                         {(field.options ?? []).map(opt => (
-                                                                            <option key={opt} value={opt}>{opt}</option>
+                                                                            <option key={opt} value={opt}>{tp(opt)}</option>
                                                                         ))}
                                                                     </select>
                                                                     <span className="material-symbols-outlined pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xl">expand_more</span>
@@ -612,7 +614,7 @@ function LivestockBrowser() {
                                                 </div>
                                             )}
                                             <div>
-                                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Phone Number *</label>
+                                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">{tp('Phone Number')} *</label>
                                                 <input
                                                     type="tel"
                                                     inputMode="numeric"
@@ -622,24 +624,24 @@ function LivestockBrowser() {
                                                     onChange={(e) => setSellForm(p => ({ ...p, phone: e.target.value.replace(/D/g, '').slice(0, 10) }))}
                                                     className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base"
                                                 />
-                                                <p className="mt-1 text-[11px] text-gray-400">Buyers will call this number.</p>
+                                                <p className="mt-1 text-[11px] text-gray-400">{tp('Buyers will call this number.')}</p>
                                             </div>
 
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                 <div>
-                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Location *</label>
+                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">{tp('Location')} *</label>
                                                     <input type="text" placeholder="e.g. Rajkot" value={sellForm.location} onChange={(e) => setSellForm(p => ({ ...p, location: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">District *</label>
+                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">{tp('District')} *</label>
                                                     <input type="text" placeholder="e.g. Rajkot" value={sellForm.district} onChange={(e) => setSellForm(p => ({ ...p, district: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">State *</label>
+                                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">{tp('State')} *</label>
                                                     <div className="relative">
                                                         <select value={sellForm.state} onChange={(e) => setSellForm(p => ({ ...p, state: e.target.value }))}
                                                             className="w-full px-3 md:px-4 py-2 md:py-3 pr-9 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-sm md:text-base appearance-none">
-                                                            <option value="">Select</option>
+                                                            <option value="">{tp('Select')}</option>
                                                             {['Maharashtra', 'Madhya Pradesh', 'Punjab', 'Haryana', 'Uttar Pradesh', 'Karnataka', 'Rajasthan', 'Gujarat', 'Tamil Nadu', 'Andhra Pradesh', 'Telangana', 'Bihar', 'West Bengal', 'Odisha', 'Kerala'].map(s => (
                                                                 <option key={s} value={s}>{s}</option>
                                                             ))}
@@ -649,11 +651,11 @@ function LivestockBrowser() {
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Description</label>
+                                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">{tp('Description')}</label>
                                                 <textarea placeholder="Describe your animal in detail..." rows={3} value={sellForm.description} onChange={(e) => setSellForm(p => ({ ...p, description: e.target.value }))} className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none resize-none text-sm md:text-base" />
                                             </div>
                                             <div>
-                                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">Photos</label>
+                                                <label className="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 md:mb-2">{tp('Photos')}</label>
                                                 <div className="relative p-4 md:p-8 rounded-lg md:rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 text-center cursor-pointer hover:border-primary/50 transition-all">
                                                     <input
                                                         type="file"
@@ -667,7 +669,7 @@ function LivestockBrowser() {
                                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                                     />
                                                     <span className="material-symbols-outlined text-2xl md:text-4xl text-primary mb-1 md:mb-2 block">add_photo_alternate</span>
-                                                    <p className="text-xs md:text-sm text-gray-500">Click to upload photos (max 5)</p>
+                                                    <p className="text-xs md:text-sm text-gray-500">{tp('Click to upload photos (max 5)')}</p>
                                                 </div>
                                                 {sellForm.imageFiles.length > 0 && (
                                                     <div className="mt-3 flex gap-2 flex-wrap">
@@ -695,7 +697,7 @@ function LivestockBrowser() {
 
                                             <button onClick={handleSellSubmit} disabled={sellSubmitting}
                                                 className={`w-full py-2.5 md:py-4 rounded-lg md:rounded-xl bg-gradient-to-r from-primary to-emerald-600 text-white font-bold text-sm md:text-lg hover:shadow-lg hover:scale-[1.01] transition-all flex items-center justify-center gap-2 ${sellSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                                                {sellSubmitting ? 'Submitting...' : <><span className="material-symbols-outlined">publish</span>Publish Listing</>}
+                                                {sellSubmitting ? tp('Submitting...') : <><span className="material-symbols-outlined">publish</span>{tp('Publish Listing')}</>}
                                             </button>
                                         </div>
                                     </div>

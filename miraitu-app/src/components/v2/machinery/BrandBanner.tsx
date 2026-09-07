@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 export interface FeatureHighlight {
     icon: string;          // material-symbols name
@@ -79,6 +81,8 @@ export default function BrandBanner({
     slides,
     autoPlayInterval = 5000,
 }: BrandBannerProps) {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const [[current, direction], setCurrent] = useState([0, 0]);
     const [isPaused, setIsPaused] = useState(false);
 
@@ -276,14 +280,14 @@ export default function BrandBanner({
                         <button
                             onClick={() => paginate(-1)}
                             className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/30 backdrop-blur-sm text-white flex items-center justify-center hover:bg-black/50 transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
-                            aria-label="Previous slide"
+                            aria-label={tp('Previous slide')}
                         >
                             <span className="material-symbols-outlined text-lg sm:text-xl">chevron_left</span>
                         </button>
                         <button
                             onClick={() => paginate(1)}
                             className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/30 backdrop-blur-sm text-white flex items-center justify-center hover:bg-black/50 transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
-                            aria-label="Next slide"
+                            aria-label={tp('Next slide')}
                         >
                             <span className="material-symbols-outlined text-lg sm:text-xl">chevron_right</span>
                         </button>
@@ -302,7 +306,7 @@ export default function BrandBanner({
                                     ? 'w-7 h-2 bg-white shadow-lg shadow-white/30'
                                     : 'w-2 h-2 bg-white/40 hover:bg-white/60'
                                 }`}
-                            aria-label={`Go to slide ${i + 1}`}
+                            aria-label={tp('Go to slide {n}').replace('{n}', String(i + 1))}
                         />
                     ))}
                 </div>

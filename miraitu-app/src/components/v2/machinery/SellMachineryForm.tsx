@@ -6,6 +6,8 @@ import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import supabase from '@/lib/supabase';
 import { useSubmissionCopy, SUBMISSION_ACCENT, SUBMISSION_ICON } from '@/lib/service-availability';
 import { MACHINERY_SUBCATEGORY } from '@/lib/machinery-listings';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 /**
  * Section headings inside one page — this used to be a three-step wizard.
@@ -201,6 +203,8 @@ interface SellMachineryFormProps {
 }
 
 export default function SellMachineryForm({ category = 'tractors' }: SellMachineryFormProps) {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const submission = useSubmissionCopy('request');
     // The category comes from the page and never changes — each category has its
     // own /sell page, so there is nothing for the seller to choose here.
@@ -244,22 +248,22 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
     /** Everything the listing needs, checked in one pass at submit. */
     const validate = (): boolean => {
         const errs: string[] = [];
-        if (!formData.brand) errs.push('Please select a brand');
-        if (!formData.model.trim()) errs.push('Please enter the model name');
-        if (!formData.year) errs.push('Please select year of purchase');
-        if (!formData.hp) errs.push(`Please select ${config.specLabel.toLowerCase()}`);
-        if (!formData.hoursUsed.trim()) errs.push(`Please enter ${config.usageLabel.toLowerCase()}`);
-        if (!formData.location.trim()) errs.push('Please enter your location');
-        if (!formData.district.trim()) errs.push('Please enter your district');
-        if (!formData.state.trim()) errs.push('Please select your state');
+        if (!formData.brand) errs.push(tp('Please select a brand'));
+        if (!formData.model.trim()) errs.push(tp('Please enter the model name'));
+        if (!formData.year) errs.push(tp('Please select year of purchase'));
+        if (!formData.hp) errs.push(tp('Please select {spec}').replace('{spec}', tp(config.specLabel).toLowerCase()));
+        if (!formData.hoursUsed.trim()) errs.push(tp('Please enter {usage}').replace('{usage}', tp(config.usageLabel).toLowerCase()));
+        if (!formData.location.trim()) errs.push(tp('Please enter your location'));
+        if (!formData.district.trim()) errs.push(tp('Please enter your district'));
+        if (!formData.state.trim()) errs.push(tp('Please select your state'));
         // \D, not D — the old pattern stripped the letter D and left spaces and
         // "+" in place, so any number typed with formatting failed this check.
         if (formData.phone.replace(/\D/g, '').length !== 10) {
-            errs.push('Enter a valid 10-digit phone number');
+            errs.push(tp('Enter a valid 10-digit phone number'));
         }
-        if (!formData.price.trim()) errs.push('Please enter your asking price');
-        else if (isNaN(Number(formData.price.replace(/,/g, '')))) errs.push('Enter a valid price');
-        if (formData.images.length === 0) errs.push('Please upload at least one photo');
+        if (!formData.price.trim()) errs.push(tp('Please enter your asking price'));
+        else if (isNaN(Number(formData.price.replace(/,/g, '')))) errs.push(tp('Enter a valid price'));
+        if (formData.images.length === 0) errs.push(tp('Please upload at least one photo'));
         setErrors(errs);
         return errs.length === 0;
     };
@@ -272,7 +276,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                setSubmitError('Please log in to list your machinery');
+                setSubmitError(tp('Please log in to list your machinery'));
                 setIsSubmitting(false);
                 return;
             }
@@ -320,7 +324,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                 setShowSuccess(true);
             }
         } catch (err) {
-            setSubmitError('Something went wrong. Please try again.');
+            setSubmitError(tp('Something went wrong. Please try again.'));
             console.error(err);
         } finally {
             setIsSubmitting(false);
@@ -331,9 +335,9 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
         <div className="max-w-4xl mx-auto">
             {/* Heading */}
             <div className="mb-6 text-center">
-                <h1 className="text-2xl md:text-3xl font-bold text-primary mb-1">Sell Your {config.singular}</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-primary mb-1">{tp('Sell Your {name}').replace('{name}', tp(config.singular))}</h1>
                 <p className="text-sm text-gray-500">
-                    Everything on one page — fill what applies and publish when you are ready.
+                    {tp('Everything on one page — fill what applies and publish when you are ready.')}
                 </p>
             </div>
 
@@ -342,7 +346,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                 className="space-y-5 md:space-y-6"
             >
                 {/* ── Basic details ───────────────────────────────────────── */}
-                <Section icon="info" title="Basic details" blurb={`What your ${config.singular.toLowerCase()} is and how old`}>
+                <Section icon="info" title={tp('Basic details')} blurb={tp('What your {name} is and how old').replace('{name}', tp(config.singular).toLowerCase())}>
                     {/* Locked category — this page only lists this one category */}
                     <div className="mb-6 flex items-center gap-3 rounded-2xl border-2 border-primary bg-primary/5 px-4 py-3">
                         <div className="size-11 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
@@ -353,20 +357,20 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                             )}
                         </div>
                         <div className="min-w-0 flex-1">
-                            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Listing category</p>
-                            <p className="font-bold text-primary">{config.name}</p>
+                            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">{tp('Listing category')}</p>
+                            <p className="font-bold text-primary">{tp(config.name)}</p>
                         </div>
                         <a
                             href="/home/machinery"
                             className="shrink-0 text-xs font-bold text-gray-500 hover:text-primary underline underline-offset-2"
                         >
-                            Change
+                            {tp('Change')}
                         </a>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Brand *</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{tp('Brand *')}</label>
                             <div className="relative">
                                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">factory</span>
                                 <select
@@ -374,7 +378,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                     onChange={(e) => setFormData(prev => ({ ...prev, brand: e.target.value }))}
                                     className="w-full pl-12 pr-10 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none appearance-none"
                                 >
-                                    <option value="">Select Brand</option>
+                                    <option value="">{tp('Select Brand')}</option>
                                     {brands[selectedCategory]?.map((brand) => (
                                         <option key={brand} value={brand}>{brand}</option>
                                     ))}
@@ -383,7 +387,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Model Name *</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{tp('Model Name *')}</label>
                             <input
                                 type="text"
                                 value={formData.model}
@@ -399,7 +403,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                         box on step 2 — with both writing the same field. */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Year of Purchase *</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{tp('Year of Purchase *')}</label>
                             <div className="relative">
                                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">calendar_month</span>
                                 <select
@@ -407,7 +411,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                     onChange={(e) => setFormData(prev => ({ ...prev, year: e.target.value }))}
                                     className="w-full pl-12 pr-10 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none appearance-none"
                                 >
-                                    <option value="">Select Year</option>
+                                    <option value="">{tp('Select Year')}</option>
                                     {Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - i).map((year) => (
                                         <option key={year} value={year}>{year}</option>
                                     ))}
@@ -416,7 +420,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{config.specLabel} ({config.specUnit}) *</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{tp(config.specLabel)} ({config.specUnit}) *</label>
                             <div className="relative">
                                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">{config.specIcon}</span>
                                 <select
@@ -424,7 +428,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                     onChange={(e) => setFormData(prev => ({ ...prev, hp: e.target.value }))}
                                     className="w-full pl-12 pr-10 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none appearance-none"
                                 >
-                                    <option value="">Select {config.specLabel}</option>
+                                    <option value="">{tp('Select {spec}').replace('{spec}', tp(config.specLabel))}</option>
                                     {config.specOptions.map((opt) => (
                                         <option key={opt} value={specOptionValue(opt)}>{opt} {config.specUnit}</option>
                                     ))}
@@ -436,12 +440,12 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                 </Section>
 
                 {/* ── Condition & specs ───────────────────────────────────── */}
-                <Section icon="build" title="Condition &amp; specs" blurb="Usage, fuel and wear — what a buyer asks first">
+                <Section icon="build" title={tp('Condition & specs')} blurb={tp('Usage, fuel and wear — what a buyer asks first')}>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-6">
                         <div className="lg:col-span-2 space-y-5 md:space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{config.usageLabel} *</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{tp(config.usageLabel)} *</label>
                                     <div className="relative">
                                         <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">schedule</span>
                                         <input
@@ -456,7 +460,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Fuel Type</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{tp('Fuel Type')}</label>
                                     <div className="relative">
                                         <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">local_gas_station</span>
                                         <select
@@ -464,9 +468,9 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                             onChange={(e) => setFormData(prev => ({ ...prev, fuelType: e.target.value }))}
                                             className="w-full pl-12 pr-10 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none appearance-none"
                                         >
-                                            <option>Diesel</option>
-                                            <option>Petrol</option>
-                                            <option>Electric</option>
+                                            <option value="Diesel">{tp('Diesel')}</option>
+                                            <option value="Petrol">{tp('Petrol')}</option>
+                                            <option value="Electric">{tp('Electric')}</option>
                                         </select>
                                         <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
                                     </div>
@@ -476,9 +480,9 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                             {/* Tire Condition Slider */}
                             <div>
                                 <div className="flex items-center justify-between mb-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Tire Condition</label>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">{tp('Tire Condition')}</label>
                                     <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-semibold">
-                                        {formData.tireCondition >= 75 ? 'GOOD' : formData.tireCondition >= 40 ? 'FAIR' : 'WORN'} ({formData.tireCondition}%)
+                                        {tp(formData.tireCondition >= 75 ? 'GOOD' : formData.tireCondition >= 40 ? 'FAIR' : 'WORN')} ({formData.tireCondition}%)
                                     </span>
                                 </div>
                                 <input
@@ -490,8 +494,8 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
                                 />
                                 <div className="flex justify-between text-xs text-gray-400 mt-1">
-                                    <span>WORN OUT</span>
-                                    <span>BRAND NEW</span>
+                                    <span>{tp('WORN OUT')}</span>
+                                    <span>{tp('BRAND NEW')}</span>
                                 </div>
                             </div>
 
@@ -500,15 +504,15 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                 <div className="flex items-center gap-3 min-w-0">
                                     <span className="material-symbols-outlined text-gray-400 shrink-0">history</span>
                                     <div className="min-w-0">
-                                        <p className="font-semibold">Complete Service History</p>
-                                        <p className="text-xs text-gray-500">Includes original logs and company records</p>
+                                        <p className="font-semibold">{tp('Complete Service History')}</p>
+                                        <p className="text-xs text-gray-500">{tp('Includes original logs and company records')}</p>
                                     </div>
                                 </div>
                                 <button
                                     type="button"
                                     role="switch"
                                     aria-checked={formData.hasServiceHistory}
-                                    aria-label="Complete service history"
+                                    aria-label={tp('Complete service history')}
                                     onClick={() => setFormData(prev => ({ ...prev, hasServiceHistory: !prev.hasServiceHistory }))}
                                     className={`w-14 h-7 shrink-0 rounded-full transition-colors ${formData.hasServiceHistory ? 'bg-primary' : 'bg-gray-300'}`}
                                 >
@@ -522,10 +526,10 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                             <div className="p-5 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
                                 <div className="flex items-center gap-2 mb-3">
                                     <span className="text-2xl">👍</span>
-                                    <span className="font-bold text-amber-800 dark:text-amber-200">Pro Seller Tip</span>
+                                    <span className="font-bold text-amber-800 dark:text-amber-200">{tp('Pro Seller Tip')}</span>
                                 </div>
                                 <p className="text-sm text-amber-700 dark:text-amber-300">
-                                    Machines with <strong>detailed service history</strong> sell 35% faster on Miraitu. Highlighting genuine tire wear increases buyer trust.
+                                    {tp('Machines with detailed service history sell 35% faster on Miraitu. Highlighting genuine tire wear increases buyer trust.')}
                                 </p>
                             </div>
 
@@ -533,15 +537,15 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                 categories where the headline spec really is horsepower. */}
                             {config.showEstimate && (
                                 <div className="p-6 rounded-2xl bg-primary text-white">
-                                    <p className="text-sm text-white/70 mb-1">Estimated Value</p>
+                                    <p className="text-sm text-white/70 mb-1">{tp('Estimated Value')}</p>
                                     {estimatedValue ? (
                                         <>
                                             <p className="text-2xl font-bold mb-2">{estimatedValue}</p>
-                                            <p className="text-xs text-white/60 uppercase tracking-wide">Based on current market trends</p>
+                                            <p className="text-xs text-white/60 uppercase tracking-wide">{tp('Based on current market trends')}</p>
                                         </>
                                     ) : (
                                         <p className="text-sm text-white/70 mt-1">
-                                            Pick the year and {config.specLabel.toLowerCase()} above and we will suggest a range.
+                                            {tp('Pick the year and {spec} above and we will suggest a range.').replace('{spec}', tp(config.specLabel).toLowerCase())}
                                         </p>
                                     )}
                                 </div>
@@ -551,10 +555,10 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                 </Section>
 
                 {/* ── Location & contact ──────────────────────────────────── */}
-                <Section icon="location_on" title="Location &amp; contact" blurb="Where the machine is and who a buyer should call">
+                <Section icon="location_on" title={tp('Location & contact')} blurb={tp('Where the machine is and who a buyer should call')}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Location / Village *</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{tp('Location / Village *')}</label>
                             <div className="relative">
                                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">location_on</span>
                                 <input
@@ -567,7 +571,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">District *</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{tp('District *')}</label>
                             <input
                                 type="text"
                                 value={formData.district}
@@ -580,14 +584,14 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">State *</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{tp('State *')}</label>
                             <div className="relative">
                                 <select
                                     value={formData.state}
                                     onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
                                     className="w-full px-4 pr-10 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none appearance-none"
                                 >
-                                    <option value="">Select State</option>
+                                    <option value="">{tp('Select State')}</option>
                                     {['Maharashtra', 'Madhya Pradesh', 'Punjab', 'Haryana', 'Uttar Pradesh', 'Karnataka', 'Rajasthan', 'Gujarat', 'Tamil Nadu', 'Andhra Pradesh', 'Telangana', 'Bihar', 'West Bengal', 'Odisha', 'Kerala', 'Chhattisgarh', 'Jharkhand', 'Assam'].map(s => (
                                         <option key={s} value={s}>{s}</option>
                                     ))}
@@ -596,7 +600,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Phone Number *</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{tp('Phone Number *')}</label>
                             <div className="relative">
                                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">call</span>
                                 <input
@@ -609,15 +613,15 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                     className="w-full pl-12 pr-4 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none"
                                 />
                             </div>
-                            <p className="mt-1 text-xs text-gray-400">Buyers will call this number.</p>
+                            <p className="mt-1 text-xs text-gray-400">{tp('Buyers will call this number.')}</p>
                         </div>
                     </div>
                 </Section>
 
                 {/* ── Photos & price ──────────────────────────────────────── */}
-                <Section icon="photo_camera" title="Photos &amp; price" blurb="The first thing a buyer sees, and the number they judge it by">
+                <Section icon="photo_camera" title={tp('Photos & price')} blurb={tp('The first thing a buyer sees, and the number they judge it by')}>
                     <div className="mb-6">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Upload Photos *</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">{tp('Upload Photos *')}</label>
                         <div className="relative p-8 md:p-12 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 hover:border-primary/50 transition-all cursor-pointer">
                             <input
                                 type="file"
@@ -628,9 +632,9 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                             />
                             <div className="text-center">
                                 <span className="material-symbols-outlined text-4xl md:text-5xl text-primary mb-3 block">add_photo_alternate</span>
-                                <h3 className="text-base md:text-lg font-bold text-primary-dark mb-1">Drag and drop photos</h3>
-                                <p className="text-sm text-gray-500">or click to browse from your device</p>
-                                <p className="text-xs text-gray-400 mt-2">JPG • PNG • MAX 10MB each</p>
+                                <h3 className="text-base md:text-lg font-bold text-primary-dark mb-1">{tp('Drag and drop photos')}</h3>
+                                <p className="text-sm text-gray-500">{tp('or click to browse from your device')}</p>
+                                <p className="text-xs text-gray-400 mt-2">{tp('JPG • PNG • MAX 10MB each')}</p>
                             </div>
                         </div>
 
@@ -641,7 +645,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                         <img src={URL.createObjectURL(img)} alt="" className="w-full h-full object-cover" />
                                         <button
                                             type="button"
-                                            aria-label={`Remove photo ${idx + 1}`}
+                                            aria-label={tp('Remove photo {n}').replace('{n}', String(idx + 1))}
                                             onClick={() => setFormData(prev => ({
                                                 ...prev,
                                                 images: prev.images.filter((_, i) => i !== idx)
@@ -657,7 +661,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                     </div>
 
                     <div className="mb-6">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Your Asking Price *</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{tp('Your Asking Price *')}</label>
                         <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary font-bold text-lg">₹</span>
                             <input
@@ -665,21 +669,21 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                                 inputMode="numeric"
                                 value={formData.price}
                                 onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                                placeholder="Enter price"
+                                placeholder={tp('Enter price')}
                                 className="w-full pl-10 pr-4 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none text-xl md:text-2xl font-bold"
                             />
                         </div>
                         {config.showEstimate && estimatedValue && (
-                            <p className="text-sm text-gray-500 mt-2">Suggested range: {estimatedValue}</p>
+                            <p className="text-sm text-gray-500 mt-2">{tp('Suggested range: {value}').replace('{value}', estimatedValue)}</p>
                         )}
                     </div>
 
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Description (Optional)</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{tp('Description (Optional)')}</label>
                         <textarea
                             value={formData.description}
                             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                            placeholder={`Add any additional details about your ${config.singular.toLowerCase()}...`}
+                            placeholder={tp('Add any additional details about your {name}...').replace('{name}', tp(config.singular).toLowerCase())}
                             rows={4}
                             className="w-full px-4 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-primary outline-none resize-none"
                         />
@@ -710,7 +714,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                         disabled={isSubmitting || !agreedToTerms}
                         className={`mt-5 w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-colors ${isSubmitting || !agreedToTerms ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                        {isSubmitting ? 'Submitting…' : 'Publish Listing'}
+                        {isSubmitting ? tp('Submitting…') : tp('Publish Listing')}
                         {!isSubmitting && <span className="material-symbols-outlined">arrow_forward</span>}
                     </button>
                 </div>
@@ -728,7 +732,7 @@ export default function SellMachineryForm({ category = 'tractors' }: SellMachine
                             <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3 text-xs font-bold ${SUBMISSION_ACCENT.badge}`}><span className="material-symbols-outlined text-sm leading-none">location_off</span>{submission.badge}</span>
                             <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mb-4">{submission.message}</p>
                             <button onClick={() => setShowSuccess(false)} className="w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors">
-                                Done
+                                {tp('Done')}
                             </button>
                         </div>
                     </div>

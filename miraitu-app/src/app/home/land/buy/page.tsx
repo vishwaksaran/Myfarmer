@@ -9,6 +9,8 @@ import { logListingContact, type ContactChannel } from '@/app/actions/listing-co
 import { useAuth } from '@/context/AuthContext';
 import LoginModal from '@/components/auth/LoginModal';
 import { Z } from '@/lib/z-layers';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop';
 
@@ -132,6 +134,8 @@ function toView(record: SellListingRecord): ListingView {
 
 export default function BuyLandPage() {
     const { user } = useAuth();
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const [selectedType, setSelectedType] = useState('All');
     const [sortBy, setSortBy] = useState('newest');
     const [listings, setListings] = useState<ListingView[]>([]);
@@ -163,9 +167,11 @@ export default function BuyLandPage() {
                 if (res.error) setError(res.error);
                 else setListings(res.data.map(toView));
             })
-            .catch(() => { if (!cancelled) setError('Failed to load listings'); })
+            .catch(() => { if (!cancelled) setError(tp('Failed to load listings')); })
             .finally(() => { if (!cancelled) setLoading(false); });
         return () => { cancelled = true; };
+        // Deliberately once, on mount — tp is stable enough for this rare error path.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Only admin-approved listings (newest first — the query already orders by
@@ -200,12 +206,13 @@ export default function BuyLandPage() {
         const perAcre = allListings.map(l => l.pricePerAcreValue).filter(v => v > 0);
         const avg = perAcre.length ? perAcre.reduce((s, v) => s + v, 0) / perAcre.length : 0;
         return [
-            { label: 'Total Listings', value: String(allListings.length), icon: 'list_alt', color: 'text-green-600 bg-green-50 dark:bg-green-900/30' },
-            { label: 'Verified Sellers', value: String(sellers), icon: 'verified_user', color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' },
-            { label: 'Districts Covered', value: String(districts), icon: 'location_on', color: 'text-amber-600 bg-amber-50 dark:bg-amber-900/30' },
-            { label: 'Avg Price/Acre', value: formatCompact(avg), icon: 'currency_rupee', color: 'text-purple-600 bg-purple-50 dark:bg-purple-900/30' },
+            { label: tp('Total Listings'), value: String(allListings.length), icon: 'list_alt', color: 'text-green-600 bg-green-50 dark:bg-green-900/30' },
+            { label: tp('Verified Sellers'), value: String(sellers), icon: 'verified_user', color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' },
+            { label: tp('Districts Covered'), value: String(districts), icon: 'location_on', color: 'text-amber-600 bg-amber-50 dark:bg-amber-900/30' },
+            { label: tp('Avg Price/Acre'), value: formatCompact(avg), icon: 'currency_rupee', color: 'text-purple-600 bg-purple-50 dark:bg-purple-900/30' },
         ];
-    }, [allListings]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [allListings, lang]);
 
     const handleContactClick = (listing: ListingView) => {
         if (!user || user.isGuest) {
@@ -218,12 +225,12 @@ export default function BuyLandPage() {
 
     const shareListing = async (listing: ListingView) => {
         const text = [
-            `${listing.title} — For Sale`,
+            `${listing.title} — ${tp('FOR SALE')}`,
             `📍 ${listing.location}`,
             listing.areaValue ? `📐 ${listing.area}` : '',
             listing.priceValue ? `💰 ${listing.price}${listing.pricePerAcre ? ` (${listing.pricePerAcre})` : ''}` : '',
             listing.description ? `\n${listing.description.slice(0, 120)}…` : '',
-            '\nFind more on Miraitu 🌾',
+            `\n${tp('Find more on Miraitu 🌾')}`,
         ].filter(Boolean).join('\n');
         const url = typeof window !== 'undefined' ? window.location.href.split('?')[0] : '';
         try {
@@ -231,7 +238,7 @@ export default function BuyLandPage() {
                 await navigator.share({ title: listing.title, text, url });
             } else {
                 await navigator.clipboard.writeText(`${text}\n\n${url}`);
-                setShareToast('Link copied to clipboard!');
+                setShareToast(tp('Link copied to clipboard!'));
                 setTimeout(() => setShareToast(''), 3000);
             }
         } catch {
@@ -257,21 +264,21 @@ export default function BuyLandPage() {
             <div className="mx-auto max-w-[1280px]">
                 {/* Breadcrumb */}
                 <div className="flex items-center gap-2 text-xs md:text-sm text-gray-500 mb-4 md:mb-6">
-                    <Link href="/home" className="hover:text-primary transition-colors">Home</Link>
+                    <Link href="/home" className="hover:text-primary transition-colors">{tp('Home')}</Link>
                     <span className="material-symbols-outlined text-xs">chevron_right</span>
-                    <Link href="/home/land" className="hover:text-primary transition-colors">Land</Link>
+                    <Link href="/home/land" className="hover:text-primary transition-colors">{tp('Land')}</Link>
                     <span className="material-symbols-outlined text-xs">chevron_right</span>
-                    <span className="text-gray-900 dark:text-white font-semibold">Buy</span>
+                    <span className="text-gray-900 dark:text-white font-semibold">{tp('Buy')}</span>
                 </div>
 
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6 md:mb-8">
                     <div>
                         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                            Buy Farm Land
+                            {tp('Buy Farm Land')}
                         </h1>
                         <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">
-                            Browse verified agricultural land for sale across the country
+                            {tp('Browse verified agricultural land for sale across the country')}
                         </p>
                     </div>
                     <NearbyLocation />
@@ -303,7 +310,7 @@ export default function BuyLandPage() {
                                         : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:border-primary'
                                 }`}
                             >
-                                {type}
+                                {tp(type)}
                             </button>
                         ))}
                     </div>
@@ -312,22 +319,22 @@ export default function BuyLandPage() {
                         onChange={(e) => setSortBy(e.target.value)}
                         className="px-3 md:px-4 py-2 rounded-lg md:rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300"
                     >
-                        <option value="newest">Newest First</option>
-                        <option value="price-low">Price: Low to High</option>
-                        <option value="price-high">Price: High to Low</option>
-                        <option value="area">Area: Largest First</option>
+                        <option value="newest">{tp('Newest First')}</option>
+                        <option value="price-low">{tp('Price: Low to High')}</option>
+                        <option value="price-high">{tp('Price: High to Low')}</option>
+                        <option value="area">{tp('Area: Largest First')}</option>
                     </select>
                 </div>
 
                 {/* Results Count */}
                 <div className="flex items-center gap-2 mb-4">
                     <p className="text-xs md:text-sm text-gray-500">
-                        Showing <span className="font-bold text-gray-900 dark:text-white">{filteredListings.length}</span> listings
+                        {tp('Showing')} <span className="font-bold text-gray-900 dark:text-white">{filteredListings.length}</span> {tp('listings')}
                     </p>
                     {loading && (
                         <span className="flex items-center gap-1 text-[11px] md:text-xs text-gray-400">
                             <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
-                            Loading latest…
+                            {tp('Loading latest…')}
                         </span>
                     )}
                 </div>
@@ -337,7 +344,7 @@ export default function BuyLandPage() {
                     <div className="mb-4 flex items-center gap-2 px-4 py-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900">
                         <span className="material-symbols-outlined text-lg text-red-500">error</span>
                         <p className="text-xs md:text-sm text-red-700 dark:text-red-400">
-                            Could not load the latest listings — {error}
+                            {tp('Could not load the latest listings — {error}').replace('{error}', error)}
                         </p>
                     </div>
                 )}
@@ -353,7 +360,7 @@ export default function BuyLandPage() {
                                         type="button"
                                         onClick={() => setGallery({ photos: galleryOf(listing), index: 0 })}
                                         className="block w-full h-full cursor-zoom-in"
-                                        aria-label={`View photos of ${listing.title}`}
+                                        aria-label={tp('View photos of {title}').replace('{title}', listing.title)}
                                     >
                                         <img
                                             src={listing.image}
@@ -370,17 +377,17 @@ export default function BuyLandPage() {
                                     )}
                                     {listing.featured && (
                                         <span className="absolute top-2 md:top-3 left-2 md:left-3 px-2 py-0.5 md:py-1 bg-amber-500 text-white text-[10px] md:text-xs font-bold rounded-md md:rounded-lg shadow-md">
-                                            Featured
+                                            {tp('Featured')}
                                         </span>
                                     )}
                                     {listing.verified && (
                                         <span className="absolute top-2 md:top-3 right-2 md:right-3 px-2 py-0.5 md:py-1 bg-green-500 text-white text-[10px] md:text-xs font-bold rounded-md md:rounded-lg shadow-md flex items-center gap-1">
                                             <span className="material-symbols-outlined text-xs">verified</span>
-                                            Verified
+                                            {tp('Verified')}
                                         </span>
                                     )}
                                     <div className="absolute bottom-2 md:bottom-3 left-2 md:left-3 px-2 py-0.5 md:py-1 bg-black/60 backdrop-blur-sm text-white text-[10px] md:text-xs font-semibold rounded-md md:rounded-lg">
-                                        {listing.type}
+                                        {tp(listing.type)}
                                     </div>
                                 </div>
 
@@ -433,7 +440,7 @@ export default function BuyLandPage() {
                                             onClick={() => handleContactClick(listing)}
                                             className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white text-xs md:text-sm font-bold rounded-lg md:rounded-xl hover:bg-primary/90 transition-colors"
                                         >
-                                            Contact Seller
+                                            {tp('Contact Seller')}
                                         </button>
                                     </div>
                                 </div>
@@ -449,17 +456,17 @@ export default function BuyLandPage() {
                             <span className="material-symbols-outlined text-3xl text-green-600">landscape</span>
                         </div>
                         <h3 className="text-base md:text-lg font-bold text-gray-900 dark:text-white mb-1.5">
-                            {selectedType === 'All' ? 'No land listings yet' : `No ${selectedType} land right now`}
+                            {selectedType === 'All' ? tp('No land listings yet') : tp('No {type} land right now').replace('{type}', tp(selectedType))}
                         </h3>
                         <p className="text-xs md:text-sm text-gray-500 max-w-sm mx-auto mb-5">
                             {selectedType === 'All'
-                                ? 'New listings appear here once a seller posts and our team approves them.'
-                                : 'Try a different land type, or check back soon for new listings.'}
+                                ? tp('New listings appear here once a seller posts and our team approves them.')
+                                : tp('Try a different land type, or check back soon for new listings.')}
                         </p>
                         {selectedType === 'All' ? (
                             <Link href="/home/land/sell" className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors">
                                 <span className="material-symbols-outlined text-base">post_add</span>
-                                List Your Land
+                                {tp('List Your Land')}
                             </Link>
                         ) : (
                             <button
@@ -467,7 +474,7 @@ export default function BuyLandPage() {
                                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors"
                             >
                                 <span className="material-symbols-outlined text-base">filter_alt_off</span>
-                                Clear Filter
+                                {tp('Clear Filter')}
                             </button>
                         )}
                     </div>
@@ -475,11 +482,11 @@ export default function BuyLandPage() {
 
                 {/* CTA */}
                 <div className="mt-8 md:mt-12 bg-gradient-to-r from-green-600 to-emerald-700 rounded-xl md:rounded-2xl p-6 md:p-10 text-center">
-                    <h2 className="text-xl md:text-2xl font-bold text-white mb-2 md:mb-3">Can&apos;t Find What You&apos;re Looking For?</h2>
-                    <p className="text-sm md:text-base text-white/80 mb-4 md:mb-6">Post your requirements and let verified sellers reach out to you</p>
+                    <h2 className="text-xl md:text-2xl font-bold text-white mb-2 md:mb-3">{tp("Can't Find What You're Looking For?")}</h2>
+                    <p className="text-sm md:text-base text-white/80 mb-4 md:mb-6">{tp('Post your requirements and let verified sellers reach out to you')}</p>
                     <Link href="/home/land/sell" className="inline-flex items-center gap-2 px-5 md:px-6 py-2.5 md:py-3 bg-white text-green-700 font-bold text-sm md:text-base rounded-lg md:rounded-xl hover:bg-green-50 transition-colors">
                         <span className="material-symbols-outlined text-base md:text-lg">post_add</span>
-                        Post Requirement
+                        {tp('Post Requirement')}
                     </Link>
                 </div>
             </div>
@@ -493,10 +500,10 @@ export default function BuyLandPage() {
                 const photos = listing.photos.length ? listing.photos : [listing.image];
                 const heroImg = photos[detailPhotoIdx] || photos[0];
                 const address = [
-                    listing.village && { label: 'Village / Locality', value: listing.village },
-                    listing.district && { label: 'District', value: listing.district },
-                    listing.state && { label: 'State', value: listing.state },
-                    listing.type && { label: 'Land Type', value: listing.type },
+                    listing.village && { label: tp('Village / Locality'), value: listing.village },
+                    listing.district && { label: tp('District'), value: listing.district },
+                    listing.state && { label: tp('State'), value: listing.state },
+                    listing.type && { label: tp('Land Type'), value: tp(listing.type) },
                 ].filter(Boolean) as { label: string; value: string }[];
 
                 return (
@@ -520,7 +527,7 @@ export default function BuyLandPage() {
                                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%)', pointerEvents: 'none' }} />
                                 {/* type badge */}
                                 <div style={{ position: 'absolute', top: '12px', left: '12px', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 700, color: 'white', background: '#16a34a' }}>
-                                    FOR SALE
+                                    {tp('FOR SALE')}
                                 </div>
                                 {/* close */}
                                 <button onClick={() => setContactListing(null)} style={{ position: 'absolute', top: '10px', right: '10px', padding: '6px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', border: 'none', cursor: 'pointer', display: 'flex' }}>
@@ -560,9 +567,9 @@ export default function BuyLandPage() {
                                 {/* Key stats */}
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
                                     {[
-                                        { icon: 'square_foot', label: 'Area', value: listing.area },
-                                        { icon: 'payments', label: 'Price', value: listing.price },
-                                        { icon: 'currency_rupee', label: 'Per Acre', value: listing.pricePerAcre || '—' },
+                                        { icon: 'square_foot', label: tp('Area'), value: listing.area },
+                                        { icon: 'payments', label: tp('Price'), value: listing.price },
+                                        { icon: 'currency_rupee', label: tp('Per Acre'), value: listing.pricePerAcre || '—' },
                                     ].map(stat => (
                                         <div key={stat.label} style={{ background: '#f9fafb', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
                                             <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#16a34a', display: 'block', marginBottom: '4px' }}>{stat.icon}</span>
@@ -575,7 +582,7 @@ export default function BuyLandPage() {
                                 {/* Address details */}
                                 {address.length > 0 && (
                                     <div style={{ marginBottom: '20px' }}>
-                                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>Land Location Details</p>
+                                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>{tp('Land Location Details')}</p>
                                         <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '14px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                                             {address.map(item => (
                                                 <div key={item.label}>
@@ -590,7 +597,7 @@ export default function BuyLandPage() {
                                 {/* Amenities */}
                                 {listing.amenities.length > 0 && (
                                     <div style={{ marginBottom: '20px' }}>
-                                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>Amenities</p>
+                                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>{tp('Amenities')}</p>
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                                             {listing.amenities.map(a => (
                                                 <span key={a} style={{ padding: '5px 10px', borderRadius: '8px', background: '#f3f4f6', color: '#4b5563', fontSize: '12px', fontWeight: 600 }}>{a}</span>
@@ -602,7 +609,7 @@ export default function BuyLandPage() {
                                 {/* Description */}
                                 {listing.description && (
                                     <div style={{ marginBottom: '20px' }}>
-                                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>About the Land</p>
+                                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>{tp('About the Land')}</p>
                                         <p style={{ fontSize: '14px', color: '#374151', lineHeight: 1.7, whiteSpace: 'pre-wrap', margin: 0 }}>{listing.description}</p>
                                     </div>
                                 )}
@@ -613,7 +620,7 @@ export default function BuyLandPage() {
                                         <span className="material-symbols-outlined" style={{ color: 'white', fontSize: '18px' }}>person</span>
                                     </div>
                                     <div>
-                                        <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>Listed by</p>
+                                        <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>{tp('Listed by')}</p>
                                         <p style={{ fontSize: '14px', fontWeight: 700, color: '#111', margin: 0 }}>{listing.seller}</p>
                                     </div>
                                     <p style={{ marginLeft: 'auto', fontSize: '11px', color: '#9ca3af' }}>{listing.postedDate}</p>
@@ -624,11 +631,11 @@ export default function BuyLandPage() {
                             <div style={{ padding: '16px 24px', borderTop: '1px solid #f3f4f6', flexShrink: 0, display: 'flex', gap: '10px' }}>
                                 <button
                                     onClick={() => shareListing(listing)}
-                                    title="Share"
+                                    title={tp('Share')}
                                     style={{ padding: '12px 14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, fontSize: '14px', color: '#374151', flexShrink: 0 }}
                                 >
                                     <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>share</span>
-                                    Share
+                                    {tp('Share')}
                                 </button>
                                 <a
                                     href={`tel:+91${listing.phone}`}
@@ -636,10 +643,10 @@ export default function BuyLandPage() {
                                     style={{ flex: 1, padding: '12px', borderRadius: '12px', background: '#16a34a', color: 'white', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none' }}
                                 >
                                     <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>call</span>
-                                    Call
+                                    {tp('Call')}
                                 </a>
                                 <a
-                                    href={`https://wa.me/91${listing.phone}?text=${encodeURIComponent(`Hi, I saw your land listing "${listing.title}" at ${listing.location} on Miraitu. I'm interested in buying it.`)}`}
+                                    href={`https://wa.me/91${listing.phone}?text=${encodeURIComponent(tp("Hi, I saw your land listing \"{title}\" at {location} on Miraitu. I'm interested in buying it.").replace('{title}', listing.title).replace('{location}', listing.location))}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     onClick={() => trackContact(listing, 'whatsapp')}
@@ -670,7 +677,7 @@ export default function BuyLandPage() {
                     <button
                         onClick={() => setGallery(null)}
                         className="absolute top-4 right-4 flex items-center justify-center size-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
-                        aria-label="Close photos"
+                        aria-label={tp('Close photos')}
                     >
                         <span className="material-symbols-outlined">close</span>
                     </button>
@@ -689,7 +696,7 @@ export default function BuyLandPage() {
                                 <button
                                     onClick={e => { e.stopPropagation(); setGallery(g => g && { ...g, index: g.index - 1 }); }}
                                     className="absolute left-3 md:left-6 flex items-center justify-center size-11 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
-                                    aria-label="Previous photo"
+                                    aria-label={tp('Previous photo')}
                                 >
                                     <span className="material-symbols-outlined">chevron_left</span>
                                 </button>
@@ -698,7 +705,7 @@ export default function BuyLandPage() {
                                 <button
                                     onClick={e => { e.stopPropagation(); setGallery(g => g && { ...g, index: g.index + 1 }); }}
                                     className="absolute right-3 md:right-6 flex items-center justify-center size-11 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
-                                    aria-label="Next photo"
+                                    aria-label={tp('Next photo')}
                                 >
                                     <span className="material-symbols-outlined">chevron_right</span>
                                 </button>

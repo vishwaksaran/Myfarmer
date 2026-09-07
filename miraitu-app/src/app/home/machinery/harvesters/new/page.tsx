@@ -5,6 +5,8 @@ import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import CompareModal from '@/components/v2/machinery/CompareModal';
 import CompareSection from '@/components/v2/machinery/CompareSection';
 import MachinerySubNav from '@/components/v2/machinery/MachinerySubNav';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 const newHarvesters = [
     {
@@ -70,6 +72,8 @@ const newHarvesters = [
 ];
 
 export default function NewHarvestersPage() {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
 
@@ -92,13 +96,13 @@ export default function NewHarvestersPage() {
             <div className="mx-auto max-w-[1280px]">
                 <MachinerySubNav category="harvesters" currentAction="new" />
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">New Harvesters</h1>
-                    <p className="text-gray-500">Browse combine harvesters and reaper machines with manufacturer warranty.</p>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{tp('New Harvesters')}</h1>
+                    <p className="text-gray-500">{tp('Browse combine harvesters and reaper machines with manufacturer warranty.')}</p>
                 </div>
 
                 <div className="flex items-center gap-4 mb-8">
                     <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
-                        <option>All Brands</option>
+                        <option>{tp('All Brands')}</option>
                         <option>Kubota</option>
                         <option>John Deere</option>
                         <option>Preet</option>
@@ -107,20 +111,20 @@ export default function NewHarvestersPage() {
                         <option>Claas</option>
                     </select>
                     <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
-                        <option>HP Range</option>
+                        <option>{tp('HP Range')}</option>
                         <option>60-75 HP</option>
                         <option>75-90 HP</option>
                         <option>90-110 HP</option>
                         <option>Above 110 HP</option>
                     </select>
                     <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
-                        <option>Type</option>
-                        <option>Self-Propelled</option>
-                        <option>Tractor Mounted</option>
-                        <option>Track Type</option>
+                        <option>{tp('Type')}</option>
+                        <option>{tp('Self-Propelled')}</option>
+                        <option>{tp('Tractor Mounted')}</option>
+                        <option>{tp('Track Type')}</option>
                     </select>
                     <select className="px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium">
-                        <option>Price Range</option>
+                        <option>{tp('Price Range')}</option>
                         <option>Under ₹12 Lakhs</option>
                         <option>₹12-16 Lakhs</option>
                         <option>₹16-20 Lakhs</option>

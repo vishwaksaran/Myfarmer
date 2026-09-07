@@ -38,6 +38,8 @@ export interface Comment {
   likes: number;
   liked: boolean;
   replies?: Comment[];
+  /** Whether the signed-in caller wrote this comment — gates the edit/delete menu. */
+  isOwn?: boolean;
 }
 
 /** One choice on a post's poll, with its live tally. */

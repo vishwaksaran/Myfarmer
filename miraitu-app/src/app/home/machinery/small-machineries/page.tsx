@@ -5,6 +5,8 @@ import Link from 'next/link';
 import MachineryListing from '@/components/v2/machinery/MachineryListing';
 import SellMachineryForm from '@/components/v2/machinery/SellMachineryForm';
 import CompareModal from '@/components/v2/machinery/CompareModal';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 type TabType = 'new' | 'sell' | 'buy' | 'rent';
 
@@ -31,6 +33,8 @@ const usedItems = [
 ];
 
 export default function SmallMachineriesPage() {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
     // 'new' is temporarily hidden, so default to the other browse view rather
     // than dropping users straight into the Sell form.
     const [activeTab, setActiveTab] = useState<TabType>('buy');
@@ -57,13 +61,13 @@ export default function SmallMachineriesPage() {
                             <span className="material-symbols-outlined text-primary text-2xl">precision_manufacturing</span>
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Small Machineries</h1>
-                            <p className="text-sm text-gray-500">Power tillers, brush cutters, and more</p>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{tp('Small Machineries')}</h1>
+                            <p className="text-sm text-gray-500">{tp('Power tillers, brush cutters, and more')}</p>
                         </div>
                     </div>
                     <Link href="/home/machinery" className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors text-sm">
                         <span className="material-symbols-outlined text-lg">arrow_back</span>
-                        <span className="hidden sm:inline">Back to Machinery</span>
+                        <span className="hidden sm:inline">{tp('Back to Machinery')}</span>
                     </Link>
                 </div>
 
@@ -76,10 +80,10 @@ export default function SmallMachineriesPage() {
                                 <span className={`material-symbols-outlined text-xl ${activeTab === tab.id ? 'text-white' : 'text-gray-500'}`}>{tab.icon}</span>
                             </div>
                             <div className="text-left hidden sm:block">
-                                <p className={`font-bold ${activeTab === tab.id ? 'text-primary' : 'text-gray-700 dark:text-gray-200'}`}>{tab.title}</p>
-                                <p className="text-xs text-gray-500">{tab.description}</p>
+                                <p className={`font-bold ${activeTab === tab.id ? 'text-primary' : 'text-gray-700 dark:text-gray-200'}`}>{tp(tab.title)}</p>
+                                <p className="text-xs text-gray-500">{tp(tab.description)}</p>
                             </div>
-                            <p className={`font-bold sm:hidden ${activeTab === tab.id ? 'text-primary' : 'text-gray-700 dark:text-gray-200'}`}>{tab.shortTitle}</p>
+                            <p className={`font-bold sm:hidden ${activeTab === tab.id ? 'text-primary' : 'text-gray-700 dark:text-gray-200'}`}>{tp(tab.shortTitle)}</p>
                         </button>
                     ))}
                 </div>
@@ -98,7 +102,7 @@ export default function SmallMachineriesPage() {
                                 {['All', 'Excellent', 'Good', 'Fair'].map((condition) => (
                                     <button key={condition} onClick={() => setSelectedCondition(condition)}
                                         className={`px-5 py-2.5 rounded-xl font-medium transition-all ${selectedCondition === condition ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100'}`}>
-                                        {condition}
+                                        {tp(condition)}
                                     </button>
                                 ))}
                             </div>
@@ -111,11 +115,11 @@ export default function SmallMachineriesPage() {
                             <div className="w-20 h-20 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center mb-4">
                                 <span className="material-symbols-outlined text-teal-600 text-4xl">settings_suggest</span>
                             </div>
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Rent Small Machineries</h2>
-                            <p className="text-gray-500 mb-6 max-w-sm">Hire power tillers, cultivators, brush cutters and more by the hour, day, or season.</p>
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{tp('Rent Small Machineries')}</h2>
+                            <p className="text-gray-500 mb-6 max-w-sm">{tp('Hire power tillers, cultivators, brush cutters and more by the hour, day, or season.')}</p>
                             <Link href="/home/machinery/small-machineries/rent" className="flex items-center gap-2 px-8 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-2xl transition-colors">
                                 <span className="material-symbols-outlined">handshake</span>
-                                Browse Rentals
+                                {tp('Browse Rentals')}
                             </Link>
                         </div>
                     )}
