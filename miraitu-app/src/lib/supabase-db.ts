@@ -385,10 +385,19 @@ export async function getListingsByUser(userId: string): Promise<ListingRecord[]
     return data || [];
 }
 
+/**
+ * The public feed of live ads.
+ *
+ * Columns are listed out rather than selected with `*` for one reason:
+ * `contact_phone` must not be among them. This runs in the browser with the
+ * anon key, so anything it selects is readable by whoever is looking — and a
+ * seller's number is exactly what the contact-request flow exists to keep
+ * back. Admin reads it server-side when a callback request comes in.
+ */
 export async function getActiveListings(listingType?: string, category?: string): Promise<ListingRecord[]> {
     let query = supabase
         .from('marketplace_listings')
-        .select('*')
+        .select('id, user_id, listing_type, listing_mode, category, subcategory, title, brand, model, description, price, unit, price_unit, negotiable, location, district, state, latitude, longitude, images, specs, status, created_at, updated_at')
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 

@@ -63,6 +63,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         // Everything farmers post for sale or hire — the marketplace_listings
         // table, which had no admin screen at all before this.
         { href: '/admin/listings', icon: 'sell', label: 'Listings' },
+        // Buyers never see a seller's number now — they leave a callback
+        // request instead, and this is where those land.
+        { href: '/admin/contact-requests', icon: 'phone_callback', label: 'Contact Requests' },
         { href: '/admin/users', icon: 'group', label: 'Users' },
         { href: '/admin/crm/members', icon: 'badge', label: 'CRM Members' },
         { href: '/admin/crm/shops', icon: 'storefront', label: 'CRM Vendors' },

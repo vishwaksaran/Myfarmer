@@ -554,7 +554,12 @@ export async function setListingPublished(
 export interface LeaseListingRecord {
     id: string;
     full_name: string;
-    phone: string;
+    /**
+     * Whether the poster left a number, never the number itself. Land
+     * contact goes through ContactRequestModal and the introduction is made
+     * by the Miraitu team, so the digits stay on the server.
+     */
+    hasPhone: boolean;
     location: string;
     created_at: string;
     extra_data: {
@@ -602,8 +607,11 @@ export async function fetchApprovedLeaseListings(): Promise<{ data: LeaseListing
         if (r1.error) console.error('[fetchApprovedLeaseListings] r1 error:', r1.error);
         if (r2.error) console.error('[fetchApprovedLeaseListings] r2 error:', r2.error);
 
-        const data = [...(r1.data ?? []), ...(r2.data ?? [])];
-        return { data: data as LeaseListingRecord[] };
+        const rows = [...(r1.data ?? []), ...(r2.data ?? [])];
+        // The phone column is read so `hasPhone` can be honest, then dropped
+        // before anything crosses to the browser.
+        const data = rows.map(({ phone, ...rest }) => ({ ...rest, hasPhone: !!phone }));
+        return { data: data as unknown as LeaseListingRecord[] };
     } catch (err) {
         console.error('[fetchApprovedLeaseListings] Unexpected error:', err);
         return { data: [], error: 'Failed to fetch listings' };
@@ -615,7 +623,12 @@ export async function fetchApprovedLeaseListings(): Promise<{ data: LeaseListing
 export interface SellListingRecord {
     id: string;
     full_name: string;
-    phone: string;
+    /**
+     * Whether the poster left a number, never the number itself. Land
+     * contact goes through ContactRequestModal and the introduction is made
+     * by the Miraitu team, so the digits stay on the server.
+     */
+    hasPhone: boolean;
     location: string;
     status: string;
     created_at: string;
@@ -664,8 +677,11 @@ export async function fetchApprovedSellListings(): Promise<{ data: SellListingRe
         if (r1.error) console.error('[fetchApprovedSellListings] r1 error:', r1.error);
         if (r2.error) console.error('[fetchApprovedSellListings] r2 error:', r2.error);
 
-        const data = [...(r1.data ?? []), ...(r2.data ?? [])];
-        return { data: data as SellListingRecord[] };
+        const rows = [...(r1.data ?? []), ...(r2.data ?? [])];
+        // The phone column is read so `hasPhone` can be honest, then dropped
+        // before anything crosses to the browser.
+        const data = rows.map(({ phone, ...rest }) => ({ ...rest, hasPhone: !!phone }));
+        return { data: data as unknown as SellListingRecord[] };
     } catch (err) {
         console.error('[fetchApprovedSellListings] Unexpected error:', err);
         return { data: [], error: 'Failed to fetch listings' };

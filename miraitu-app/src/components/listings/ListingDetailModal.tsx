@@ -6,6 +6,7 @@ import { CATEGORY_META, formatDistance, formatPrice } from './listingFormat';
 import { Z } from '@/lib/z-layers';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { translatePage } from '@/i18n/pageContent';
+import ContactRequestModal from '@/components/ContactRequestModal';
 
 interface ListingDetailModalProps {
     listing: Listing | null;
@@ -14,12 +15,17 @@ interface ListingDetailModalProps {
     onDelete?: (listing: Listing) => void;
 }
 
-/** Full view of one ad, with the seller's number so a buyer can actually call. */
+/**
+ * Full view of one ad. The seller's number is never shown here — "Call
+ * seller" opens a request form instead, and Miraitu connects the two sides.
+ * See ContactRequestModal for why.
+ */
 export default function ListingDetailModal({ listing, onClose, onEdit, onDelete }: ListingDetailModalProps) {
     const { lang } = useLanguage();
     const tp = (s: string) => translatePage(lang, s);
     const [imageIndex, setImageIndex] = useState(0);
     const [copied, setCopied] = useState(false);
+    const [showContactRequest, setShowContactRequest] = useState(false);
 
     if (!listing) return null;
 
@@ -183,14 +189,14 @@ export default function ListingDetailModal({ listing, onClose, onEdit, onDelete 
                         </>
                     ) : (
                         <>
-                            {listing.contactPhone ? (
-                                <a
-                                    href={`tel:${listing.contactPhone}`}
+                            {listing.hasContactPhone ? (
+                                <button
+                                    onClick={() => setShowContactRequest(true)}
                                     className="flex-1 py-3 rounded-xl bg-[#22c33d] text-white text-sm font-bold hover:brightness-110 flex items-center justify-center gap-1.5"
                                 >
                                     <span className="material-symbols-outlined text-lg">call</span>
                                     {tp('Call seller')}
-                                </a>
+                                </button>
                             ) : (
                                 <div className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 text-sm font-semibold text-center">
                                     {tp('No contact number given')}
@@ -207,6 +213,18 @@ export default function ListingDetailModal({ listing, onClose, onEdit, onDelete 
                     )}
                 </div>
             </div>
+
+            {showContactRequest && (
+                <ContactRequestModal
+                    listingId={listing.id}
+                    listingType="buy_sell"
+                    listingTitle={listing.title}
+                    sellerName={listing.contactName}
+                    location={listing.location}
+                    heading={tp('Call seller')}
+                    onClose={() => setShowContactRequest(false)}
+                />
+            )}
         </div>
     );
 }

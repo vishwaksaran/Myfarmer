@@ -42,13 +42,14 @@ export default function ActivityLogPage() {
         'username_changed', 'password_changed', 'password_reset',
         'product_created', 'product_updated', 'product_deleted',
         'order_created', 'order_status_changed',
-        'listing_contact_call', 'listing_contact_whatsapp',
+        'listing_contact_call', 'listing_contact_whatsapp', 'listing_contact_request',
     ];
 
     // Friendlier titles than the raw underscored action name.
     const actionLabels: Record<string, string> = {
         listing_contact_call: 'Called a listing owner',
         listing_contact_whatsapp: 'WhatsApped a listing owner',
+        listing_contact_request: 'Requested a callback',
     };
 
     const actionIcons: Record<string, { icon: string; color: string }> = {
@@ -64,6 +65,7 @@ export default function ActivityLogPage() {
         password_reset: { icon: 'lock_reset', color: 'text-amber-600 bg-amber-50' },
         listing_contact_call: { icon: 'call', color: 'text-emerald-600 bg-emerald-50' },
         listing_contact_whatsapp: { icon: 'chat', color: 'text-emerald-600 bg-emerald-50' },
+        listing_contact_request: { icon: 'phone_callback', color: 'text-amber-600 bg-amber-50' },
     };
 
     const handleCsvExport = () => {
@@ -145,6 +147,11 @@ export default function ActivityLogPage() {
                                                 {log.details?.seller_phone ? ` (${String(log.details.seller_phone)})` : ''}
                                                 {log.details?.listing_title ? ` · ${String(log.details.listing_title)}` : ''}
                                                 {log.details?.location ? `, ${String(log.details.location)}` : ''}
+                                            </p>
+                                        )}
+                                        {log.action === 'listing_contact_request' && !!log.details?.message && (
+                                            <p className="text-xs text-gray-500 italic mt-1 px-2 py-1 bg-amber-50 rounded-lg">
+                                                &ldquo;{String(log.details.message)}&rdquo;
                                             </p>
                                         )}
                                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">

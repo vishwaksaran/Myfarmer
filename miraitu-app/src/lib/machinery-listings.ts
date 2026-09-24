@@ -120,7 +120,8 @@ export interface MachineryRental {
     negotiable: boolean;
     location: string;
     images: string[];
-    phone: string;
+    /** Whether the owner left a number — never the number itself. */
+    hasPhone: boolean;
     createdAt: string;
 }
 
@@ -158,7 +159,7 @@ export async function fetchMachineryRentals(pageCategory?: string): Promise<Mach
                 .filter((p, i, all) => p && all.findIndex(q => q.toLowerCase() === p.toLowerCase()) === i)
                 .join(', '),
             images: (row.images ?? []).filter(Boolean),
-            phone: row.contact_phone || '',
+            hasPhone: !!row.contact_phone,
             createdAt: row.created_at ?? '',
         }));
 }

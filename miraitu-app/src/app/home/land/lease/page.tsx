@@ -9,7 +9,7 @@ import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import { useBookingSubmit } from '@/lib/useBookingSubmit';
 import { useSubmissionCopy, SUBMISSION_ACCENT, SUBMISSION_ICON } from '@/lib/service-availability';
 import { fetchApprovedLeaseListings, type LeaseListingRecord } from '@/app/actions/bookings';
-import { logListingContact, type ContactChannel } from '@/app/actions/listing-contact';
+import ContactRequestModal from '@/components/ContactRequestModal';
 import { useAuth } from '@/context/AuthContext';
 import LoginModal from '@/components/auth/LoginModal';
 import { Z } from '@/lib/z-layers';
@@ -179,19 +179,6 @@ export default function LeaseLandPage() {
         setContactListing(listing);
     };
 
-    // Records the tap in Admin → Activity Log. Fire-and-forget — the tel:/wa.me
-    // link opens regardless of whether this lands.
-    const trackContact = (listing: LeaseListingRecord, channel: ContactChannel) => {
-        void logListingContact({
-            channel,
-            listingId: listing.id,
-            listingType: listing.extra_data?.service_type === 'rent' ? 'rent' : 'lease',
-            listingTitle: listing.extra_data?.title,
-            sellerName: listing.full_name,
-            sellerPhone: listing.phone,
-            location: listing.location,
-        }).catch(() => { /* tracking must never block the user */ });
-    };
 
     const shareListing = async (listing: LeaseListingRecord) => {
         const ed = listing.extra_data;
@@ -1027,62 +1014,22 @@ export default function LeaseLandPage() {
         )}
 
         {/* ── Contact Owner Modal — rendered via portal ── */}
+        {/*
+            No number is shown or dialled here anymore — the tenant leaves
+            their own details and Miraitu connects the two sides by hand.
+            See ContactRequestModal for why.
+        */}
         {mounted && contactListing && createPortal(
-            <div
-                style={{ position: 'fixed', inset: 0, zIndex: Z.MODAL + 1, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
-                onClick={() => setContactListing(null)}
-            >
-                <div
-                    style={{ background: 'white', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '384px', boxShadow: '0 25px 50px rgba(0,0,0,0.25)' }}
-                    onClick={e => e.stopPropagation()}
-                >
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
-                        <div>
-                            <p style={{ fontSize: '18px', fontWeight: 700, color: '#111', margin: 0 }}>{contactListing.full_name}</p>
-                            <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>{contactListing.extra_data.title || tp('Land for Lease')} · {contactListing.location}</p>
-                        </div>
-                        <button onClick={() => setContactListing(null)} style={{ padding: '6px', borderRadius: '50%', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex' }}>
-                            <span className="material-symbols-outlined" style={{ color: '#6b7280', fontSize: '20px' }}>close</span>
-                        </button>
-                    </div>
-
-                    {(() => {
-                        const digits = (contactListing.phone ?? '').replace(/\D/g, '').slice(-10);
-                        // Show first 5 digits, mask last 5 — full number used in call/WA links
-                        const masked = digits.length === 10
-                            ? `${digits.slice(0, 5)} •••••`
-                            : 'N/A';
-                        return (
-                            <>
-                                <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                                    <span className="material-symbols-outlined" style={{ color: '#16a34a', fontSize: '20px' }}>phone</span>
-                                    <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '0.05em' }}>+91 {masked}</span>
-                                </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                    <a
-                                        href={`tel:+91${digits}`}
-                                        onClick={() => trackContact(contactListing, 'call')}
-                                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', background: '#16a34a', color: 'white', fontWeight: 700, borderRadius: '12px', textDecoration: 'none', fontSize: '14px' }}
-                                    >
-                                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>call</span>
-                                        {tp('Call Now')}
-                                    </a>
-                                    <a
-                                        href={`https://wa.me/91${digits}?text=${encodeURIComponent(tp("Hi, I saw your land listing \"{title}\" at {location} on Miraitu. I'm interested in leasing it.").replace('{title}', contactListing.extra_data.title || tp('Land for Lease')).replace('{location}', contactListing.location))}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        onClick={() => trackContact(contactListing, 'whatsapp')}
-                                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', background: '#25D366', color: 'white', fontWeight: 700, borderRadius: '12px', textDecoration: 'none', fontSize: '14px' }}
-                                    >
-                                        <svg viewBox="0 0 24 24" style={{ width: '16px', height: '16px', fill: 'white' }}><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.138.563 4.14 1.539 5.875L.054 23.477a.5.5 0 0 0 .613.612l5.744-1.506A11.95 11.95 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.938a9.934 9.934 0 0 1-5.062-1.377l-.362-.215-3.757.985.995-3.65-.236-.376A9.944 9.944 0 0 1 2.062 12C2.062 6.509 6.509 2.062 12 2.062c5.491 0 9.938 4.447 9.938 9.938 0 5.491-4.447 9.938-9.938 9.938z"/></svg>
-                                        WhatsApp
-                                    </a>
-                                </div>
-                            </>
-                        );
-                    })()}
-                </div>
-            </div>,
+            <ContactRequestModal
+                listingId={contactListing.id}
+                listingType={contactListing.extra_data?.service_type === 'rent' ? 'land_rent' : 'land_lease'}
+                listingTitle={contactListing.extra_data.title || tp('Land for Lease')}
+                sellerName={contactListing.full_name}
+                location={contactListing.location}
+                heading={tp('Contact Owner')}
+                zIndex={Z.MODAL + 1}
+                onClose={() => setContactListing(null)}
+            />,
             document.body
         )}
 

@@ -57,7 +57,8 @@ export interface LivestockAd {
     district: string;
     state: string;
     images: string[];
-    phone: string;
+    /** Whether the seller left a number — never the number itself. */
+    hasPhone: boolean;
     createdAt: string;
     /**
      * The category's own answers — breed, age, milkYield, quantity and so on,
@@ -181,7 +182,8 @@ export async function fetchLivestockListings(
                 district: row.district || '',
                 state: row.state || '',
                 images: (row.images ?? []).filter(Boolean),
-                phone: row.contact_phone || '',
+                // Read only so the flag is truthful; the digits stop here.
+                hasPhone: !!row.contact_phone,
                 createdAt: row.created_at,
                 specs: toSpecs(row.specs),
                 distanceKm:

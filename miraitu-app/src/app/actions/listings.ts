@@ -101,7 +101,9 @@ function toListing(row: ListingRow, userId: string | null, near?: { lat: number;
         longitude: row.longitude,
         images: (row.images ?? []).filter(Boolean),
         status: row.status || 'active',
-        contactPhone: row.contact_phone || '',
+        // Only the owner gets the digits back; everyone else gets the flag.
+        contactPhone: userId && userId === row.user_id ? (row.contact_phone || '') : '',
+        hasContactPhone: !!row.contact_phone,
         // Labour & Services extras live in specs (migration 032) rather than
         // columns of their own; they read back empty for every other board.
         workType: typeof specs.work_type === 'string' ? specs.work_type : '',
@@ -170,7 +172,10 @@ function landRentToListing(rec: LeaseListingRecord): Listing {
         longitude: null,
         images: ed.photos ?? [],
         status: 'active',
-        contactPhone: rec.phone ?? '',
+        // Land contact goes through ContactRequestModal, so the number stays
+        // server-side; only whether one exists travels to the browser.
+        contactPhone: '',
+        hasContactPhone: !!rec.hasPhone,
         createdAt: rec.created_at,
         // Not a Labour & Services listing, so these stay empty.
         workType: '',
@@ -244,7 +249,10 @@ function landSaleToListing(rec: SellListingRecord): Listing {
         longitude: null,
         images: (ed.photos ?? []).filter((p): p is string => typeof p === 'string' && p.length > 0),
         status: 'active',
-        contactPhone: rec.phone ?? '',
+        // Land contact goes through ContactRequestModal, so the number stays
+        // server-side; only whether one exists travels to the browser.
+        contactPhone: '',
+        hasContactPhone: !!rec.hasPhone,
         createdAt: rec.created_at,
         // Not a Labour & Services listing, so these stay empty.
         workType: '',

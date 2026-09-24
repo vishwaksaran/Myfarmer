@@ -105,7 +105,16 @@ export interface Listing {
     longitude: number | null;
     images: string[];
     status: string;
+    /**
+     * The seller's own number, and empty unless this listing belongs to the
+     * signed-in user — a buyer never receives it, so it cannot be read out of
+     * the page's data the way it could when every feed shipped it. The edit
+     * form still needs it, which is why it survives for the owner.
+     * Use `hasContactPhone` to ask whether a listing is contactable at all.
+     */
     contactPhone: string;
+    /** Whether a number is on file, without disclosing what it is. */
+    hasContactPhone: boolean;
     createdAt: string;
     /**
      * Labour & Services extras, stored in the `specs` JSONB column rather than

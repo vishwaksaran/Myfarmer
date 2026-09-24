@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import NearbyLocation from '@/components/v2/NearbyLocation';
 import { fetchApprovedSellListings, type SellListingRecord } from '@/app/actions/bookings';
-import { logListingContact, type ContactChannel } from '@/app/actions/listing-contact';
+import ContactRequestModal from '@/components/ContactRequestModal';
 import { useAuth } from '@/context/AuthContext';
 import LoginModal from '@/components/auth/LoginModal';
 import { Z } from '@/lib/z-layers';
@@ -70,7 +70,6 @@ interface ListingView {
     featured: boolean;
     amenities: string[];
     seller: string;
-    phone: string;
     description: string;
     postedDate: string;
     createdAt: number;
@@ -125,7 +124,6 @@ function toView(record: SellListingRecord): ListingView {
             .filter(Boolean)
             .slice(0, 4),
         seller: record.full_name,
-        phone: record.phone,
         description: (ed.description ?? '').trim(),
         postedDate: timeAgo(record.created_at),
         createdAt: new Date(record.created_at).getTime(),
@@ -143,6 +141,7 @@ export default function BuyLandPage() {
     const [error, setError] = useState<string | null>(null);
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [contactListing, setContactListing] = useState<ListingView | null>(null);
+    const [showContactRequest, setShowContactRequest] = useState(false);
     const [detailPhotoIdx, setDetailPhotoIdx] = useState(0);
     const [gallery, setGallery] = useState<{ photos: string[]; index: number } | null>(null);
     const [shareToast, setShareToast] = useState('');
@@ -201,7 +200,7 @@ export default function BuyLandPage() {
 
     // Stats are computed from what the grid actually shows, so the two can never contradict.
     const stats = useMemo(() => {
-        const sellers = new Set(allListings.map(l => `${l.seller}|${l.phone}`)).size;
+        const sellers = new Set(allListings.map(l => l.seller)).size;
         const districts = new Set(allListings.map(l => l.district).filter(Boolean)).size;
         const perAcre = allListings.map(l => l.pricePerAcreValue).filter(v => v > 0);
         const avg = perAcre.length ? perAcre.reduce((s, v) => s + v, 0) / perAcre.length : 0;
@@ -220,6 +219,7 @@ export default function BuyLandPage() {
             return;
         }
         setDetailPhotoIdx(0);
+        setShowContactRequest(false);
         setContactListing(listing);
     };
 
@@ -244,19 +244,6 @@ export default function BuyLandPage() {
         } catch {
             // user cancelled share — do nothing
         }
-    };
-
-    // Fire-and-forget — the tel:/wa.me link opens regardless of whether this lands.
-    const trackContact = (listing: ListingView, channel: ContactChannel) => {
-        void logListingContact({
-            channel,
-            listingId: listing.id,
-            listingType: 'sell',
-            listingTitle: listing.title,
-            sellerName: listing.seller,
-            sellerPhone: listing.phone,
-            location: listing.location,
-        }).catch(() => { /* tracking must never block the user */ });
     };
 
     return (
@@ -507,6 +494,7 @@ export default function BuyLandPage() {
                 ].filter(Boolean) as { label: string; value: string }[];
 
                 return (
+                    <>
                     <div
                         style={{ position: 'fixed', inset: 0, zIndex: Z.MODAL, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
                         onClick={() => setContactListing(null)}
@@ -637,27 +625,33 @@ export default function BuyLandPage() {
                                     <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>share</span>
                                     {tp('Share')}
                                 </button>
-                                <a
-                                    href={`tel:+91${listing.phone}`}
-                                    onClick={() => trackContact(listing, 'call')}
-                                    style={{ flex: 1, padding: '12px', borderRadius: '12px', background: '#16a34a', color: 'white', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none' }}
+                                <button
+                                    onClick={() => setShowContactRequest(true)}
+                                    style={{ flex: 1, padding: '12px', borderRadius: '12px', background: '#16a34a', color: 'white', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                                 >
                                     <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>call</span>
-                                    {tp('Call')}
-                                </a>
-                                <a
-                                    href={`https://wa.me/91${listing.phone}?text=${encodeURIComponent(tp("Hi, I saw your land listing \"{title}\" at {location} on Miraitu. I'm interested in buying it.").replace('{title}', listing.title).replace('{location}', listing.location))}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={() => trackContact(listing, 'whatsapp')}
-                                    style={{ flex: 1, padding: '12px', borderRadius: '12px', background: '#22c55e', color: 'white', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none' }}
-                                >
-                                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chat</span>
-                                    WhatsApp
-                                </a>
+                                    {tp('Contact Seller')}
+                                </button>
                             </div>
                         </div>
                     </div>
+
+                    {/* No number is shown or dialled anymore — this leaves
+                        the buyer's own details and Miraitu connects the
+                        two sides by hand. See ContactRequestModal. */}
+                    {showContactRequest && (
+                        <ContactRequestModal
+                            listingId={listing.id}
+                            listingType="land_sell"
+                            listingTitle={listing.title}
+                            sellerName={listing.seller}
+                            location={listing.location}
+                            heading={tp('Contact Seller')}
+                            zIndex={Z.MODAL + 1}
+                            onClose={() => setShowContactRequest(false)}
+                        />
+                    )}
+                    </>
                 );
             })(), document.body)}
 

@@ -16,7 +16,7 @@ import {
 } from '@/app/actions/bookings';
 import { fetchMarketplaceLandListings } from '@/app/actions/listings';
 import type { Listing } from '@/components/listings/listingTypes';
-import { logListingContact, type ContactChannel } from '@/app/actions/listing-contact';
+import ContactRequestModal from '@/components/ContactRequestModal';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { translatePage } from '@/i18n/pageContent';
 
@@ -134,7 +134,6 @@ interface LandItem {
     description: string;
     photos: string[];
     seller: string;
-    phone: string;
     createdAt: string;
     /** Survey no / taluk / village etc., already filtered to what was filled in. */
     address: { label: string; value: string }[];
@@ -164,7 +163,6 @@ function sellToItem(record: SellListingRecord): LandItem {
         description: (ed.description ?? '').trim(),
         photos: (ed.photos ?? []).filter((p): p is string => typeof p === 'string' && p.length > 0),
         seller: record.full_name,
-        phone: record.phone,
         createdAt: record.created_at,
         address: [
             { label: 'District', value: (ed.district ?? '').trim() },
@@ -189,7 +187,6 @@ function leaseToItem(record: LeaseListingRecord): LandItem {
         description: (ed.description ?? '').trim(),
         photos: (ed.photos ?? []).filter((p): p is string => typeof p === 'string' && p.length > 0),
         seller: record.full_name,
-        phone: record.phone,
         createdAt: record.created_at,
         address: [
             { label: 'Survey No.', value: (ed.survey_no ?? '').trim() },
@@ -234,7 +231,6 @@ function boardToItem(listing: Listing): LandItem {
         // fetchMarketplaceLandListings looks the name up from `profiles`;
         // older rows whose owner has no profile fall back to the generic.
         seller: listing.contactName || 'Miraitu member',
-        phone: listing.contactPhone,
         createdAt: listing.createdAt,
         address: [
             { label: 'District', value: listing.district },
@@ -334,20 +330,6 @@ export default function LandFeed() {
             return;
         }
         setContactItem(item);
-    };
-
-    // Records the tap in Admin → Activity Log. Fire-and-forget — the tel:/wa.me
-    // link opens regardless of whether this lands.
-    const trackContact = (item: LandItem, channel: ContactChannel) => {
-        void logListingContact({
-            channel,
-            listingId: item.id,
-            listingType: item.kind === 'sale' ? 'sell' : item.kind,
-            listingTitle: item.title,
-            sellerName: item.seller,
-            sellerPhone: item.phone,
-            location: item.location,
-        }).catch(() => { /* tracking must never block the user */ });
     };
 
     const FOR_KIND: Record<Kind, string> = { sale: 'For Sale', lease: 'For Lease', rent: 'For Rent' };
@@ -860,64 +842,24 @@ export default function LandFeed() {
             })(), document.body)}
 
             {/* ── Contact owner modal ── */}
-            {canPortal && contactItem && createPortal((() => {
-                const item = contactItem;
-                const digits = (item.phone ?? '').replace(/\D/g, '').slice(-10);
-                // First 5 digits shown, last 5 masked — the full number is still
-                // used in the call and WhatsApp links.
-                const masked = digits.length === 10 ? `${digits.slice(0, 5)} •••••` : 'N/A';
-                const WA_MESSAGE: Record<Kind, string> = {
-                    sale: "Hi, I saw your land listing \"{title}\" at {location} on Miraitu. I'm interested in buying it.",
-                    rent: "Hi, I saw your land listing \"{title}\" at {location} on Miraitu. I'm interested in renting it.",
-                    lease: "Hi, I saw your land listing \"{title}\" at {location} on Miraitu. I'm interested in leasing it.",
-                };
-                return (
-                    <div
-                        style={{ position: 'fixed', inset: 0, zIndex: Z.MODAL + 1, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
-                        onClick={() => setContactItem(null)}
-                    >
-                        <div
-                            style={{ background: 'white', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '384px', boxShadow: '0 25px 50px rgba(0,0,0,0.25)' }}
-                            onClick={e => e.stopPropagation()}
-                        >
-                            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
-                                <div>
-                                    <p style={{ fontSize: '18px', fontWeight: 700, color: '#111', margin: 0 }}>{item.seller}</p>
-                                    <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>{item.title} · {item.location}</p>
-                                </div>
-                                <button onClick={() => setContactItem(null)} style={{ padding: '6px', borderRadius: '50%', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex' }}>
-                                    <span className="material-symbols-outlined" style={{ color: '#6b7280', fontSize: '20px' }}>close</span>
-                                </button>
-                            </div>
-
-                            <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                                <span className="material-symbols-outlined" style={{ color: '#16a34a', fontSize: '20px' }}>phone</span>
-                                <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '0.05em' }}>+91 {masked}</span>
-                            </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                <a
-                                    href={`tel:+91${digits}`}
-                                    onClick={() => trackContact(item, 'call')}
-                                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', background: '#16a34a', color: 'white', fontWeight: 700, borderRadius: '12px', textDecoration: 'none', fontSize: '14px' }}
-                                >
-                                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>call</span>
-                                    {tp('Call Now')}
-                                </a>
-                                <a
-                                    href={`https://wa.me/91${digits}?text=${encodeURIComponent(tp(WA_MESSAGE[item.kind]).replace('{title}', item.title).replace('{location}', item.location))}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={() => trackContact(item, 'whatsapp')}
-                                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', background: '#25D366', color: 'white', fontWeight: 700, borderRadius: '12px', textDecoration: 'none', fontSize: '14px' }}
-                                >
-                                    <svg viewBox="0 0 24 24" style={{ width: '16px', height: '16px', fill: 'white' }}><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" /><path d="M12 0C5.373 0 0 5.373 0 12c0 2.138.563 4.14 1.539 5.875L.054 23.477a.5.5 0 0 0 .613.612l5.744-1.506A11.95 11.95 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.938a9.934 9.934 0 0 1-5.062-1.377l-.362-.215-3.757.985.995-3.65-.236-.376A9.944 9.944 0 0 1 2.062 12C2.062 6.509 6.509 2.062 12 2.062c5.491 0 9.938 4.447 9.938 9.938 0 5.491-4.447 9.938-9.938 9.938z" /></svg>
-                                    WhatsApp
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                );
-            })(), document.body)}
+            {/*
+                No number is shown or dialled here anymore — the buyer leaves
+                their own details and Miraitu connects the two sides by hand.
+                See ContactRequestModal for why.
+            */}
+            {canPortal && contactItem && createPortal(
+                <ContactRequestModal
+                    listingId={contactItem.id}
+                    listingType={`land_${contactItem.kind === 'sale' ? 'sell' : contactItem.kind}`}
+                    listingTitle={contactItem.title}
+                    sellerName={contactItem.seller}
+                    location={contactItem.location}
+                    heading={tp('Contact Owner')}
+                    zIndex={Z.MODAL + 1}
+                    onClose={() => setContactItem(null)}
+                />,
+                document.body
+            )}
 
             {/* ── Share toast ── */}
             {canPortal && shareToast && createPortal(
