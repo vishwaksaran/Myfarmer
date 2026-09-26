@@ -61,6 +61,39 @@ export async function middleware(request: NextRequest) {
         }
     }
 
+    // ── Seller workspace protection ──────────────────────────
+    // The seller dashboards are a work tool behind admin-issued credentials,
+    // not a public page, so a request with no seller cookie is bounced to the
+    // seller sign-in before the page renders.
+    //
+    // Only the token's shape and expiry are checked here, and deliberately so:
+    // this runs on the Edge runtime, where Node's crypto is unavailable — the
+    // vendor branch above avoids importing it for the same reason. The real
+    // check is server side, where /api/seller/auth/session and every action in
+    // seller-dashboard.ts verify the signature, re-read the credential, and
+    // confirm the application is still approved. A forged cookie gets past this
+    // line and no further.
+    if (pathname.startsWith('/home/become-seller/dashboard')) {
+        const token = request.cookies.get('seller_session')?.value;
+        const bounce = () => {
+            const loginUrl = new URL('/seller-login', request.url);
+            loginUrl.searchParams.set('redirect', pathname);
+            return NextResponse.redirect(loginUrl);
+        };
+
+        if (!token) return bounce();
+        const parts = token.split('.');
+        if (parts.length !== 3) return bounce();
+
+        try {
+            const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
+            if (!payload.sellerId) return bounce();
+            if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) return bounce();
+        } catch {
+            return bounce();
+        }
+    }
+
     // ── Existing proxy logic (admin protection, redirects, etc.) ─
     return proxy(request);
 }

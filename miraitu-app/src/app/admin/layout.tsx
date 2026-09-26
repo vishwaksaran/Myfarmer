@@ -66,6 +66,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         // Buyers never see a seller's number now — they leave a callback
         // request instead, and this is where those land.
         { href: '/admin/contact-requests', icon: 'phone_callback', label: 'Contact Requests' },
+        // Farmers, dealers and service providers waiting to be verified.
+        // Approving one here is what issues their login and makes their
+        // listings public.
+        { href: '/admin/sellers', icon: 'how_to_reg', label: 'Seller Applications' },
         { href: '/admin/users', icon: 'group', label: 'Users' },
         { href: '/admin/crm/members', icon: 'badge', label: 'CRM Members' },
         { href: '/admin/crm/shops', icon: 'storefront', label: 'CRM Vendors' },
