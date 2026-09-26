@@ -9,25 +9,6 @@ import { useAuth } from '@/context/AuthContext';
 import { useLoginPrompt } from '@/context/LoginPromptContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 
-/* ── Fallback data (shown when API key is missing or API fails) ─── */
-const fallbackHighlights = [
-    { crop: 'Wheat', price: '₹2,450/qtl', change: '+2.3%', trend: 'up' },
-    { crop: 'Rice (Basmati)', price: '₹3,850/qtl', change: '+1.8%', trend: 'up' },
-    { crop: 'Soybean', price: '₹4,200/qtl', change: '-0.5%', trend: 'down' },
-    { crop: 'Cotton', price: '₹6,100/qtl', change: '+3.1%', trend: 'up' },
-    { crop: 'Maize', price: '₹2,150/qtl', change: '+0.8%', trend: 'up' },
-    { crop: 'Groundnut', price: '₹5,800/qtl', change: '-1.2%', trend: 'down' },
-];
-
-const fallbackPopular = [
-    { name: 'Wheat', icon: 'grain', listings: 245, avgPrice: '₹2,450/qtl' },
-    { name: 'Rice', icon: 'rice_bowl', listings: 312, avgPrice: '₹3,200/qtl' },
-    { name: 'Tomato', icon: 'eco', listings: 189, avgPrice: '₹45/kg' },
-    { name: 'Onion', icon: 'eco', listings: 156, avgPrice: '₹32/kg' },
-    { name: 'Potato', icon: 'eco', listings: 203, avgPrice: '₹28/kg' },
-    { name: 'Soybean', icon: 'spa', listings: 98, avgPrice: '₹4,200/qtl' },
-];
-
 
 function openCropAssistant() {
     window.dispatchEvent(new Event('open-crop-assistant'));
@@ -77,9 +58,11 @@ export default function CropsPage() {
         avgPrice: formatPrice(Math.round(records.reduce((s, r) => s + r.modalPrice, 0) / records.length)),
     }));
 
-    const useFallback = error || liveHighlights.length === 0;
-    const highlights = useFallback && !loading ? fallbackHighlights : liveHighlights;
-    const popular = useFallback && !loading ? fallbackPopular : livePopular;
+    // No sample rows anymore: when the price service is down or quiet the
+    // grids say so instead of showing crops nobody quoted.
+    const noData = (error || liveHighlights.length === 0) && !loading;
+    const highlights = liveHighlights;
+    const popular = livePopular;
 
     return (
         <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-[#121811] dark:text-[#f9fbf9] transition-colors duration-300">
@@ -152,14 +135,17 @@ export default function CropsPage() {
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
                                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('cropsPage.marketHighlights')}</h2>
-                                {!useFallback && !loading && (
+                                {!loading && !noData && (
                                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-bold">
                                         <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                                         {t('cropsPage.live')}
                                     </span>
                                 )}
-                                {useFallback && !loading && (
-                                    <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">{t('cropsPage.sampleData')}</span>
+                                {noData && (
+                                    <span className="inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 font-medium">
+                                        <span className="material-symbols-outlined text-sm">cloud_off</span>
+                                        {error ? 'Prices unavailable' : 'No rates today'}
+                                    </span>
                                 )}
                             </div>
                             <select
@@ -193,6 +179,26 @@ export default function CropsPage() {
                                         <div className="h-3 w-12 bg-gray-200 dark:bg-gray-700 rounded" />
                                     </div>
                                 ))}
+                            </div>
+                        ) : noData ? (
+                            <div className="p-8 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-center">
+                                <span className="material-symbols-outlined text-3xl text-gray-300 mb-2 block">
+                                    {error ? 'cloud_off' : 'storefront'}
+                                </span>
+                                <p className="font-bold text-gray-900 dark:text-white">
+                                    {error ? 'Market highlights are unavailable' : 'No mandi rates reported yet today'}
+                                </p>
+                                <p className="text-sm text-gray-500 mt-1">
+                                    {error
+                                        ? 'The data.gov.in price service is not responding right now. Try again shortly.'
+                                        : 'Markets may be shut or yet to report.'}
+                                </p>
+                                <Link
+                                    href="/home/crops/mandi/prices"
+                                    className="mt-4 inline-block px-4 py-2 rounded-xl bg-primary text-white text-sm font-bold hover:brightness-110 transition-all"
+                                >
+                                    Open Mandi Prices
+                                </Link>
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -235,6 +241,16 @@ export default function CropsPage() {
                                     </div>
                                 ))}
                             </div>
+                        ) : noData ? (
+                            <div className="p-8 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-center">
+                                <span className="material-symbols-outlined text-3xl text-gray-300 mb-2 block">storefront</span>
+                                <p className="font-bold text-gray-900 dark:text-white">
+                                    {error ? 'Popular crops need live prices' : 'Nothing traded yet today'}
+                                </p>
+                                <p className="text-sm text-gray-500 mt-1">
+                                    This list is built from today&apos;s mandi reports, so it fills in once rates come through.
+                                </p>
+                            </div>
                         ) : (
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                                 {popular.map((crop) => (
@@ -247,7 +263,7 @@ export default function CropsPage() {
                                             <span className="material-symbols-outlined text-primary text-2xl">{crop.icon}</span>
                                         </div>
                                         <h3 className="font-bold text-gray-900 dark:text-white">{crop.name}</h3>
-                                        <p className="text-sm text-gray-500">{crop.listings} {!useFallback ? t('cropsPage.markets') : t('cropsPage.listings')}</p>
+                                        <p className="text-sm text-gray-500">{crop.listings} {t('cropsPage.markets')}</p>
                                         <p className="text-sm font-semibold text-primary mt-1">{crop.avgPrice}</p>
                                     </Link>
                                 ))}

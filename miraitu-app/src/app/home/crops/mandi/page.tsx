@@ -41,7 +41,9 @@ export default function MandiPage() {
         }, 0) / data.length).toFixed(1)
         : 0;
 
-    const useFallback = (error || data.length === 0) && !loading;
+    // Renamed from useFallback: there is no fallback anymore, only the
+    // question of whether there is anything real to show.
+    const noData = (error || data.length === 0) && !loading;
 
     return (
         <div className="px-6 py-8">
@@ -88,7 +90,7 @@ export default function MandiPage() {
                 <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-3xl p-8 text-white shadow-xl shadow-green-500/20">
                     <div className="flex items-center gap-3 mb-6">
                         <h2 className="text-2xl font-bold">Today&apos;s Market Summary</h2>
-                        {!useFallback && !loading && (
+                        {!loading && !error && data.length > 0 && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/20 text-white text-xs font-bold">
                                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                                 LIVE
@@ -104,23 +106,42 @@ export default function MandiPage() {
                                 </div>
                             ))}
                         </div>
+                    ) : noData ? (
+                        /* These four tiles used to read 2,456 markets / 156
+                           commodities / 45.2K records / +1.2% whenever the fetch
+                           failed. Invented totals are worse than no totals. */
+                        <div className="flex items-start gap-3">
+                            <span className="material-symbols-outlined text-2xl text-white/80">
+                                {error ? 'cloud_off' : 'storefront'}
+                            </span>
+                            <div>
+                                <p className="font-bold text-lg">
+                                    {error ? "Today's summary is unavailable" : 'No mandi data reported yet today'}
+                                </p>
+                                <p className="text-white/80 text-sm mt-0.5">
+                                    {error
+                                        ? 'The data.gov.in price service is not responding, so there are no figures to summarise.'
+                                        : 'Markets may be shut or yet to report. Check back later.'}
+                                </p>
+                            </div>
+                        </div>
                     ) : (
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                             <div>
                                 <p className="text-white/70 text-sm">Markets Reporting</p>
-                                <p className="text-3xl font-bold">{useFallback ? '2,456' : uniqueMarkets.toLocaleString('en-IN')}</p>
+                                <p className="text-3xl font-bold">{uniqueMarkets.toLocaleString('en-IN')}</p>
                             </div>
                             <div>
                                 <p className="text-white/70 text-sm">Commodities Tracked</p>
-                                <p className="text-3xl font-bold">{useFallback ? '156' : uniqueCommodities}</p>
+                                <p className="text-3xl font-bold">{uniqueCommodities}</p>
                             </div>
                             <div>
                                 <p className="text-white/70 text-sm">Total Records</p>
-                                <p className="text-3xl font-bold">{useFallback ? '45.2K' : total > 1000 ? `${(total / 1000).toFixed(1)}K` : total}</p>
+                                <p className="text-3xl font-bold">{total > 1000 ? `${(total / 1000).toFixed(1)}K` : total}</p>
                             </div>
                             <div>
                                 <p className="text-white/70 text-sm">Avg. Price Spread</p>
-                                <p className="text-3xl font-bold">{useFallback ? '+1.2%' : `${avgChange >= 0 ? '+' : ''}${avgChange}%`}</p>
+                                <p className="text-3xl font-bold">{`${avgChange >= 0 ? '+' : ''}${avgChange}%`}</p>
                             </div>
                         </div>
                     )}

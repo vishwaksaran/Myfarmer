@@ -17,17 +17,37 @@ interface CropPrice {
     markets: { name: string; price: number; trend: 'up' | 'down' | 'stable' }[];
 }
 
-/* ── Fallback data ──────────────────────────────────────────── */
-const fallbackPrices: CropPrice[] = [
-    { crop: 'Wheat', icon: '🌾', msp: 2275, mandi: 2350, unit: 'quintal', change: 1.2, markets: [{ name: 'Indore Mandi', price: 2380, trend: 'up' }, { name: 'Delhi APMC', price: 2350, trend: 'stable' }, { name: 'Ludhiana', price: 2310, trend: 'down' }, { name: 'Bhopal', price: 2340, trend: 'up' }] },
-    { crop: 'Rice (Paddy)', icon: '🍚', msp: 2300, mandi: 2180, unit: 'quintal', change: -0.5, markets: [{ name: 'Karnal', price: 2200, trend: 'up' }, { name: 'Cuttack', price: 2150, trend: 'stable' }, { name: 'Guntur', price: 2180, trend: 'down' }, { name: 'Patna', price: 2160, trend: 'stable' }] },
-    { crop: 'Soybean', icon: '🫘', msp: 4600, mandi: 4850, unit: 'quintal', change: 2.3, markets: [{ name: 'Indore', price: 4900, trend: 'up' }, { name: 'Nagpur', price: 4800, trend: 'up' }, { name: 'Kota', price: 4780, trend: 'stable' }, { name: 'Ujjain', price: 4820, trend: 'up' }] },
-    { crop: 'Cotton', icon: '🏵️', msp: 7121, mandi: 7350, unit: 'quintal', change: 0.8, markets: [{ name: 'Rajkot', price: 7400, trend: 'up' }, { name: 'Nagpur', price: 7300, trend: 'stable' }, { name: 'Guntur', price: 7280, trend: 'down' }, { name: 'Surendranagar', price: 7350, trend: 'up' }] },
-    { crop: 'Mustard', icon: '🌼', msp: 5650, mandi: 5800, unit: 'quintal', change: 1.5, markets: [{ name: 'Alwar', price: 5850, trend: 'up' }, { name: 'Jaipur', price: 5780, trend: 'stable' }, { name: 'Kota', price: 5750, trend: 'down' }, { name: 'Bharatpur', price: 5820, trend: 'up' }] },
-    { crop: 'Onion', icon: '🧅', msp: 0, mandi: 1800, unit: 'quintal', change: -3.2, markets: [{ name: 'Nashik (Lasalgaon)', price: 1850, trend: 'down' }, { name: 'Delhi Azadpur', price: 1900, trend: 'down' }, { name: 'Bengaluru', price: 1750, trend: 'stable' }, { name: 'Indore', price: 1680, trend: 'down' }] },
-    { crop: 'Tomato', icon: '🍅', msp: 0, mandi: 2200, unit: 'quintal', change: 5.1, markets: [{ name: 'Kolar', price: 2300, trend: 'up' }, { name: 'Nashik', price: 2150, trend: 'up' }, { name: 'Madanapalle', price: 2250, trend: 'up' }, { name: 'Delhi Azadpur', price: 2100, trend: 'stable' }] },
-    { crop: 'Chana (Gram)', icon: '🫛', msp: 5440, mandi: 5600, unit: 'quintal', change: 0.3, markets: [{ name: 'Indore', price: 5650, trend: 'stable' }, { name: 'Bikaner', price: 5580, trend: 'up' }, { name: 'Jalgaon', price: 5550, trend: 'stable' }, { name: 'Gulbarga', price: 5520, trend: 'down' }] },
-];
+/**
+ * What to tell the farmer when the price service does not answer.
+ *
+ * This page used to fall back to eight hardcoded crops whenever the fetch
+ * failed, under a LIVE badge, so an outage looked like a quiet market rather
+ * than an outage. Same change as the Mandi Prices board.
+ */
+function describeError(code: string): { title: string; detail: string } {
+    if (code === 'NO_API_KEY') {
+        return {
+            title: 'Live rates are not set up yet',
+            detail: 'This board needs a data.gov.in API key before it can show mandi rates. Nothing is wrong on your side.',
+        };
+    }
+    if (code === 'NETWORK_ERROR') {
+        return {
+            title: 'Could not reach the price service',
+            detail: 'Check your internet connection and try again.',
+        };
+    }
+    if (code.startsWith('UPSTREAM_')) {
+        return {
+            title: 'data.gov.in is not responding',
+            detail: 'The government price service is down or busy right now. This usually clears on its own, so try again in a few minutes.',
+        };
+    }
+    return {
+        title: 'Could not load market rates',
+        detail: 'Something went wrong while fetching the latest rates. Try again in a moment.',
+    };
+}
 
 type SortBy = 'name' | 'price' | 'change';
 
@@ -39,7 +59,7 @@ export default function MarketRatesPage() {
     const [sortBy, setSortBy] = useState<SortBy>('name');
 
     // Fetch broad set of records — 200 across all India
-    const { data: rawData, loading, error } = useMandiPrices({ limit: 200 });
+    const { data: rawData, loading, error, refetch } = useMandiPrices({ limit: 200 });
 
     // Transform live data → CropPrice[] grouped by commodity
     const liveCrops = useMemo<CropPrice[]>(() => {
@@ -75,10 +95,7 @@ export default function MarketRatesPage() {
         });
     }, [rawData]);
 
-    const useFallback = (error || liveCrops.length === 0) && !loading;
-    const cropPrices = useFallback ? fallbackPrices : liveCrops;
-
-    let filtered = cropPrices.filter(c =>
+    let filtered = liveCrops.filter(c =>
         c.crop.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -111,16 +128,22 @@ export default function MarketRatesPage() {
                                 <span className="material-symbols-outlined text-2xl">trending_up</span>
                             </div>
                             <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">{tp('Market Rates')}</h1>
-                            {!useFallback && !loading && (
+                            {!loading && !error && liveCrops.length > 0 && (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-bold">
                                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                                     {tp('LIVE')}
                                 </span>
                             )}
+                            {!loading && error && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs font-bold">
+                                    <span className="material-symbols-outlined text-sm">cloud_off</span>
+                                    {tp('UNAVAILABLE')}
+                                </span>
+                            )}
                         </div>
                         <p className="text-sm md:text-base text-gray-500">
-                            {useFallback && !loading
-                                ? tp('Sample mandi prices. Add your free data.gov.in API key for real-time data.')
+                            {!loading && error
+                                ? tp(describeError(error).title) + '. ' + tp('No rates are shown rather than stale or sample ones.')
                                 : tp('Live mandi prices, MSP comparisons, and market trends for major crops.')}
                         </p>
                     </div>
@@ -170,6 +193,52 @@ export default function MarketRatesPage() {
                                         <div className="h-8 w-28 bg-gray-200 dark:bg-gray-700 rounded" />
                                     </div>
                                 ))}
+                            </div>
+                          ) : error ? (
+                            /* The fetch failed. Say so, rather than filling the grid
+                               with rates no mandi reported. */
+                            <div className="skeuo-card rounded-2xl p-10 text-center">
+                                <span className="material-symbols-outlined text-5xl text-amber-400 mb-3 block">cloud_off</span>
+                                <p className="font-bold text-gray-900 dark:text-white text-lg mb-1.5">
+                                    {tp(describeError(error).title)}
+                                </p>
+                                <p className="text-gray-500 text-sm max-w-md mx-auto leading-relaxed">
+                                    {tp(describeError(error).detail)}
+                                </p>
+                                <button
+                                    onClick={refetch}
+                                    className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:brightness-110 transition-all"
+                                >
+                                    <span className="material-symbols-outlined text-lg">refresh</span>
+                                    {tp('Try again')}
+                                </button>
+                            </div>
+                          ) : liveCrops.length === 0 ? (
+                            /* The service answered with nothing — a holiday or a quiet
+                               trading day. Normal, and worth saying plainly. */
+                            <div className="skeuo-card rounded-2xl p-10 text-center">
+                                <span className="material-symbols-outlined text-5xl text-gray-300 mb-3 block">storefront</span>
+                                <p className="font-bold text-gray-900 dark:text-white text-lg mb-1.5">
+                                    {tp('No mandi rates reported today')}
+                                </p>
+                                <p className="text-gray-500 text-sm max-w-md mx-auto leading-relaxed">
+                                    {tp('Markets stay shut on holidays and some days go unreported. Check back later, or open the full Mandi Prices board to search a specific crop or state.')}
+                                </p>
+                                <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                                    <button
+                                        onClick={refetch}
+                                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:brightness-110 transition-all"
+                                    >
+                                        <span className="material-symbols-outlined text-lg">refresh</span>
+                                        {tp('Refresh')}
+                                    </button>
+                                    <Link
+                                        href="/home/crops/mandi/prices"
+                                        className="px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
+                                    >
+                                        {tp('Open Mandi Prices')}
+                                    </Link>
+                                </div>
                             </div>
                           ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

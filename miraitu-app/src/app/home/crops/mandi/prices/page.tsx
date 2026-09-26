@@ -1,33 +1,137 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useMandiPrices } from '@/lib/useMandiPrices';
 import { formatPrice, spreadPercent } from '@/lib/mandi-api';
 
-/* ── Fallback (shown while loading or when API is unavailable) ─── */
-const fallbackPrices = [
-    { id: 1, crop: 'Wheat', variety: 'Sharbati', mandi: 'Indore Mandi', price: '₹2,450', unit: 'qtl', change: '+2.3%', trend: 'up', arrival: '1,250 qtl' },
-    { id: 2, crop: 'Rice', variety: 'Basmati 1121', mandi: 'Karnal Mandi', price: '₹3,850', unit: 'qtl', change: '+1.8%', trend: 'up', arrival: '890 qtl' },
-    { id: 3, crop: 'Soybean', variety: 'Yellow', mandi: 'Ujjain Mandi', price: '₹4,200', unit: 'qtl', change: '-0.5%', trend: 'down', arrival: '560 qtl' },
-    { id: 4, crop: 'Cotton', variety: 'DCH-32', mandi: 'Rajkot Mandi', price: '₹6,100', unit: 'qtl', change: '+3.1%', trend: 'up', arrival: '780 qtl' },
-    { id: 5, crop: 'Maize', variety: 'Hybrid', mandi: 'Davangere Mandi', price: '₹2,150', unit: 'qtl', change: '+0.8%', trend: 'up', arrival: '450 qtl' },
-    { id: 6, crop: 'Groundnut', variety: 'Bold', mandi: 'Junagadh Mandi', price: '₹5,800', unit: 'qtl', change: '-1.2%', trend: 'down', arrival: '320 qtl' },
-    { id: 7, crop: 'Onion', variety: 'Red', mandi: 'Lasalgaon Mandi', price: '₹3,200', unit: 'qtl', change: '+5.2%', trend: 'up', arrival: '2,100 qtl' },
-    { id: 8, crop: 'Potato', variety: 'Jyoti', mandi: 'Agra Mandi', price: '₹1,800', unit: 'qtl', change: '-2.1%', trend: 'down', arrival: '1,800 qtl' },
-    { id: 9, crop: 'Tomato', variety: 'Hybrid', mandi: 'Kolar Mandi', price: '₹2,500', unit: 'qtl', change: '+8.5%', trend: 'up', arrival: '950 qtl' },
-    { id: 10, crop: 'Chilli', variety: 'Guntur', mandi: 'Guntur Mandi', price: '₹12,500', unit: 'qtl', change: '+1.5%', trend: 'up', arrival: '420 qtl' },
-];
+/**
+ * What to tell the farmer when the price service does not answer.
+ *
+ * This page used to drop ten hardcoded rows — Indore wheat, Lasalgaon onion —
+ * into the table whenever the fetch failed or came back empty. Filtered to
+ * Gram in Andhra Pradesh you were shown Sharbati wheat from Madhya Pradesh,
+ * with a LIVE badge over it. Nothing said the numbers were invented, and
+ * someone deciding when to sell could act on them. A failure now says so.
+ */
+function describeError(code: string): { title: string; detail: string } {
+    if (code === 'NO_API_KEY') {
+        return {
+            title: 'Live prices are not set up yet',
+            detail: 'This board needs a data.gov.in API key before it can show mandi rates. Nothing is wrong on your side.',
+        };
+    }
+    if (code === 'NETWORK_ERROR') {
+        return {
+            title: 'Could not reach the price service',
+            detail: 'Check your internet connection and try again.',
+        };
+    }
+    if (code.startsWith('UPSTREAM_')) {
+        return {
+            title: 'data.gov.in is not responding',
+            detail: 'The government price service is down or busy right now. This usually clears on its own, so try again in a few minutes.',
+        };
+    }
+    return {
+        title: 'Could not load mandi prices',
+        detail: 'Something went wrong while fetching the latest rates. Try again in a moment.',
+    };
+}
+
+/** Rows per page. The board used to fetch 50 and stop, hiding the rest. */
+const PAGE_SIZE = 100;
+/** How long typing must pause before the search is sent. */
+const SEARCH_DEBOUNCE_MS = 400;
+/** A single letter matches most of the table, so it is not worth a query. */
+const MIN_SEARCH_CHARS = 2;
+
+/**
+ * Crop names per state, remembered for the life of the page.
+ *
+ * Flipping between two states used to refetch both lists each time, and
+ * React StrictMode doubled that again in development.
+ */
+const facetCache = new Map<string, string[]>();
+const facetInflight = new Map<string, Promise<string[]>>();
+
+function loadCropOptions(state: string): Promise<string[]> {
+    const key = state || 'all';
+    const cached = facetCache.get(key);
+    if (cached) return Promise.resolve(cached);
+
+    const pending = facetInflight.get(key);
+    if (pending) return pending;
+
+    const params = new URLSearchParams();
+    if (state && state !== 'All States') params.set('state', state);
+
+    const request = fetch(`/api/mandi-prices/facets?${params.toString()}`)
+        .then(r => r.json())
+        .then(j => {
+            const list: string[] = Array.isArray(j.commodities) ? j.commodities : [];
+            facetCache.set(key, list);
+            return list;
+        });
+
+    facetInflight.set(key, request);
+    request.then(
+        () => facetInflight.delete(key),
+        () => facetInflight.delete(key),
+    );
+    return request;
+}
 
 export default function MandiPricesPage() {
     const [selectedState, setSelectedState] = useState('All States');
     const [selectedCrop, setSelectedCrop] = useState('All Crops');
     const [searchQuery, setSearchQuery] = useState('');
+    // Searching now runs in the database, so it is debounced rather than
+    // filtering whatever happened to be on screen.
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [page, setPage] = useState(1);
 
-    const { data: liveData, loading, error, updated, refetch } = useMandiPrices({
+    /**
+     * Crop names read back from the data.
+     *
+     * The list was hand-written, and two of its entries ("Chilli(Green)" and
+     * "Gram") matched no row anywhere — the feed calls them "Green Chilli",
+     * "Dry Chillies", "Bengal Gram(Gram)(Whole)". Picking one guaranteed an
+     * empty result. These come from /api/mandi-prices/facets so the dropdown
+     * can only offer crops that exist, and it narrows to the chosen state.
+     */
+    const [cropOptions, setCropOptions] = useState<string[]>([]);
+
+    useEffect(() => {
+        let cancelled = false;
+        loadCropOptions(selectedState)
+            .then(list => { if (!cancelled) setCropOptions(list); })
+            .catch(() => { /* the filter just stays on "All Crops" */ });
+        return () => { cancelled = true; };
+    }, [selectedState]);
+
+    /**
+     * One request per pause in typing, not one per keystroke.
+     *
+     * The search runs in the database now, so the timer matters: without it
+     * "groundnut" would be nine queries. A single letter is also ignored —
+     * it matches most of the table and tells the farmer nothing.
+     */
+    useEffect(() => {
+        const t = setTimeout(() => {
+            const term = searchQuery.trim();
+            setDebouncedSearch(term.length >= MIN_SEARCH_CHARS ? term : '');
+            setPage(1);
+        }, SEARCH_DEBOUNCE_MS);
+        return () => clearTimeout(t);
+    }, [searchQuery]);
+
+    const { data: liveData, total, loading, error, updated, refetch } = useMandiPrices({
         state: selectedState,
         commodity: selectedCrop,
-        limit: 50,
+        q: debouncedSearch,
+        limit: PAGE_SIZE,
+        offset: (page - 1) * PAGE_SIZE,
     });
 
     // Map live API data → same shape as UI
@@ -48,20 +152,41 @@ export default function MandiPricesPage() {
         };
     });
 
-    const useFallback = (error || livePrices.length === 0) && !loading;
-    const allPrices = useFallback ? fallbackPrices : livePrices;
+    const hasCropFilter = selectedCrop !== 'All Crops';
+    const hasStateFilter = selectedState !== 'All States';
+    const hasFilters = hasCropFilter || hasStateFilter;
 
-    // Client-side search filter
-    const filteredPrices = allPrices.filter(item => {
-        if (searchQuery && !item.crop.toLowerCase().includes(searchQuery.toLowerCase()) &&
-            !item.mandi.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-        return true;
-    });
+    /** Names the exact combination that came back empty, so the row is specific. */
+    const filterSummary = hasCropFilter && hasStateFilter
+        ? `${selectedCrop} in ${selectedState}`
+        : hasCropFilter
+            ? selectedCrop
+            : hasStateFilter
+                ? `any crop in ${selectedState}`
+                : 'any mandi';
 
-    // Format "Last updated" time
+    const clearFilters = () => {
+        setSelectedState('All States');
+        setSelectedCrop('All Crops');
+        setSearchQuery('');
+        setDebouncedSearch('');
+        setPage(1);
+    };
+
+    // Server-side paging over the full result set.
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    const firstOnPage = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+    const lastOnPage = Math.min(page * PAGE_SIZE, total);
+    const goToPage = (n: number) => {
+        setPage(Math.min(Math.max(1, n), totalPages));
+        if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // Only ever a real timestamp — the old hardcoded "Today, 2:30 PM IST"
+    // claimed a fetch had just succeeded even when none had.
     const lastUpdated = updated
         ? new Date(updated).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
-        : 'Today, 2:30 PM IST';
+        : null;
 
     return (
         <div className="px-4 sm:px-6">
@@ -79,16 +204,24 @@ export default function MandiPricesPage() {
                 <div className="mb-6 sm:mb-8">
                     <div className="flex items-center gap-3 mb-2">
                         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Live Mandi Prices</h1>
-                        {!useFallback && !loading && (
+                        {/* LIVE only when rates are actually on screen. It used to sit
+                            above the hardcoded sample rows too. */}
+                        {!loading && !error && livePrices.length > 0 && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-bold">
                                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                                 LIVE
                             </span>
                         )}
+                        {!loading && error && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs font-bold">
+                                <span className="material-symbols-outlined text-sm">cloud_off</span>
+                                UNAVAILABLE
+                            </span>
+                        )}
                     </div>
                     <p className="text-gray-500">
-                        {useFallback
-                            ? 'Sample commodity prices. Add your free data.gov.in API key for real-time data.'
+                        {!loading && error
+                            ? describeError(error).title + '. No rates are shown rather than stale or sample ones.'
                             : 'Real-time commodity prices from agricultural markets across India via data.gov.in.'}
                     </p>
                 </div>
@@ -108,7 +241,10 @@ export default function MandiPricesPage() {
                     <div className="flex gap-3 w-full sm:w-auto">
                         <select
                             value={selectedState}
-                            onChange={(e) => setSelectedState(e.target.value)}
+                            /* The crop list is per state, so a crop picked for the
+                               old state may not be traded in the new one. Reset it
+                               here rather than in an effect watching the options. */
+                            onChange={(e) => { setSelectedState(e.target.value); setSelectedCrop('All Crops'); setPage(1); }}
                             className="flex-1 sm:flex-none px-3 sm:px-4 py-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base min-w-0"
                         >
                             <option>All States</option>
@@ -149,24 +285,19 @@ export default function MandiPricesPage() {
                             <option>Lakshadweep</option>
                             <option>Puducherry</option>
                         </select>
+                        {/* Options come from the data, so every one of them can
+                            return rows. The old hand-written list offered
+                            "Chilli(Green)" and "Gram", which match nothing. */}
                         <select
                             value={selectedCrop}
-                            onChange={(e) => setSelectedCrop(e.target.value)}
-                            className="flex-1 sm:flex-none px-3 sm:px-4 py-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base min-w-0"
+                            onChange={(e) => { setSelectedCrop(e.target.value); setPage(1); }}
+                            disabled={cropOptions.length === 0}
+                            className="flex-1 sm:flex-none px-3 sm:px-4 py-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm sm:text-base min-w-0 disabled:opacity-60"
                         >
                             <option>All Crops</option>
-                            <option>Wheat</option>
-                            <option>Rice</option>
-                            <option>Soyabean</option>
-                            <option>Cotton</option>
-                            <option>Maize</option>
-                            <option>Onion</option>
-                            <option>Tomato</option>
-                            <option>Potato</option>
-                            <option>Groundnut</option>
-                            <option>Mustard</option>
-                            <option>Gram</option>
-                            <option>Chilli(Green)</option>
+                            {cropOptions.map(c => (
+                                <option key={c} value={c}>{c}</option>
+                            ))}
                         </select>
                     </div>
                 </div>
@@ -174,7 +305,7 @@ export default function MandiPricesPage() {
                 {/* Last Updated */}
                 <div className="flex items-center gap-2 mb-4 text-sm text-gray-500">
                     <span className="material-symbols-outlined text-lg">schedule</span>
-                    Last updated: {lastUpdated}
+                    {lastUpdated ? `Last updated: ${lastUpdated}` : 'Not updated yet'}
                     <button
                         onClick={refetch}
                         className="ml-2 text-primary font-semibold hover:underline flex items-center gap-1"
@@ -182,6 +313,14 @@ export default function MandiPricesPage() {
                         <span className="material-symbols-outlined text-lg">refresh</span>
                         Refresh
                     </button>
+                    {/* The board used to fetch 50 rows and give no hint that
+                        hundreds more existed. */}
+                    {!loading && !error && total > 0 && (
+                        <span className="ml-auto font-medium">
+                            Showing {firstOnPage.toLocaleString('en-IN')}&ndash;{lastOnPage.toLocaleString('en-IN')} of{' '}
+                            {total.toLocaleString('en-IN')}
+                        </span>
+                    )}
                 </div>
 
                 {/* Price Table */}
@@ -210,15 +349,112 @@ export default function MandiPricesPage() {
                                             <td className="px-3 sm:px-6 py-3 sm:py-4 text-right hidden sm:table-cell"><div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded ml-auto" /></td>
                                         </tr>
                                     ))
-                                ) : filteredPrices.length === 0 ? (
+                                ) : error ? (
+                                    /* The fetch failed. Say so and offer the retry,
+                                       instead of quietly filling the table with
+                                       numbers nobody reported. */
                                     <tr>
-                                        <td colSpan={6} className="px-4 sm:px-6 py-8 sm:py-12 text-center text-gray-500 text-sm sm:text-base">
-                                            <span className="material-symbols-outlined text-3xl sm:text-4xl text-gray-300 mb-2 block">search_off</span>
-                                            No prices found. Try different filters.
+                                        <td colSpan={6} className="px-4 sm:px-6 py-10 sm:py-14 text-center">
+                                            <span className="material-symbols-outlined text-4xl sm:text-5xl text-amber-400 mb-3 block">cloud_off</span>
+                                            <p className="font-bold text-gray-900 dark:text-white text-base sm:text-lg mb-1.5">
+                                                {describeError(error).title}
+                                            </p>
+                                            <p className="text-gray-500 text-sm max-w-md mx-auto leading-relaxed">
+                                                {describeError(error).detail}
+                                            </p>
+                                            <button
+                                                onClick={refetch}
+                                                className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:brightness-110 transition-all"
+                                            >
+                                                <span className="material-symbols-outlined text-lg">refresh</span>
+                                                Try again
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ) : livePrices.length === 0 && debouncedSearch ? (
+                                    /* The search ran against the whole set in the
+                                       database and still found nothing. */
+                                    <tr>
+                                        <td colSpan={6} className="px-4 sm:px-6 py-10 sm:py-14 text-center">
+                                            <span className="material-symbols-outlined text-4xl sm:text-5xl text-gray-300 mb-3 block">search_off</span>
+                                            <p className="font-bold text-gray-900 dark:text-white text-base sm:text-lg mb-1.5">
+                                                Nothing matches &ldquo;{debouncedSearch}&rdquo;
+                                            </p>
+                                            <p className="text-gray-500 text-sm max-w-md mx-auto leading-relaxed">
+                                                No crop, mandi or district{hasFilters ? ` under the current filters` : ''} has
+                                                that in its name. Check the spelling, or search for a crop like
+                                                &ldquo;chilli&rdquo; or a mandi like &ldquo;Guntur&rdquo;.
+                                            </p>
+                                            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                                                <button
+                                                    onClick={() => { setSearchQuery(''); setDebouncedSearch(''); setPage(1); }}
+                                                    className="px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:brightness-110 transition-all"
+                                                >
+                                                    Clear search
+                                                </button>
+                                                {hasFilters && (
+                                                    <button
+                                                        onClick={clearFilters}
+                                                        className="px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
+                                                    >
+                                                        Clear filters too
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : livePrices.length === 0 ? (
+                                    /* The service answered, but no mandi reported this
+                                       crop today. That is normal, so point somewhere
+                                       useful rather than just saying "no results". */
+                                    <tr>
+                                        <td colSpan={6} className="px-4 sm:px-6 py-10 sm:py-14 text-center">
+                                            <span className="material-symbols-outlined text-4xl sm:text-5xl text-gray-300 mb-3 block">storefront</span>
+                                            <p className="font-bold text-gray-900 dark:text-white text-base sm:text-lg mb-1.5">
+                                                No prices reported for {filterSummary}
+                                            </p>
+                                            <p className="text-gray-500 text-sm max-w-md mx-auto leading-relaxed">
+                                                Not every crop is traded in every mandi each day, and markets stay
+                                                shut on holidays. Try another crop, pick a different state, or look
+                                                across all of India.
+                                            </p>
+                                            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                                                {hasCropFilter && (
+                                                    <button
+                                                        onClick={() => setSelectedCrop('All Crops')}
+                                                        className="px-4 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:brightness-110 transition-all"
+                                                    >
+                                                        Show all crops{hasStateFilter ? ` in ${selectedState}` : ''}
+                                                    </button>
+                                                )}
+                                                {hasStateFilter && (
+                                                    <button
+                                                        onClick={() => setSelectedState('All States')}
+                                                        className="px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
+                                                    >
+                                                        Search all states
+                                                    </button>
+                                                )}
+                                                {hasFilters && (
+                                                    <button
+                                                        onClick={clearFilters}
+                                                        className="px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
+                                                    >
+                                                        Clear filters
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={refetch}
+                                                    className="px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-all inline-flex items-center gap-1.5"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">refresh</span>
+                                                    Refresh
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredPrices.map((item) => (
+                                    livePrices.map((item) => (
                                         <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                             <td className="px-3 sm:px-6 py-3 sm:py-4">
                                                 <span className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">{item.crop}</span>
@@ -249,6 +485,45 @@ export default function MandiPricesPage() {
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Pager over the whole result set, not just what was fetched. */}
+                    {!loading && !error && totalPages > 1 && (
+                        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex-wrap">
+                            <p className="text-xs sm:text-sm text-gray-500">
+                                Page {page.toLocaleString('en-IN')} of {totalPages.toLocaleString('en-IN')}
+                            </p>
+                            <div className="flex items-center gap-1.5">
+                                <button
+                                    onClick={() => goToPage(1)}
+                                    disabled={page === 1}
+                                    className="px-3 py-1.5 text-xs sm:text-sm font-semibold border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40"
+                                >
+                                    First
+                                </button>
+                                <button
+                                    onClick={() => goToPage(page - 1)}
+                                    disabled={page === 1}
+                                    className="px-3 py-1.5 text-xs sm:text-sm font-semibold border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40"
+                                >
+                                    Previous
+                                </button>
+                                <button
+                                    onClick={() => goToPage(page + 1)}
+                                    disabled={page >= totalPages}
+                                    className="px-3 py-1.5 text-xs sm:text-sm font-semibold border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40"
+                                >
+                                    Next
+                                </button>
+                                <button
+                                    onClick={() => goToPage(totalPages)}
+                                    disabled={page >= totalPages}
+                                    className="px-3 py-1.5 text-xs sm:text-sm font-semibold border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40"
+                                >
+                                    Last
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Info Cards */}

@@ -49,7 +49,7 @@ export default function PriceTrendsPage() {
     const [chartType, setChartType] = useState<'area' | 'bar'>('area');
 
     // Step 1: Fetch ALL records for the selected state (no crop filter) to discover available crops
-    const { data: stateData, loading: stateLoading } = useMandiPrices({
+    const { data: stateData, loading: stateLoading, error } = useMandiPrices({
         state: selectedState || undefined,
         limit: 500,
     });
@@ -169,7 +169,9 @@ export default function PriceTrendsPage() {
 
     const loading = stateLoading;
     const hasData = displayData.length > 0 && !loading;
-    const useFallback = displayData.length === 0 && !loading;
+    // Was the trigger for showing ₹2,450 / ₹2,580 / ₹2,280 / +2.3% as if they
+    // had been quoted somewhere. The tiles now read as blank instead.
+    const noData = displayData.length === 0 && !loading;
 
     return (
         <div className="px-6">
@@ -198,6 +200,26 @@ export default function PriceTrendsPage() {
                         )}
                     </p>
                 </div>
+
+                {/* The fetch failed. Say so up front, because every tile and chart
+                    below is now blank and that would otherwise look like a bug. */}
+                {!loading && error && (
+                    <div className="mb-8 flex items-start gap-3 px-4 py-3.5 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                        <span className="material-symbols-outlined text-amber-600 dark:text-amber-400">cloud_off</span>
+                        <div>
+                            <p className="font-bold text-amber-900 dark:text-amber-200 text-sm">
+                                Could not load price trends
+                            </p>
+                            <p className="text-amber-800 dark:text-amber-300 text-sm mt-0.5 leading-relaxed">
+                                {error === 'NO_API_KEY'
+                                    ? 'This board needs a data.gov.in API key before it can chart mandi rates.'
+                                    : error === 'NETWORK_ERROR'
+                                        ? 'Check your internet connection and try again.'
+                                        : 'The data.gov.in price service is not responding right now. Try again in a few minutes, or pick a different state.'}
+                            </p>
+                        </div>
+                    </div>
+                )}
 
                 {/* Filters Row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -390,33 +412,33 @@ export default function PriceTrendsPage() {
                             <div className="p-3 sm:p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 min-w-0">
                                 <p className="text-xs sm:text-sm text-gray-500 mb-1">Average Price</p>
                                 <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white truncate">
-                                    {useFallback ? '₹2,450/qtl' : formatPrice(avgPrice)}
+                                    {noData ? '—' : formatPrice(avgPrice)}
                                 </p>
                                 <p className="text-xs sm:text-sm text-green-500 font-medium mt-1 flex items-center gap-1">
                                     <span className="material-symbols-outlined text-xs sm:text-sm">trending_up</span>
-                                    {useFallback ? '+2.3%' : `${avgPct >= 0 ? '+' : ''}${avgPct}%`}
+                                    {noData ? '—' : `${avgPct >= 0 ? '+' : ''}${avgPct}%`}
                                 </p>
                             </div>
                             <div className="p-3 sm:p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 min-w-0">
                                 <p className="text-xs sm:text-sm text-gray-500 mb-1">Highest Price</p>
                                 <p className="text-lg sm:text-2xl font-bold text-green-500 truncate">
-                                    {useFallback ? '₹2,580/qtl' : formatPrice(highPrice)}
+                                    {noData ? '—' : formatPrice(highPrice)}
                                 </p>
-                                <p className="text-xs sm:text-sm text-gray-500 mt-1 truncate">{useFallback ? '—' : `${displayData.length} records`}</p>
+                                <p className="text-xs sm:text-sm text-gray-500 mt-1 truncate">{noData ? '—' : `${displayData.length} records`}</p>
                             </div>
                             <div className="p-3 sm:p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 min-w-0">
                                 <p className="text-xs sm:text-sm text-gray-500 mb-1">Lowest Price</p>
                                 <p className="text-lg sm:text-2xl font-bold text-red-500 truncate">
-                                    {useFallback ? '₹2,280/qtl' : formatPrice(lowPrice)}
+                                    {noData ? '—' : formatPrice(lowPrice)}
                                 </p>
-                                <p className="text-xs sm:text-sm text-gray-500 mt-1 truncate">{useFallback ? '—' : `${displayData.length} records`}</p>
+                                <p className="text-xs sm:text-sm text-gray-500 mt-1 truncate">{noData ? '—' : `${displayData.length} records`}</p>
                             </div>
                             <div className="p-3 sm:p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 min-w-0">
                                 <p className="text-xs sm:text-sm text-gray-500 mb-1">Markets</p>
                                 <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
-                                    {useFallback ? '—' : marketData.length}
+                                    {noData ? '—' : marketData.length}
                                 </p>
-                                <p className="text-xs sm:text-sm text-gray-500 mt-1 truncate">{useFallback ? '—' : `${displayData.length} entries`}</p>
+                                <p className="text-xs sm:text-sm text-gray-500 mt-1 truncate">{noData ? '—' : `${displayData.length} entries`}</p>
                             </div>
                         </>
                     )}

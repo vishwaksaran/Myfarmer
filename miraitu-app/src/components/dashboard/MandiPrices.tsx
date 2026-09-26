@@ -3,13 +3,6 @@
 import { useMandiPrices } from '@/lib/useMandiPrices';
 import { getCropEmoji, spreadPercent } from '@/lib/mandi-api';
 
-/* ── Fallback rows when API is unavailable ─── */
-const fallbackRows = [
-    { icon: '🌾', name: 'Wheat', price: '₹2,125', change: '+₹25', changeColor: 'text-primary', trend: 'UP', trendColor: 'bg-green-100 text-green-800', trendIcon: 'north_east' },
-    { icon: '🍚', name: 'Basmati Rice', price: '₹3,850', change: '-₹15', changeColor: 'text-orange-600', trend: 'DOWN', trendColor: 'bg-orange-100 text-orange-800', trendIcon: 'south_east' },
-    { icon: '☁️', name: 'Cotton', price: '₹5,400', change: '0', changeColor: 'text-gray-500', trend: 'STABLE', trendColor: 'bg-gray-100 text-gray-800', trendIcon: 'remove' },
-];
-
 export default function MandiPrices() {
     const { data, loading, error, refetch, updated } = useMandiPrices({ limit: 10 });
 
@@ -38,12 +31,10 @@ export default function MandiPrices() {
         };
     });
 
-    const useFallback = (error || liveRows.length === 0) && !loading;
-    const rows = useFallback ? fallbackRows : liveRows;
 
     const updatedText = updated
         ? `Updated: ${new Date(updated).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
-        : 'Updated: 10 mins ago';
+        : 'Not updated yet';
 
     return (
         <div className="col-span-1 rounded-2xl bg-harvest-loam p-1 shadow-soft-raised border border-[#e0e5df]">
@@ -52,7 +43,7 @@ export default function MandiPrices() {
                     <h3 className="text-xl font-bold text-primary-dark flex items-center gap-2">
                         <span className="material-symbols-outlined text-primary">trending_up</span>
                         Local Mandi Prices
-                        {!useFallback && !loading && (
+                        {!loading && !error && liveRows.length > 0 && (
                             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold ml-1">
                                 <span className="w-1 h-1 rounded-full bg-green-500 animate-pulse" />
                                 LIVE
@@ -84,8 +75,33 @@ export default function MandiPrices() {
                                         <td className="py-4 pr-4 text-right"><div className="h-5 w-16 bg-gray-200 rounded ml-auto" /></td>
                                     </tr>
                                 ))
+                            ) : error || liveRows.length === 0 ? (
+                                /* Was three hardcoded crops under a LIVE badge, so an
+                                   outage looked like real rates. Say what happened. */
+                                <tr>
+                                    <td colSpan={4} className="py-10 text-center">
+                                        <span className="material-symbols-outlined text-3xl text-gray-300 mb-2 block">
+                                            {error ? 'cloud_off' : 'storefront'}
+                                        </span>
+                                        <p className="font-bold text-soil-dark">
+                                            {error ? 'Mandi prices are unavailable' : 'No mandi rates reported yet today'}
+                                        </p>
+                                        <p className="text-sm text-gray-500 mt-1">
+                                            {error
+                                                ? 'The data.gov.in price service is not responding right now.'
+                                                : 'Markets may be shut or yet to report.'}
+                                        </p>
+                                        <button
+                                            onClick={refetch}
+                                            className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:brightness-110 transition-all"
+                                        >
+                                            <span className="material-symbols-outlined text-base">refresh</span>
+                                            Try again
+                                        </button>
+                                    </td>
+                                </tr>
                             ) : (
-                                rows.map((row) => (
+                                liveRows.map((row) => (
                                     <PriceRow key={row.name} {...row} />
                                 ))
                             )}

@@ -4,8 +4,18 @@
    ─────────────────────────────────────────────────────────────
    Fetches from /api/mandi-prices (server-side proxy to data.gov.in).
    Returns normalised records with loading / error / refetch.
-   Includes a simple in-memory cache so duplicate calls on the
-   same page don't cause double-fetches.
+
+   Two layers stop the same query going out twice:
+     • a 5-minute result cache, so revisiting a filter or paging
+       back to a page already seen costs nothing, and
+     • an in-flight map, so callers that ask for the same thing
+       before the first answer lands share that one request.
+
+   The second one matters more than it looks. The cache is only
+   written once a response arrives, so it cannot help concurrent
+   callers — and React StrictMode runs every effect twice in
+   development, which meant each filter change fired two identical
+   requests. Sharing the promise collapses them into one.
    ───────────────────────────────────────────────────────────── */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -15,6 +25,8 @@ export interface UseMandiPricesArgs {
   state?: string;
   commodity?: string;
   market?: string;
+  /** Free text matched against crop, mandi and district, in the database. */
+  q?: string;
   limit?: number;
   offset?: number;
   /** Set false to defer fetching until a condition is met */
@@ -35,18 +47,50 @@ export interface UseMandiPricesResult {
 const cache = new Map<string, { data: NormalisedPrice[]; total: number; updated: string; source: string; ts: number }>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 min client-side
 
+/** Requests that have gone out and not yet come back, keyed like the cache. */
+const inflight = new Map<string, Promise<ApiPayload>>();
+
+interface ApiPayload {
+  records?: MandiRecord[];
+  total?: number;
+  updated?: string;
+  source?: string;
+  error?: string;
+}
+
+/**
+ * One network call per distinct query, however many callers want it.
+ *
+ * Everyone asking for a key that is already in flight waits on the same
+ * promise instead of opening a second identical request.
+ */
+function fetchShared(key: string, url: string): Promise<ApiPayload> {
+  const existing = inflight.get(key);
+  if (existing) return existing;
+
+  const request = fetch(url).then(res => res.json() as Promise<ApiPayload>);
+  inflight.set(key, request);
+  // Cleared either way: a failed request must not wedge the key shut.
+  request.then(
+    () => inflight.delete(key),
+    () => inflight.delete(key),
+  );
+  return request;
+}
+
 function cacheKey(args: UseMandiPricesArgs): string {
   return JSON.stringify({
     s: args.state || '',
     c: args.commodity || '',
     m: args.market || '',
+    q: args.q || '',
     l: args.limit || 30,
     o: args.offset || 0,
   });
 }
 
 export function useMandiPrices(args: UseMandiPricesArgs = {}): UseMandiPricesResult {
-  const { state, commodity, market, limit = 30, offset = 0, enabled = true } = args;
+  const { state, commodity, market, q, limit = 30, offset = 0, enabled = true } = args;
 
   const [data, setData]       = useState<NormalisedPrice[]>([]);
   const [total, setTotal]     = useState(0);
@@ -69,7 +113,7 @@ export function useMandiPrices(args: UseMandiPricesArgs = {}): UseMandiPricesRes
   useEffect(() => {
     if (!enabled) { setLoading(false); return; }
 
-    const key = cacheKey({ state, commodity, market, limit, offset });
+    const key = cacheKey({ state, commodity, market, q, limit, offset });
 
     // Check client-side cache
     const cached = cache.get(key);
@@ -90,11 +134,11 @@ export function useMandiPrices(args: UseMandiPricesArgs = {}): UseMandiPricesRes
     if (state && state !== 'All States')       params.set('state', state);
     if (commodity && commodity !== 'All Crops') params.set('commodity', commodity);
     if (market)                                 params.set('market', market);
+    if (q && q.trim())                          params.set('q', q.trim());
     params.set('limit', String(limit));
     params.set('offset', String(offset));
 
-    fetch(`/api/mandi-prices?${params.toString()}`)
-      .then(res => res.json())
+    fetchShared(key, `/api/mandi-prices?${params.toString()}`)
       .then(json => {
         if (cancelled) return;
         if (json.error === 'NO_API_KEY') {
@@ -133,7 +177,7 @@ export function useMandiPrices(args: UseMandiPricesArgs = {}): UseMandiPricesRes
       });
 
     return () => { cancelled = true; };
-  }, [state, commodity, market, limit, offset, enabled, tick]);
+  }, [state, commodity, market, q, limit, offset, enabled, tick]);
 
   return { data, total, loading, error, updated, source, refetch };
 }
