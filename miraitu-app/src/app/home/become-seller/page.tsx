@@ -7,7 +7,8 @@ import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
 import { useAuth } from '@/context/AuthContext';
-import { createSeller, uploadImages } from '@/lib/supabase-db';
+import { uploadImages } from '@/lib/supabase-db';
+import { submitSellerApplication } from '@/app/actions/seller-application';
 import supabase from '@/lib/supabase';
 import { useSubmissionCopy, SUBMISSION_ACCENT, SUBMISSION_ICON } from '@/lib/service-availability';
 
@@ -172,6 +173,7 @@ export default function BecomeSellerPage() {
     const [showSuccess, setShowSuccess] = useState(false);
     const [showForm, setShowForm] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState('');
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -237,71 +239,82 @@ export default function BecomeSellerPage() {
         if (isSubmitting) return;
         if (!validateCurrentStep()) return;
         setIsSubmitting(true);
+        setSubmitError('');
 
         try {
-            // If user is logged in, save to Supabase
-            if (user && !user.isGuest) {
-                // Upload images to Supabase Storage
-                let imageUrls: string[] = [];
-                if (uploadedImages.length > 0) {
-                    const files = uploadedImages.map(img => img.file);
-                    imageUrls = await uploadImages('seller-images', user.id, files);
-                }
-
-                // Save seller data to Supabase DB
-                await createSeller({
-                    user_id: user.id,
-                    seller_type: selectedType,
-                    full_name: formValues.fullName || '',
-                    phone: formValues.phone || '',
-                    email: formValues.email || user.email || '',
-                    business_name: formValues.businessName || '',
-                    location: formValues.location || formValues.village || '',
-                    form_data: formValues,
-                    images: imageUrls,
-                });
-
-                // For service providers, update profiles table with role & service types
-                if (selectedType === 'service-provider') {
-                    const serviceTypeMap: Record<string, string> = {
-                        'Drone Spraying': 'services',
-                        'Soil Testing': 'services',
-                        'Transportation': 'services',
-                        'Equipment Rental': 'machinery',
-                        'Veterinary': 'veterinary',
-                        'Consulting': 'services',
-                        'Multiple Services': 'services',
-                    };
-                    const selectedService = formValues.serviceType || '';
-                    const serviceModule = serviceTypeMap[selectedService] || 'services';
-
-                    await supabase
-                        .from('profiles')
-                        .update({
-                            role: 'service_provider',
-                            service_types: [serviceModule],
-                            address: formValues.location || '',
-                            whatsapp_number: formValues.phone || '',
-                            availability_status: 'available',
-                            bio: formValues.equipmentOwned ? `Equipment: ${formValues.equipmentOwned}` : '',
-                            updated_at: new Date().toISOString(),
-                        })
-                        .eq('id', user.id);
+            // Photos go to storage first, but only a signed-in applicant has
+            // a folder to put them in. A guest application is still recorded
+            // — admin follows up on the phone number — so a failed upload
+            // must not stop the submission.
+            let imageUrls: string[] = [];
+            if (uploadedImages.length > 0 && user && !user.isGuest) {
+                try {
+                    imageUrls = await uploadImages('seller-images', user.id, uploadedImages.map(img => img.file));
+                } catch (err) {
+                    console.error('[become-seller] image upload failed', err);
                 }
             }
 
-            // Also keep localStorage as fallback for dashboard personalization
+            // Saving happens on the server now. It used to happen here in the
+            // browser and only when the applicant was signed in, so every
+            // guest application was dropped while still showing "Request
+            // received" — which is why they never reached admin.
+            const res = await submitSellerApplication({
+                sellerType: selectedType,
+                fullName: String(formValues.fullName || ''),
+                phone: String(formValues.phone || ''),
+                email: String(formValues.email || user?.email || ''),
+                businessName: String(formValues.businessName || ''),
+                location: String(formValues.location || formValues.village || ''),
+                formData: formValues,
+                images: imageUrls,
+            });
+
+            if (!res.success) {
+                setSubmitError(res.error || 'We could not record your application. Please try again.');
+                setIsSubmitting(false);
+                return;
+            }
+
+            // Service providers also get their marketplace profile flipped
+            // over, which still needs their own session.
+            if (selectedType === 'service-provider' && user && !user.isGuest) {
+                const serviceTypeMap: Record<string, string> = {
+                    'Drone Spraying': 'services',
+                    'Soil Testing': 'services',
+                    'Transportation': 'services',
+                    'Equipment Rental': 'machinery',
+                    'Veterinary': 'veterinary',
+                    'Consulting': 'services',
+                    'Multiple Services': 'services',
+                };
+                const serviceModule = serviceTypeMap[String(formValues.serviceType || '')] || 'services';
+                try {
+                    await supabase.from('profiles').update({
+                        role: 'service_provider',
+                        service_types: [serviceModule],
+                        address: String(formValues.location || ''),
+                        whatsapp_number: String(formValues.phone || ''),
+                        availability_status: 'available',
+                        bio: formValues.equipmentOwned ? `Equipment: ${formValues.equipmentOwned}` : '',
+                        updated_at: new Date().toISOString(),
+                    }).eq('id', user.id);
+                } catch (err) {
+                    console.error('[become-seller] profile update failed', err);
+                }
+            }
+
             if (typeof window !== 'undefined') {
-                localStorage.setItem('miraitu_seller_name', formValues.fullName || '');
+                localStorage.setItem('miraitu_seller_name', String(formValues.fullName || ''));
                 localStorage.setItem('miraitu_seller_type', selectedType);
-                localStorage.setItem('miraitu_seller_data', JSON.stringify(formValues));
             }
 
             setShowSuccess(true);
         } catch (error) {
+            // No more "show success anyway". If it did not save, say so, or
+            // the applicant walks away believing Miraitu has their details.
             console.error('Error submitting seller registration:', error);
-            // Still show success for localStorage-only fallback
-            setShowSuccess(true);
+            setSubmitError('We could not record your application. Please check your connection and try again.');
         } finally {
             setIsSubmitting(false);
         }
@@ -532,6 +545,14 @@ export default function BecomeSellerPage() {
                                                 <><span className="material-symbols-outlined text-xl">send</span>Submit Application</>
                                             )}
                                         </button>
+                                        {/* A failed submission used to look identical to a
+                                            successful one. It does not anymore. */}
+                                        {submitError && (
+                                            <p className="w-full mt-1 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded-xl px-3 py-2.5 flex items-start gap-2">
+                                                <span className="material-symbols-outlined text-lg">error</span>
+                                                <span>{submitError}</span>
+                                            </p>
+                                        )}
                                     </>
                                 )}
                             </div>

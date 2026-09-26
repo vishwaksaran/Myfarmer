@@ -180,13 +180,59 @@ export async function fetchSellerDashboard(): Promise<SellerDashboard> {
 export interface SellerListingInput {
     title: string;
     category: string;
+    /**
+     * Which board this belongs on. Services and labour live under `labour`
+     * and machinery offered for hire under `rent` — filing everything as a
+     * sale would put a drone-spraying service on the Buy board.
+     */
+    mode?: 'sale' | 'rent' | 'labour';
     subcategory?: string;
     description?: string;
     price?: number | null;
     priceUnit?: string;
+    negotiable?: boolean;
     quantity?: string;
+    /** 'Organic', 'Natural', 'Conventional' — what buyers filter produce on. */
+    grownAs?: string;
+    variety?: string;
+    harvestedOn?: string;
+    /** Machinery only. */
+    brand?: string;
+    model?: string;
+    year?: string;
+    condition?: string;
+    /** Livestock only. */
+    breed?: string;
+    age?: string;
     location?: string;
+    district?: string;
+    state?: string;
+    /** Defaults to the number on the seller's approved application. */
+    contactPhone?: string;
     images?: string[];
+}
+
+/**
+ * Only the answers that were actually filled in, so a livestock ad does not
+ * carry an empty "year of manufacture" and a crop ad does not carry a breed.
+ */
+function buildSpecs(input: SellerListingInput): Record<string, string> {
+    const specs: Record<string, string> = {};
+    const put = (key: string, value?: string) => {
+        const v = (value ?? '').trim();
+        if (v) specs[key] = v;
+    };
+
+    put('quantity', input.quantity);
+    put('variety', input.variety);
+    put('grownAs', input.grownAs);
+    put('harvestedOn', input.harvestedOn);
+    put('breed', input.breed);
+    put('age', input.age);
+    put('year', input.year);
+    put('condition', input.condition);
+
+    return specs;
 }
 
 /**
@@ -222,26 +268,39 @@ export async function createSellerListing(
     const category = input.category || 'crops';
 
     try {
+        // Derived when the caller does not say, so an older caller that only
+        // passes a category still lands on the right board.
+        const mode = input.mode
+            ?? (category === 'services' || category === 'labour' ? 'labour' : 'sale');
+
         const { data, error } = await admin
             .from('marketplace_listings')
             .insert({
                 user_id: ctx.userId,
-                listing_mode: 'sale',
+                listing_mode: mode,
                 category,
                 subcategory: input.subcategory?.trim() || null,
                 // Kept in step for anything still reading the pre-030 column.
-                listing_type: category === 'animals' ? 'livestock' : category === 'crops' ? 'crops' : 'machinery',
+                listing_type: category === 'animals' ? 'livestock'
+                    : category === 'crops' ? 'crops'
+                        : category === 'services' || category === 'labour' ? 'services'
+                            : 'machinery',
                 title,
                 description: input.description?.trim() || null,
+                brand: input.brand?.trim() || null,
+                model: input.model?.trim() || null,
                 price: input.price ?? null,
                 price_unit: input.priceUnit?.trim() || null,
-                negotiable: false,
+                negotiable: !!input.negotiable,
                 location,
-                district: ctx.district,
-                state: ctx.state,
+                district: input.district?.trim() || ctx.district,
+                state: input.state?.trim() || ctx.state,
                 images: (input.images ?? []).filter(Boolean),
-                contact_phone: ctx.phone,
-                specs: input.quantity?.trim() ? { quantity: input.quantity.trim() } : {},
+                contact_phone: input.contactPhone?.trim() || ctx.phone,
+                // The boards read these out of `specs`, so the answers a buyer
+                // actually asks for — variety, breed, age, condition — travel
+                // with the listing instead of being lost to the title.
+                specs: buildSpecs(input),
                 // Live immediately, because the seller behind it is verified.
                 status: 'active',
             })

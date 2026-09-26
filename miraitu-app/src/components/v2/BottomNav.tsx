@@ -98,20 +98,42 @@ export default function BottomNav() {
                                 <Link
                                     key={item.label}
                                     href={item.path}
+                                    aria-current={active ? 'page' : undefined}
                                     className="flex-1 min-w-0 relative -mt-4 flex flex-col items-center group"
                                 >
-                                    {/* Main FAB button — carries the item's own icon, so the
-                                        centre slot reads as a destination rather than always
-                                        being a generic "+". */}
-                                    <div className="relative flex items-center justify-center size-12 shrink-0 rounded-full bg-gradient-to-b from-[#34a832] to-[#2c5926] shadow-[0_3px_0_#1b3817,_0_6px_12px_rgba(44,89,38,0.35)] group-active:shadow-[0_1px_0_#1b3817,_0_3px_6px_rgba(44,89,38,0.25)] group-active:translate-y-[2px] transition-all">
+                                    {/*
+                                      The raised circle says "this is the main action".
+                                      It used to say that by being solid green always,
+                                      which made Buy & Sell look like the selected tab on
+                                      every page — the only thing that actually changed
+                                      when it was selected was an icon fill, invisible in
+                                      white on green.
+
+                                      So the shape stays constant (it is an affordance,
+                                      not a state) and the fill now carries the state:
+                                      outlined while you are elsewhere, solid green with a
+                                      halo when you are actually on Buy & Sell.
+                                    */}
+                                    <div
+                                        className={`relative flex items-center justify-center size-12 shrink-0 rounded-full transition-all group-active:translate-y-[2px] ${active
+                                            ? 'bg-gradient-to-b from-[#34a832] to-[#2c5926] ring-4 ring-[#34a832]/25 shadow-[0_3px_0_#1b3817,_0_6px_12px_rgba(44,89,38,0.35)] group-active:shadow-[0_1px_0_#1b3817,_0_3px_6px_rgba(44,89,38,0.25)]'
+                                            : 'bg-white dark:bg-[#24331f] border-2 border-[#2c5926]/35 dark:border-[#6abf62]/40 shadow-[0_2px_6px_rgba(0,0,0,0.12)]'
+                                            }`}
+                                    >
                                         <span
-                                            className="material-symbols-outlined text-white text-xl"
+                                            className={`material-symbols-outlined text-xl ${active ? 'text-white' : 'text-[#2c5926] dark:text-[#6abf62]'}`}
                                             style={active ? { fontVariationSettings: "'FILL' 1" } : {}}
                                         >
                                             {item.icon}
                                         </span>
                                     </div>
-                                    <span className="whitespace-nowrap text-[9px] min-[360px]:text-[10px] font-bold mt-1 text-[#2c5926] dark:text-[#6abf62]">{t(item.tKey)}</span>
+                                    {/* Label follows the same rule as every other slot. */}
+                                    <span className={`whitespace-nowrap text-[9px] min-[360px]:text-[10px] mt-1 transition-colors ${active
+                                        ? 'text-[#2c5926] dark:text-[#6abf62] font-bold'
+                                        : 'text-gray-600 dark:text-gray-400 font-semibold'
+                                        }`}>
+                                        {t(item.tKey)}
+                                    </span>
                                 </Link>
                             );
                         }
@@ -121,10 +143,14 @@ export default function BottomNav() {
                                 key={item.label}
                                 href={item.path}
                                 onClick={() => { if (item.tab) setProviderTab(item.tab); }}
+                                aria-current={active ? 'page' : undefined}
                                 className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-0.5 px-0.5 group"
                             >
+                                {/* One language across the whole bar: filled green means
+                                    selected. The pill was faint enough that the centre
+                                    button won the eye on every page. */}
                                 <div className={`flex items-center justify-center size-7 shrink-0 rounded-lg transition-all duration-200 ${active
-                                    ? 'bg-primary/10'
+                                    ? 'bg-[#2c5926]/15 dark:bg-[#6abf62]/20 ring-1 ring-[#2c5926]/20 dark:ring-[#6abf62]/25'
                                     : ''
                                     }`}>
                                     <span
