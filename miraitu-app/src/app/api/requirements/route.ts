@@ -54,6 +54,21 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Choose new, used, or either.' }, { status: 400 });
         }
 
+        // Answers to the category-specific questions. Parsed defensively and
+        // capped: it arrives as a JSON string from a form anyone can post to.
+        let details: Record<string, string> = {};
+        try {
+            const parsed = JSON.parse(str("details") || "{}");
+            if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+                for (const [k, v] of Object.entries(parsed).slice(0, 20)) {
+                    const value = String(v ?? "").trim();
+                    if (value) details[String(k).slice(0, 40)] = value.slice(0, 200);
+                }
+            }
+        } catch {
+            details = {};
+        }
+
         const admin = createSupabaseAdminClient();
 
         // Attach the account when there is one, so admin can see it is a
@@ -106,9 +121,7 @@ export async function POST(request: NextRequest) {
 
         const { ip, userAgent } = extractRequestMeta(request.headers);
 
-        const { data: row, error: insertError } = await admin
-            .from('buyer_requirements')
-            .insert({
+        const payload = {
                 user_id: userId,
                 category,
                 product_model: str('productModel') || null,
@@ -118,14 +131,32 @@ export async function POST(request: NextRequest) {
                 location: str('location') || null,
                 needed_by: str('neededBy') || null,
                 notes: str('notes') || null,
+                details,
                 images,
                 full_name: fullName,
                 phone,
                 status: 'new',
                 ip_address: ip,
-            })
+        };
+
+        let { data: row, error: insertError } = await admin
+            .from('buyer_requirements')
+            .insert(payload)
             .select('id')
             .single();
+
+        // The per-category answers arrived with migration 036. If that has
+        // not been applied yet, saving the requirement still matters far more
+        // than saving the extras, so drop them and keep the callback.
+        if (insertError && /details/i.test(insertError.message ?? '')) {
+            console.warn('[requirements] details column missing — saving without it');
+            const { details: _dropped, ...withoutDetails } = payload;
+            ({ data: row, error: insertError } = await admin
+                .from('buyer_requirements')
+                .insert(withoutDetails)
+                .select('id')
+                .single());
+        }
 
         if (insertError) {
             console.error('[requirements] insert failed', insertError);
@@ -150,6 +181,7 @@ export async function POST(request: NextRequest) {
                     full_name: fullName,
                     phone,
                     photos: images.length,
+                    details,
                     signed_in: !!userId,
                 },
                 ip_address: ip,

@@ -41,6 +41,12 @@ export interface RequirementDetail {
     neededBy: string | null;
     /** Reference photos the buyer attached. */
     images: string[];
+    /**
+     * Answers to the questions that only apply to this category — breed
+     * and milk yield for a cow, horsepower and hours run for a tractor.
+     * See CATEGORY_QUESTIONS in lib/requirement-options.ts.
+     */
+    details: Record<string, string>;
     /** 'new' | 'in_progress' | 'fulfilled' | 'closed'. */
     status: string;
     adminNote: string | null;
@@ -128,6 +134,7 @@ interface RequirementRow {
     phone: string | null;
     status: string | null;
     admin_note: string | null;
+    details: Record<string, string> | null;
     created_at: string;
     ip_address: string | null;
 }
@@ -244,7 +251,7 @@ export async function fetchContactRequests(
                 let rq = admin
                     .from('buyer_requirements')
                     .select('id, user_id, category, product_model, condition, quantity, budget, ' +
-                        'location, needed_by, notes, images, full_name, phone, status, admin_note, ' +
+                        'location, needed_by, notes, images, full_name, phone, status, admin_note, details, ' +
                         'created_at, ip_address')
                     .order('created_at', { ascending: false })
                     .limit(MERGE_CAP);
@@ -259,7 +266,32 @@ export async function fetchContactRequests(
                     );
                 }
 
-                const { data: rows, error: rqError } = await rq;
+                let { data: rows, error: rqError } = await rq;
+
+                // Same reason as the insert side: `details` arrived with
+                // migration 036, and losing every requirement from the inbox
+                // over one missing column would be the worse failure.
+                if (rqError && /details/i.test(rqError.message ?? '')) {
+                    console.warn('[fetchContactRequests] details column missing — reading without it');
+                    let retry = admin
+                        .from('buyer_requirements')
+                        .select('id, user_id, category, product_model, condition, quantity, budget, ' +
+                            'location, needed_by, notes, images, full_name, phone, status, admin_note, ' +
+                            'created_at, ip_address')
+                        .order('created_at', { ascending: false })
+                        .limit(MERGE_CAP);
+                    if (term) {
+                        retry = retry.or(
+                            'full_name.ilike.' + like + ',' +
+                            'phone.ilike.' + like + ',' +
+                            'product_model.ilike.' + like + ',' +
+                            'category.ilike.' + like + ',' +
+                            'location.ilike.' + like,
+                        );
+                    }
+                    ({ data: rows, error: rqError } = await retry);
+                }
+
                 if (rqError) throw rqError;
 
                 for (const r of ((rows ?? []) as unknown as RequirementRow[])) {
@@ -289,6 +321,7 @@ export async function fetchContactRequests(
                             budget: (r.budget as string | null) ?? null,
                             neededBy: (r.needed_by as string | null) ?? null,
                             images: ((r.images as string[] | null) ?? []).filter(Boolean),
+                            details: (r.details ?? {}) as Record<string, string>,
                             status: (r.status as string) || 'new',
                             adminNote: (r.admin_note as string | null) ?? null,
                         },

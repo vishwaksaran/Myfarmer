@@ -6,6 +6,7 @@ import {
     CONDITION_OPTIONS,
     TIMEFRAME_SUGGESTIONS,
     MAX_REQUIREMENT_IMAGES,
+    questionsFor,
 } from '@/lib/requirement-options';
 
 /**
@@ -37,6 +38,14 @@ export default function RequirementForm({
     const [location, setLocation] = useState('');
     const [neededBy, setNeededBy] = useState('');
     const [notes, setNotes] = useState('');
+    /**
+     * Answers to the category-specific questions, keyed by field.
+     *
+     * Cleared whenever the category changes — a horsepower typed for a
+     * tractor has no business travelling along if the buyer switches to
+     * goats, and would otherwise be submitted invisibly.
+     */
+    const [extras, setExtras] = useState<Record<string, string>>({});
     const [fullName, setFullName] = useState('');
     const [phone, setPhone] = useState('');
 
@@ -85,6 +94,7 @@ export default function RequirementForm({
             fd.append('location', location);
             fd.append('neededBy', neededBy);
             fd.append('notes', notes);
+            fd.append('details', JSON.stringify(extras));
             fd.append('fullName', fullName.trim());
             fd.append('phone', phone);
             files.forEach(f => fd.append('images', f));
@@ -104,6 +114,8 @@ export default function RequirementForm({
             setSubmitting(false);
         }
     };
+
+    const q = questionsFor(category);
 
     const field =
         'w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#121811] border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-primary text-gray-900 dark:text-white';
@@ -135,33 +147,75 @@ export default function RequirementForm({
         <form onSubmit={submit} className={compact ? 'space-y-3' : 'space-y-4'}>
             <div>
                 <label className={label}>What are you looking for?</label>
-                <select value={category} onChange={e => setCategory(e.target.value)} className={field}>
+                <select
+                    value={category}
+                    onChange={e => {
+                        setCategory(e.target.value);
+                        setExtras({});
+                        // "New or used" is not asked of a cow, so a stale
+                        // answer must not ride along either.
+                        setCondition(CONDITION_OPTIONS[0].value);
+                    }}
+                    className={field}
+                >
                     <option value="">Choose a category</option>
                     {REQUIREMENT_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
             </div>
 
+            {/* What is asked from here down follows the category — see
+                CATEGORY_QUESTIONS. A buyer looking for goats is not asked
+                for a model number or whether they want a used one. */}
             <div className="grid grid-cols-2 gap-3">
+                {q.modelLabel && (
+                    <div className={q.showCondition ? '' : 'col-span-2'}>
+                        <label className={label}>{q.modelLabel}</label>
+                        <input value={productModel} onChange={e => setProductModel(e.target.value)}
+                            placeholder={q.modelPlaceholder} className={field} />
+                    </div>
+                )}
+                {q.showCondition && (
+                    <div className={q.modelLabel ? '' : 'col-span-2'}>
+                        <label className={label}>New or used</label>
+                        <select value={condition} onChange={e => setCondition(e.target.value)} className={field}>
+                            {CONDITION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                        </select>
+                    </div>
+                )}
+
+                {/* The two or three things a seller would ring back and ask. */}
+                {q.extras.map(f => (
+                    <div key={f.key}>
+                        <label className={label}>{f.label}</label>
+                        {f.options ? (
+                            <select
+                                value={extras[f.key] ?? ''}
+                                onChange={e => setExtras(prev => ({ ...prev, [f.key]: e.target.value }))}
+                                className={field}
+                            >
+                                <option value="">No preference</option>
+                                {f.options.map(o => <option key={o} value={o}>{o}</option>)}
+                            </select>
+                        ) : (
+                            <input
+                                value={extras[f.key] ?? ''}
+                                onChange={e => setExtras(prev => ({ ...prev, [f.key]: e.target.value }))}
+                                placeholder={f.placeholder}
+                                className={field}
+                            />
+                        )}
+                    </div>
+                ))}
+
                 <div>
-                    <label className={label}>Product / model</label>
-                    <input value={productModel} onChange={e => setProductModel(e.target.value)}
-                        placeholder="e.g. Mahindra 575" className={field} />
-                </div>
-                <div>
-                    <label className={label}>New or used</label>
-                    <select value={condition} onChange={e => setCondition(e.target.value)} className={field}>
-                        {CONDITION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                </div>
-                <div>
-                    <label className={label}>Quantity</label>
+                    <label className={label}>{q.quantityLabel}</label>
                     <input value={quantity} onChange={e => setQuantity(e.target.value)}
-                        placeholder="e.g. 1 unit, 20 bags" className={field} />
+                        placeholder={q.quantityPlaceholder} className={field} />
                 </div>
                 <div>
                     <label className={label}>Budget</label>
                     <input value={budget} onChange={e => setBudget(e.target.value)}
-                        placeholder="e.g. under ₹5 lakh" className={field} />
+                        placeholder={q.budgetPlaceholder} className={field} />
                 </div>
                 <div>
                     <label className={label}>Location</label>

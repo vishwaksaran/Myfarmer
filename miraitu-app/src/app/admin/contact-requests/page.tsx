@@ -21,6 +21,10 @@ import MiraituLoader from '@/components/v2/MiraituLoader';
 const prettyType = (t: string) =>
     t.replace(/[_-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
+/** Turns a stored key like milkYield into a readable "Milk yield". */
+const prettyKey = (k: string) =>
+    k.replace(/([A-Z])/g, ' $1').toLowerCase().replace(/^./, c => c.toUpperCase());
+
 const CONDITION_LABEL: Record<string, string> = {
     any: 'New or used',
     new: 'New only',
@@ -99,7 +103,7 @@ export default function ContactRequestsPage() {
     };
 
     const handleCsvExport = () => {
-        const header = 'Time,Source,Name,Phone,Message,Wants,Type,Location,Condition,Quantity,Budget,Needed By,Status,Seller,Seller Phone,IP\n';
+        const header = 'Time,Source,Name,Phone,Message,Wants,Type,Location,Condition,Quantity,Budget,Needed By,Status,Details,Seller,Seller Phone,IP\n';
         const cell = (v: string | null) => '"' + (v ?? '').replace(/"/g, '""') + '"';
         const body = rows.map(r => [
             cell(new Date(r.createdAt).toLocaleString()),
@@ -115,6 +119,7 @@ export default function ContactRequestsPage() {
             cell(r.requirement?.budget ?? null),
             cell(r.requirement?.neededBy ?? null),
             cell(r.requirement?.status ?? null),
+            cell(r.requirement ? Object.entries(r.requirement.details).map(([k, v]) => prettyKey(k) + ': ' + v).join('; ') : null),
             cell(r.sellerName),
             cell(r.sellerPhone),
             cell(r.ipAddress),
@@ -265,6 +270,20 @@ export default function ContactRequestsPage() {
                                                     r.requirement.neededBy && `Needs it ${r.requirement.neededBy}`,
                                                 ].filter(Boolean).join(' · ')}
                                             </p>
+                                        )}
+
+                                        {/* The category-specific answers — breed and milk
+                                            yield for a cow, horsepower and hours run for a
+                                            tractor. Labels come from the keys the form wrote. */}
+                                        {r.requirement && Object.keys(r.requirement.details).length > 0 && (
+                                            <div className="flex flex-wrap gap-1.5 mt-2">
+                                                {Object.entries(r.requirement.details).map(([k, v]) => (
+                                                    <span key={k} className="px-2 py-1 rounded-lg bg-gray-50 border border-gray-200 text-[11px] text-gray-700">
+                                                        <span className="text-gray-500">{prettyKey(k)}: </span>
+                                                        <span className="font-semibold">{v}</span>
+                                                    </span>
+                                                ))}
+                                            </div>
                                         )}
 
                                         {r.requirement && r.requirement.images.length > 0 && (
