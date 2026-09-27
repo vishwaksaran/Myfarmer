@@ -2,13 +2,20 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
+import { Z } from '@/lib/z-layers';
 import { useAuth } from '@/context/AuthContext';
 import WhatsAppButton from './WhatsAppButton';
+import RequirementModal from './requirements/RequirementModal';
 import CropAssistant from './CropAssistant';
 
 export default function FloatingActionButtons() {
     const [showTooltip, setShowTooltip] = useState(false);
     const [isCropChatOpen, setIsCropChatOpen] = useState(false);
+    const [showRequirement, setShowRequirement] = useState(false);
+    // The prompt shows itself once per visit so a first-time buyer notices
+    // the button at all, then stays out of the way.
+    const [showRequirementHint, setShowRequirementHint] = useState(false);
+    const [requirementTooltip, setRequirementTooltip] = useState(false);
     const { user } = useAuth();
     const pathname = usePathname();
     const hideWhatsAppOnThisPage = pathname?.startsWith('/home/community');
@@ -26,6 +33,13 @@ export default function FloatingActionButtons() {
         window.addEventListener('open-crop-assistant', handleOpenCropChat);
         return () => window.removeEventListener('open-crop-assistant', handleOpenCropChat);
     }, [handleOpenCropChat]);
+
+    useEffect(() => {
+        if (hideFloatingActions) return;
+        const t = setTimeout(() => setShowRequirementHint(true), 2500);
+        const hide = setTimeout(() => setShowRequirementHint(false), 11000);
+        return () => { clearTimeout(t); clearTimeout(hide); };
+    }, [hideFloatingActions]);
 
     if (hideFloatingActions) return null;
 
@@ -81,6 +95,36 @@ export default function FloatingActionButtons() {
                     </a>
                 </div>
 
+                {/* Post Your Requirement — sits directly above WhatsApp, which
+                    is the button farmers already reach for. Tapping it opens the
+                    form rather than sending them off to search the boards. */}
+                <div className="relative">
+                    {/* Tooltip. Anchored to the button and given its own stacking
+                        context above the stack, so it is never clipped by the
+                        bottom nav the way an inline overlay would be. */}
+                    {(showRequirementHint || requirementTooltip) && (
+                        <div
+                            className="absolute bottom-1/2 translate-y-1/2 left-16 md:left-auto md:right-16 w-max max-w-[220px] px-3 py-2 rounded-xl bg-gray-900 text-white text-xs font-semibold shadow-xl animate-fade-in-up"
+                            style={{ zIndex: Z.FLOATING }}
+                            role="status"
+                        >
+                            Do you want to post your requirement?
+                            <span className="absolute top-1/2 -translate-y-1/2 -left-1 md:left-auto md:-right-1 size-2 rotate-45 bg-gray-900" />
+                        </div>
+                    )}
+                    <button
+                        onClick={() => { setShowRequirement(true); setShowRequirementHint(false); }}
+                        onMouseEnter={() => setRequirementTooltip(true)}
+                        onMouseLeave={() => setRequirementTooltip(false)}
+                        className="group relative flex items-center justify-center h-14 w-14 lg:h-16 lg:w-16 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 text-white active:scale-95 transition-all hover:-translate-y-1"
+                        aria-label="Post your requirement"
+                    >
+                        <div className="absolute inset-0 rounded-full bg-amber-500/30 animate-ping opacity-60 pointer-events-none"></div>
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/15 to-transparent pointer-events-none"></div>
+                        <span className="material-symbols-outlined text-2xl lg:text-3xl relative z-10">campaign</span>
+                    </button>
+                </div>
+
                 {/* WhatsApp Button */}
                 {!hideWhatsAppOnThisPage && (
                     <div>
@@ -88,6 +132,9 @@ export default function FloatingActionButtons() {
                     </div>
                 )}
             </div>
+
+            {/* Portaled at Z.MODAL so it clears the bottom nav and this stack. */}
+            <RequirementModal open={showRequirement} onClose={() => setShowRequirement(false)} />
 
             {/* Crop Assistant Chat Panel — rendered via portal */}
             {showCropAssistant && (

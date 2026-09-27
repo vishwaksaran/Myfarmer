@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useAppLocation } from '@/context/LocationContext';
 import { useLanguage } from '@/i18n/LanguageContext';
+import RequirementModal from '@/components/requirements/RequirementModal';
 import { translatePage } from '@/i18n/pageContent';
 import { buildWeatherApiQuery } from '@/lib/weather-location';
 import WeatherScene from '@/components/v2/WeatherScene';
@@ -63,7 +64,8 @@ function shortPlace(name: string): string {
 }
 
 interface TileProps {
-    href: string;
+    /** Where it goes. Omit when the tile opens something with `onClick`. */
+    href?: string;
     label: string;
     caption: string;
     /** Material Symbols ligature name. */
@@ -77,13 +79,19 @@ interface TileProps {
     tall?: boolean;
     /** Full-width, icon-beside-label with a chevron. */
     wide?: boolean;
+    /**
+     * Opens something in place instead of navigating. Used by Post Your
+     * Requirement, which is a form rather than a board — sending a farmer to
+     * a separate page to type four fields loses more of them than it helps.
+     */
+    onClick?: () => void;
 }
 
 /**
  * One quick-action tile. Three shapes share this component so spacing, the
  * count badge and the press animation stay identical across them.
  */
-function Tile({ href, label, caption, icon, count, className, accent, tall, wide }: TileProps) {
+function Tile({ href, label, caption, icon, count, className, accent, tall, wide, onClick }: TileProps) {
     const { lang } = useLanguage();
     const tp = (s: string) => translatePage(lang, s);
 
@@ -91,13 +99,14 @@ function Tile({ href, label, caption, icon, count, className, accent, tall, wide
     // appears once there is something to count.
     const badge = typeof count === 'number' && count > 0 ? count : null;
 
-    return (
-        <Link
-            href={href}
-            className={`group relative overflow-hidden rounded-2xl p-4 active:scale-[0.98] transition-transform ${className} ${
-                wide ? 'flex items-center gap-3.5' : `flex flex-col justify-between ${tall ? 'min-h-[132px]' : 'min-h-[108px]'}`
-            }`}
-        >
+    const shell = `group relative overflow-hidden rounded-2xl p-4 active:scale-[0.98] transition-transform ${className} ${
+        wide ? 'flex items-center gap-3.5' : `flex flex-col justify-between ${tall ? 'min-h-[132px]' : 'min-h-[108px]'}`
+    }`;
+
+    // Built once and handed to whichever wrapper this tile needs. Declaring a
+    // component here instead would remount the whole tile on every render.
+    const inner = (
+        <>
             {/* Decorative corner wash — gives each tile depth without an image */}
             <span aria-hidden className="pointer-events-none absolute -top-6 -right-6 w-20 h-20 rounded-full bg-white/40 dark:bg-white/5" />
 
@@ -129,6 +138,23 @@ function Tile({ href, label, caption, icon, count, className, accent, tall, wide
             {wide && (
                 <span className={`relative material-symbols-outlined shrink-0 ${accent} opacity-60`}>chevron_right</span>
             )}
+        </>
+    );
+
+    // A tile that opens a form is a button, not a link: it goes nowhere, so it
+    // should not be middle-clickable, copyable as a URL, or announced to a
+    // screen reader as a destination.
+    if (onClick) {
+        return (
+            <button type="button" onClick={onClick} className={`${shell} text-left w-full`}>
+                {inner}
+            </button>
+        );
+    }
+
+    return (
+        <Link href={href ?? '#'} className={shell}>
+            {inner}
         </Link>
     );
 }
@@ -141,6 +167,7 @@ export default function MobileHomeDashboard() {
     const [weather, setWeather] = useState<WeatherPayload | null>(null);
     const [weatherError, setWeatherError] = useState(false);
     const [counts, setCounts] = useState({ rent: 0, sale: 0, labour: 0, mine: 0 });
+    const [showRequirement, setShowRequirement] = useState(false);
 
     const locationLabel = location?.address || '';
     const coordsKey = location?.lat && location?.lng ? `${location.lat},${location.lng}` : '';
@@ -329,7 +356,22 @@ export default function MobileHomeDashboard() {
                     tall
                 />
 
-                {/* Row 2 — one wide banner, visually distinct from the squares */}
+                {/*
+                  Row 2 — the demand side. A farmer who knows what they want
+                  should not have to scroll two boards hoping it is listed;
+                  they state it here and Miraitu goes and finds it.
+                */}
+                <Tile
+                    onClick={() => setShowRequirement(true)}
+                    label="Post Your Requirement"
+                    caption="Tell us what you need — we will find it"
+                    icon="campaign"
+                    className="col-span-2 bg-gradient-to-r from-[#fff3e0] to-[#ffe8cc] dark:from-[#33240f] dark:to-[#2a1c0a]"
+                    accent="text-[#e65100] dark:text-[#ffb74d]"
+                    wide
+                />
+
+                {/* Row 3 — one wide banner, visually distinct from the squares */}
                 {/* No count: this tile opens a form, not a board. Nothing it
                     collects is published back to the app, so there is no public
                     tally to show. */}
@@ -343,7 +385,7 @@ export default function MobileHomeDashboard() {
                     wide
                 />
 
-                {/* Row 3 — the two reference tools */}
+                {/* Row 4 — the two reference tools */}
                 <Tile
                     href="/home/crops/mandi/prices"
                     label="Market Rates"
@@ -373,6 +415,10 @@ export default function MobileHomeDashboard() {
                     wide
                 />
             </div>
+
+            {/* Portaled at Z.MODAL, so it clears the bottom nav and the floating
+                action stack rather than opening underneath them. */}
+            <RequirementModal open={showRequirement} onClose={() => setShowRequirement(false)} />
         </section>
     );
 }

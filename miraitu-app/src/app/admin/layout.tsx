@@ -65,6 +65,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { href: '/admin/listings', icon: 'sell', label: 'Listings' },
         // Buyers never see a seller's number now — they leave a callback
         // request instead, and this is where those land.
+        // Both kinds of callback in one inbox: buyers who tapped Contact
+        // Seller on an ad, and buyers who posted a requirement of their own.
         { href: '/admin/contact-requests', icon: 'phone_callback', label: 'Contact Requests' },
         // Farmers, dealers and service providers waiting to be verified.
         // Approving one here is what issues their login and makes their

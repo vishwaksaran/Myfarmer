@@ -2,22 +2,30 @@
 
 import { useEffect, useState } from 'react';
 import { fetchContactRequests, type ContactRequestRecord } from '@/app/actions/contact-requests';
+import { updateRequirement } from '@/app/actions/admin-requirements';
+import { REQUIREMENT_STATUSES, type RequirementStatus } from '@/lib/requirement-options';
 import MiraituLoader from '@/components/v2/MiraituLoader';
 
 /**
- * Everyone who asked to be called back about a listing.
+ * Everyone waiting on a call from Miraitu, from either direction.
  *
- * Buyers no longer see a seller's number anywhere in the app — they leave
- * their own details instead (ContactRequestModal) and the Miraitu team makes
- * the introduction. Those submissions used to be findable only by scrolling
- * the Activity Log past every vendor login and product edit; this is the same
- * data on its own screen, with both sides' numbers side by side so admin can
- * work the list top to bottom.
+ * Two things land here. A buyer who tapped Contact Seller on an ad leaves
+ * their number instead of seeing the seller's (ContactRequestModal), and a
+ * buyer who used Post Your Requirement states what they want with no
+ * particular ad in mind. Both amount to the same job — ring this person —
+ * so they share one inbox. Splitting them across two screens would mean
+ * checking two places to find out who is still waiting.
  */
 
 /** 'machinery_rent' -> 'Machinery Rent'. */
 const prettyType = (t: string) =>
     t.replace(/[_-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+const CONDITION_LABEL: Record<string, string> = {
+    any: 'New or used',
+    new: 'New only',
+    used: 'Used only',
+};
 
 const TYPE_STYLES: Record<string, string> = {
     livestock: 'bg-amber-50 text-amber-700',
@@ -31,6 +39,12 @@ const TYPE_STYLES: Record<string, string> = {
 export default function ContactRequestsPage() {
     const [rows, setRows] = useState<ContactRequestRecord[]>([]);
     const [listingTypes, setListingTypes] = useState<string[]>([]);
+    const [counts, setCounts] = useState({ listing: 0, requirement: 0 });
+    // '' shows both. Posted requirements and listing callbacks are the same
+    // job — ring this person — so they share one inbox rather than two screens.
+    const [sourceFilter, setSourceFilter] = useState('');
+    const [busyId, setBusyId] = useState<string | null>(null);
+    const [lightbox, setLightbox] = useState<string | null>(null);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -56,12 +70,14 @@ export default function ContactRequestsPage() {
             pageSize,
             listingType: typeFilter,
             search: debouncedSearch,
+            source: sourceFilter,
         }).then(result => {
             if (cancelled) return;
             setRows(result.data);
             setTotal(result.total);
             setError(result.error);
             if (result.listingTypes.length) setListingTypes(result.listingTypes);
+            setCounts(result.counts);
             setLoading(false);
         }).catch(() => {
             if (cancelled) return;
@@ -69,19 +85,36 @@ export default function ContactRequestsPage() {
             setLoading(false);
         });
         return () => { cancelled = true; };
-    }, [page, typeFilter, debouncedSearch]);
+    }, [page, typeFilter, debouncedSearch, sourceFilter]);
+
+    const changeStatus = async (id: string, status: RequirementStatus) => {
+        setBusyId(id);
+        const res = await updateRequirement(id, { status });
+        setBusyId(null);
+        if (!res.success) { setError(res.error ?? 'Could not update that requirement.'); return; }
+        // Reflect it without a round trip; the next fetch confirms it.
+        setRows(prev => prev.map(r => (
+            r.id === id && r.requirement ? { ...r, requirement: { ...r.requirement, status } } : r
+        )));
+    };
 
     const handleCsvExport = () => {
-        const header = 'Time,Name,Phone,Message,Listing,Type,Location,Seller,Seller Phone,IP\n';
+        const header = 'Time,Source,Name,Phone,Message,Wants,Type,Location,Condition,Quantity,Budget,Needed By,Status,Seller,Seller Phone,IP\n';
         const cell = (v: string | null) => '"' + (v ?? '').replace(/"/g, '""') + '"';
         const body = rows.map(r => [
             cell(new Date(r.createdAt).toLocaleString()),
+            cell(r.source === 'requirement' ? 'Posted requirement' : 'From a listing'),
             cell(r.requesterName),
             cell(r.requesterPhone),
             cell(r.message),
             cell(r.listingTitle),
-            cell(r.listingType),
+            cell(r.listingType ?? r.requirement?.category ?? null),
             cell(r.location),
+            cell(r.requirement ? (CONDITION_LABEL[r.requirement.condition] ?? r.requirement.condition) : null),
+            cell(r.requirement?.quantity ?? null),
+            cell(r.requirement?.budget ?? null),
+            cell(r.requirement?.neededBy ?? null),
+            cell(r.requirement?.status ?? null),
             cell(r.sellerName),
             cell(r.sellerPhone),
             cell(r.ipAddress),
@@ -103,7 +136,8 @@ export default function ContactRequestsPage() {
                 <div>
                     <h1 className="text-2xl md:text-3xl font-black text-gray-900">Contact Requests</h1>
                     <p className="text-sm text-gray-500 mt-1">
-                        {total} callback request{total !== 1 ? 's' : ''} submitted
+                        {total} request{total !== 1 ? 's' : ''} waiting on a call
+                        {counts.requirement > 0 && ` · ${counts.requirement} posted requirement${counts.requirement !== 1 ? 's' : ''}`}
                     </p>
                 </div>
                 <button
@@ -116,7 +150,25 @@ export default function ContactRequestsPage() {
                 </button>
             </div>
 
-            <div className="mb-6 flex flex-wrap gap-3">
+            <div className="mb-6 flex flex-wrap items-center gap-3">
+                {/* Which side the request came from. */}
+                <div className="flex gap-1.5">
+                    {[
+                        { key: '', label: 'All' },
+                        { key: 'listing', label: `From a listing (${counts.listing})` },
+                        { key: 'requirement', label: `Posted requirements (${counts.requirement})` },
+                    ].map(c => (
+                        <button
+                            key={c.key || 'all'}
+                            onClick={() => { setLoading(true); setSourceFilter(c.key); setPage(1); }}
+                            className={`px-3.5 py-2 rounded-xl text-sm font-bold border transition-colors ${sourceFilter === c.key
+                                ? 'bg-green-600 text-white border-green-600'
+                                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+                        >
+                            {c.label}
+                        </button>
+                    ))}
+                </div>
                 <input
                     type="search"
                     value={search}
@@ -127,7 +179,9 @@ export default function ContactRequestsPage() {
                 <select
                     value={typeFilter}
                     onChange={(e) => { setLoading(true); setTypeFilter(e.target.value); setPage(1); }}
-                    className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500 bg-white"
+                    disabled={sourceFilter === 'requirement'}
+                    title="Applies to requests that came from a listing"
+                    className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500 bg-white disabled:opacity-50"
                 >
                     <option value="">All Categories</option>
                     {listingTypes.map(t => (
@@ -157,8 +211,12 @@ export default function ContactRequestsPage() {
                         {rows.map(r => (
                             <div key={r.id} className="px-5 py-4 hover:bg-gray-50/50">
                                 <div className="flex items-start gap-4">
-                                    <div className="size-10 rounded-xl flex items-center justify-center flex-shrink-0 text-amber-600 bg-amber-50">
-                                        <span className="material-symbols-outlined text-xl">phone_callback</span>
+                                    <div className={`size-10 rounded-xl flex items-center justify-center flex-shrink-0 ${r.source === 'requirement'
+                                        ? 'text-orange-600 bg-orange-50'
+                                        : 'text-amber-600 bg-amber-50'}`}>
+                                        <span className="material-symbols-outlined text-xl">
+                                            {r.source === 'requirement' ? 'campaign' : 'phone_callback'}
+                                        </span>
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 flex-wrap">
@@ -176,13 +234,50 @@ export default function ContactRequestsPage() {
                                                     {prettyType(r.listingType)}
                                                 </span>
                                             )}
+                                            {r.requirement && (
+                                                <>
+                                                    <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-orange-100 text-orange-700">
+                                                        Posted requirement
+                                                    </span>
+                                                    <span className="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-gray-100 text-gray-600">
+                                                        {r.requirement.category}
+                                                    </span>
+                                                </>
+                                            )}
                                         </div>
 
                                         <p className="text-xs text-gray-600 mt-1">
-                                            Wants a callback about{' '}
-                                            <span className="font-semibold">{r.listingTitle || 'a listing'}</span>
+                                            {r.source === 'requirement' ? 'Looking for ' : 'Wants a callback about '}
+                                            <span className="font-semibold">
+                                                {r.listingTitle || (r.source === 'requirement' ? 'something' : 'a listing')}
+                                            </span>
                                             {r.location ? `, ${r.location}` : ''}
                                         </p>
+
+                                        {/* Everything the buyer told us, laid out so admin can
+                                            read the whole brief without opening anything. */}
+                                        {r.requirement && (
+                                            <p className="text-xs text-gray-600 mt-1">
+                                                {[
+                                                    CONDITION_LABEL[r.requirement.condition] ?? r.requirement.condition,
+                                                    r.requirement.quantity && `Qty ${r.requirement.quantity}`,
+                                                    r.requirement.budget && `Budget ${r.requirement.budget}`,
+                                                    r.requirement.neededBy && `Needs it ${r.requirement.neededBy}`,
+                                                ].filter(Boolean).join(' · ')}
+                                            </p>
+                                        )}
+
+                                        {r.requirement && r.requirement.images.length > 0 && (
+                                            <div className="flex gap-2 flex-wrap mt-2">
+                                                {r.requirement.images.map(src => (
+                                                    <button key={src} onClick={() => setLightbox(src)} aria-label="View photo">
+                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                        <img src={src} alt="Requirement reference"
+                                                            className="w-16 h-16 object-cover rounded-lg border border-gray-200 hover:opacity-80" />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
 
                                         {r.message && (
                                             <p className="text-xs text-gray-600 italic mt-1.5 px-2.5 py-1.5 bg-amber-50 rounded-lg">
@@ -190,22 +285,44 @@ export default function ContactRequestsPage() {
                                             </p>
                                         )}
 
-                                        {/* The other half of the introduction — admin dials this,
-                                            the buyer never sees it. */}
                                         <div className="flex items-center gap-2 mt-1.5 flex-wrap text-xs text-gray-500">
-                                            <span>
-                                                Seller: <span className="font-medium text-gray-700">{r.sellerName || 'Unknown'}</span>
-                                                {r.sellerPhone ? ` · ${r.sellerPhone}` : ' · no number on file'}
-                                            </span>
+                                            {/* The other half of the introduction — admin dials
+                                                this, the buyer never sees it. A posted
+                                                requirement has no seller yet; finding one is
+                                                the job. */}
+                                            {r.source === 'listing' ? (
+                                                <span>
+                                                    Seller: <span className="font-medium text-gray-700">{r.sellerName || 'Unknown'}</span>
+                                                    {r.sellerPhone ? ` · ${r.sellerPhone}` : ' · no number on file'}
+                                                </span>
+                                            ) : (
+                                                <span className="font-medium text-gray-700">No seller yet — source this one</span>
+                                            )}
                                             {r.requesterEmail && <span>• {r.requesterEmail}</span>}
                                             {r.ipAddress && <span>• IP: {r.ipAddress}</span>}
                                         </div>
+
+                                        {r.requirement?.adminNote && (
+                                            <p className="text-xs text-gray-600 italic mt-1.5">Note: {r.requirement.adminNote}</p>
+                                        )}
                                     </div>
 
                                     <div className="flex flex-col items-end gap-2 flex-shrink-0">
                                         <span className="text-xs text-gray-400 whitespace-nowrap">
                                             {new Date(r.createdAt).toLocaleString()}
                                         </span>
+                                        {r.requirement && (
+                                            <select
+                                                value={r.requirement.status}
+                                                disabled={busyId === r.id}
+                                                onChange={e => changeStatus(r.id, e.target.value as RequirementStatus)}
+                                                className="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold bg-white disabled:opacity-50"
+                                            >
+                                                {REQUIREMENT_STATUSES.map(st => (
+                                                    <option key={st.value} value={st.value}>{st.label}</option>
+                                                ))}
+                                            </select>
+                                        )}
                                         {r.requesterPhone && (
                                             <div className="flex gap-1.5">
                                                 <a
@@ -255,6 +372,13 @@ export default function ContactRequestsPage() {
                     </div>
                 )}
             </div>
+
+            {lightbox && (
+                <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-6" onClick={() => setLightbox(null)}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={lightbox} alt="Requirement reference" className="max-h-[90vh] max-w-full rounded-xl" />
+                </div>
+            )}
         </div>
     );
 }
