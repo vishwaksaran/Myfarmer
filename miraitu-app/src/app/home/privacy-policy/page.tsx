@@ -28,6 +28,10 @@ export default function PrivacyPolicyPage() {
                             <p><strong>1.1</strong> This Privacy Policy (&quot;Policy&quot;) constitutes an electronic record in the form of a contract under the provisions of the Information Technology Act, 2000 and applicable rules made thereunder, as amended from time to time. This Policy does not require any physical, electronic, or digital signature.</p>
                             <p><strong>1.2</strong> This Privacy Policy applies to all products, services, content, features, technologies, or functions offered by Miraitu.in (&quot;Company&quot;, &quot;We&quot;, &quot;Us&quot;, &quot;Our&quot;), including all associated websites, mobile applications, platforms, and digital services (collectively referred to as &quot;Services&quot;).</p>
                             <p><strong>1.3</strong> This Policy governs your access to and use of Miraitu.in and all related platforms operated by the Company.</p>
+                            {/* Play reviewers check that the policy covers the Android app
+                                by name, not only the website. Naming the package removes
+                                any doubt about which app this applies to. */}
+                            <p><strong>1.3.1</strong> This Policy applies in full to the <strong>Miraitu Android mobile application</strong> (package name <code>com.miraitu.app</code>) distributed through the Google Play Store, as well as to the Miraitu website. Wherever this Policy refers to &quot;Services&quot;, &quot;Platform&quot;, or &quot;Miraitu&quot;, it includes the mobile application.</p>
                             <p><strong>1.4</strong> For the purpose of this Policy:</p>
                             <ul className="list-disc pl-6 space-y-1">
                                 <li>&quot;You&quot;, &quot;Your&quot;, &quot;User&quot; refers to any individual accessing or using our Services</li>
@@ -81,6 +85,26 @@ export default function PrivacyPolicyPage() {
                             <li>Vehicle specifications and usage data</li>
                         </ul>
 
+                        {/* Named explicitly because the Play Data Safety form must match
+                            this section item for item. The app requests CAMERA, fine and
+                            coarse location, and media access, and none of those were
+                            spelled out before. A mismatch here is a takedown risk. */}
+                        <h4 className="font-semibold mt-4 mb-2">(f) Photographs &amp; Camera</h4>
+                        <ul className="list-disc pl-6 space-y-1">
+                            <li>Photographs you upload of crops, livestock, machinery, land, or equipment when creating a listing, posting a requirement, or submitting a seller application</li>
+                            <li>Photographs of identity or verification documents you choose to upload</li>
+                            <li>The mobile application requests <strong>camera</strong> and <strong>photo library</strong> access only so you can attach these images. Access is requested at the moment you choose to add a photo, and can be refused or revoked in your device settings without losing access to the rest of the app</li>
+                            <li>We do not access your camera or photo library in the background, and we do not scan or index photos you have not uploaded</li>
+                        </ul>
+
+                        <h4 className="font-semibold mt-4 mb-2">(g) Mobile Number &amp; Contact Details</h4>
+                        <ul className="list-disc pl-6 space-y-1">
+                            <li>Your <strong>mobile number</strong>, used to create your account and to sign you in by one-time password (OTP)</li>
+                            <li>Your mobile number and name when you request a callback about a listing, or post a buying requirement, so that our team and the relevant seller can contact you</li>
+                            <li>Your WhatsApp number, where you choose to give one for contact</li>
+                            <li>We do <strong>not</strong> read your device contact list, call logs, or SMS messages</li>
+                        </ul>
+
                         <h3 className="text-lg font-semibold text-[#2c5926] mt-6 mb-3">2.2 Automatically Collected Information</h3>
 
                         <h4 className="font-semibold mt-4 mb-2">(a) Device &amp; Log Data</h4>
@@ -92,7 +116,9 @@ export default function PrivacyPolicyPage() {
                         <h4 className="font-semibold mt-4 mb-2">(b) Location Data</h4>
                         <ul className="list-disc pl-6 space-y-1">
                             <li>GPS location, IP-based location, network data</li>
-                            <li>You may disable location access via device settings</li>
+                            <li>The mobile application may request <strong>precise (GPS)</strong> and <strong>approximate (network)</strong> location, and uses it to show listings, mandi prices, and service providers near you, and to fill in your district when you post something</li>
+                            <li>Location is collected only while you are using the app. We do not collect location in the background</li>
+                            <li>You may disable location access via device settings at any time; the app continues to work, and you can type your location instead</li>
                         </ul>
 
                         <h4 className="font-semibold mt-4 mb-2">(c) Usage &amp; Clickstream Data</h4>
@@ -291,6 +317,18 @@ export default function PrivacyPolicyPage() {
                             <li>Restrict processing</li>
                         </ul>
                         <p className="mt-2">Requests can be made via contact details below.</p>
+
+                        {/* Play requires deletion to be available both inside the app and
+                            at a URL reachable without installing it. The in-app route
+                            already existed in Settings; this states it and points at the
+                            public page, which is the URL declared in the Data Safety form. */}
+                        <h3 className="text-lg font-semibold text-[#2c5926] mt-6 mb-3">10.1 Deleting Your Account and Data</h3>
+                        <p>You can delete your Miraitu account and the personal data attached to it at any time, in either of two ways:</p>
+                        <ul className="list-disc pl-6 space-y-1">
+                            <li><strong>Inside the app or website:</strong> open <strong>Settings</strong> and choose <strong>Delete Account</strong>.</li>
+                            <li><strong>Without installing the app:</strong> visit <Link href="/home/delete-account" className="text-[#2c5926] font-semibold underline">miraitu.in/home/delete-account</Link> and follow the instructions, or email <a href="mailto:support@miraitu.in" className="text-[#2c5926] font-semibold underline">support@miraitu.in</a> from your registered address.</li>
+                        </ul>
+                        <p className="mt-2">What is removed and what is kept is set out in full on the <Link href="/home/delete-account" className="text-[#2c5926] font-semibold underline">account deletion page</Link>.</p>
                     </section>
 
                     {/* Section 11 */}
