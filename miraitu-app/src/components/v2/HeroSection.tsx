@@ -221,9 +221,9 @@ export default function HeroSection() {
                                             <span className="material-symbols-outlined text-white text-xl">campaign</span>
                                         </div>
                                         <div>
-                                            <h3 className="text-xl font-black text-primary">Post Your Requirement</h3>
+                                            <h3 className="text-xl font-black text-primary">{tp('Post Your Requirement')}</h3>
                                             <p className="text-xs text-gray-500 font-medium">
-                                                Tell us what you need and Miraitu will find it
+                                                {tp('Tell us what you need and Miraitu will find it')}
                                             </p>
                                         </div>
                                     </div>

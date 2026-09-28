@@ -7,6 +7,8 @@ import { useAuth } from '@/context/AuthContext';
 import WhatsAppButton from './WhatsAppButton';
 import RequirementModal from './requirements/RequirementModal';
 import CropAssistant from './CropAssistant';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 export default function FloatingActionButtons() {
     const [showTooltip, setShowTooltip] = useState(false);
@@ -17,6 +19,7 @@ export default function FloatingActionButtons() {
     const [showRequirementHint, setShowRequirementHint] = useState(false);
     const [requirementTooltip, setRequirementTooltip] = useState(false);
     const { user } = useAuth();
+    const { lang } = useLanguage();
     const pathname = usePathname();
     const hideWhatsAppOnThisPage = pathname?.startsWith('/home/community');
     const showCropAssistant = pathname?.startsWith('/home/crops') && !!user;
@@ -108,7 +111,7 @@ export default function FloatingActionButtons() {
                             style={{ zIndex: Z.FLOATING }}
                             role="status"
                         >
-                            Do you want to post your requirement?
+                            {translatePage(lang, 'Do you want to post your requirement?')}
                             <span className="absolute top-1/2 -translate-y-1/2 -left-1 md:left-auto md:-right-1 size-2 rotate-45 bg-gray-900" />
                         </div>
                     )}
@@ -117,7 +120,7 @@ export default function FloatingActionButtons() {
                         onMouseEnter={() => setRequirementTooltip(true)}
                         onMouseLeave={() => setRequirementTooltip(false)}
                         className="group relative flex items-center justify-center h-14 w-14 lg:h-16 lg:w-16 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 text-white active:scale-95 transition-all hover:-translate-y-1"
-                        aria-label="Post your requirement"
+                        aria-label={translatePage(lang, 'Post your requirement')}
                     >
                         <div className="absolute inset-0 rounded-full bg-amber-500/30 animate-ping opacity-60 pointer-events-none"></div>
                         <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/15 to-transparent pointer-events-none"></div>

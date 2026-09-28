@@ -8,6 +8,8 @@ import {
     MAX_REQUIREMENT_IMAGES,
     questionsFor,
 } from '@/lib/requirement-options';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 /**
  * "Post Your Requirement" — the buyer's half of the marketplace.
@@ -30,6 +32,9 @@ export default function RequirementForm({
     /** Tighter spacing for the homepage panel, which shares a column. */
     compact?: boolean;
 }) {
+    const { lang } = useLanguage();
+    const tp = (s?: string) => translatePage(lang, s);
+
     const [category, setCategory] = useState('');
     const [productModel, setProductModel] = useState('');
     const [condition, setCondition] = useState<string>(CONDITION_OPTIONS[0].value);
@@ -79,9 +84,9 @@ export default function RequirementForm({
         e.preventDefault();
         setError('');
 
-        if (!category) { setError('Tell us what you are looking for.'); return; }
-        if (!fullName.trim()) { setError('Please enter your name.'); return; }
-        if (phone.replace(/\D/g, '').length !== 10) { setError('Enter a valid 10-digit mobile number.'); return; }
+        if (!category) { setError(tp('Tell us what you are looking for.')); return; }
+        if (!fullName.trim()) { setError(tp('Please enter your name.')); return; }
+        if (phone.replace(/\D/g, '').length !== 10) { setError(tp('Enter a valid 10-digit mobile number.')); return; }
 
         setSubmitting(true);
         try {
@@ -103,13 +108,13 @@ export default function RequirementForm({
             const json = await res.json();
 
             if (!res.ok || json.error) {
-                setError(json.error || 'We could not record your requirement. Please try again.');
+                setError(json.error || tp('We could not record your requirement. Please try again.'));
                 setSubmitting(false);
                 return;
             }
             setDone(true);
         } catch {
-            setError('Could not reach Miraitu. Check your connection and try again.');
+            setError(tp('Could not reach Miraitu. Check your connection and try again.'));
         } finally {
             setSubmitting(false);
         }
@@ -128,16 +133,17 @@ export default function RequirementForm({
                 <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
                     <span className="material-symbols-outlined text-3xl text-green-600">check_circle</span>
                 </div>
-                <h3 className="text-lg font-black text-gray-900 dark:text-white mb-1.5">Requirement received</h3>
+                <h3 className="text-lg font-black text-gray-900 dark:text-white mb-1.5">{tp('Requirement received')}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed max-w-xs mx-auto">
-                    Miraitu will look for {category.toLowerCase()} matching what you described and
-                    call you on {phone}. You do not need to search the listings yourself.
+                    {tp('Miraitu will look for {category} matching what you described and call you on {phone}. You do not need to search the listings yourself.')
+                        .replace('{category}', lang === 'en' ? category.toLowerCase() : tp(category))
+                        .replace('{phone}', phone)}
                 </p>
                 <button
                     onClick={() => { if (onDone) onDone(); else setDone(false); }}
                     className="mt-5 px-6 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:brightness-110"
                 >
-                    Done
+                    {tp('Done')}
                 </button>
             </div>
         );
@@ -146,7 +152,7 @@ export default function RequirementForm({
     return (
         <form onSubmit={submit} className={compact ? 'space-y-3' : 'space-y-4'}>
             <div>
-                <label className={label}>What are you looking for?</label>
+                <label className={label}>{tp('What are you looking for?')}</label>
                 <select
                     value={category}
                     onChange={e => {
@@ -158,8 +164,8 @@ export default function RequirementForm({
                     }}
                     className={field}
                 >
-                    <option value="">Choose a category</option>
-                    {REQUIREMENT_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    <option value="">{tp('Choose a category')}</option>
+                    {REQUIREMENT_CATEGORIES.map(c => <option key={c} value={c}>{tp(c)}</option>)}
                 </select>
             </div>
 
@@ -169,16 +175,16 @@ export default function RequirementForm({
             <div className="grid grid-cols-2 gap-3">
                 {q.modelLabel && (
                     <div className={q.showCondition ? '' : 'col-span-2'}>
-                        <label className={label}>{q.modelLabel}</label>
+                        <label className={label}>{tp(q.modelLabel)}</label>
                         <input value={productModel} onChange={e => setProductModel(e.target.value)}
-                            placeholder={q.modelPlaceholder} className={field} />
+                            placeholder={tp(q.modelPlaceholder)} className={field} />
                     </div>
                 )}
                 {q.showCondition && (
                     <div className={q.modelLabel ? '' : 'col-span-2'}>
-                        <label className={label}>New or used</label>
+                        <label className={label}>{tp('New or used')}</label>
                         <select value={condition} onChange={e => setCondition(e.target.value)} className={field}>
-                            {CONDITION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                            {CONDITION_OPTIONS.map(o => <option key={o.value} value={o.value}>{tp(o.label)}</option>)}
                         </select>
                     </div>
                 )}
@@ -186,21 +192,21 @@ export default function RequirementForm({
                 {/* The two or three things a seller would ring back and ask. */}
                 {q.extras.map(f => (
                     <div key={f.key}>
-                        <label className={label}>{f.label}</label>
+                        <label className={label}>{tp(f.label)}</label>
                         {f.options ? (
                             <select
                                 value={extras[f.key] ?? ''}
                                 onChange={e => setExtras(prev => ({ ...prev, [f.key]: e.target.value }))}
                                 className={field}
                             >
-                                <option value="">No preference</option>
-                                {f.options.map(o => <option key={o} value={o}>{o}</option>)}
+                                <option value="">{tp('No preference')}</option>
+                                {f.options.map(o => <option key={o} value={o}>{tp(o)}</option>)}
                             </select>
                         ) : (
                             <input
                                 value={extras[f.key] ?? ''}
                                 onChange={e => setExtras(prev => ({ ...prev, [f.key]: e.target.value }))}
-                                placeholder={f.placeholder}
+                                placeholder={tp(f.placeholder)}
                                 className={field}
                             />
                         )}
@@ -208,26 +214,26 @@ export default function RequirementForm({
                 ))}
 
                 <div>
-                    <label className={label}>{q.quantityLabel}</label>
+                    <label className={label}>{tp(q.quantityLabel)}</label>
                     <input value={quantity} onChange={e => setQuantity(e.target.value)}
-                        placeholder={q.quantityPlaceholder} className={field} />
+                        placeholder={tp(q.quantityPlaceholder)} className={field} />
                 </div>
                 <div>
-                    <label className={label}>Budget</label>
+                    <label className={label}>{tp('Budget')}</label>
                     <input value={budget} onChange={e => setBudget(e.target.value)}
-                        placeholder={q.budgetPlaceholder} className={field} />
+                        placeholder={tp(q.budgetPlaceholder)} className={field} />
                 </div>
                 <div>
-                    <label className={label}>Location</label>
+                    <label className={label}>{tp('Location')}</label>
                     <input value={location} onChange={e => setLocation(e.target.value)}
-                        placeholder="Village or district" className={field} />
+                        placeholder={tp('Village or district')} className={field} />
                 </div>
                 <div>
-                    <label className={label}>When do you need it?</label>
+                    <label className={label}>{tp('When do you need it?')}</label>
                     <input value={neededBy} onChange={e => setNeededBy(e.target.value)}
-                        list="requirement-timeframes" placeholder="e.g. within a week" className={field} />
+                        list="requirement-timeframes" placeholder={tp('e.g. within a week')} className={field} />
                     <datalist id="requirement-timeframes">
-                        {TIMEFRAME_SUGGESTIONS.map(t => <option key={t} value={t} />)}
+                        {TIMEFRAME_SUGGESTIONS.map(t => <option key={t} value={tp(t)} />)}
                     </datalist>
                 </div>
             </div>
@@ -235,7 +241,7 @@ export default function RequirementForm({
             {/* Photos — a picture of the part or the produce saves a call. */}
             <div>
                 <label className={label}>
-                    Photos <span className="text-gray-500 normal-case">(optional, {files.length}/{MAX_REQUIREMENT_IMAGES})</span>
+                    {tp('Photos')} <span className="text-gray-500 normal-case">({tp('optional')}, {files.length}/{MAX_REQUIREMENT_IMAGES})</span>
                 </label>
                 <input
                     ref={fileRef} type="file" accept="image/*" multiple
@@ -248,7 +254,7 @@ export default function RequirementForm({
                 >
                     <span className="material-symbols-outlined text-gray-400 text-2xl block">add_photo_alternate</span>
                     <span className="text-xs font-semibold text-gray-500">
-                        Add a photo of what you need
+                        {tp('Add a photo of what you need')}
                     </span>
                 </button>
                 {previews.length > 0 && (
@@ -259,7 +265,7 @@ export default function RequirementForm({
                                 <img src={src} alt={`Reference ${i + 1}`}
                                     className="w-16 h-16 object-cover rounded-lg border border-gray-200" />
                                 <button type="button" onClick={() => removeFile(i)}
-                                    aria-label="Remove photo"
+                                    aria-label={tp('Remove photo')}
                                     className="absolute -top-1.5 -right-1.5 size-5 rounded-full bg-gray-900 text-white text-xs grid place-items-center">
                                     ×
                                 </button>
@@ -271,23 +277,23 @@ export default function RequirementForm({
 
             <div className="grid grid-cols-2 gap-3">
                 <div>
-                    <label className={label}>Your name</label>
+                    <label className={label}>{tp('Your name')}</label>
                     <input value={fullName} onChange={e => setFullName(e.target.value)}
-                        placeholder="Full name" className={field} />
+                        placeholder={tp('Full name')} className={field} />
                 </div>
                 <div>
-                    <label className={label}>Mobile / WhatsApp</label>
+                    <label className={label}>{tp('Mobile / WhatsApp')}</label>
                     <input value={phone} inputMode="numeric" maxLength={10}
                         onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                        placeholder="10-digit number" className={field} />
+                        placeholder={tp('10-digit number')} className={field} />
                 </div>
             </div>
 
             {!compact && (
                 <div>
-                    <label className={label}>Anything else (optional)</label>
+                    <label className={label}>{tp('Anything else (optional)')}</label>
                     <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2}
-                        placeholder="Condition, delivery, attachments needed…"
+                        placeholder={tp('Condition, delivery, attachments needed…')}
                         className={field + ' resize-none'} />
                 </div>
             )}
@@ -303,10 +309,10 @@ export default function RequirementForm({
                 <span className={`material-symbols-outlined text-xl ${submitting ? 'animate-spin' : ''}`}>
                     {submitting ? 'progress_activity' : 'campaign'}
                 </span>
-                {submitting ? 'Sending…' : 'Submit Requirement'}
+                {submitting ? tp('Sending…') : tp('Submit Requirement')}
             </button>
             <p className="text-[11px] text-center text-gray-500">
-                No account needed. Miraitu finds it and calls you back.
+                {tp('No account needed. Miraitu finds it and calls you back.')}
             </p>
         </form>
     );

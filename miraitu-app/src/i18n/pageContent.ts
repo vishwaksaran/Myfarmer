@@ -6,10 +6,13 @@
 // Render-time helper `translatePage(lang, text)` returns the translation or the
 // original text, so the page components keep English as the source of truth.
 import { LangCode } from './translations';
+import requirementContent from './requirementContent';
 
 type PerLang = Partial<Record<LangCode, string>>;
 
 const content: Record<string, PerLang> = {
+    // Buyer requirement form — spread first so curated entries below win.
+    ...requirementContent,
     // ── Services page: "Our Services" extra items ───────────────────────────
     'Rent Machinery': { hi: 'मशीनरी किराए पर लें', mr: 'यंत्रसामग्री भाड्याने घ्या', gu: 'મશીનરી ભાડે લો', te: 'యంత్రాలు అద్దెకు', ta: 'இயந்திரங்கள் வாடகைக்கு', kn: 'ಯಂತ್ರೋಪಕರಣ ಬಾಡಿಗೆಗೆ', pa: 'ਮਸ਼ੀਨਰੀ ਕਿਰਾਏ ਤੇ ਲਓ', bn: 'যন্ত্রপাতি ভাড়া নিন', ml: 'യന്ത്രങ്ങൾ വാടകയ്ക്ക്' },
     'Borewell Services': { hi: 'बोरवेल सेवाएं', mr: 'बोअरवेल सेवा', gu: 'બોરવેલ સેવાઓ', te: 'బోర్‌వెల్ సేవలు', ta: 'ஆழ்துளை கிணறு சேவைகள்', kn: 'ಬೋರ್‌ವೆಲ್ ಸೇವೆಗಳು', pa: 'ਬੋਰਵੈੱਲ ਸੇਵਾਵਾਂ', bn: 'বোরওয়েল সেবা', ml: 'ബോർവെൽ സേവനങ്ങൾ' },

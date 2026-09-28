@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Z } from '@/lib/z-layers';
 import RequirementForm from './RequirementForm';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translatePage } from '@/i18n/pageContent';
 
 /**
  * The requirement form as an overlay, for the floating button on mobile.
@@ -21,6 +23,9 @@ export default function RequirementModal({
     open: boolean;
     onClose: () => void;
 }) {
+    const { lang } = useLanguage();
+    const tp = (s: string) => translatePage(lang, s);
+
     // A modal this tall must not scroll the page behind it, and Escape
     // should close it like every other overlay in the app.
     useEffect(() => {
@@ -45,7 +50,7 @@ export default function RequirementModal({
             style={{ zIndex: Z.MODAL }}
             role="dialog"
             aria-modal="true"
-            aria-label="Post your requirement"
+            aria-label={tp('Post your requirement')}
             onClick={onClose}
         >
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
@@ -60,16 +65,16 @@ export default function RequirementModal({
                         </div>
                         <div>
                             <h2 className="text-lg font-black text-gray-900 dark:text-white leading-tight">
-                                Post Your Requirement
+                                {tp('Post Your Requirement')}
                             </h2>
                             <p className="text-xs text-gray-500">
-                                Tell us what you need and we will find it
+                                {tp('Tell us what you need and we will find it')}
                             </p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        aria-label="Close"
+                        aria-label={tp('Close')}
                         className="p-1.5 -mr-1 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 shrink-0"
                     >
                         <span className="material-symbols-outlined">close</span>
