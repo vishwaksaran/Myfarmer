@@ -26,8 +26,18 @@ export default function ListingDetailModal({ listing, onClose, onEdit, onDelete 
     const [imageIndex, setImageIndex] = useState(0);
     const [copied, setCopied] = useState(false);
     const [showContactRequest, setShowContactRequest] = useState(false);
+    const [loadedImages, setLoadedImages] = useState<Set<string>>(() => new Set());
+    // The modal stays mounted between listings, so start each one on its first photo.
+    const [shownListingId, setShownListingId] = useState(listing?.id);
+    if (listing?.id !== shownListingId) {
+        setShownListingId(listing?.id);
+        setImageIndex(0);
+    }
 
     if (!listing) return null;
+
+    const markLoaded = (src: string) =>
+        setLoadedImages(prev => (prev.has(src) ? prev : new Set(prev).add(src)));
 
     const meta = CATEGORY_META[listing.category] ?? CATEGORY_META.other;
     const price = formatPrice(listing, tp);
@@ -58,7 +68,24 @@ export default function ListingDetailModal({ listing, onClose, onEdit, onDelete 
                 <div className="relative bg-gray-100 dark:bg-gray-800 shrink-0">
                     {listing.images.length > 0 ? (
                         <div className="relative aspect-[4/3]">
-                            <img src={listing.images[imageIndex]} alt={listing.title} className="w-full h-full object-cover" />
+                            {/* All photos are mounted (and so downloaded) up front; switching only
+                                changes which one is visible, so the arrows respond instantly. */}
+                            {listing.images.map((src, i) => (
+                                <img
+                                    key={src}
+                                    src={src}
+                                    alt={i === imageIndex ? listing.title : ''}
+                                    aria-hidden={i !== imageIndex}
+                                    onLoad={() => markLoaded(src)}
+                                    onError={() => markLoaded(src)}
+                                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-200 ${i === imageIndex ? 'opacity-100' : 'opacity-0'}`}
+                                />
+                            ))}
+                            {!loadedImages.has(listing.images[imageIndex]) && (
+                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                    <div className="w-8 h-8 rounded-full border-2 border-white/70 border-t-transparent animate-spin" />
+                                </div>
+                            )}
                             {listing.images.length > 1 && (
                                 <>
                                     <div className="absolute inset-y-0 inset-x-0 flex items-center justify-between px-2 pointer-events-none">
