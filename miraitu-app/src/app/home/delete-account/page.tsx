@@ -86,8 +86,8 @@ export default function DeleteAccountPage() {
                         <h3 className="font-bold text-[#2c5926] mb-2">2. By request, without installing the app</h3>
                         <p>
                             Email{' '}
-                            <a href="mailto:support@miraitu.in?subject=Account%20deletion%20request" className="text-[#2c5926] font-semibold underline">
-                                support@miraitu.in
+                            <a href="mailto:miraitutechnologies@gmail.com?subject=Account%20deletion%20request" className="text-[#2c5926] font-semibold underline">
+                                miraitutechnologies@gmail.com
                             </a>{' '}
                             with the subject <strong>Account deletion request</strong>, from the email
                             address on your account, or send the registered mobile number you signed up with.
@@ -136,7 +136,7 @@ export default function DeleteAccountPage() {
                 <section className="border-t border-gray-200 pt-8">
                     <h2 className="text-xl font-bold text-[#1a3617] mb-3">Contact</h2>
                     <p>
-                        Miraitu · <a href="mailto:support@miraitu.in" className="text-[#2c5926] font-semibold underline">support@miraitu.in</a>
+                        Miraitu · <a href="mailto:miraitutechnologies@gmail.com" className="text-[#2c5926] font-semibold underline">miraitutechnologies@gmail.com</a>
                     </p>
                     <p className="mt-4 text-sm text-gray-500">
                         See also our{' '}

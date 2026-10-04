@@ -253,7 +253,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 name: "Miraitu",
               },
               telephone: "+91-9380306475",
-              email: "support@miraitu.in",
+              email: "miraitutechnologies@gmail.com",
               address: {
                 "@type": "PostalAddress",
                 streetAddress: "No 4A, Vinayaka Layout, Parappana Agrahara",

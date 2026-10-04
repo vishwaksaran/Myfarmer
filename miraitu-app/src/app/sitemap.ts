@@ -9,6 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         { path: '/', priority: 1.0, changeFrequency: 'daily' as const },
         // '/home' omitted — it 301-redirects to '/'
         { path: '/home/about', priority: 0.8, changeFrequency: 'monthly' as const },
+        { path: '/home/contact', priority: 0.6, changeFrequency: 'yearly' as const },
         { path: '/home/machinery', priority: 0.9, changeFrequency: 'daily' as const },
         { path: '/home/machinery/tractors', priority: 0.8, changeFrequency: 'daily' as const },
         { path: '/home/machinery/tractors/buy', priority: 0.7, changeFrequency: 'daily' as const },

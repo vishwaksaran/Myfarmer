@@ -1552,6 +1552,7 @@ export const translations: Record<LangCode, Record<string, string>> = {
     en: {
         // Nav
         'nav.about': 'About',
+        'nav.contact': 'Contact Us',
         'nav.machinery': 'Machinery',
         'nav.crops': 'Crops',
         'nav.livestock': 'Livestock',
@@ -2472,6 +2473,7 @@ export const translations: Record<LangCode, Record<string, string>> = {
     },
     hi: {
         'nav.about': 'हमारे बारे में',
+        'nav.contact': 'संपर्क करें',
         'nav.machinery': 'मशीनरी',
         'nav.crops': 'फसलें',
         'nav.livestock': 'पशुधन',
@@ -3355,6 +3357,7 @@ export const translations: Record<LangCode, Record<string, string>> = {
     te: {
         // Nav
         'nav.about': 'గురించి',
+        'nav.contact': 'సంప్రదించండి',
         'nav.machinery': 'యంత్రాలు',
         'nav.crops': 'పంటలు',
         'nav.livestock': 'పశువులు',
@@ -4251,7 +4254,7 @@ export const translations: Record<LangCode, Record<string, string>> = {
         'financePage.lowInterestDesc': 'వ్యవసాయ రుణాలకు 4% వార్షిక వడ్డీ నుండి పోటీ వడ్డీ రేట్లు', 'financePage.quickApprovalDesc': 'కనీస పత్రాలతో 48 గంటల్లో రుణ ఆమోదం', 'financePage.flexibleRepaymentDesc': 'సీజనల్ చెల్లింపు ఎంపికలతో అవసరానికి అనుగుణంగా చెల్లించండి', 'financePage.digitalProcessDesc': '100% పేపర్‌లెస్ దరఖాస్తు మరియు వితరణ ప్రక్రియ',
     },
     ta: {
-        'nav.about': 'பற்றி', 'nav.machinery': 'இயந்திரங்கள்', 'nav.crops': 'பயிர்கள்', 'nav.livestock': 'கால்நடை', 'nav.finance': 'நிதி', 'nav.shop': 'கடை', 'nav.veterinary': 'கால்நடை மருத்துவம்', 'nav.land': 'நிலம்', 'nav.services': 'சேவைகள்', 'nav.toolbox': 'கணிப்பான்கள்', 'nav.community': 'சமூகம்', 'nav.moreCategories': 'மேலும் வகைகள்',
+        'nav.about': 'பற்றி', 'nav.contact': 'தொடர்பு கொள்ள', 'nav.machinery': 'இயந்திரங்கள்', 'nav.crops': 'பயிர்கள்', 'nav.livestock': 'கால்நடை', 'nav.finance': 'நிதி', 'nav.shop': 'கடை', 'nav.veterinary': 'கால்நடை மருத்துவம்', 'nav.land': 'நிலம்', 'nav.services': 'சேவைகள்', 'nav.toolbox': 'கணிப்பான்கள்', 'nav.community': 'சமூகம்', 'nav.moreCategories': 'மேலும் வகைகள்',
         'header.search': 'கால்நடை, கருவிகள், சேவைகளைத் தேடுங்கள்...', 'header.login': 'உள்நுழைய', 'header.playStore': 'ப்ளே ஸ்டோர்', 'header.appStore': 'ஆப் ஸ்டோர்',
         'lang.title': 'பிராந்திய மொழியைத் தேர்ந்தெடுக்கவும்', 'lang.subtitle': 'மிராஇட்டுவிற்கான உங்கள் விருப்பமான மொழியைத் தேர்ந்தெடுக்கவும்', 'lang.save': 'தேர்வை சேமி',
         'hero.title': 'உங்கள் முழுமையான விவசாய துணை', 'hero.subtitle': 'இயந்திரங்கள், கால்நடை, நிதி மற்றும் நிபுணர் சேவைகள் — அனைத்தும் ஒரே இடத்தில்.', 'hero.search': 'நீங்கள் என்ன தேடுகிறீர்கள்?',
@@ -4282,7 +4285,7 @@ export const translations: Record<LangCode, Record<string, string>> = {
         ...(supplementalAuthTranslations.ta || {}),
     },
     kn: {
-        'nav.about': 'ಬಗ್ಗೆ', 'nav.machinery': 'ಯಂತ್ರೋಪಕರಣ', 'nav.crops': 'ಬೆಳೆಗಳು', 'nav.livestock': 'ಜಾನುವಾರು', 'nav.finance': 'ಹಣಕಾಸು', 'nav.shop': 'ಅಂಗಡಿ', 'nav.veterinary': 'ಪಶುವೈದ್ಯ', 'nav.land': 'ಭೂಮಿ', 'nav.services': 'ಸೇವೆಗಳು', 'nav.toolbox': 'ಕೃಷಿ ಕ್ಯಾಲ್ಕುಲೇಟರ್', 'nav.community': 'ಸಮುದಾಯ', 'nav.moreCategories': 'ಹೆಚ್ಚಿನ ವಿಭಾಗಗಳು',
+        'nav.about': 'ಬಗ್ಗೆ', 'nav.contact': 'ಸಂಪರ್ಕಿಸಿ', 'nav.machinery': 'ಯಂತ್ರೋಪಕರಣ', 'nav.crops': 'ಬೆಳೆಗಳು', 'nav.livestock': 'ಜಾನುವಾರು', 'nav.finance': 'ಹಣಕಾಸು', 'nav.shop': 'ಅಂಗಡಿ', 'nav.veterinary': 'ಪಶುವೈದ್ಯ', 'nav.land': 'ಭೂಮಿ', 'nav.services': 'ಸೇವೆಗಳು', 'nav.toolbox': 'ಕೃಷಿ ಕ್ಯಾಲ್ಕುಲೇಟರ್', 'nav.community': 'ಸಮುದಾಯ', 'nav.moreCategories': 'ಹೆಚ್ಚಿನ ವಿಭಾಗಗಳು',
         'header.search': 'ಜಾನುವಾರು, ಉಪಕರಣಗಳು, ಸೇವೆಗಳನ್ನು ಹುಡುಕಿ...', 'header.login': 'ಲಾಗಿನ್', 'header.playStore': 'ಪ್ಲೇ ಸ್ಟೋರ್', 'header.appStore': 'ಆ್ಯಪ್ ಸ್ಟೋರ್',
         'lang.title': 'ಪ್ರಾದೇಶಿಕ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ', 'lang.subtitle': 'ಮಿರೈಟುಗಾಗಿ ನಿಮ್ಮ ಆದ್ಯತೆಯ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ', 'lang.save': 'ಆಯ್ಕೆಯನ್ನು ಉಳಿಸಿ',
         'hero.title': 'ನಿಮ್ಮ ಸಂಪೂರ್ಣ ಕೃಷಿ ಸಂಗಾತಿ', 'hero.subtitle': 'ಯಂತ್ರೋಪಕರಣ, ಜಾನುವಾರು, ಹಣಕಾಸು ಮತ್ತು ತಜ್ಞ ಸೇವೆಗಳು — ಎಲ್ಲವೂ ಒಂದೇ ಸ್ಥಳದಲ್ಲಿ.', 'hero.search': 'ನೀವು ಏನು ಹುಡುಕುತ್ತಿದ್ದೀರಿ?',
@@ -4313,7 +4316,7 @@ export const translations: Record<LangCode, Record<string, string>> = {
         ...(supplementalAuthTranslations.kn || {}),
     },
     mr: {
-        'nav.about': 'आमच्याबद्दल', 'nav.machinery': 'यंत्रसामग्री', 'nav.crops': 'पिके', 'nav.livestock': 'पशुधन', 'nav.finance': 'वित्त', 'nav.shop': 'दुकान', 'nav.veterinary': 'पशुवैद्यकीय', 'nav.land': 'जमीन', 'nav.services': 'सेवा', 'nav.toolbox': 'कृषी कॅल्क्युलेटर', 'nav.community': 'समुदाय', 'nav.moreCategories': 'अधिक श्रेणी',
+        'nav.about': 'आमच्याबद्दल', 'nav.contact': 'संपर्क साधा', 'nav.machinery': 'यंत्रसामग्री', 'nav.crops': 'पिके', 'nav.livestock': 'पशुधन', 'nav.finance': 'वित्त', 'nav.shop': 'दुकान', 'nav.veterinary': 'पशुवैद्यकीय', 'nav.land': 'जमीन', 'nav.services': 'सेवा', 'nav.toolbox': 'कृषी कॅल्क्युलेटर', 'nav.community': 'समुदाय', 'nav.moreCategories': 'अधिक श्रेणी',
         'header.search': 'पशुधन, साधने, सेवा शोधा...', 'header.login': 'लॉगिन', 'header.playStore': 'प्ले स्टोर', 'header.appStore': 'ॲप स्टोर',
         'lang.title': 'प्रादेशिक भाषा निवडा', 'lang.subtitle': 'मिराइटूसाठी तुमची पसंतीची भाषा निवडा', 'lang.save': 'निवड जतन करा',
         'hero.title': 'तुमचा संपूर्ण शेती सहकारी', 'hero.subtitle': 'यंत्रसामग्री, पशुधन, वित्त आणि तज्ञ सेवा — सर्व एकाच ठिकाणी.', 'hero.search': 'तुम्ही काय शोधत आहात?',
@@ -4344,7 +4347,7 @@ export const translations: Record<LangCode, Record<string, string>> = {
         ...(supplementalAuthTranslations.mr || {}),
     },
     gu: {
-        'nav.about': 'વિશે', 'nav.machinery': 'યંત્રો', 'nav.crops': 'પાક', 'nav.livestock': 'પશુધન', 'nav.finance': 'નાણાં', 'nav.shop': 'દુકાન', 'nav.veterinary': 'પશુ ચિકિત્સા', 'nav.land': 'જમીન', 'nav.services': 'સેવાઓ', 'nav.toolbox': 'કૃષિ કેલ્ક્યુલેટર', 'nav.community': 'સમુદાય', 'nav.moreCategories': 'વધુ કેટેગરીઓ',
+        'nav.about': 'વિશે', 'nav.contact': 'સંપર્ક કરો', 'nav.machinery': 'યંત્રો', 'nav.crops': 'પાક', 'nav.livestock': 'પશુધન', 'nav.finance': 'નાણાં', 'nav.shop': 'દુકાન', 'nav.veterinary': 'પશુ ચિકિત્સા', 'nav.land': 'જમીન', 'nav.services': 'સેવાઓ', 'nav.toolbox': 'કૃષિ કેલ્ક્યુલેટર', 'nav.community': 'સમુદાય', 'nav.moreCategories': 'વધુ કેટેગરીઓ',
         'header.search': 'પશુધન, સાધનો, સેવાઓ શોધો...', 'header.login': 'લોગિન', 'header.playStore': 'પ્લે સ્ટોર', 'header.appStore': 'એપ સ્ટોર',
         'lang.title': 'પ્રાદેશિક ભાષા પસંદ કરો', 'lang.subtitle': 'મિરાઇટુ માટે તમારી પસંદીદા ભાષા પસંદ કરો', 'lang.save': 'પસંદગી સાચવો',
         'hero.title': 'તમારો સંપૂર્ણ ખેતી સાથી', 'hero.subtitle': 'યંત્રો, પશુધન, નાણાં અને નિષ્ણાત સેવાઓ — બધું એક જ જગ્યાએ.', 'hero.search': 'તમે શું શોધી રહ્યા છો?',
@@ -4375,7 +4378,7 @@ export const translations: Record<LangCode, Record<string, string>> = {
         ...(supplementalAuthTranslations.gu || {}),
     },
     pa: {
-        'nav.about': 'ਬਾਰੇ', 'nav.machinery': 'ਮਸ਼ੀਨਰੀ', 'nav.crops': 'ਫ਼ਸਲਾਂ', 'nav.livestock': 'ਪਸ਼ੂਧਨ', 'nav.finance': 'ਵਿੱਤ', 'nav.shop': 'ਦੁਕਾਨ', 'nav.veterinary': 'ਪਸ਼ੂ ਚਿਕਿਤਸਾ', 'nav.land': 'ਜ਼ਮੀਨ', 'nav.services': 'ਸੇਵਾਵਾਂ', 'nav.toolbox': 'ਖੇਤੀ ਕੈਲਕੁਲੇਟਰ', 'nav.community': 'ਭਾਈਚਾਰਾ', 'nav.moreCategories': 'ਹੋਰ ਸ਼੍ਰੇਣੀਆਂ',
+        'nav.about': 'ਬਾਰੇ', 'nav.contact': 'ਸੰਪਰਕ ਕਰੋ', 'nav.machinery': 'ਮਸ਼ੀਨਰੀ', 'nav.crops': 'ਫ਼ਸਲਾਂ', 'nav.livestock': 'ਪਸ਼ੂਧਨ', 'nav.finance': 'ਵਿੱਤ', 'nav.shop': 'ਦੁਕਾਨ', 'nav.veterinary': 'ਪਸ਼ੂ ਚਿਕਿਤਸਾ', 'nav.land': 'ਜ਼ਮੀਨ', 'nav.services': 'ਸੇਵਾਵਾਂ', 'nav.toolbox': 'ਖੇਤੀ ਕੈਲਕੁਲੇਟਰ', 'nav.community': 'ਭਾਈਚਾਰਾ', 'nav.moreCategories': 'ਹੋਰ ਸ਼੍ਰੇਣੀਆਂ',
         'header.search': 'ਪਸ਼ੂਧਨ, ਔਜ਼ਾਰ, ਸੇਵਾਵਾਂ ਲੱਭੋ...', 'header.login': 'ਲੌਗਇਨ', 'header.playStore': 'ਪਲੇ ਸਟੋਰ', 'header.appStore': 'ਐਪ ਸਟੋਰ',
         'lang.title': 'ਖੇਤਰੀ ਭਾਸ਼ਾ ਚੁਣੋ', 'lang.subtitle': 'ਮਿਰਾਇਟੂ ਲਈ ਆਪਣੀ ਪਸੰਦੀਦਾ ਭਾਸ਼ਾ ਚੁਣੋ', 'lang.save': 'ਚੋਣ ਸੰਭਾਲੋ',
         'hero.title': 'ਤੁਹਾਡਾ ਪੂਰਾ ਖੇਤੀ ਸਾਥੀ', 'hero.subtitle': 'ਮਸ਼ੀਨਰੀ, ਪਸ਼ੂਧਨ, ਵਿੱਤ ਅਤੇ ਮਾਹਰ ਸੇਵਾਵਾਂ — ਸਭ ਇੱਕ ਥਾਂ ਤੇ।', 'hero.search': 'ਤੁਸੀਂ ਕੀ ਲੱਭ ਰਹੇ ਹੋ?',
@@ -4406,7 +4409,7 @@ export const translations: Record<LangCode, Record<string, string>> = {
         ...(supplementalAuthTranslations.pa || {}),
     },
     bn: {
-        'nav.about': 'সম্পর্কে', 'nav.machinery': 'যন্ত্রপাতি', 'nav.crops': 'ফসল', 'nav.livestock': 'পশুসম্পদ', 'nav.finance': 'অর্থ', 'nav.shop': 'দোকান', 'nav.veterinary': 'পশু চিকিৎসা', 'nav.land': 'জমি', 'nav.services': 'সেবা', 'nav.toolbox': 'কৃষি ক্যালকুলেটর', 'nav.community': 'সম্প্রদায়', 'nav.moreCategories': 'আরও বিভাগ',
+        'nav.about': 'সম্পর্কে', 'nav.contact': 'যোগাযোগ করুন', 'nav.machinery': 'যন্ত্রপাতি', 'nav.crops': 'ফসল', 'nav.livestock': 'পশুসম্পদ', 'nav.finance': 'অর্থ', 'nav.shop': 'দোকান', 'nav.veterinary': 'পশু চিকিৎসা', 'nav.land': 'জমি', 'nav.services': 'সেবা', 'nav.toolbox': 'কৃষি ক্যালকুলেটর', 'nav.community': 'সম্প্রদায়', 'nav.moreCategories': 'আরও বিভাগ',
         'header.search': 'পশুসম্পদ, সরঞ্জাম, সেবা খুঁজুন...', 'header.login': 'লগইন', 'header.playStore': 'প্লে স্টোর', 'header.appStore': 'অ্যাপ স্টোর',
         'lang.title': 'আঞ্চলিক ভাষা নির্বাচন করুন', 'lang.subtitle': 'মিরাইটুর জন্য আপনার পছন্দের ভাষা নির্বাচন করুন', 'lang.save': 'নির্বাচন সংরক্ষণ করুন',
         'hero.title': 'আপনার সম্পূর্ণ কৃষি সঙ্গী', 'hero.subtitle': 'যন্ত্রপাতি, পশুসম্পদ, অর্থ এবং বিশেষজ্ঞ সেবা — সব এক জায়গায়।', 'hero.search': 'আপনি কী খুঁজছেন?',
@@ -4437,7 +4440,7 @@ export const translations: Record<LangCode, Record<string, string>> = {
         ...(supplementalAuthTranslations.bn || {}),
     },
     ml: {
-        'nav.about': 'കുറിച്ച്', 'nav.machinery': 'യന്ത്രങ്ങൾ', 'nav.crops': 'വിളകൾ', 'nav.livestock': 'കന്നുകാലികൾ', 'nav.finance': 'സാമ്പത്തികം', 'nav.shop': 'കട', 'nav.veterinary': 'മൃഗചികിത്സ', 'nav.land': 'ഭൂമി', 'nav.services': 'സേവനങ്ങൾ', 'nav.toolbox': 'കൃഷി കാൽക്കുലേറ്റർ', 'nav.community': 'സമൂഹം', 'nav.moreCategories': 'കൂടുതൽ വിഭാഗങ്ങൾ',
+        'nav.about': 'കുറിച്ച്', 'nav.contact': 'ബന്ധപ്പെടുക', 'nav.machinery': 'യന്ത്രങ്ങൾ', 'nav.crops': 'വിളകൾ', 'nav.livestock': 'കന്നുകാലികൾ', 'nav.finance': 'സാമ്പത്തികം', 'nav.shop': 'കട', 'nav.veterinary': 'മൃഗചികിത്സ', 'nav.land': 'ഭൂമി', 'nav.services': 'സേവനങ്ങൾ', 'nav.toolbox': 'കൃഷി കാൽക്കുലേറ്റർ', 'nav.community': 'സമൂഹം', 'nav.moreCategories': 'കൂടുതൽ വിഭാഗങ്ങൾ',
         'header.search': 'കന്നുകാലികൾ, ഉപകരണങ്ങൾ, സേവനങ്ങൾ തിരയുക...', 'header.login': 'ലോഗിൻ', 'header.playStore': 'പ്ലേ സ്റ്റോർ', 'header.appStore': 'ആപ്പ് സ്റ്റോർ',
         'lang.title': 'പ്രാദേശിക ഭാഷ തിരഞ്ഞെടുക്കുക', 'lang.subtitle': 'മിറൈറ്റുവിനായി നിങ്ങൾ ഇഷ്ടപ്പെടുന്ന ഭാഷ തിരഞ്ഞെടുക്കുക', 'lang.save': 'തിരഞ്ഞെടുപ്പ് സേവ് ചെയ്യുക',
         'hero.title': 'നിങ്ങളുടെ സമ്പൂർണ കൃഷി സഹായി', 'hero.subtitle': 'യന്ത്രങ്ങൾ, കന്നുകാലികൾ, സാമ്പത്തികം, വിദഗ്ധ സേവനങ്ങൾ — എല്ലാം ഒരിടത്ത്.', 'hero.search': 'നിങ്ങൾ എന്താണ് തിരയുന്നത്?',

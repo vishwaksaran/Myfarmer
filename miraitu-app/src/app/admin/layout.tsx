@@ -7,6 +7,7 @@ import Link from 'next/link';
 import MiraituLogo from '@/components/MiraituLogo';
 import MiraituLoader from '@/components/v2/MiraituLoader';
 import { fetchAdminUnreadPaymentNotificationsCount } from '@/app/actions/shop-orders';
+import { fetchNewContactMessagesCount } from '@/app/actions/contact-messages';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const { user, loading, fetchProfile } = useAuth();
@@ -14,6 +15,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
     const [unreadPaymentAlerts, setUnreadPaymentAlerts] = useState(0);
+    const [newEnquiries, setNewEnquiries] = useState(0);
 
     useEffect(() => {
         if (loading) return;
@@ -44,6 +46,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 setUnreadPaymentAlerts(result.count);
             }
         });
+        fetchNewContactMessagesCount().then((count) => {
+            if (active) setNewEnquiries(count);
+        });
 
         return () => {
             active = false;
@@ -68,6 +73,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         // Both kinds of callback in one inbox: buyers who tapped Contact
         // Seller on an ad, and buyers who posted a requirement of their own.
         { href: '/admin/contact-requests', icon: 'phone_callback', label: 'Contact Requests' },
+        // Companies, partners, press and investors writing in through the
+        // website's Contact Us page — answered by email, so their own inbox.
+        { href: '/admin/enquiries', icon: 'mail', label: 'Enquiries', badge: newEnquiries > 0 ? String(newEnquiries) : '' },
         // Farmers, dealers and service providers waiting to be verified.
         // Approving one here is what issues their login and makes their
         // listings public.

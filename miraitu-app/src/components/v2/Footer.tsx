@@ -96,6 +96,14 @@ export default function Footer() {
                                     {t('footer.helpCenter')}
                                 </a>
                             </li>
+                            {/* Desktop footer only — the mobile ending below
+                                deliberately does not link Contact Us. */}
+                            <li>
+                                <a href="/home/contact" className="text-gray-300/80 hover:text-white transition-colors flex items-center gap-2 group">
+                                    <span className="material-symbols-outlined text-xs text-accent/50 group-hover:text-accent transition-colors">chevron_right</span>
+                                    {t('nav.contact')}
+                                </a>
+                            </li>
                             <li>
                                 <a href="/home/community" className="text-gray-300/80 hover:text-white transition-colors flex items-center gap-2 group">
                                     <span className="material-symbols-outlined text-xs text-accent/50 group-hover:text-accent transition-colors">chevron_right</span>
@@ -157,6 +165,7 @@ export default function Footer() {
                         <div className="flex flex-wrap items-center gap-6 text-xs text-gray-400">
                             <a href="/home/terms-of-service" className="hover:text-white transition-colors">{t('footer.terms')}</a>
                             <a href="/home/privacy-policy" className="hover:text-white transition-colors">{t('footer.privacy')}</a>
+                            <a href="/home/contact" className="hover:text-white transition-colors">{t('nav.contact')}</a>
                             <a href="/home/about" className="hover:text-white transition-colors">{t('footer.secureFaq')}</a>
                             <a href="/home/about" className="hover:text-white transition-colors">{t('footer.refund')}</a>
                             <a href="https://www.dmca.com/r/x8z5rk9" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors flex items-center gap-1">

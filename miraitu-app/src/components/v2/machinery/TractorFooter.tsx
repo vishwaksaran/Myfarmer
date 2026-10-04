@@ -143,7 +143,7 @@ export default function TractorFooter() {
                         <p className="text-xs text-gray-400 leading-relaxed">
                             Miraitu Agritech Pvt Ltd<br />
                             Tamil Nadu, India<br />
-                            <a href="mailto:support@miraitu.in" className="hover:text-emerald-400 transition-colors">support@miraitu.in</a>
+                            <a href="mailto:miraitutechnologies@gmail.com" className="hover:text-emerald-400 transition-colors">miraitutechnologies@gmail.com</a>
                         </p>
                     </div>
                 </div>

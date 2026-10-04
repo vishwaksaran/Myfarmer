@@ -326,7 +326,7 @@ export default function PrivacyPolicyPage() {
                         <p>You can delete your Miraitu account and the personal data attached to it at any time, in either of two ways:</p>
                         <ul className="list-disc pl-6 space-y-1">
                             <li><strong>Inside the app or website:</strong> open <strong>Settings</strong> and choose <strong>Delete Account</strong>.</li>
-                            <li><strong>Without installing the app:</strong> visit <Link href="/home/delete-account" className="text-[#2c5926] font-semibold underline">miraitu.in/home/delete-account</Link> and follow the instructions, or email <a href="mailto:support@miraitu.in" className="text-[#2c5926] font-semibold underline">support@miraitu.in</a> from your registered address.</li>
+                            <li><strong>Without installing the app:</strong> visit <Link href="/home/delete-account" className="text-[#2c5926] font-semibold underline">miraitu.in/home/delete-account</Link> and follow the instructions, or email <a href="mailto:miraitutechnologies@gmail.com" className="text-[#2c5926] font-semibold underline">miraitutechnologies@gmail.com</a> from your registered address.</li>
                         </ul>
                         <p className="mt-2">What is removed and what is kept is set out in full on the <Link href="/home/delete-account" className="text-[#2c5926] font-semibold underline">account deletion page</Link>.</p>
                     </section>
@@ -354,7 +354,7 @@ export default function PrivacyPolicyPage() {
                         <p>For any concerns or complaints, contact:</p>
                         <div className="bg-[#f0f7ef] rounded-xl p-6 mt-4 border border-[#2c5926]/10">
                             <p className="font-semibold text-[#1a3617]">Grievance Officer</p>
-                            <p className="mt-2">Email: <a href="mailto:support@miraitu.in" className="text-[#2c5926] font-semibold hover:underline">support@miraitu.in</a></p>
+                            <p className="mt-2">Email: <a href="mailto:miraitutechnologies@gmail.com" className="text-[#2c5926] font-semibold hover:underline">miraitutechnologies@gmail.com</a></p>
                             <p className="mt-1">Address: No 4A, Vinayaka Layout, Parappana Agrahara, Bengaluru, Karnataka 560100</p>
                         </div>
                         <p className="mt-4">The grievance officer will endeavour to redress your grievances expeditiously within a period of one month from the receipt of your request.</p>

@@ -414,6 +414,19 @@ export default function Header() {
                                 </Link>
                             ))}
 
+                            {/* Contact Us — desktop web only, so it lives here rather
+                                than in primaryNavItems, which also feeds the mobile
+                                hamburger menu. */}
+                            <Link
+                                href="/home/contact"
+                                className={`px-3 py-2 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${isActive('/home/contact')
+                                    ? 'text-primary bg-primary/5'
+                                    : 'text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-primary/5'
+                                    }`}
+                            >
+                                {t('nav.contact')}
+                            </Link>
+
                             {/* More Menu Button + Dropdown */}
                             <div className="relative" ref={moreMenuRef}>
                                 <button
