@@ -6,6 +6,7 @@ import Script from 'next/script';
 
 // Corporate Identity Number — shown in the footer legal line (desktop + mobile).
 const CIN = 'U62099KA2026PTC216873';
+const CONTACT_EMAIL = 'miraitutechnologies@gmail.com';
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
@@ -153,6 +154,15 @@ export default function Footer() {
                                     </p>
                                 </div>
                             </div>
+                            <a href={`mailto:${CONTACT_EMAIL}`} className="flex items-start gap-3 bg-white/5 rounded-xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
+                                <div className="size-9 rounded-lg bg-accent/20 flex items-center justify-center shrink-0">
+                                    <span className="material-symbols-outlined text-accent text-lg">mail</span>
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="font-bold text-xs mb-0.5">{t('footer.emailUs')}</p>
+                                    <p className="text-gray-200 text-xs font-semibold break-all">{CONTACT_EMAIL}</p>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 </div>
