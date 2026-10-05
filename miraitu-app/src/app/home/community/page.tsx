@@ -1388,10 +1388,6 @@ function CommunityFeedPage() {
                                     <p className="text-sm text-white/80 mb-4 relative z-10">Connect with farmers on the go!</p>
                                     <div className="flex gap-2 relative z-10">
                                         <button className="flex-1 py-2.5 rounded-xl bg-white/20 backdrop-blur-sm text-sm font-semibold hover:bg-white/30 transition-colors flex items-center justify-center gap-1.5">
-                                            <span className="material-symbols-outlined text-sm">phone_iphone</span>
-                                            iOS
-                                        </button>
-                                        <button className="flex-1 py-2.5 rounded-xl bg-white/20 backdrop-blur-sm text-sm font-semibold hover:bg-white/30 transition-colors flex items-center justify-center gap-1.5">
                                             <span className="material-symbols-outlined text-sm">android</span>
                                             Android
                                         </button>

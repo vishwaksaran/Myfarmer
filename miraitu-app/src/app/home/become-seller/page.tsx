@@ -52,13 +52,6 @@ const howItWorksSteps = [
     { step: 4, icon: 'payments', title: 'Start Earning', description: 'Receive orders, connect with buyers, and earn directly to your bank.' },
 ];
 
-const stats = [
-    { value: '10,000+', label: 'Active Sellers', icon: 'groups' },
-    { value: '₹50L+', label: 'Monthly Sales', icon: 'trending_up' },
-    { value: '200+', label: 'Districts Covered', icon: 'location_on' },
-    { value: '4.8★', label: 'Seller Rating', icon: 'star' },
-];
-
 const faqs = [
     { q: 'Is there any registration fee?', a: 'No! Registration on Miraitu is completely free for all seller types. You can start listing your products immediately after verification.' },
     { q: 'How long does verification take?', a: 'Most verifications are completed within 24-48 hours. You\'ll receive an SMS and email notification once approved.' },
@@ -372,21 +365,6 @@ export default function BecomeSellerPage() {
                 </div>
                 <div className="absolute bottom-0 left-0 right-0">
                     <svg viewBox="0 0 1440 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full"><path d="M0 80L60 68C120 56 240 32 360 24C480 16 600 24 720 36C840 48 960 64 1080 64C1200 64 1320 48 1380 40L1440 32V80H1380C1320 80 1200 80 1080 80C960 80 840 80 720 80C600 80 480 80 360 80C240 80 120 80 60 80H0Z" className="fill-background-light dark:fill-background-dark" /></svg>
-                </div>
-            </section>
-
-            {/* Stats */}
-            <section className="px-4 md:px-6 -mt-4 relative z-10">
-                <div className="mx-auto max-w-[1280px]">
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-                        {stats.map((stat) => (
-                            <div key={stat.label} className="skeuo-card rounded-xl md:rounded-2xl p-4 md:p-6 text-center">
-                                <span className="material-symbols-outlined text-primary text-xl md:text-2xl mb-1 md:mb-2">{stat.icon}</span>
-                                <p className="text-xl md:text-3xl font-black text-gray-900 dark:text-white">{stat.value}</p>
-                                <p className="text-xs md:text-sm font-medium text-gray-500">{stat.label}</p>
-                            </div>
-                        ))}
-                    </div>
                 </div>
             </section>
 

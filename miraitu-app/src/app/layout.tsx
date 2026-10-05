@@ -327,7 +327,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
               name: "Miraitu",
               applicationCategory: "BusinessApplication",
               applicationSubCategory: "Agriculture",
-              operatingSystem: "Web, Android, iOS",
+              operatingSystem: "Web, Android",
               url: "https://www.miraitu.in",
               brand: {
                 "@type": "Brand",

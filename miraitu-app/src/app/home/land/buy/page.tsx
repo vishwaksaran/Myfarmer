@@ -201,13 +201,11 @@ export default function BuyLandPage() {
     // Stats are computed from what the grid actually shows, so the two can never contradict.
     const stats = useMemo(() => {
         const sellers = new Set(allListings.map(l => l.seller)).size;
-        const districts = new Set(allListings.map(l => l.district).filter(Boolean)).size;
         const perAcre = allListings.map(l => l.pricePerAcreValue).filter(v => v > 0);
         const avg = perAcre.length ? perAcre.reduce((s, v) => s + v, 0) / perAcre.length : 0;
         return [
             { label: tp('Total Listings'), value: String(allListings.length), icon: 'list_alt', color: 'text-green-600 bg-green-50 dark:bg-green-900/30' },
             { label: tp('Verified Sellers'), value: String(sellers), icon: 'verified_user', color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' },
-            { label: tp('Districts Covered'), value: String(districts), icon: 'location_on', color: 'text-amber-600 bg-amber-50 dark:bg-amber-900/30' },
             { label: tp('Avg Price/Acre'), value: formatCompact(avg), icon: 'currency_rupee', color: 'text-purple-600 bg-purple-50 dark:bg-purple-900/30' },
         ];
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -272,7 +270,7 @@ export default function BuyLandPage() {
                 </div>
 
                 {/* Stats Row */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+                <div className="grid grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
                     {stats.map((stat, i) => (
                         <div key={i} className="bg-white dark:bg-[#1a231a] rounded-lg md:rounded-2xl p-3 md:p-4 border border-gray-100 dark:border-gray-800 text-center">
                             <div className={`w-8 md:w-10 h-8 md:h-10 mx-auto mb-1.5 md:mb-2 rounded-lg md:rounded-xl ${stat.color} flex items-center justify-center`}>
