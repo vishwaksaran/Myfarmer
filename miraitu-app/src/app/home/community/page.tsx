@@ -1379,20 +1379,6 @@ function CommunityFeedPage() {
 
                                 {/* News & Events */}
                                 <NewsEvents events={sampleNewsEvents} />
-
-                                {/* App Download */}
-                                <div className="bg-gradient-to-br from-[#22c33d] to-[#2c5926] rounded-2xl p-5 text-white relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
-                                    <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-6 -translate-x-6" />
-                                    <h4 className="font-bold mb-2 relative z-10">Get the Miraitu App</h4>
-                                    <p className="text-sm text-white/80 mb-4 relative z-10">Connect with farmers on the go!</p>
-                                    <div className="flex gap-2 relative z-10">
-                                        <button className="flex-1 py-2.5 rounded-xl bg-white/20 backdrop-blur-sm text-sm font-semibold hover:bg-white/30 transition-colors flex items-center justify-center gap-1.5">
-                                            <span className="material-symbols-outlined text-sm">android</span>
-                                            Android
-                                        </button>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>

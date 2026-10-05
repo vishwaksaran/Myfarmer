@@ -219,9 +219,9 @@ export default function HeroSection() {
                     {/* Scrolling Trust Strip */}
                     <div className="trust-strip rounded-b-2xl py-3 px-4 overflow-hidden">
                         <div className="flex animate-marquee whitespace-nowrap">
-                            {[...Array(6)].map((_, j) => (
+                            {[...Array(12)].map((_, j) => (
                                 <div key={j} className="flex items-center gap-8 mr-8">
-                                    {['🚜 ' + t('hero.trustMachinery'), '📱 ' + t('hero.trustMobile')].map((item, i) => (
+                                    {['🚜 ' + t('hero.trustMachinery')].map((item, i) => (
                                         <span key={i} className="text-white/80 text-xs font-semibold tracking-wide">{item}</span>
                                     ))}
                                 </div>
