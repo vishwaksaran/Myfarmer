@@ -57,13 +57,6 @@ const pillars = [
     },
 ];
 
-const impactStats = [
-    { value: '20+', label: 'Districts Covered', icon: 'location_on' },
-    { value: '50K+', label: 'Farmers Connected', icon: 'groups' },
-    { value: '10K+', label: 'Products Listed', icon: 'inventory' },
-    { value: '4.8★', label: 'App Rating', icon: 'star' },
-];
-
 export default function AboutPage() {
     const { t } = useLanguage();
 
@@ -121,13 +114,6 @@ export default function AboutPage() {
         },
     ];
 
-    const impactStats = [
-        { value: '20+', label: t('about.districtsCovered'), icon: 'location_on' },
-        { value: '50K+', label: t('about.farmersConnected'), icon: 'groups' },
-        { value: '10K+', label: t('about.productsListed'), icon: 'inventory' },
-        { value: '4.8\u2605', label: t('about.appRating'), icon: 'star' },
-    ];
-
     return (
         <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-[#121811] dark:text-[#f9fbf9] transition-colors duration-300">
 
@@ -173,20 +159,9 @@ export default function AboutPage() {
                                 <span className="bg-gradient-to-r from-white to-[#B0EA3C] bg-clip-text text-transparent">{t('about.heroTitle4')}</span>
                             </span>
                         </h1>
-                        <p className="text-xl lg:text-2xl text-white/80 max-w-3xl mx-auto font-medium leading-relaxed mb-12">
+                        <p className="text-xl lg:text-2xl text-white/80 max-w-3xl mx-auto font-medium leading-relaxed">
                             {t('about.heroDesc')}
                         </p>
-                        <div className="flex flex-wrap justify-center gap-8">
-                            {impactStats.map((stat) => (
-                                <div key={stat.label} className="text-center">
-                                    <div className="flex items-center justify-center gap-2 mb-1">
-                                        <span className="material-symbols-outlined text-[#B0EA3C] text-xl">{stat.icon}</span>
-                                        <span className="text-3xl font-black text-white">{stat.value}</span>
-                                    </div>
-                                    <p className="text-sm text-white/60 font-medium">{stat.label}</p>
-                                </div>
-                            ))}
-                        </div>
                     </div>
                 </div>
 

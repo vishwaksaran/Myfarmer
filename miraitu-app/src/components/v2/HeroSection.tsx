@@ -140,13 +140,6 @@ export default function HeroSection() {
         }
     };
 
-    const stats = [
-        { value: '50K+', tLabel: 'hero.statActiveFarmers' },
-        { value: '₹2Cr+', tLabel: 'hero.statTradeVolume' },
-        { value: '500+', tLabel: 'hero.statVillagesCovered' },
-        { value: '4.8★', tLabel: 'hero.statUserRating' },
-    ];
-
     return (
         <>
             <section className="relative px-4 md:px-6 pt-6 pb-4">
@@ -191,16 +184,6 @@ export default function HeroSection() {
                                         {t('hero.watchFarmerVideos')}
                                     </a>
                                 </div>
-
-                                {/* Stats Row */}
-                                <div className="hidden md:grid grid-cols-4 gap-3">
-                                    {stats.map((stat, i) => (
-                                        <div key={i} className={`stat-card rounded-2xl px-4 py-3 text-center animate-fade-in-up stagger-${i + 1}`}>
-                                            <p className="text-xl lg:text-2xl font-black text-white">{stat.value}</p>
-                                            <p className="text-[11px] font-semibold text-white/60 mt-0.5">{t(stat.tLabel)}</p>
-                                        </div>
-                                    ))}
-                                </div>
                             </div>
 
                             {/*
@@ -236,9 +219,9 @@ export default function HeroSection() {
                     {/* Scrolling Trust Strip */}
                     <div className="trust-strip rounded-b-2xl py-3 px-4 overflow-hidden">
                         <div className="flex animate-marquee whitespace-nowrap">
-                            {[...Array(2)].map((_, j) => (
+                            {[...Array(4)].map((_, j) => (
                                 <div key={j} className="flex items-center gap-8 mr-8">
-                                    {['🌾 ' + t('hero.trustFarmers'), '🐄 ' + t('hero.trustLivestock'), '🚜 ' + t('hero.trustMachinery'), '🌍 ' + t('hero.trustVillages'), '⭐ ' + t('hero.trustRating'), '🔒 ' + t('hero.trustSecure'), '📱 ' + t('hero.trustMobile')].map((item, i) => (
+                                    {['🚜 ' + t('hero.trustMachinery'), '🔒 ' + t('hero.trustSecure'), '📱 ' + t('hero.trustMobile')].map((item, i) => (
                                         <span key={i} className="text-white/80 text-xs font-semibold tracking-wide">{item}</span>
                                     ))}
                                 </div>
