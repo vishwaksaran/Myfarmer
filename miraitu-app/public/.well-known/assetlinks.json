@@ -1,0 +1,11 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.miraitu",
+    "sha256_cert_fingerprints": [
+      "53:84:F4:6C:36:EB:A9:4B:23:DF:64:C8:43:47:6F:F7:01:13:E9:F4:D1:EE:03:59:8B:C5:DF:2F:68:A8:57:E2",
+      "CB:FD:A3:B3:81:07:6D:E6:DA:B0:DA:5D:36:81:D0:CF:28:CE:D0:39:ED:17:04:3E:EA:9A:C4:A9:2E:AC:E3:57"
+    ]
+  }
+}]
