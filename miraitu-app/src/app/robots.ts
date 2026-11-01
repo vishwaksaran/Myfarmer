@@ -17,9 +17,11 @@ export default function robots(): MetadataRoute.Robots {
                     '/admin/',
                     '/user-login/',
                     '/user-register/',
-                    '/_next/',
+                    // /_next/ (JS, CSS and /_next/image) and *.ico must stay
+                    // crawlable: Google renders these client-side pages with
+                    // that JS/CSS, indexes images through /_next/image, and
+                    // fetches the favicon it shows next to search results.
                     '/manifest.json',
-                    '/*.ico$',
                 ],
             },
         ],

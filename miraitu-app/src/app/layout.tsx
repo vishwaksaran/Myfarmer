@@ -273,19 +273,15 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 {
                   "@type": "ContactPoint",
                   telephone: "+91-9380306475",
+                  email: "miraitutechnologies@gmail.com",
                   contactType: "customer service",
                   areaServed: "IN",
                   availableLanguage: ["English", "Hindi", "Telugu", "Kannada"],
                 },
               ],
-              potentialAction: {
-                "@type": "SearchAction",
-                target: {
-                  "@type": "EntryPoint",
-                  urlTemplate: "https://www.miraitu.in/home/crops?q={search_term_string}",
-                },
-                "query-input": "required name=search_term_string",
-              },
+              // No SearchAction: the site search is an in-page dropdown with no
+              // results URL, and /home/crops ignores ?q=, so there is no search
+              // endpoint to advertise. Add one back if a results page is built.
             }),
           }}
         />
@@ -301,18 +297,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
               alternateName: "Miraitu Agriculture Super App",
               url: "https://www.miraitu.in",
               description:
-                "India's #1 agriculture super app — tractor rental, crop marketplace, livestock trading, veterinary services, farm finance, and government schemes.",
-              inLanguage: ["en-IN", "hi-IN", "te-IN"],
+                "Miraitu is an agriculture super app for Indian farmers — tractor rental, crop marketplace, livestock trading, veterinary services, farm finance, and government schemes.",
+              // The ten languages the UI ships in (VALID_LANGS in i18n/LanguageContext).
+              inLanguage: ["en-IN", "hi-IN", "mr-IN", "gu-IN", "te-IN", "ta-IN", "kn-IN", "pa-IN", "bn-IN", "ml-IN"],
               publisher: {
                 "@id": "https://www.miraitu.in/#organization",
-              },
-              potentialAction: {
-                "@type": "SearchAction",
-                target: {
-                  "@type": "EntryPoint",
-                  urlTemplate: "https://www.miraitu.in/home/crops?q={search_term_string}",
-                },
-                "query-input": "required name=search_term_string",
               },
             }),
           }}
@@ -324,11 +313,14 @@ export default function RootLayout({ children }: RootLayoutProps) {
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "SoftwareApplication",
+              "@id": "https://www.miraitu.in/#app",
               name: "Miraitu",
               applicationCategory: "BusinessApplication",
               applicationSubCategory: "Agriculture",
               operatingSystem: "Web, Android",
               url: "https://www.miraitu.in",
+              installUrl: "https://play.google.com/store/apps/details?id=com.miraitu",
+              downloadUrl: "https://play.google.com/store/apps/details?id=com.miraitu",
               brand: {
                 "@type": "Brand",
                 name: "Miraitu",
@@ -343,12 +335,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 price: "0",
                 priceCurrency: "INR",
               },
-              aggregateRating: {
-                "@type": "AggregateRating",
-                ratingValue: "4.8",
-                reviewCount: "10000",
-                bestRating: "5",
-              },
+              // No aggregateRating: ratings in structured data must match real,
+              // visible reviews. Add one only from actual Play Store figures.
             }),
           }}
         />

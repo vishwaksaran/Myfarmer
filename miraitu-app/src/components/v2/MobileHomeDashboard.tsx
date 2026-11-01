@@ -207,9 +207,11 @@ export default function MobileHomeDashboard() {
 
     return (
         <section className="md:hidden px-4 pt-4 pb-2">
-            <h1 className="text-xl font-extrabold text-gray-900 dark:text-white mb-3">
+            {/* A greeting, not the page topic — the home page's single H1 is the
+                hero heading, so this is styled text rather than a heading. */}
+            <p className="text-xl font-extrabold text-gray-900 dark:text-white mb-3">
                 {tp(greeting())} <span aria-hidden>👋</span>
-            </h1>
+            </p>
 
             {/* Weather */}
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#2c5926] via-[#1f8c30] to-[#34a832] text-white shadow-lg shadow-[#2c5926]/20 p-4">

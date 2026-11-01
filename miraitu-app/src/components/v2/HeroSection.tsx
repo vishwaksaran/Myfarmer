@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import Image from 'next/image';
 import RequirementForm from '@/components/requirements/RequirementForm';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { translatePage } from '@/i18n/pageContent';
@@ -219,10 +220,15 @@ export default function HeroSection() {
                     {/* Scrolling Trust Strip */}
                     <div className="trust-strip rounded-b-2xl py-3 px-4 overflow-hidden">
                         <div className="flex animate-marquee whitespace-nowrap">
+                            {/* Only the first copy is page text. The repeats that fill the
+                                scrolling strip are drawn from data-text by CSS, so crawlers
+                                and screen readers meet the phrase once rather than 12 times. */}
                             {[...Array(12)].map((_, j) => (
-                                <div key={j} className="flex items-center gap-8 mr-8">
+                                <div key={j} className="flex items-center gap-8 mr-8" aria-hidden={j > 0 || undefined}>
                                     {['🚜 ' + t('hero.trustMachinery')].map((item, i) => (
-                                        <span key={i} className="text-white/80 text-xs font-semibold tracking-wide">{item}</span>
+                                        j === 0
+                                            ? <span key={i} className="text-white/80 text-xs font-semibold tracking-wide">{item}</span>
+                                            : <span key={i} data-text={item} className="text-white/80 text-xs font-semibold tracking-wide before:content-[attr(data-text)]" />
                                     ))}
                                 </div>
                             ))}
@@ -252,11 +258,13 @@ export default function HeroSection() {
                         {/* Expanded View */}
                         {expandedItem !== null && (
                             <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
-                                <div className="relative">
-                                    <img
+                                <div className="relative h-[250px] md:h-[400px]">
+                                    <Image
                                         src={galleryItems[expandedItem].image}
                                         alt={galleryItems[expandedItem].title}
-                                        className="w-full h-[250px] md:h-[400px] object-cover"
+                                        fill
+                                        sizes="(min-width: 1024px) 1024px, 100vw"
+                                        className="object-cover"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                                     <div className="absolute bottom-4 left-5 md:left-8 right-5 md:right-8">
@@ -284,10 +292,12 @@ export default function HeroSection() {
                                     {galleryItems.map((item, index) => (
                                         <div key={index} onClick={() => setExpandedItem(index)} className="group rounded-2xl overflow-hidden bg-gray-50 dark:bg-[#1a2318] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
                                             <div className="relative aspect-[4/3] overflow-hidden">
-                                                <img
+                                                <Image
                                                     src={item.image}
                                                     alt={item.title}
-                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                    fill
+                                                    sizes="(min-width: 1280px) 260px, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                                                    className="object-cover group-hover:scale-110 transition-transform duration-500"
                                                 />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                                 <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-between">

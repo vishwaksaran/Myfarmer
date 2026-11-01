@@ -39,12 +39,13 @@ export default function SplashScreen() {
 
         {/* Logo card (white squircle) with a moving light sheen */}
         <div className="ms-logo-card">
-          <img src="/miraitu-logo-icon.png" alt="Miraitu" className="ms-logo-img" />
+          <img src="/miraitu-logo-icon.png" alt="Miraitu" width={320} height={320} decoding="async" className="ms-logo-img" />
           <span className="ms-sheen" aria-hidden="true" />
         </div>
 
-        {/* App name — letters reveal one by one */}
-        <h1 className="ms-name" aria-label={NAME}>
+        {/* App name — letters reveal one by one. Not a heading: the splash sits in
+            the root layout, so an <h1> here would be a second H1 on every page. */}
+        <div className="ms-name" role="img" aria-label={NAME}>
           {NAME.split('').map((ch, i) => (
             <span
               key={i}
@@ -54,7 +55,7 @@ export default function SplashScreen() {
               {ch}
             </span>
           ))}
-        </h1>
+        </div>
 
         {/* Tagline */}
         <p className="ms-tagline">Where Farming Meets the Future</p>

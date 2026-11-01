@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { categoryMeta } from '../categoryData';
 import CategoryPageClient from './CategoryPageClient';
+import { breadcrumbJsonLd, jsonLdString } from '@/lib/seo';
 
 const ALL_CATEGORIES = Object.keys(categoryMeta);
 
@@ -26,6 +27,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
 }
 
-export default function ShopCategoryPage() {
-    return <CategoryPageClient />;
+// Breadcrumb only. The catalog in categoryData is sample data (placeholder
+// ratings, review counts and stock photos), so it is deliberately not published
+// as Product / AggregateRating structured data.
+export default async function ShopCategoryPage({ params }: Props) {
+    const { category } = await params;
+    const meta = categoryMeta[category];
+    const breadcrumb = meta
+        ? breadcrumbJsonLd([
+            { name: 'Farm Shop', path: '/home/shop' },
+            { name: meta.title, path: `/home/shop/${category}` },
+        ])
+        : null;
+    return (
+        <>
+            {breadcrumb && (
+                <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumb) }} />
+            )}
+            <CategoryPageClient />
+        </>
+    );
 }

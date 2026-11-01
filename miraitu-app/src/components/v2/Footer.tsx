@@ -191,10 +191,16 @@ export default function Footer() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
+                                {/* Third-party badge, left as a plain <img> (DMCA serves it
+                                    from their own host); explicit size prevents layout shift. */}
                                 <img
                                     src="https://images.dmca.com/Badges/dmca_protected_sml_120am.png?ID=x8z5rk9"
                                     alt="DMCA.com Protection Status"
-                                    className="h-6"
+                                    width={120}
+                                    height={24}
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="h-6 w-auto"
                                 />
                             </a>
                             <div className="inline-flex items-center gap-1.5 rounded-full bg-white/8 px-3 py-1.5 text-[10px] font-bold border border-white/5">

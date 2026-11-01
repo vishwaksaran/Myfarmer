@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Mandi Price Trends – Crop Price Analysis | Miraitu',
+    title: 'Mandi Price Trends – Crop Price Analysis',
     description: 'Analyze historical crop price trends across Indian mandis. View charts, compare commodities, and make informed selling decisions.',
     alternates: { canonical: 'https://www.miraitu.in/home/crops/mandi/trends' },
     openGraph: {

@@ -118,6 +118,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         { path: '/home/toolbox/weather-alerts', priority: 0.6, changeFrequency: 'daily' as const },
         { path: '/home/community', priority: 0.7, changeFrequency: 'daily' as const },
         { path: '/home/become-seller', priority: 0.8, changeFrequency: 'monthly' as const },
+        // Cross-category boards
+        { path: '/home/buy-sell', priority: 0.8, changeFrequency: 'daily' as const },
+        { path: '/home/rent', priority: 0.8, changeFrequency: 'daily' as const },
+        { path: '/home/labour-services', priority: 0.6, changeFrequency: 'monthly' as const },
+        { path: '/home/reels', priority: 0.5, changeFrequency: 'daily' as const },
+        // Legal
+        { path: '/home/privacy-policy', priority: 0.3, changeFrequency: 'yearly' as const },
+        { path: '/home/terms-of-service', priority: 0.3, changeFrequency: 'yearly' as const },
     ];
 
     const staticEntries = routes.map((route) => ({

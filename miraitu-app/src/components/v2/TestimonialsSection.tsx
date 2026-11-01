@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { translatePage } from '@/i18n/pageContent';
 import { useRef, useState, useEffect } from 'react';
@@ -76,9 +77,11 @@ export default function TestimonialsSection() {
             {/* Author */}
             <div className="flex items-center gap-2.5 md:gap-3 pt-3 md:pt-4 border-t border-black/5 dark:border-white/5">
                 <div className="h-9 w-9 md:h-11 md:w-11 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
-                    <img
+                    <Image
                         src={testimonial.image}
                         alt={testimonial.name}
+                        width={44}
+                        height={44}
                         className="h-full w-full object-cover"
                     />
                 </div>

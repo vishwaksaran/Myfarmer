@@ -351,6 +351,7 @@ export default function Header() {
                                 <input
                                     className="w-full border-none bg-transparent px-3 text-sm focus:ring-0 placeholder:text-gray-500 outline-none"
                                     placeholder={t('header.search')}
+                                    aria-label={t('header.search')}
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => handleSearchChange(e.target.value)}
@@ -572,6 +573,7 @@ export default function Header() {
                             <input
                                 className="w-full border-none bg-transparent px-3 text-sm focus:ring-0 placeholder:text-gray-500 outline-none"
                                 placeholder={t('header.search')}
+                                aria-label={t('header.search')}
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => handleSearchChange(e.target.value)}

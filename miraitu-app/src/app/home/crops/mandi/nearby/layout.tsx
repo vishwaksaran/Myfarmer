@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Nearby Mandis – Find Markets Near You | Miraitu',
+    title: 'Nearby Mandis – Find Markets Near You',
     description: 'Locate the nearest agricultural mandis and markets around your area. Get directions, crop prices, and market details.',
     alternates: { canonical: 'https://www.miraitu.in/home/crops/mandi/nearby' },
     openGraph: {

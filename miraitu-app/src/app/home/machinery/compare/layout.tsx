@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Compare Machinery – Side-by-Side Comparison | Miraitu',
+    title: 'Compare Machinery – Side-by-Side Comparison',
     description: 'Compare tractors, harvesters, JCBs and other farm machinery side by side. Compare specs, prices, and features to find the best equipment.',
     alternates: { canonical: 'https://www.miraitu.in/home/machinery/compare' },
     openGraph: {

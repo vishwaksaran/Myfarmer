@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Header from '@/components/v2/Header';
 import Footer from '@/components/v2/Footer';
+import { absoluteUrl, jsonLdString, SITE_URL } from '@/lib/seo';
 import '../globals-v2.css';
 
 export const metadata: Metadata = {
@@ -16,6 +17,16 @@ export const metadata: Metadata = {
     },
 };
 
+// Ties this page to the Organization entity (address, phone, email) declared in the root layout.
+const pageJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    name: 'Contact Miraitu',
+    url: absoluteUrl('/home/contact'),
+    about: { '@id': `${SITE_URL}/#organization` },
+    mainEntity: { '@id': `${SITE_URL}/#organization` },
+};
+
 export default function ContactLayout({
     children,
 }: {
@@ -23,6 +34,7 @@ export default function ContactLayout({
 }) {
     return (
         <div className="min-h-screen bg-[#f8f9f7] dark:bg-[#161d15]">
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(pageJsonLd) }} />
             <Header />
             <main className="relative z-10">
                 {children}

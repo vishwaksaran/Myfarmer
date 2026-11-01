@@ -184,6 +184,8 @@ export default function ServiceWorkerRegistration() {
         <img
           src="/miraitu-logo-icon.png"
           alt="Miraitu Logo"
+          width={44}
+          height={44}
           style={{
             width: '100%',
             height: '100%',

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Buy Grains – Wheat, Rice, Millets & More | Miraitu',
+    title: 'Buy Grains – Wheat, Rice, Millets & More',
     description: 'Browse and buy quality grains directly from farmers. Wheat, rice, millets, bajra, jowar and more at best prices.',
     alternates: { canonical: 'https://www.miraitu.in/home/crops/buy/grains' },
     openGraph: {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/i18n/LanguageContext';
 import TermsAgreementCheckbox from '@/components/TermsAgreementCheckbox';
@@ -66,7 +67,7 @@ export default function CTABanner() {
                                         'https://images.unsplash.com/photo-1534078362425-387ae9668c17?w=100&h=100&fit=crop'  // Rural Man
                                     ].map((src, i) => (
                                         <div key={i} className="w-10 h-10 rounded-full border-2 border-primary-dark bg-gray-300 overflow-hidden">
-                                            <img src={src} alt="User" className="w-full h-full object-cover" />
+                                            <Image src={src} alt="Miraitu farmer" width={40} height={40} className="w-full h-full object-cover" />
                                         </div>
                                     ))}
                                     <div className="w-10 h-10 rounded-full border-2 border-primary-dark bg-white flex items-center justify-center text-[10px] font-bold text-primary">
@@ -170,8 +171,10 @@ export default function CTABanner() {
                                     <form onSubmit={handleCallbackRequest} className="space-y-3 mt-4">
                                         <div className="space-y-3">
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('cta.yourName')} <span className="text-red-500">*</span></label>
+                                                <label htmlFor="cta-callback-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('cta.yourName')} <span className="text-red-500">*</span></label>
                                                 <input
+                                                    id="cta-callback-name"
+                                                    name="name"
                                                     type="text"
                                                     placeholder={t('cta.yourName')}
                                                     value={cbName}
@@ -182,8 +185,10 @@ export default function CTABanner() {
                                                 {cbErrors.name && <p className="text-red-500 text-xs mt-1 ml-1">{cbErrors.name}</p>}
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('cta.phonePlaceholder')} <span className="text-red-500">*</span></label>
+                                                <label htmlFor="cta-callback-phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('cta.phonePlaceholder')} <span className="text-red-500">*</span></label>
                                                 <input
+                                                    id="cta-callback-phone"
+                                                    name="phone"
                                                     type="tel"
                                                     placeholder={t('cta.phonePlaceholder')}
                                                     value={cbPhone}

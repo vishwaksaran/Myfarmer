@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { homeTopCategories as categories } from '@/lib/top-categories';
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -32,12 +33,15 @@ export default function TopCategories() {
                                 <span className="material-symbols-outlined absolute inset-0 flex items-center justify-center text-white text-4xl">
                                     {cat.icon}
                                 </span>
-                                <img
+                                {/* next/image serves the 2–3 MB source PNGs as resized
+                                    WebP/AVIF at the tile's actual display size. */}
+                                <Image
                                     src={cat.image}
                                     alt={t(cat.tKey)}
-                                    loading="lazy"
+                                    fill
+                                    sizes="(min-width: 1024px) 220px, 33vw"
                                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                    className="object-cover transition-transform duration-300 group-hover:scale-105"
                                 />
                             </div>
                             <p className="mt-2 text-center text-xs md:text-sm font-semibold text-[#121811] dark:text-white leading-tight group-hover:text-primary transition-colors">
