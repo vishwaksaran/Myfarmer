@@ -7,10 +7,15 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+// Android users get the Play Store app instead of the PWA; the PWA install
+// stays the fallback for devices without Play Store (iOS, desktop).
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.miraitu';
+
 export default function ServiceWorkerRegistration() {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
 
   useEffect(() => {
     // Skip service worker in development to prevent stale JS bundle caching
@@ -57,11 +62,7 @@ export default function ServiceWorkerRegistration() {
       return;
     }
 
-    // Listen for install prompt
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setInstallPrompt(e as BeforeInstallPromptEvent);
-
+    const scheduleBanner = () => {
       // Check if user recently dismissed the banner (10-minute cooldown)
       const dismissedAt = localStorage.getItem('pwa-install-dismissed-at');
       if (dismissedAt) {
@@ -82,6 +83,24 @@ export default function ServiceWorkerRegistration() {
       }, 30000); // Show after 30 seconds
     };
 
+    const android = /Android/i.test(navigator.userAgent);
+    setIsAndroid(android);
+
+    // On Android the banner points to the Play Store, so it doesn't depend on
+    // the browser offering a PWA install prompt.
+    if (android) {
+      scheduleBanner();
+    }
+
+    // Listen for install prompt
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Always suppress the browser's own PWA mini-infobar
+      e.preventDefault();
+      if (android) return;
+      setInstallPrompt(e as BeforeInstallPromptEvent);
+      scheduleBanner();
+    };
+
     // Listen for successful installation
     const handleAppInstalled = () => {
       setIsInstalled(true);
@@ -99,6 +118,13 @@ export default function ServiceWorkerRegistration() {
   }, []);
 
   const handleInstall = async () => {
+    if (isAndroid) {
+      setShowInstallBanner(false);
+      localStorage.setItem('pwa-install-dismissed-at', Date.now().toString());
+      window.location.href = PLAY_STORE_URL;
+      return;
+    }
+
     if (!installPrompt) return;
 
     await installPrompt.prompt();
@@ -117,7 +143,7 @@ export default function ServiceWorkerRegistration() {
     localStorage.setItem('pwa-install-dismissed-at', Date.now().toString());
   };
 
-  if (isInstalled || !showInstallBanner || !installPrompt) {
+  if (isInstalled || !showInstallBanner || (!installPrompt && !isAndroid)) {
     return null;
   }
 
@@ -170,7 +196,7 @@ export default function ServiceWorkerRegistration() {
           Install Miraitu
         </div>
         <div style={{ fontSize: 12, color: '#666', marginTop: 2 }}>
-          Add to home screen for faster access
+          {isAndroid ? 'Get the app on Google Play' : 'Add to home screen for faster access'}
         </div>
       </div>
       <button
