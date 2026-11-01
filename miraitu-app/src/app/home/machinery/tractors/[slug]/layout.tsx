@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import { cache } from 'react';
 import { getModelBySlug, type MachineryModel } from '@/lib/machinery-db';
-import { absoluteUrl, breadcrumbJsonLd, jsonLdString, pageMetadata } from '@/lib/seo';
+import { absoluteUrl, breadcrumbJsonLd, jsonLdString, pageMetadata, SITE_URL } from '@/lib/seo';
 
 // The model page renders on the client, so its title, description, canonical
 // and structured data come from here. Everything is built from the model's own
 // row in machinery_models — no field is filled in when the database has none.
+// (The page is published as an ItemPage, not a Product — see below.)
 
 interface Props {
     params: Promise<{ slug: string }>;
@@ -59,27 +60,25 @@ export default async function TractorModelLayout({ params, children }: Props) {
 
     const name = `${model.brand} ${model.model_name}`;
     const url = absoluteUrl(`/home/machinery/tractors/${slug}`);
-    const properties = [
-        model.hp ? { name: 'Engine power', value: model.hp, unitText: 'HP' } : null,
-        model.engine_cc ? { name: 'Engine displacement', value: model.engine_cc, unitText: 'cc' } : null,
-        model.cylinders ? { name: 'Cylinders', value: model.cylinders } : null,
-        model.drive_type ? { name: 'Drive type', value: model.drive_type } : null,
-        model.fuel_type ? { name: 'Fuel type', value: model.fuel_type } : null,
-        model.warranty_years ? { name: 'Warranty', value: model.warranty_years, unitText: 'years' } : null,
-    ].filter(Boolean).map((p) => ({ '@type': 'PropertyValue', ...p }));
+    const specs = specSummary(model);
 
-    const product = {
+    // ItemPage, not Product. Google treats any Product as a candidate for
+    // product rich results and flags it invalid without "offers", "review" or
+    // "aggregateRating". This page shows none of those (price is on request via
+    // "Check Price") and structured data must match what the page shows, so
+    // publishing a Product would only produce an error on every model page.
+    // Switch to Product + offers if the page starts displaying a price.
+    const itemPage = {
         '@context': 'https://schema.org',
-        '@type': 'Product',
-        '@id': `${url}#product`,
-        name,
+        '@type': 'ItemPage',
+        '@id': `${url}#webpage`,
+        name: `${name} Tractor`,
         url,
-        category: 'Tractor',
-        brand: { '@type': 'Brand', name: model.brand },
-        model: model.model_name,
-        ...(model.description ? { description: model.description } : {}),
-        ...(model.image_url ? { image: model.image_url } : {}),
-        ...(properties.length ? { additionalProperty: properties } : {}),
+        description: model.description || `${name} tractor${specs ? `: ${specs}` : ''}.`,
+        inLanguage: 'en-IN',
+        isPartOf: { '@id': `${SITE_URL}/#website` },
+        about: { '@type': 'Brand', name: model.brand },
+        ...(model.image_url ? { primaryImageOfPage: { '@type': 'ImageObject', url: model.image_url } } : {}),
     };
 
     const breadcrumb = breadcrumbJsonLd([
@@ -91,7 +90,7 @@ export default async function TractorModelLayout({ params, children }: Props) {
 
     return (
         <>
-            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(product) }} />
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(itemPage) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumb) }} />
             {children}
         </>
